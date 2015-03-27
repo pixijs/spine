@@ -1,0 +1,27 @@
+{
+  "name": "pixi-spine",
+  "version": "1.0.0",
+  "description": "Spine implementation for pixi v3",
+  "author": "Mat Groves",
+  "contributors": [
+    "Chad Engler <chad@pantherdev.com>",
+    "Richard Davey <rdavey@gmail.com>"
+  ],
+  "main": "index.js",
+  "homepage": "https://github.com/pixijs/pixi-spine",
+  "bugs": "https://github.com/pixijs/pixi-spine/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pixijs/pixi-spine.git"
+  },
+  "keywords": [
+    "pixi",
+    "spine",
+    "2d",
+    "render"
+  ],
+  "peerDependencies": {
+    "pixi.js": "^3.0.0-rc4"
+  }
+}
