@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+.project
+*.sublime-*
+*.log
+
+bin/pixi.dev.js.map
