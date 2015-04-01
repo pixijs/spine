@@ -27,7 +27,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-var core = require('../core');
+var PIXI = require('pixi.js');
 
 
 var spine = module.exports = {
@@ -2547,7 +2547,7 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
             else if (direction == "xy")
                 page.uWrap = page.vWrap = spine.Atlas.TextureWrap.repeat;
 
-            page.rendererObject = core.BaseTexture.fromImage(baseUrl + line, crossOrigin);
+            page.rendererObject = PIXI.BaseTexture.fromImage(baseUrl + line, crossOrigin);
 
             this.pages.push(page);
 

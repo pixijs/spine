@@ -1,4 +1,4 @@
-var core = require('../core'),
+var PIXI = require('pixi.js'),
     spine = require('./SpineRuntime');
 
 /* Esoteric Software SPINE wrapper for pixi.js */
@@ -21,7 +21,7 @@ spine.Bone.yDown = true;
  */
 function Spine(spineData)
 {
-    core.Container.call(this);
+    PIXI.Container.call(this);
 
     if (!spineData)
     {
@@ -68,7 +68,7 @@ function Spine(spineData)
     {
         var slot = this.skeleton.slots[i];
         var attachment = slot.attachment;
-        var slotContainer = new core.Container();
+        var slotContainer = new PIXI.Container();
         this.slotContainers.push(slotContainer);
         this.addChild(slotContainer);
 
@@ -102,7 +102,7 @@ function Spine(spineData)
     this.autoUpdate = true;
 }
 
-Spine.prototype = Object.create(core.Container.prototype);
+Spine.prototype = Object.create(PIXI.Container.prototype);
 Spine.prototype.constructor = Spine;
 module.exports = Spine;
 
@@ -126,7 +126,7 @@ Object.defineProperties(Spine.prototype, {
 
         set: function (value)
         {
-            this.updateTransform = value ? Spine.prototype.autoUpdateTransform : core.Container.prototype.updateTransform;
+            this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
         }
     }
 });
@@ -198,7 +198,7 @@ Spine.prototype.update = function (dt)
 
             slotContainer.rotation = -(slot.bone.worldRotation * spine.degRad);
 
-            slot.currentSprite.tint = core.utils.rgb2hex([slot.r,slot.g,slot.b]);
+            slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
         }
         else if (type === spine.AttachmentType.skinnedmesh)
         {
@@ -253,7 +253,7 @@ Spine.prototype.autoUpdateTransform = function ()
 
     this.update(timeDelta);
 
-    core.Container.prototype.updateTransform.call(this);
+    PIXI.Container.prototype.updateTransform.call(this);
 };
 
 /**
@@ -267,12 +267,12 @@ Spine.prototype.createSprite = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
     var baseTexture = descriptor.page.rendererObject;
-    var spriteRect = new core.math.Rectangle(descriptor.x,
+    var spriteRect = new PIXI.math.Rectangle(descriptor.x,
                                         descriptor.y,
                                         descriptor.rotate ? descriptor.height : descriptor.width,
                                         descriptor.rotate ? descriptor.width : descriptor.height);
-    var spriteTexture = new core.Texture(baseTexture, spriteRect);
-    var sprite = new core.Sprite(spriteTexture);
+    var spriteTexture = new PIXI.Texture(baseTexture, spriteRect);
+    var sprite = new PIXI.Sprite(spriteTexture);
 
     var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
     sprite.scale.x = descriptor.width / descriptor.originalWidth * attachment.scaleX;
@@ -296,10 +296,10 @@ Spine.prototype.createMesh = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
     var baseTexture = descriptor.page.rendererObject;
-    var texture = new core.Texture(baseTexture);
+    var texture = new PIXI.Texture(baseTexture);
 
-    var strip = new core.Strip(texture);
-    strip.drawMode = core.Strip.DRAW_MODES.TRIANGLES;
+    var strip = new PIXI.Strip(texture);
+    strip.drawMode = PIXI.Strip.DRAW_MODES.TRIANGLES;
     strip.canvasPadding = 1.5;
 
     strip.vertices = new Float32Array(attachment.uvs.length);
