@@ -9,8 +9,10 @@
   ],
   "main": "index.js",
   "homepage": "https://github.com/pixijs/pixi-spine",
-  "bugs": "https://github.com/pixijs/pixi-spine/issues",
-  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pixijs/pixi-spine/issues"
+  },
+  "license": "BSD-2-Clause",
   "repository": {
     "type": "git",
     "url": "https://github.com/pixijs/pixi-spine.git"
@@ -23,5 +25,12 @@
   ],
   "peerDependencies": {
     "pixi.js": "^3.0.0-rc4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "gulp": "~3.8.11",
+    "gulp-concat": "~2.5.2"
   }
 }
