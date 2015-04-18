@@ -1,4 +1,4 @@
-# pixi-spine.js
+# pixi-spine
 
 Spine implementation for pixi v3
 

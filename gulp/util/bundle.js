@@ -13,7 +13,7 @@ function rebundle() {
     return this.bundle()
         .on('error', handleErrors.handler)
         .pipe(handleErrors())
-        .pipe(source('pixi-spinejs.js'))
+        .pipe(source('pixi-spine.js'))
         .pipe(gulp.dest(paths.out))
         .pipe(buffer())
         .pipe(uglify())

@@ -34,45 +34,45 @@ var spine = module.exports = {
     degRad: Math.PI / 180,
     temp: [],
     Float32Array: (typeof(Float32Array) === 'undefined') ? Array : Float32Array,
-    Uint16Array: (typeof(Uint16Array) === 'undefined') ? Array : Uint16Array
+    Uint16Array: (typeof(Uint16Array) === 'undefined') ? Array : Uint16Array,
+    Animation: require('./Animation.js'),
+    AnimationStateData: require('./AnimationStateData.js'),
+    AnimationState: require('./AnimationState.js'),
+    AtlasAttachmentParser: require('./AtlasAttachmentParser.js'),
+    Atlas: require('./Atlas.js'),
+    AtlasPage: require('./AtlasPage.js'),
+    AtlasReader: require('./AtlasReader.js'),
+    AtlasRegion: require('./AtlasRegion.js'),
+    AttachmentTimeline: require('./AttachmentTimeline.js'),
+    AttachmentType: require('./AttachmentType.js'),
+    BoneData: require('./BoneData.js'),
+    Bone: require('./Bone.js'),
+    BoundingBoxAttachment: require('./BoundingBoxAttachment.js'),
+    ColorTimeline: require('./ColorTimeline.js'),
+    Curves: require('./Curves.js'),
+    DrawOrderTimeline: require('./DrawOrderTimeline.js'),
+    EventData: require('./EventData.js'),
+    Event: require('./Event.js'),
+    EventTimeline: require('./EventTimeline.js'),
+    FfdTimeline: require('./FfdTimeline.js'),
+    FlipXTimeline: require('./FlipXTimeline.js'),
+    FlipYTimeline: require('./FlipYTimeline.js'),
+    IkConstraintData: require('./IkConstraintData.js'),
+    IkConstraint: require('./IkConstraint.js'),
+    IkConstraintTimeline: require('./IkConstraintTimeline.js'),
+    MeshAttachment: require('./MeshAttachment.js'),
+    RegionAttachment: require('./RegionAttachment.js'),
+    RotateTimeline: require('./RotateTimeline.js'),
+    ScaleTimeline: require('./ScaleTimeline.js'),
+    SkeletonBounds: require('./SkeletonBounds.js'),
+    SkeletonData: require('./SkeletonData.js'),
+    Skeleton: require('./Skeleton.js'),
+    SkeletonJsonParser: require('./SkeletonJsonParser.js'),
+    Skin: require('./Skin.js'),
+    SkinnedMeshAttachment: require('./SkinnedMeshAttachment.js'),
+    SlotData: require('./SlotData.js'),
+    Slot: require('./Slot.js'),
+    TrackEntry: require('./TrackEntry.js'),
+    TranslateTimeline: require('./TranslateTimeline.js')
 };
-spine.Animation = require('./Animation.js');
-spine.AnimationStateData = require('./AnimationStateData.js');
-spine.AnimationState = require('./AnimationState.js');
-spine.AtlasAttachmentParser = require('./AtlasAttachmentParser.js');
-spine.Atlas = require('./Atlas.js');
-spine.AtlasPage = require('./AtlasPage.js');
-spine.AtlasReader = require('./AtlasReader.js');
-spine.AtlasRegion = require('./AtlasRegion.js');
-spine.AttachmentTimeline = require('./AttachmentTimeline.js');
-spine.AttachmentType = require('./AttachmentType.js');
-spine.BoneData = require('./BoneData.js');
-spine.Bone = require('./Bone.js');
-spine.BoundingBoxAttachment = require('./BoundingBoxAttachment.js');
-spine.ColorTimeline = require('./ColorTimeline.js');
-spine.Curves = require('./Curves.js');
-spine.DrawOrderTimeline = require('./DrawOrderTimeline.js');
-spine.EventData = require('./EventData.js');
-spine.Event = require('./Event.js');
-spine.EventTimeline = require('./EventTimeline.js');
-spine.FfdTimeline = require('./FfdTimeline.js');
-spine.FlipXTimeline = require('./FlipXTimeline.js');
-spine.FlipYTimeline = require('./FlipYTimeline.js');
-spine.IkConstraintData = require('./IkConstraintData.js');
-spine.IkConstraint = require('./IkConstraint.js');
-spine.IkConstraintTimeline = require('./IkConstraintTimeline.js');
-spine.MeshAttachment = require('./MeshAttachment.js');
-spine.RegionAttachment = require('./RegionAttachment.js');
-spine.RotateTimeline = require('./RotateTimeline.js');
-spine.ScaleTimeline = require('./ScaleTimeline.js');
-spine.SkeletonBounds = require('./SkeletonBounds.js');
-spine.SkeletonData = require('./SkeletonData.js');
-spine.Skeleton = require('./Skeleton.js');
-spine.SkeletonJsonParser = require('./SkeletonJsonParser.js');
-spine.Skin = require('./Skin.js');
-spine.SkinnedMeshAttachment = require('./SkinnedMeshAttachment.js');
-spine.SlotData = require('./SlotData.js');
-spine.Slot = require('./Slot.js');
-spine.TrackEntry = require('./TrackEntry.js');
-spine.TranslateTimeline = require('./TranslateTimeline.js');
 

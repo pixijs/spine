@@ -1,5 +1,5 @@
-var PIXI = require('pixi.js');
-var spine = require('../SpineRuntime');
+var PIXI = require('pixi.js'),
+    spine = require('../SpineRuntime');
 /* Esoteric Software SPINE wrapper for pixi.js */
 spine.Bone.yDown = true;
 /**

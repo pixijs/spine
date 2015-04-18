@@ -1,5 +1,5 @@
 {
-  "name": "pixi-spinejs",
+  "name": "pixi-spine",
   "version": "1.0.0",
   "description": "Spine implementation for pixi v3",
   "author": "Mat Groves",
@@ -18,13 +18,13 @@
     "url": "https://github.com/pixijs/pixi-spine.git"
   },
   "keywords": [
-  	"pixi",
-  	"spine",
-  	"2d",
-  	"render"
+    "pixi",
+    "spine",
+    "2d",
+    "render"
   ],
   "peerDependencies":{
-  	"pixi.js": "^3.0.0-rc4"
+    "pixi.js": "^3.0.0-rc4"
   },
   "scripts": {
     "test": "gulp test",
@@ -52,12 +52,8 @@
     "vinyl-source-stream": "^1.0.0",
     "watchify": "^2.2.1"
   },
-  "dependencies": {
-  	"brfs": "~1.4.0"
-  },
   "browserify": {
     "transform": [
-      "brfs"
     ]
   }
 }
