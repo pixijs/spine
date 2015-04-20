@@ -1,4 +1,4 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
 spine.Bone = function (boneData, skeleton, parent)
 {
     this.data = boneData;
@@ -98,3 +98,4 @@ spine.Bone.prototype = {
     }
 };
 module.exports = spine.Bone;
+

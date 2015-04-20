@@ -1,4 +1,4 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
 spine.Skin = function (name)
 {
     this.name = name;

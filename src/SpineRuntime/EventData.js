@@ -1,4 +1,4 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
 spine.EventData = function (name)
 {
     this.name = name;

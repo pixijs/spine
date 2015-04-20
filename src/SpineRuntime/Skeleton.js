@@ -1,4 +1,7 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.Bone = require('./Bone');
+spine.Slot = require('./Slot');
+spine.IkConstraint = require('./IkConstraint');
 spine.Skeleton = function (skeletonData)
 {
     this.data = skeletonData;

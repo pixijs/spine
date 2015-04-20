@@ -1,4 +1,6 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.Animation = require('./Animation');
+spine.Curves = require('./Curves');
 spine.TranslateTimeline = function (frameCount)
 {
     this.curves = new spine.Curves(frameCount);

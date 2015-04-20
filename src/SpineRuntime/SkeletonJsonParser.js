@@ -1,4 +1,24 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.SkeletonData = require('./SkeletonData');
+spine.BoneData = require('./BoneData');
+spine.IkConstraintData = require('./IkConstraintData');
+spine.SlotData = require('./SlotData');
+spine.Skin = require('./Skin');
+spine.EventData = require('./EventData');
+spine.AttachmentType = require('./AttachmentType');
+spine.ColorTimeline = require('./ColorTimeline');
+spine.AttachmentTimeline = require('./AttachmentTimeline');
+spine.RotateTimeline = require('./RotateTimeline');
+spine.ScaleTimeline = require('./ScaleTimeline');
+spine.TranslateTimeline = require('./TranslateTimeline');
+spine.FlipXTimeline = require('./FlipXTimeline');
+spine.FlipYTimeline = require('./FlipYTimeline');
+spine.IkConstraintTimeline = require('./IkConstraintTimeline');
+spine.FfdTimeline = require('./FfdTimeline');
+spine.DrawOrderTimeline = require('./DrawOrderTimeline');
+spine.EventTimeline = require('./EventTimeline');
+spine.Event = require('./Event');
+spine.Animation = require('./Animation');
 spine.SkeletonJsonParser = function (attachmentLoader)
 {
     this.attachmentLoader = attachmentLoader;

@@ -1,4 +1,8 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.RegionAttachment = require('./RegionAttachment');
+spine.MeshAttachment = require('./MeshAttachment');
+spine.SkinnedMeshAttachment = require('./SkinnedMeshAttachment');
+spine.BoundingBoxAttachment = require('./BoundingBoxAttachment');
 spine.AtlasAttachmentParser = function (atlas)
 {
     this.atlas = atlas;

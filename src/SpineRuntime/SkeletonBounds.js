@@ -1,4 +1,5 @@
 var spine = require('../SpineRuntime') || {};
+spine.AttachmentType = require('./AttachmentType');
 spine.SkeletonBounds = function ()
 {
     this.polygonPool = [];

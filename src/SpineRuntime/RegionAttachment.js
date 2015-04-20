@@ -1,4 +1,5 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.AttachmentType = require('./AttachmentType');
 spine.RegionAttachment = function (name)
 {
     this.name = name;

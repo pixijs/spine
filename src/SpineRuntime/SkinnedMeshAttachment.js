@@ -1,4 +1,5 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil') || {};
+spine.AttachmentType = require('./AttachmentType');
 spine.SkinnedMeshAttachment = function (name)
 {
     this.name = name;

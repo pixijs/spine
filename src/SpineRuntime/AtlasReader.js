@@ -1,4 +1,4 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
 spine.AtlasReader = function (text)
 {
     this.lines = text.split(/\r\n|\r|\n/);

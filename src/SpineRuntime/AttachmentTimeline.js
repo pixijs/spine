@@ -1,4 +1,6 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.Curves = require('./Curves');
+spine.Animation = require('./Animation');
 spine.AttachmentTimeline = function (frameCount)
 {
     this.curves = new spine.Curves(frameCount);

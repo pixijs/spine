@@ -27,51 +27,44 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-var PIXI = require('pixi.js');
-
-var spine = module.exports = {
-    radDeg: 180 / Math.PI,
-    degRad: Math.PI / 180,
-    temp: [],
-    Float32Array: (typeof(Float32Array) === 'undefined') ? Array : Float32Array,
-    Uint16Array: (typeof(Uint16Array) === 'undefined') ? Array : Uint16Array
-};
-spine.Animation = require('./Animation.js');
-spine.AnimationStateData = require('./AnimationStateData.js');
-spine.AnimationState = require('./AnimationState.js');
-spine.AtlasAttachmentParser = require('./AtlasAttachmentParser.js');
-spine.Atlas = require('./Atlas.js');
-spine.AtlasPage = require('./AtlasPage.js');
-spine.AtlasReader = require('./AtlasReader.js');
-spine.AtlasRegion = require('./AtlasRegion.js');
-spine.AttachmentTimeline = require('./AttachmentTimeline.js');
-spine.AttachmentType = require('./AttachmentType.js');
-spine.BoneData = require('./BoneData.js');
-spine.Bone = require('./Bone.js');
-spine.BoundingBoxAttachment = require('./BoundingBoxAttachment.js');
-spine.ColorTimeline = require('./ColorTimeline.js');
-spine.Curves = require('./Curves.js');
-spine.DrawOrderTimeline = require('./DrawOrderTimeline.js');
-spine.EventData = require('./EventData.js');
-spine.Event = require('./Event.js');
-spine.EventTimeline = require('./EventTimeline.js');
-spine.FfdTimeline = require('./FfdTimeline.js');
-spine.FlipXTimeline = require('./FlipXTimeline.js');
-spine.FlipYTimeline = require('./FlipYTimeline.js');
-spine.IkConstraintData = require('./IkConstraintData.js');
-spine.IkConstraint = require('./IkConstraint.js');
-spine.IkConstraintTimeline = require('./IkConstraintTimeline.js');
-spine.MeshAttachment = require('./MeshAttachment.js');
-spine.RegionAttachment = require('./RegionAttachment.js');
-spine.RotateTimeline = require('./RotateTimeline.js');
-spine.ScaleTimeline = require('./ScaleTimeline.js');
-spine.SkeletonBounds = require('./SkeletonBounds.js');
-spine.SkeletonData = require('./SkeletonData.js');
-spine.Skeleton = require('./Skeleton.js');
-spine.SkeletonJsonParser = require('./SkeletonJsonParser.js');
+var spine = require('../SpineUtil');
+spine.Animation = require('./Animation');
+spine.AnimationStateData = require('./AnimationStateData');
+spine.AnimationState = require('./AnimationState');
+spine.AtlasAttachmentParser = require('./AtlasAttachmentParser');
+spine.Atlas = require('./Atlas');
+spine.AtlasPage = require('./AtlasPage');
+spine.AtlasReader = require('./AtlasReader');
+spine.AtlasRegion = require('./AtlasRegion');
+spine.AttachmentTimeline = require('./AttachmentTimeline');
+spine.AttachmentType = require('./AttachmentType');
+spine.BoneData = require('./BoneData');
+spine.Bone = require('./Bone');
+spine.BoundingBoxAttachment = require('./BoundingBoxAttachment');
+spine.ColorTimeline = require('./ColorTimeline');
+spine.Curves = require('./Curves');
+spine.DrawOrderTimeline = require('./DrawOrderTimeline');
+spine.EventData = require('./EventData');
+spine.Event = require('./Event');
+spine.EventTimeline = require('./EventTimeline');
+spine.FfdTimeline = require('./FfdTimeline');
+spine.FlipXTimeline = require('./FlipXTimeline');
+spine.FlipYTimeline = require('./FlipYTimeline');
+spine.IkConstraintData = require('./IkConstraintData');
+spine.IkConstraint = require('./IkConstraint');
+spine.IkConstraintTimeline = require('./IkConstraintTimeline');
+spine.MeshAttachment = require('./MeshAttachment');
+spine.RegionAttachment = require('./RegionAttachment');
+spine.RotateTimeline = require('./RotateTimeline');
+spine.ScaleTimeline = require('./ScaleTimeline');
+spine.SkeletonBounds = require('./SkeletonBounds');
+spine.SkeletonData = require('./SkeletonData');
+spine.Skeleton = require('./Skeleton');
+spine.SkeletonJsonParser = require('./SkeletonJsonParser');
 spine.Skin = require('./Skin.js');
-spine.SkinnedMeshAttachment = require('./SkinnedMeshAttachment.js');
-spine.SlotData = require('./SlotData.js');
-spine.Slot = require('./Slot.js');
-spine.TrackEntry = require('./TrackEntry.js');
-spine.TranslateTimeline = require('./TranslateTimeline.js');
+spine.SkinnedMeshAttachment = require('./SkinnedMeshAttachment');
+spine.SlotData = require('./SlotData');
+spine.Slot = require('./Slot');
+spine.TrackEntry = require('./TrackEntry');
+spine.TranslateTimeline = require('./TranslateTimeline');
+module.exports = spine;

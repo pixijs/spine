@@ -1,4 +1,5 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.TrackEntry = require('./TrackEntry');
 spine.AnimationState = function (stateData)
 {
     this.data = stateData;

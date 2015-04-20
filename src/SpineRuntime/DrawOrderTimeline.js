@@ -1,4 +1,5 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
+spine.Animation = require('./Animation');
 spine.DrawOrderTimeline = function (frameCount)
 {
     this.frames = []; // time, ...

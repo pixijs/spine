@@ -1,4 +1,4 @@
-var spine = require('../SpineRuntime') || {};
+var spine = require('../SpineUtil');
 spine.Curves = function (frameCount)
 {
     this.curves = []; // type, x, y, ...
