@@ -1,7 +1,19 @@
-node_modules
-.DS_Store
-.project
-*.sublime-*
-*.log
+# Sublime Text files
+*.sublime*
+*.*~*.TMP
 
-bin/pixi.dev.js.map
+# OS temp files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Tool temp files
+npm-debug.log
+*.sw*
+*~
+\#*#
+
+# project ignores
+!.gitkeep
+node_modules
+dist
