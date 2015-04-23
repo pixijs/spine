@@ -24,7 +24,11 @@
     "render"
   ],
   "peerDependencies":{
-    "pixi.js": "^3.0.0-rc4"
+    "pixi.js": "^3.0.0"
+  },
+  "dependencies": {
+    "async": "^0.9.0",
+    "resource-loader": "^1.4.2"
   },
   "scripts": {
     "test": "gulp test",

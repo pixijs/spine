@@ -1,7 +1,8 @@
 /**
  * @namespace PIXI.spine
  */
-module.exports = {
+module.exports = require('pixi.js').spine = {
     Spine:          require('./Spine'),
-    SpineRuntime:   require('./SpineRuntime')
+    SpineRuntime:   require('./SpineRuntime'),
+    loaders:        require('./loaders')
 };

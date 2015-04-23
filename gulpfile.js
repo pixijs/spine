@@ -21,7 +21,7 @@ var gulp        = require('gulp'),
 // Specify game project paths for tasks.
 global.paths = {
     src: './src',
-    out: './dist',
+    out: './bin',
     test: './test',
 
     get scripts() { return this.src + '/**/*.js'; },
@@ -34,5 +34,5 @@ requireDir('./gulp/tasks', { recurse: true });
 
 // default task
 gulp.task('default', function (done) {
-    runSeq(['jshint', 'build'], 'test', done);
+    runSeq([/*'jshint',*/ 'build'], 'test', done);
 });
