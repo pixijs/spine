@@ -1,5 +1,5 @@
-var Resource = require('resource-loader').Resource,
-    async = require('async'),
+var Resource = require('pixi.js').loaders.Resource,
+    async = require('pixi.js').utils.async,
     spine = require('../SpineRuntime');
 
 module.exports = function () {
