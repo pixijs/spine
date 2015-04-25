@@ -24,7 +24,7 @@
     "render"
   ],
   "peerDependencies":{
-    "pixi.js": "^3.0.0"
+    "pixi.js": "^3.0.2"
   },
   "dependencies": {
     "async": "^0.9.0",
