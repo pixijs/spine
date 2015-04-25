@@ -9,8 +9,7 @@
  * @namespace PIXI.loaders
  */
 
-var atlasParser = require('./atlasParser'),
-    PIXI = require('pixi.js');
+var atlasParser = require('./atlasParser');
 
 PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
 PIXI.loader.use(atlasParser());
