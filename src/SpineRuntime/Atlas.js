@@ -2,7 +2,7 @@ var spine = require('../SpineUtil');
 spine.AtlasReader = require('./AtlasReader');
 spine.AtlasPage = require('./AtlasPage');
 spine.AtlasRegion = require('./AtlasRegion');
-var PIXI = require('pixi.js');
+
 spine.Atlas = function (atlasText, baseUrl, crossOrigin)
 {
     if (baseUrl && baseUrl.indexOf('/') !== baseUrl.length)
@@ -175,4 +175,3 @@ spine.Atlas.TextureWrap = {
     repeat: 2
 };
 module.exports = spine.Atlas;
-

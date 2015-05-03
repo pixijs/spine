@@ -1,7 +1,9 @@
-var PIXI = require('pixi.js'),
-    spine = require('../SpineRuntime');
+var spine = require('../SpineRuntime');
+var atlasParser = require('../loaders/atlasParser');
+
 /* Esoteric Software SPINE wrapper for pixi.js */
 spine.Bone.yDown = true;
+
 /**
  * A class that enables the you to import and run your spine animations in pixi.
  * The Spine animation data needs to be loaded using either the Loader or a SpineLoader before it can be used by this class
@@ -23,6 +25,11 @@ function Spine(spineData)
     if (!spineData)
     {
         throw new Error('The spineData param is required.');
+    }
+
+    if ((typeof spineData) === "string")
+    {
+        throw new Error('spineData param cant be string. Please use PIXI.spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
     }
 
     /**
@@ -97,6 +104,17 @@ function Spine(spineData)
      * @member {boolean}
      */
     this.autoUpdate = true;
+}
+
+Spine.fromAtlas = function(resourceName) {
+    var skeletonData = atlasParser.AnimCache[resourceName];
+
+    if (!skeletonData)
+    {
+        throw new Error('Spine data "' + resourceName + '" does not exist in the animation cache');
+    }
+
+    return new Spine(skeletonData);
 }
 
 Spine.prototype = Object.create(PIXI.Container.prototype);

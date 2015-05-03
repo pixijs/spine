@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Spine implementation for pixi v3",
   "author": "Mat Groves",
   "contributors": [
@@ -23,8 +23,8 @@
     "2d",
     "render"
   ],
-  "peerDependencies":{
-    "pixi.js": "^3.0.0"
+  "peerDependencies": {
+    "pixi.js": "^3.0.2"
   },
   "dependencies": {
     "async": "^0.9.0",
@@ -57,7 +57,6 @@
     "watchify": "^2.2.1"
   },
   "browserify": {
-    "transform": [
-    ]
+    "transform": []
   }
 }

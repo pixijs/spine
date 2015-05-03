@@ -35,7 +35,7 @@ spine.SkeletonData.prototype = {
         var slots = this.slots;
         for (var i = 0, n = slots.length; i < n; i++)
         {
-            if (slots[i].name == slotName) return slot[i];
+            if (slots[i].name == slotName) return this.slots[i];
         }
         return null;
     },

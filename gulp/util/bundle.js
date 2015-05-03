@@ -24,10 +24,8 @@ function rebundle() {
 function createBundler(args) {
     args = args || {};
     args.debug = true;
-    // args.standalone = 'pixi-spinejs';
-    var bundle = browserify(paths.jsEntry, args);
-    bundle.external('pixi.js');
-    return bundle;
+
+    return browserify(paths.jsEntry, args);
 }
 
 function watch(onUpdate) {

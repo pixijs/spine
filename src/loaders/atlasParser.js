@@ -1,8 +1,8 @@
-var Resource = require('pixi.js').loaders.Resource,
-    async = require('pixi.js').utils.async,
+var Resource = PIXI.loaders.Resource,
+    async = PIXI.utils.async,
     spine = require('../SpineRuntime');
 
-module.exports = function () {
+var atlasParser = module.exports = function () {
     return function (resource, next) {
         // skip if no data, its not json, or it isn't atlas data
         if (!resource.data || !resource.isJson || !resource.data.bones) {
@@ -32,6 +32,8 @@ module.exports = function () {
 
             resource.spineData = skeletonData;
             resource.spineAtlas = spineAtlas;
+            if (atlasParser.enableCaching)
+                atlasParser.AnimCache[resource.name] = resource.spineData;
 
             // Go through each spineAtlas.pages and wait for page.rendererObject (a baseTexture) to
             // load. Once all loaded, then call the next function.
@@ -46,3 +48,6 @@ module.exports = function () {
         });
     };
 };
+
+atlasParser.AnimCache = {};
+atlasParser.enableCaching = true;
