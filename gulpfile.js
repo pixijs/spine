@@ -32,7 +32,11 @@ global.paths = {
 // Require all tasks in gulp/tasks, including subfolders
 requireDir('./gulp/tasks', { recurse: true });
 
-// default task
+// tasks
 gulp.task('default', function (done) {
     runSeq([/*'jshint',*/ 'build'], 'test', done);
 });
+gulp.task('docs', function(done){
+    runSeq(['jsdoc_docs'],done);
+});
+
