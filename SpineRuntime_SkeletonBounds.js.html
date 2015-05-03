@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: SpineRuntime/SkeletonBounds.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: SpineRuntime/SkeletonBounds.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var spine = require('../SpineRuntime') || {};
+spine.AttachmentType = require('./AttachmentType');
+spine.SkeletonBounds = function ()
+{
+    this.polygonPool = [];
+    this.polygons = [];
+    this.boundingBoxes = [];
+};
+spine.SkeletonBounds.prototype = {
+    minX: 0, minY: 0, maxX: 0, maxY: 0,
+    update: function (skeleton, updateAabb)
+    {
+        var slots = skeleton.slots;
+        var slotCount = slots.length;
+        var x = skeleton.x, y = skeleton.y;
+        var boundingBoxes = this.boundingBoxes;
+        var polygonPool = this.polygonPool;
+        var polygons = this.polygons;
+
+        boundingBoxes.length = 0;
+        for (var i = 0, n = polygons.length; i &lt; n; i++)
+            polygonPool.push(polygons[i]);
+        polygons.length = 0;
+
+        for (var i = 0; i &lt; slotCount; i++)
+        {
+            var slot = slots[i];
+            var boundingBox = slot.attachment;
+            if (boundingBox.type != spine.AttachmentType.boundingbox) continue;
+            boundingBoxes.push(boundingBox);
+
+            var poolCount = polygonPool.length, polygon;
+            if (poolCount > 0)
+            {
+                polygon = polygonPool[poolCount - 1];
+                polygonPool.splice(poolCount - 1, 1);
+            } else
+                polygon = [];
+            polygons.push(polygon);
+
+            polygon.length = boundingBox.vertices.length;
+            boundingBox.computeWorldVertices(x, y, slot.bone, polygon);
+        }
+
+        if (updateAabb) this.aabbCompute();
+    },
+    aabbCompute: function ()
+    {
+        var polygons = this.polygons;
+        var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE;
+        for (var i = 0, n = polygons.length; i &lt; n; i++)
+        {
+            var vertices = polygons[i];
+            for (var ii = 0, nn = vertices.length; ii &lt; nn; ii += 2)
+            {
+                var x = vertices[ii];
+                var y = vertices[ii + 1];
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+        this.minX = minX;
+        this.minY = minY;
+        this.maxX = maxX;
+        this.maxY = maxY;
+    },
+    /** Returns true if the axis aligned bounding box contains the point. */
+    aabbContainsPoint: function (x, y)
+    {
+        return x >= this.minX &amp;&amp; x &lt;= this.maxX &amp;&amp; y >= this.minY &amp;&amp; y &lt;= this.maxY;
+    },
+    /** Returns true if the axis aligned bounding box intersects the line segment. */
+    aabbIntersectsSegment: function (x1, y1, x2, y2)
+    {
+        var minX = this.minX, minY = this.minY, maxX = this.maxX, maxY = this.maxY;
+        if ((x1 &lt;= minX &amp;&amp; x2 &lt;= minX) || (y1 &lt;= minY &amp;&amp; y2 &lt;= minY) || (x1 >= maxX &amp;&amp; x2 >= maxX) || (y1 >= maxY &amp;&amp; y2 >= maxY))
+            return false;
+        var m = (y2 - y1) / (x2 - x1);
+        var y = m * (minX - x1) + y1;
+        if (y > minY &amp;&amp; y &lt; maxY) return true;
+        y = m * (maxX - x1) + y1;
+        if (y > minY &amp;&amp; y &lt; maxY) return true;
+        var x = (minY - y1) / m + x1;
+        if (x > minX &amp;&amp; x &lt; maxX) return true;
+        x = (maxY - y1) / m + x1;
+        if (x > minX &amp;&amp; x &lt; maxX) return true;
+        return false;
+    },
+    /** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds. */
+    aabbIntersectsSkeleton: function (bounds)
+    {
+        return this.minX &lt; bounds.maxX &amp;&amp; this.maxX > bounds.minX &amp;&amp; this.minY &lt; bounds.maxY &amp;&amp; this.maxY > bounds.minY;
+    },
+    /** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
+     * efficient to only call this method if {@link #aabbContainsPoint(float, float)} returns true. */
+    containsPoint: function (x, y)
+    {
+        var polygons = this.polygons;
+        for (var i = 0, n = polygons.length; i &lt; n; i++)
+            if (this.polygonContainsPoint(polygons[i], x, y)) return this.boundingBoxes[i];
+        return null;
+    },
+    /** Returns the first bounding box attachment that contains the line segment, or null. When doing many checks, it is usually
+     * more efficient to only call this method if {@link #aabbIntersectsSegment(float, float, float, float)} returns true. */
+    intersectsSegment: function (x1, y1, x2, y2)
+    {
+        var polygons = this.polygons;
+        for (var i = 0, n = polygons.length; i &lt; n; i++)
+            if (polygons[i].intersectsSegment(x1, y1, x2, y2)) return this.boundingBoxes[i];
+        return null;
+    },
+    /** Returns true if the polygon contains the point. */
+    polygonContainsPoint: function (polygon, x, y)
+    {
+        var nn = polygon.length;
+        var prevIndex = nn - 2;
+        var inside = false;
+        for (var ii = 0; ii &lt; nn; ii += 2)
+        {
+            var vertexY = polygon[ii + 1];
+            var prevY = polygon[prevIndex + 1];
+            if ((vertexY &lt; y &amp;&amp; prevY >= y) || (prevY &lt; y &amp;&amp; vertexY >= y))
+            {
+                var vertexX = polygon[ii];
+                if (vertexX + (y - vertexY) / (prevY - vertexY) * (polygon[prevIndex] - vertexX) &lt; x) inside = !inside;
+            }
+            prevIndex = ii;
+        }
+        return inside;
+    },
+    /** Returns true if the polygon contains the line segment. */
+    polygonIntersectsSegment: function (polygon, x1, y1, x2, y2)
+    {
+        var nn = polygon.length;
+        var width12 = x1 - x2, height12 = y1 - y2;
+        var det1 = x1 * y2 - y1 * x2;
+        var x3 = polygon[nn - 2], y3 = polygon[nn - 1];
+        for (var ii = 0; ii &lt; nn; ii += 2)
+        {
+            var x4 = polygon[ii], y4 = polygon[ii + 1];
+            var det2 = x3 * y4 - y3 * x4;
+            var width34 = x3 - x4, height34 = y3 - y4;
+            var det3 = width12 * height34 - height12 * width34;
+            var x = (det1 * width34 - width12 * det2) / det3;
+            if (((x >= x3 &amp;&amp; x &lt;= x4) || (x >= x4 &amp;&amp; x &lt;= x3)) &amp;&amp; ((x >= x1 &amp;&amp; x &lt;= x2) || (x >= x2 &amp;&amp; x &lt;= x1)))
+            {
+                var y = (det1 * height34 - height12 * det2) / det3;
+                if (((y >= y3 &amp;&amp; y &lt;= y4) || (y >= y4 &amp;&amp; y &lt;= y3)) &amp;&amp; ((y >= y1 &amp;&amp; y &lt;= y2) || (y >= y2 &amp;&amp; y &lt;= y1))) return true;
+            }
+            x3 = x4;
+            y3 = y4;
+        }
+        return false;
+    },
+    getPolygon: function (attachment)
+    {
+        var index = this.boundingBoxes.indexOf(attachment);
+        return index == -1 ? null : this.polygons[index];
+    },
+    getWidth: function ()
+    {
+        return this.maxX - this.minX;
+    },
+    getHeight: function ()
+    {
+        return this.maxY - this.minY;
+    }
+};
+module.exports = spine.SkeletonBounds;
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="PIXI.spine.Spine.html">Spine</a></li></ul><h3>Namespaces</h3><ul><li><a href="PIXI.loaders.html">loaders</a></li><li><a href="PIXI.spine.html">spine</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Sun May 03 2015 12:06:06 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
