@@ -31,6 +31,7 @@ spine.Slot.prototype = {
         this.g = data.g;
         this.b = data.b;
         this.a = data.a;
+        this.blendMode = data.blendMode;
 
         var slotDatas = this.bone.skeleton.data.slots;
         for (var i = 0, n = slotDatas.length; i < n; i++)

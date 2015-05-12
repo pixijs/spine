@@ -212,10 +212,10 @@ Spine.prototype.update = function (dt)
             slotContainer.scale.y = bone.worldScaleY;
 
             slotContainer.rotation = -(slot.bone.worldRotation * spine.degRad);
-
+            slot.currentSprite.blendMode = slot.blendMode;
             slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
         }
-        else if (type === spine.AttachmentType.skinnedmesh)
+        else if (type === spine.AttachmentType.skinnedmesh || type === spine.AttachmentType.mesh)
         {
             if (!slot.currentMeshName || slot.currentMeshName !== attachment.name)
             {
@@ -313,13 +313,15 @@ Spine.prototype.createMesh = function (slot, attachment)
     var baseTexture = descriptor.page.rendererObject;
     var texture = new PIXI.Texture(baseTexture);
 
-    var strip = new PIXI.Strip(texture);
-    strip.drawMode = PIXI.Strip.DRAW_MODES.TRIANGLES;
+    var strip = new PIXI.mesh.Mesh(
+        texture,
+        new Float32Array(attachment.uvs.length),
+        new Float32Array(attachment.uvs),
+        new Uint16Array(attachment.triangles),
+        PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
+
     strip.canvasPadding = 1.5;
 
-    strip.vertices = new Float32Array(attachment.uvs.length);
-    strip.uvs = attachment.uvs;
-    strip.indices = attachment.triangles;
     strip.alpha = attachment.a;
 
     slot.meshes = slot.meshes || {};
