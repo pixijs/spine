@@ -109,7 +109,9 @@ spine.SkeletonJsonParser.prototype = {
             }
 
             slotData.attachmentName = slotMap["attachment"];
-            slotData.additiveBlending = slotMap["additive"] && slotMap["additive"] == "true";
+
+
+            slotData.blendMode = slotMap["blend"] && spine.SlotData.PIXI_BLEND_MODE_MAP[slotMap["blend"]] || spine.SlotData.PIXI_BLEND_MODE_MAP['normal'];
 
             skeletonData.slots.push(slotData);
         }
@@ -419,7 +421,7 @@ spine.SkeletonJsonParser.prototype = {
                 frameIndex++;
             }
             timelines.push(timeline);
-            duration = Math.max(duration, timeline.frames[timeline.frameCount * 3 - 3]);
+            duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 3 - 3]);
         }
 
         var ffd = map["ffd"];
@@ -488,7 +490,7 @@ spine.SkeletonJsonParser.prototype = {
                         frameIndex++;
                     }
                     timelines[timelines.length] = timeline;
-                    duration = Math.max(duration, timeline.frames[timeline.frameCount - 1]);
+                    duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
                 }
             }
         }
