@@ -461,12 +461,12 @@ spine.SkeletonJsonParser.prototype = {
                             else
                             {
                                 vertices = [];
-                                for(var j = 0; j < vertexCount; ++j)vertices[j] = 0; //initialize to 0
+                                for(var j = 0; j < vertexCount; ++j)vertices.push(0); //initialize to 0
                             }
                         } else {
                             var verticesValue = valueMap["vertices"];
                             var vertices = [];
-                            for(var j = 0; j < vertexCount; ++j)vertices[j] = 0; //initialize to 0
+                            for(var j = 0; j < vertexCount; ++j)vertices.push(0); //initialize to 0
                             var start = valueMap["offset"] || 0;
                             var nn = verticesValue.length;
                             if (this.scale == 1)
