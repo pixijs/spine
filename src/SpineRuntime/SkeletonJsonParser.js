@@ -461,7 +461,7 @@ spine.SkeletonJsonParser.prototype = {
                             else
                             {
                                 vertices = [];
-                                vertices.length = vertexCount;
+                                for(var j = 0; j < vertexCount; ++j)vertices[j] = 0; //initialize to 0
                             }
                         } else {
                             var verticesValue = valueMap["vertices"];
