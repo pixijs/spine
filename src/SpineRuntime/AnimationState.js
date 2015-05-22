@@ -189,10 +189,12 @@ spine.AnimationState.prototype = {
 
         if (delay <= 0)
         {
-            if (last)
-                delay += last.endTime - this.data.getMix(last.animation, animation);
-            else
-                delay = 0;
+            if (last && last.lastTime === -1) //if lastTime === -1 animation is not started, we dont want to use endtime - (-1) it will result in pause when adding animation
+               delay = last.endTime - this.data.getMix(last.animation, animation);
+           else if (last)
+               delay += (last.endTime - last.lastTime) - this.data.getMix(last.animation, animation);
+           else
+               delay = 0;
         }
         entry.delay = delay;
 
