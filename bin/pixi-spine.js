@@ -1180,11 +1180,12 @@ spine.FfdTimeline.prototype = {
         var vertexCount = frameVertices[0].length;
 
         var vertices = slot.attachmentVertices;
-        if (vertices.length != vertexCount) alpha = 1;
+        if (vertices.length != vertexCount) alpha = 1;// Don't mix from uninitialized slot vertices.
         
-        if(vertices.length < vertexCount){
-            for(var k = vertices.length; k < vertexCount; k++) vertices.push(0);
-        } 
+        //re init all vertices to 0 
+        vertices = []
+        for(var k = 0; k < vertexCount; k++) vertices.push(0);
+                
 
         if (time >= frames[frames.length - 1])
         { // Time is after last frame.
@@ -3084,16 +3085,16 @@ spine.SlotData = function (name, boneData)
 };
 
 spine.SlotData.PIXI_BLEND_MODE_MAP = {
-    'multiply': PIXI.blendModes.MULTIPLY,
-    'screen': PIXI.blendModes.SCREEN,
-    'additive': PIXI.blendModes.ADD,
-    'normal': PIXI.blendModes.NORMAL
+    'multiply': PIXI.BLEND_MODES.MULTIPLY,
+    'screen': PIXI.BLEND_MODES.SCREEN,
+    'additive': PIXI.BLEND_MODES.ADD,
+    'normal': PIXI.BLEND_MODES.NORMAL
 };
 
 spine.SlotData.prototype = {
     r: 1, g: 1, b: 1, a: 1,
     attachmentName: null,
-    blendMode: PIXI.blendModes.NORMAL
+    blendMode: PIXI.BLEND_MODES.NORMAL
 
 
 };
