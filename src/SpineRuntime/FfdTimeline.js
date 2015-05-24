@@ -33,12 +33,12 @@ spine.FfdTimeline.prototype = {
         var vertexCount = frameVertices[0].length;
 
         var vertices = slot.attachmentVertices;
-        if (vertices.length != vertexCount) alpha = 1;// Don't mix from uninitialized slot vertices.
-        
-        //re init all vertices to 0 
-        vertices = []
-        for(var k = 0; k < vertexCount; k++) vertices.push(0);
-                
+        if (vertices.length != vertexCount) {
+            vertices = slot.attachmentVertices = [];
+            for (var k = 0; k < vertexCount; k++) vertices.push(0);
+            // Don't mix from uninitialized slot vertices.
+            alpha = 1;
+        }
 
         if (time >= frames[frames.length - 1])
         { // Time is after last frame.
