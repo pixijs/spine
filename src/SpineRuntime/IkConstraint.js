@@ -32,7 +32,8 @@ spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
 {
     var parentRotation = (!bone.data.inheritRotation || !bone.parent) ? 0 : bone.parent.worldRotation;
     var rotation = bone.rotation;
-    var rotationIK = Math.atan2(targetY - bone.worldY, targetX - bone.worldX) * spine.radDeg - parentRotation;
+    // worldY and targetY sign depends on global constant spine.Bone.yDown
+    var rotationIK = (spine.Bone.yDown?-spine.radDeg:spine.radDeg)* Math.atan2(targetY - bone.worldY, targetX - bone.worldX) - parentRotation;
     bone.rotationIK = rotation + (rotationIK - rotation) * alpha;
 };
 /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
