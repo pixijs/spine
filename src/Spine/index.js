@@ -210,8 +210,15 @@ Spine.prototype.update = function (dt)
             slotContainer.position.y = bone.worldY + attachment.x * bone.m10 + attachment.y * bone.m11;
             slotContainer.scale.x = bone.worldScaleX;
             slotContainer.scale.y = bone.worldScaleY;
-
             slotContainer.rotation = -(slot.bone.worldRotation * spine.degRad);
+            if (bone.worldFlipX) {
+                slotContainer.scale.x = -slotContainer.scale.x;
+                slotContainer.rotation = -slotContainer.rotation;
+            }
+            if (bone.worldFlipY == spine.Bone.yDown) {
+                slotContainer.scale.y = -slotContainer.scale.y;
+                slotContainer.rotation = -slotContainer.rotation;
+            }
             slot.currentSprite.blendMode = slot.blendMode;
             slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
         }
