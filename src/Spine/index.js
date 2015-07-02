@@ -289,7 +289,7 @@ Spine.prototype.createSprite = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
     var baseTexture = descriptor.page.rendererObject;
-    var spriteRect = new PIXI.math.Rectangle(descriptor.x,
+    var spriteRect = new PIXI.Rectangle(descriptor.x,
                                         descriptor.y,
                                         descriptor.rotate ? descriptor.height : descriptor.width,
                                         descriptor.rotate ? descriptor.width : descriptor.height);
