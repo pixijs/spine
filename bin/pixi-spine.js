@@ -2674,7 +2674,7 @@ spine.SkeletonJsonParser.prototype = {
                 {
                     var x = timelineName == "flipX";
                     var timeline = x ? new spine.FlipXTimeline(values.length) : new spine.FlipYTimeline(values.length);
-                        timeline.boneIndex = boneIndex;
+                    timeline.boneIndex = boneIndex;
 
                     var field = x ? "x" : "y";
                     var frameIndex = 0;
@@ -3546,7 +3546,7 @@ Spine.prototype.createSprite = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
     var baseTexture = descriptor.page.rendererObject;
-    var spriteRect = new PIXI.math.Rectangle(descriptor.x,
+    var spriteRect = new PIXI.Rectangle(descriptor.x,
                                         descriptor.y,
                                         descriptor.rotate ? descriptor.height : descriptor.width,
                                         descriptor.rotate ? descriptor.width : descriptor.height);
