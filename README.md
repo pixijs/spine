@@ -35,6 +35,16 @@ PIXI.loader
     });
 ```
 
+### How to use spine events
+
+```js
+// animation is the instantiated pixi-spine object
+
+animation.state.onEvent = function(i, event) {
+  console.log('event fired!', i, event);
+};
+```
+
 ## Building
 
 You will need to have [node][node] and [gulp][gulp] setup on your machine.
