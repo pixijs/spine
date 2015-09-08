@@ -297,10 +297,11 @@ Spine.prototype.createSprite = function (slot, attachment)
     var sprite = new PIXI.Sprite(spriteTexture);
 
     var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
-    sprite.scale.x = descriptor.width / descriptor.originalWidth * attachment.scaleX;
-    sprite.scale.y = descriptor.height / descriptor.originalHeight * attachment.scaleY;
+    sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
+    sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
     sprite.rotation = baseRotation - (attachment.rotation * spine.degRad);
-    sprite.anchor.x = sprite.anchor.y = 0.5;
+    sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / spriteRect.width;
+    sprite.anchor.y = (0.5 * descriptor.originalHeight - descriptor.offsetY) / spriteRect.height;
     sprite.alpha = attachment.a;
 
     slot.sprites = slot.sprites || {};
