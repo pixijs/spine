@@ -5,7 +5,7 @@ spine.AtlasRegion = require('./AtlasRegion');
 
 spine.Atlas = function (atlasText, baseUrl, crossOrigin)
 {
-    if (baseUrl && baseUrl.indexOf('/') !== baseUrl.length)
+    if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length-1))
     {
         baseUrl += '/';
     }
