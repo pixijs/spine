@@ -300,8 +300,8 @@ Spine.prototype.createSprite = function (slot, attachment)
     sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
     sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
     sprite.rotation = baseRotation - (attachment.rotation * spine.degRad);
-    sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / spriteRect.width;
-    sprite.anchor.y = (0.5 * descriptor.originalHeight - descriptor.offsetY) / spriteRect.height;
+    sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
+    sprite.anchor.y = (0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height;
     sprite.alpha = attachment.a;
 
     slot.sprites = slot.sprites || {};
