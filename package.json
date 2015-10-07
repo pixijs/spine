@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Spine implementation for pixi v3",
   "author": "Mat Groves",
   "contributors": [
