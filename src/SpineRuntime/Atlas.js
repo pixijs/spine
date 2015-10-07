@@ -16,6 +16,7 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
     this.texturesLoading = 0;
 
     var self = this;
+    var resolution = PIXI.utils.getResolutionOfUrl(baseUrl);
 
     var reader = new spine.AtlasReader(atlasText);
     var tuple = [];
@@ -67,12 +68,12 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
             region.rotate = reader.readValue() == "true";
 
             reader.readTuple(tuple);
-            var x = parseInt(tuple[0]);
-            var y = parseInt(tuple[1]);
+            var x = parseInt(tuple[0]) / resolution;
+            var y = parseInt(tuple[1]) / resolution;
 
             reader.readTuple(tuple);
-            var width = parseInt(tuple[0]);
-            var height = parseInt(tuple[1]);
+            var width = parseInt(tuple[0]) / resolution;
+            var height = parseInt(tuple[1]) / resolution;
 
             region.u = x / page.width;
             region.v = y / page.height;
@@ -101,12 +102,12 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
                 }
             }
 
-            region.originalWidth = parseInt(tuple[0]);
-            region.originalHeight = parseInt(tuple[1]);
+            region.originalWidth = parseInt(tuple[0]) / resolution;
+            region.originalHeight = parseInt(tuple[1]) / resolution;
 
             reader.readTuple(tuple);
-            region.offsetX = parseInt(tuple[0]);
-            region.offsetY = parseInt(tuple[1]);
+            region.offsetX = parseInt(tuple[0]) / resolution;
+            region.offsetY = parseInt(tuple[1]) / resolution;
 
             region.index = parseInt(reader.readValue());
 
