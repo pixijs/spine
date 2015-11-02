@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
+    "gulp-mocha": "^2.1.3",
     "resource-loader": "^1.4.2"
   },
   "scripts": {
@@ -42,7 +43,6 @@
     "gulp": "^3.8.10",
     "gulp-cached": "^1.1.0",
     "gulp-jshint": "^1.11.2",
-    "gulp-mirror": "^0.4.0",
     "gulp-mirror": "^0.4.0",
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
