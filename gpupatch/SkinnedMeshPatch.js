@@ -150,19 +150,22 @@ function patchPixiSpine(options) {
             bones = skeleton.bones,
             bonesArr = b.bonesArr;
         var drawMode = gl.TRIANGLES;
+        var bonesMode = spineData.skinnedMeshBonesMode;
 
-        var sz = 0;
-        for (var i = 0; i < bones.length; i++) {
-            var bone = bones[i];
-            bonesArr[sz++] = bone.m00;
-            bonesArr[sz++] = bone.m10;
-            bonesArr[sz++] = 0;
-            bonesArr[sz++] = bone.m01;
-            bonesArr[sz++] = bone.m11;
-            bonesArr[sz++] = 0;
-            bonesArr[sz++] = bone.worldX;
-            bonesArr[sz++] = bone.worldY;
-            bonesArr[sz++] = 1;
+        if (!bonesMode) {
+            var sz = 0;
+            for (var i = 0; i < bones.length; i++) {
+                var bone = bones[i];
+                bonesArr[sz++] = bone.m00;
+                bonesArr[sz++] = bone.m10;
+                bonesArr[sz++] = 0;
+                bonesArr[sz++] = bone.m01;
+                bonesArr[sz++] = bone.m11;
+                bonesArr[sz++] = 0;
+                bonesArr[sz++] = bone.worldX;
+                bonesArr[sz++] = bone.worldY;
+                bonesArr[sz++] = 1;
+            }
         }
 
         var tm = shader.uniforms.projectionMatrix;
@@ -192,7 +195,7 @@ function patchPixiSpine(options) {
                 uTint.value[1] != slot.g * slot.a ||
                 uTint.value[2] != slot.b * slot.a;
             //handle the batch
-            var batchEnd = batchFinish < 0 || batchFinish != attachment.skinnedMeshIndex
+            var batchEnd = bonesMode || batchFinish < 0 || batchFinish != attachment.skinnedMeshIndex
                 || texture !== this._prevTexture || tintChanged;
 
             if (slot.ffdMix) {
@@ -253,6 +256,25 @@ function patchPixiSpine(options) {
                 }
                 gl.uniform4fv(ffdAlpha._location, ffdAlpha.value);
             }
+            //BONES MODE
+            if (bonesMode) {
+                var bonesIndices = attachment.bonesIndices;
+                var sz = 0;
+                for (var j = 0; j < bonesIndices.length; j++) {
+                    var bone = bones[bonesIndices[j]];
+                    bonesArr[sz++] = bone.m00;
+                    bonesArr[sz++] = bone.m10;
+                    bonesArr[sz++] = 0;
+                    bonesArr[sz++] = bone.m01;
+                    bonesArr[sz++] = bone.m11;
+                    bonesArr[sz++] = 0;
+                    bonesArr[sz++] = bone.worldX;
+                    bonesArr[sz++] = bone.worldY;
+                    bonesArr[sz++] = 1;
+                }
+                shader.uniforms.boneGlobalMatrices.value = bonesArr;
+                gl.uniformMatrix3fv(shader.uniforms.boneGlobalMatrices._location, false, bonesArr);
+            }
         }
         if (batchFinish >= 0) {
             gl.drawElements(drawMode, batchFinish - batchStart, gl.UNSIGNED_SHORT, batchStart * 2);
@@ -269,9 +291,21 @@ function patchPixiSpine(options) {
             uv: gl.createBuffer(),
             skin: gl.createBuffer(),
             ib: gl.createBuffer(),
-            bonesArr: new Float32Array(spineData.bones.length * this.boneSize),
             data: []
         };
+
+        var maxBones = spineData.bones.length;
+        var shader = renderer.shaderManager.plugins.skinnedMeshShader;
+        var bonesMode = spineData.skinnedMeshBonesMode = (maxBones > shader.maxBones)?1:0;
+        if (bonesMode) {
+            maxBones = 1;
+        }
+
+
+        else {
+            bonesArr = new Float32Array(spineData.bones.length * this.boneSize);
+        }
+
 
         var attachments = [];
         for (var i = 0; i < spineData.skins.length; i++) {
@@ -345,6 +379,24 @@ function patchPixiSpine(options) {
                 for (var j = 0; j < triangles.length; j++) {
                     indices[isize++] = triangles[j] + v0 / 2;
                 }
+                if (bonesMode) {
+                    var bonesSet = {};
+                    var bonesIndices = attachment.bonesIndices = [];
+                    var bonesNum = 0;
+                    for (var s1 = s0; s1<ssize;s1+=4) {
+                        var ss = skin[s1];
+                        if (bonesMode && !bonesSet[ss]) {
+                            bonesIndices.push(ss);
+                            bonesSet[ss] = ++bonesNum;
+                        }
+                        skin[s1] = bonesSet[ss]-1;
+                    }
+                    maxBones = Math.max(maxBones, bonesNum);
+                    if (bonesNum > shader.maxBones) {
+                        console.log("SkinnedMeshRenderer at slot "+ a.meshSlot+" : It seems that your attachment '" + attachment.name
+                            + "' depends on too many bones, more than " + shader.maxBones + ". I'm terribly sorry, but it will look like shit.");
+                    }
+                }
             } else if (attachment.type == spine.AttachmentType.mesh) {
                 var mesh = attachment;
                 var uvs = mesh.uvs;
@@ -360,6 +412,9 @@ function patchPixiSpine(options) {
                 var triangles = mesh.triangles;
                 for (var j = 0; j < triangles.length; j++) {
                     indices[isize++] = triangles[j] + v0 / 2;
+                }
+                if (bonesMode) {
+                    attachment.bonesIndices = [boneId];
                 }
             } else {
                 //sprite
@@ -380,12 +435,16 @@ function patchPixiSpine(options) {
                 indices[isize++] = v0 / 2 + 2;
                 indices[isize++] = v0 / 2 + 3;
                 indices[isize++] = v0 / 2 + 0;
+                if (bonesMode) {
+                    attachment.bonesIndices = [boneId];
+                }
             }
             attachment.skinnedMeshSkinOffset = s0;
             attachment.skinnedMeshSkinSize = ssize - s0;
             attachment.skinnedMeshIndex = i0;
             attachment.skinnedMeshIndexSize = isize - i0;
         }
+        buf.bonesArr = new Float32Array(9 * maxBones);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.uv);
         gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.skin);
@@ -584,8 +643,17 @@ function patchPixiSpine(options) {
         this.skeleton.updateWorldTransform();
     };
 
+    core.spine.Spine.prototype.getLocalBounds = function() {
+        if (!this.spineData.skinnedMeshId || this.children.length != 0)
+            return PIXI.Container.prototype.getLocalBounds.call(this);
+        up.call(this, 0);
+        var bounds = PIXI.Container.prototype.getLocalBounds.call(this);
+        this.children.length=0;
+        return bounds;
+    };
+
     core.spine.Spine.prototype.getBounds = function() {
-        if (!this.parent)
+        if (!this.spineData.skinnedMeshId || !this.parent)
             return core.Container.prototype.getBounds.call(this);
         var now = Date.now();
         var old = now - boundaryCacheLag;
@@ -604,7 +672,7 @@ function patchPixiSpine(options) {
         if (!this.getBounds().contains(point.x, point.y))
             return false;
         var skeleton = this.skeleton;
-        var boundsUpdated = false;
+        var boundsUpdated = !this.spineData.skinnedMeshId;
         for (var i=0;i<skeleton.slots.length;i++) {
             var slot = skeleton.slots[i];
             if (slot.attachment) {
