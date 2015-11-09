@@ -1,10 +1,10 @@
 /**
  * @author Ivan Popelyshev
  *
- * This thing computates SkinnedMesh on server-side
+ * This thing computates SkinnedMesh on shader-side
  */
 
-function patchPixiSpine() {
+function patchPixiSpine(options) {
 
     var core = PIXI;
     var spine = core.spine.SpineRuntime;
@@ -44,18 +44,16 @@ function patchPixiSpine() {
                 'precision lowp float;',
 
                 'varying vec2 vTextureCoord;',
-                //'uniform vec3 tint;',
-                //'uniform float alpha;',
+                'uniform vec4 tintAlpha;',
 
                 'uniform sampler2D uSampler;',
 
                 'void main(void){',
-                '   gl_FragColor = texture2D(uSampler, vTextureCoord);',
+                '   gl_FragColor = texture2D(uSampler, vTextureCoord) * tintAlpha;',
                 '}'
             ].join('\n'),
             {
-                /*tint: {type: '3f', value: [0, 0, 0]},
-                 alpha: {type: '1f', value: 0},*/
+                tintAlpha: {type: '4f', value: [1, 1, 1, 1]},
                 uSampler: {type: 'sampler2D', value: 0},
                 ffdAlpha: {type: '4fv', value: new Float32Array(4)},
                 projectionMatrix: {type: 'mat3', value: new Float32Array(9)},
@@ -74,7 +72,7 @@ function patchPixiSpine() {
                 aFfd31: 0,
                 aFfd32: 0,
                 aFfd41: 0,
-                aFfd42: 0
+                aFfd42: 0,
             }
         );
         this.ffdAttrName = ["aFfd11", "aFfd12", "aFfd21", "aFfd22", "aFfd31", "aFfd32", "aFfd41", "aFfd42"];
@@ -174,8 +172,10 @@ function patchPixiSpine() {
         tm.value = this._globalMat.toArray(true);
         shader.uniforms.boneGlobalMatrices.value = bonesArr;
         shader.syncUniforms();
+        var uTint = shader.uniforms.tintAlpha;
 
         var batchStart = 0, batchFinish = -1;
+        var tint = new Float32Array(4);
 
         var slots = skeleton.slots;
         var drawOrder = skeleton.drawOrder;
@@ -186,9 +186,15 @@ function patchPixiSpine() {
             var attachment = slot.attachment;
             if (!attachment || typeof attachment.skinnedMeshIndex === "undefined") continue;
 
-            //handle the batch
             var texture = attachment.rendererObject.page.rendererObject;
-            var batchEnd = batchFinish < 0 || texture !== this._prevTexture || batchFinish != attachment.skinnedMeshIndex;
+            var tintChanged = uTint.value[3] != slot.a ||
+                uTint.value[0] != slot.r * slot.a ||
+                uTint.value[1] != slot.g * slot.a ||
+                uTint.value[2] != slot.b * slot.a;
+            //handle the batch
+            var batchEnd = batchFinish < 0 || batchFinish != attachment.skinnedMeshIndex
+                || texture !== this._prevTexture || tintChanged;
+
             if (slot.ffdMix) {
                 for (var j = 0; j < 8; j += 2) {
                     if (slot.ffdMix[j]) {
@@ -219,6 +225,13 @@ function patchPixiSpine() {
                     gl.bindTexture(gl.TEXTURE_2D, texture._glTextures[gl.id]);
                 }
                 this._prevTexture = texture;
+            }
+            if (tintChanged) {
+                uTint.value[3] = slot.a;
+                uTint.value[0] = slot.r * slot.a;
+                uTint.value[1] = slot.g * slot.a;
+                uTint.value[2] = slot.b * slot.a;
+                gl.uniform4fv(uTint._location, uTint.value);
             }
             if (!ffdSet) {
                 var ffdAlpha = shader.uniforms.ffdAlpha;
@@ -486,15 +499,6 @@ function patchPixiSpine() {
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
     };
 
-
-    /**
-     * Empties the current batch.
-     *
-     */
-    SpineMeshRenderer.prototype.flush = function () {
-
-    };
-
     /**
      * Starts a new mesh renderer.
      *
@@ -514,6 +518,10 @@ function patchPixiSpine() {
         this._prevSkeleton = null;
     };
 
+    /**
+     * Empties the current batch.
+     *
+     */
     SpineMeshRenderer.prototype.flush = function () {
         this._prevTexture = null;
         this._prevSkeleton = null;
@@ -556,13 +564,66 @@ function patchPixiSpine() {
 
     //TODO: add new interaction check
 
-    core.spine.Spine.prototype.renderWebGL = function (renderer) {
-        for (var i = 0; i < this.children.length; i++)
-            this.children[i].visible = false;
+    core.spine.Spine.prototype._renderWebGL = function (renderer) {
+        this.children.length = 0;
         var plugin = renderer.plugins.spineMesh;
         renderer.setObjectRenderer(plugin);
         plugin.render(this);
     };
+
+    var boundaryCacheLag = options.boundaryCacheLag;
+
+    var up = core.spine.Spine.prototype.update;
+    core.spine.Spine.prototype.update = function (dt) {
+        if (!this.spineData.skinnedMeshId) {
+            //update? why?
+            return up.call(this, dt);
+        }
+        this.state.update(dt);
+        this.state.apply(this.skeleton);
+        this.skeleton.updateWorldTransform();
+    };
+
+    core.spine.Spine.prototype.getBounds = function() {
+        var now = Date.now();
+        var old = now - boundaryCacheLag;
+        var hasFilter = this._mask || this._filters && this._filters.length;
+        if (hasFilter || !this._boundsCache || this._boundsCacheTime < old || this._boundsCacheTime > now) {
+            up.call(this, 0);
+            PIXI.Container.prototype.updateTransform.call(this);
+            this._boundsCache = core.Container.prototype.getBounds.call(this);
+            this._boundsCacheTime = now;
+            this.children.length=0;
+        }
+        return this._boundsCache;
+    };
+
+    core.spine.Spine.prototype.containsPoint = function(point) {
+        if (!this.getBounds().contains(point.x, point.y))
+            return false;
+        var skeleton = this.skeleton;
+        var boundsUpdated = false;
+        for (var i=0;i<skeleton.slots.length;i++) {
+            var slot = skeleton.slots[i];
+            if (slot.attachment) {
+                var ch = slot.currentSprite || slot.currentMesh;
+                if (ch) {
+                    if (ch.visible && !ch._currentBounds) {
+                        //update bounds in this tick!
+                        if (!boundsUpdated) {
+                            this._boundsCache = null;
+                            this.getBounds();
+                            boundsUpdated = true;
+                        }
+                    }
+                    if (ch.containsPoint(point)) return true;
+                }
+            }
+        }
+        return false;
+    };
 }; // end patch pixi spine
 
-patchPixiSpine();
+patchPixiSpine( {
+    boundaryCacheLag: 200 //getBounds() cache lag in millis
+});
