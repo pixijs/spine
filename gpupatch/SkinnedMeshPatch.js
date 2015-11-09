@@ -585,7 +585,7 @@ function patchPixiSpine(options) {
     };
 
     core.spine.Spine.prototype.getBounds = function() {
-        if (this.parent == null)
+        if (!this.parent)
             return core.Container.prototype.getBounds.call(this);
         var now = Date.now();
         var old = now - boundaryCacheLag;
