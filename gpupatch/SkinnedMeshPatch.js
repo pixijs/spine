@@ -650,8 +650,12 @@ function patchPixiSpine(options) {
     };
 
     core.spine.Spine.prototype.getLocalBounds = function() {
-        if (!this.spineData.skinnedMeshId || this.children.length != 0)
+        if (!this.spineData.skinnedMeshId)
             return PIXI.Container.prototype.getLocalBounds.call(this);
+        for (var i=0;i<this.slotContainers.length;i++)
+            if (this.slotContainers[i].visible) {
+                return PIXI.Container.prototype.getLocalBounds.call(this);
+            }
         up.call(this, 0);
         var bounds = PIXI.Container.prototype.getLocalBounds.call(this);
         this.hideSlots();
