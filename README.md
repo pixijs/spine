@@ -59,3 +59,7 @@ That will output the built distributables to `./dist`.
 
 [node]:       http://nodejs.org/
 [gulp]:       http://gulpjs.com/
+
+## Typescript
+
+Typescript definition file for pixi-spine is available in [pixi-typescript](https://github.com/pixijs/pixi-typescript)
