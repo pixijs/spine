@@ -300,6 +300,13 @@ function patchPixiSpine(options) {
         if (bonesMode) {
             maxBones = 1;
         }
+
+
+        else {
+            bonesArr = new Float32Array(spineData.bones.length * this.boneSize);
+        }
+
+
         var attachments = [];
         for (var i = 0; i < spineData.skins.length; i++) {
             var att = spineData.skins[i].attachments;
@@ -437,7 +444,7 @@ function patchPixiSpine(options) {
             attachment.skinnedMeshIndex = i0;
             attachment.skinnedMeshIndexSize = isize - i0;
         }
-        buf.bonesArr = new Float32Array(9 * this.boneSize);
+        buf.bonesArr = new Float32Array(9 * maxBones);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.uv);
         gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.skin);
@@ -616,8 +623,14 @@ function patchPixiSpine(options) {
 
     //TODO: add new interaction check
 
+    core.spine.Spine.prototype.hideSlots = function() {
+        for (var i=0;i<this.slotContainers.length;i++) {
+            this.slotContainers[i].visible = false;
+        }
+    }
+
     core.spine.Spine.prototype._renderWebGL = function (renderer) {
-        this.children.length = 0;
+        this.hideSlots();
         var plugin = renderer.plugins.spineMesh;
         renderer.setObjectRenderer(plugin);
         plugin.render(this);
@@ -641,7 +654,7 @@ function patchPixiSpine(options) {
             return PIXI.Container.prototype.getLocalBounds.call(this);
         up.call(this, 0);
         var bounds = PIXI.Container.prototype.getLocalBounds.call(this);
-        this.children.length=0;
+        this.hideSlots();
         return bounds;
     };
 
@@ -656,7 +669,7 @@ function patchPixiSpine(options) {
             PIXI.Container.prototype.updateTransform.call(this);
             this._boundsCache = core.Container.prototype.getBounds.call(this);
             this._boundsCacheTime = now;
-            this.children.length=0;
+            this.hideSlots();
         }
         return this._boundsCache;
     };
