@@ -300,13 +300,6 @@ function patchPixiSpine(options) {
         if (bonesMode) {
             maxBones = 1;
         }
-
-
-        else {
-            bonesArr = new Float32Array(spineData.bones.length * this.boneSize);
-        }
-
-
         var attachments = [];
         for (var i = 0; i < spineData.skins.length; i++) {
             var att = spineData.skins[i].attachments;
@@ -444,7 +437,7 @@ function patchPixiSpine(options) {
             attachment.skinnedMeshIndex = i0;
             attachment.skinnedMeshIndexSize = isize - i0;
         }
-        buf.bonesArr = new Float32Array(9 * maxBones);
+        buf.bonesArr = new Float32Array(9 * this.boneSize);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.uv);
         gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.skin);
