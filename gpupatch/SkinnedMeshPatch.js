@@ -10,8 +10,9 @@ function patchPixiSpine(options) {
     var spine = core.spine.SpineRuntime;
 
     function SkinnedMeshShader(shaderManager) {
-
-        this.maxBones = 64;
+        var gl = shaderManager.renderer.gl;
+        var nVertexUniforms = gl.getParameter( gl.MAX_VERTEX_UNIFORM_VECTORS );
+        this.maxBones = Math.min(128, ((nVertexUniforms-10) / 3) | 0);
         core.Shader.call(this,
             shaderManager,
             // vertex shader
