@@ -12,7 +12,7 @@ function patchPixiSpine(options) {
     function SkinnedMeshShader(shaderManager) {
         var gl = shaderManager.renderer.gl;
         var nVertexUniforms = gl.getParameter( gl.MAX_VERTEX_UNIFORM_VECTORS );
-        this.maxBones = Math.min(128, ((nVertexUniforms-10) / 3) | 0);
+        this.maxBones = Math.min(128, ((nVertexUniforms-10) / 2) | 0);
         core.Shader.call(this,
             shaderManager,
             // vertex shader
@@ -22,21 +22,30 @@ function patchPixiSpine(options) {
                 'attribute vec4 aSkin0, aSkin1, aSkin2, aSkin3;',
                 'attribute vec4 aFfd11, aFfd12, aFfd21, aFfd22, aFfd31, aFfd32, aFfd41, aFfd42;',
                 'uniform mat3 projectionMatrix;',
-                'uniform mat3 boneGlobalMatrices[' + this.maxBones + '];',
+                'uniform vec3 boneGlobalMatrices[' + this.maxBones*2 + '];',
                 'uniform vec4 ffdAlpha;',
                 'varying vec2 vTextureCoord;',
 
                 'void main(void){',
                 '   vec2 ffd[4];',
+                '   vec3 skin[4];',
                 '   ffd[0] = aFfd11.xy * ffdAlpha[0] + aFfd21.xy * ffdAlpha[1] + aFfd31.xy * ffdAlpha[2] + aFfd41.xy * ffdAlpha[3];',
                 '   ffd[1] = aFfd11.zw * ffdAlpha[0] + aFfd21.zw * ffdAlpha[1] + aFfd31.zw * ffdAlpha[2] + aFfd41.zw * ffdAlpha[3];',
                 '   ffd[2] = aFfd12.xy * ffdAlpha[0] + aFfd22.xy * ffdAlpha[1] + aFfd32.xy * ffdAlpha[2] + aFfd42.xy * ffdAlpha[3];',
                 '   ffd[3] = aFfd12.zw * ffdAlpha[0] + aFfd22.zw * ffdAlpha[1] + aFfd32.zw * ffdAlpha[2] + aFfd42.zw * ffdAlpha[3];',
-                '   vec3 skinned = vec3( 0 );',
-                '   skinned += boneGlobalMatrices[ int(aSkin0[0]) ] * vec3(aSkin0[1] + ffd[0].x, aSkin0[2] + ffd[0].y, 1.0) * aSkin0[3]; ',
-                '   skinned += boneGlobalMatrices[ int(aSkin1[0]) ] * vec3(aSkin1[1] + ffd[1].x, aSkin1[2] + ffd[1].y, 1.0) * aSkin1[3]; ',
-                '   skinned += boneGlobalMatrices[ int(aSkin2[0]) ] * vec3(aSkin2[1] + ffd[2].x, aSkin2[2] + ffd[2].y, 1.0) * aSkin2[3]; ',
-                '   skinned += boneGlobalMatrices[ int(aSkin3[0]) ] * vec3(aSkin3[1] + ffd[3].x, aSkin3[2] + ffd[3].y, 1.0) * aSkin3[3]; ',
+                '   skin[0] = vec3(aSkin0.yz + ffd[0], 1.0) * aSkin0.w;',
+                '   skin[1] = vec3(aSkin1.yz + ffd[1], 1.0) * aSkin1.w;',
+                '   skin[2] = vec3(aSkin2.yz + ffd[2], 1.0) * aSkin2.w;',
+                '   skin[3] = vec3(aSkin3.yz + ffd[3], 1.0) * aSkin3.w;',
+                '   vec3 skinned = vec3( 0.0, 0.0, 1.0 );',
+                '   skinned.x += dot(skin[0], boneGlobalMatrices[ int(aSkin0.x) * 2 ]);',
+                '   skinned.y += dot(skin[0], boneGlobalMatrices[ int(aSkin0.x) * 2 + 1 ]);',
+                '   skinned.x += dot(skin[1], boneGlobalMatrices[ int(aSkin1.x) * 2 ]);',
+                '   skinned.y += dot(skin[1], boneGlobalMatrices[ int(aSkin1.x) * 2 + 1 ]);',
+                '   skinned.x += dot(skin[2], boneGlobalMatrices[ int(aSkin2.x) * 2 ]);',
+                '   skinned.y += dot(skin[2], boneGlobalMatrices[ int(aSkin2.x) * 2 + 1 ]);',
+                '   skinned.x += dot(skin[3], boneGlobalMatrices[ int(aSkin3.x) * 2 ]);',
+                '   skinned.y += dot(skin[3], boneGlobalMatrices[ int(aSkin3.x) * 2 + 1 ]);',
                 '   gl_Position = vec4(projectionMatrix * skinned, 1.0);',
                 '   vTextureCoord = aTextureCoord;',
                 '}'
@@ -58,7 +67,7 @@ function patchPixiSpine(options) {
                 uSampler: {type: 'sampler2D', value: 0},
                 ffdAlpha: {type: '4fv', value: new Float32Array(4)},
                 projectionMatrix: {type: 'mat3', value: new Float32Array(9)},
-                boneGlobalMatrices: {type: 'mat3', value: new Float32Array(9)}
+                boneGlobalMatrices: {type: '3fv', value: new Float32Array(6)}
             },
             {
                 aTextureCoord: 0,
@@ -76,6 +85,7 @@ function patchPixiSpine(options) {
                 aFfd42: 0,
             }
         );
+        if (!this.program) return;
         this.ffdAttrName = ["aFfd11", "aFfd12", "aFfd21", "aFfd22", "aFfd31", "aFfd32", "aFfd41", "aFfd42"];
         this.ffdAttr = [];
         for (var i = 0; i < this.ffdAttrName.length; i++)
@@ -158,14 +168,11 @@ function patchPixiSpine(options) {
             for (var i = 0; i < bones.length; i++) {
                 var bone = bones[i];
                 bonesArr[sz++] = bone.m00;
-                bonesArr[sz++] = bone.m10;
-                bonesArr[sz++] = 0;
                 bonesArr[sz++] = bone.m01;
-                bonesArr[sz++] = bone.m11;
-                bonesArr[sz++] = 0;
                 bonesArr[sz++] = bone.worldX;
+                bonesArr[sz++] = bone.m10;
+                bonesArr[sz++] = bone.m11;
                 bonesArr[sz++] = bone.worldY;
-                bonesArr[sz++] = 1;
             }
         }
 
@@ -264,17 +271,14 @@ function patchPixiSpine(options) {
                 for (var j = 0; j < bonesIndices.length; j++) {
                     var bone = bones[bonesIndices[j]];
                     bonesArr[sz++] = bone.m00;
-                    bonesArr[sz++] = bone.m10;
-                    bonesArr[sz++] = 0;
                     bonesArr[sz++] = bone.m01;
-                    bonesArr[sz++] = bone.m11;
-                    bonesArr[sz++] = 0;
                     bonesArr[sz++] = bone.worldX;
+                    bonesArr[sz++] = bone.m10;
+                    bonesArr[sz++] = bone.m11;
                     bonesArr[sz++] = bone.worldY;
-                    bonesArr[sz++] = 1;
                 }
                 shader.uniforms.boneGlobalMatrices.value = bonesArr;
-                gl.uniformMatrix3fv(shader.uniforms.boneGlobalMatrices._location, false, bonesArr);
+                gl.uniform3fv(shader.uniforms.boneGlobalMatrices._location, bonesArr);
             }
         }
         if (batchFinish >= 0) {
@@ -301,13 +305,6 @@ function patchPixiSpine(options) {
         if (bonesMode) {
             maxBones = 1;
         }
-
-
-        else {
-            bonesArr = new Float32Array(spineData.bones.length * this.boneSize);
-        }
-
-
         var attachments = [];
         for (var i = 0; i < spineData.skins.length; i++) {
             var att = spineData.skins[i].attachments;
@@ -445,7 +442,7 @@ function patchPixiSpine(options) {
             attachment.skinnedMeshIndex = i0;
             attachment.skinnedMeshIndexSize = isize - i0;
         }
-        buf.bonesArr = new Float32Array(9 * maxBones);
+        buf.bonesArr = new Float32Array(6 * maxBones);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.uv);
         gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf.skin);
@@ -630,7 +627,12 @@ function patchPixiSpine(options) {
         }
     }
 
+    var oldRender = core.spine.Spine.prototype._renderWebGL;
+
     core.spine.Spine.prototype._renderWebGL = function (renderer) {
+        if (!renderer.shaderManager.plugins.skinnedMeshShader.program) {
+            return oldRender.call(this, renderer);
+        }
         this.hideSlots();
         var plugin = renderer.plugins.spineMesh;
         renderer.setObjectRenderer(plugin);
