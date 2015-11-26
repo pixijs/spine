@@ -39,6 +39,9 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
                 page.width = parseInt(tuple[0]);
                 page.height = parseInt(tuple[1]);
                 reader.readTuple(tuple);
+            } else {
+                //and I dont want to add support of old format for meshes! we need UVs NOW!
+                console.log("ERROR spine atlas page "+page.name+": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
             }
             page.format = spine.Atlas.Format[tuple[0]];
 

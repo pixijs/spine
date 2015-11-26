@@ -534,17 +534,30 @@ function patchPixiSpine(options) {
                     var timeline = timelines[j];
                     if (timeline instanceof spine.FfdTimeline) {
                         var mesh = timeline.attachment;
-                        var si = mesh.skinIndices;
                         timeline.skinnedMeshSkinOffset = size - mesh.skinnedMeshSkinOffset / 2;
-                        for (var t = 0; t < timeline.getFrameCount(); t++) {
-                            for (var s = 0; s < si.length; s += 3) {
-                                var offset = si[s + 2];
-                                if (offset > 0) {
-                                    offset = (offset - 2) / 3 * 2;
-                                    vertices[size++] = timeline.frameVertices[t][offset];
-                                    vertices[size++] = timeline.frameVertices[t][offset + 1];
-                                } else {
-                                    size += 2;
+                        var si = mesh.skinIndices;
+                        if (si) {
+                            //new format
+                            for (var t = 0; t < timeline.getFrameCount(); t++) {
+                                for (var s = 0; s < si.length; s += 3) {
+                                    var offset = si[s + 2];
+                                    if (offset > 0) {
+                                        offset = (offset - 2) / 3 * 2;
+                                        vertices[size++] = timeline.frameVertices[t][offset];
+                                        vertices[size++] = timeline.frameVertices[t][offset + 1];
+                                    } else {
+                                        size += 2;
+                                    }
+                                }
+                            }
+                        } else {
+                            //old format
+                            for (var t = 0; t < timeline.getFrameCount(); t++) {
+                                var fV = timeline.frameVertices[t];
+                                for (var i=0;i<fV.length;i+=2) {
+                                    vertices[size++] = fV[i] - mesh.vertices[i];
+                                    vertices[size++] = fV[i+1] - mesh.vertices[i+1];
+                                    size += (maxWeights-1)*2;
                                 }
                             }
                         }
