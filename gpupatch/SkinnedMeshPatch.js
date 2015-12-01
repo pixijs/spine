@@ -300,7 +300,7 @@ function patchPixiSpine(options) {
         };
 
         var maxBones = spineData.bones.length;
-        var shader = renderer.shaderManager.plugins.skinnedMeshShader;
+        var shader = this.renderer.shaderManager.plugins.skinnedMeshShader;
         var bonesMode = spineData.skinnedMeshBonesMode = (maxBones > shader.maxBones)?1:0;
         if (bonesMode) {
             maxBones = 1;
