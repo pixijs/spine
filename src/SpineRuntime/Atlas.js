@@ -71,12 +71,12 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
             region.rotate = reader.readValue() == "true";
 
             reader.readTuple(tuple);
-            var x = parseInt(tuple[0]) / resolution;
-            var y = parseInt(tuple[1]) / resolution;
+            var x = parseInt(tuple[0]);
+            var y = parseInt(tuple[1]);
 
             reader.readTuple(tuple);
-            var width = parseInt(tuple[0]) / resolution;
-            var height = parseInt(tuple[1]) / resolution;
+            var width = parseInt(tuple[0]);
+            var height = parseInt(tuple[1]);
 
             region.u = x / page.width;
             region.v = y / page.height;
@@ -88,10 +88,10 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
                 region.u2 = (x + width) / page.width;
                 region.v2 = (y + height) / page.height;
             }
-            region.x = x;
-            region.y = y;
-            region.width = Math.abs(width);
-            region.height = Math.abs(height);
+            region.x = x / resolution;
+            region.y = y / resolution;
+            region.width = Math.abs(width) / resolution;
+            region.height = Math.abs(height) / resolution;
 
             if (reader.readTuple(tuple) == 4)
             { // split is optional
