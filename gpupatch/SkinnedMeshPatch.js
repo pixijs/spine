@@ -204,7 +204,7 @@ function patchPixiSpine(options) {
                 uTint.value[2] != slot.b * slot.a;
             //handle the batch
             var batchEnd = bonesMode || batchFinish < 0 || batchFinish != attachment.skinnedMeshIndex
-                || texture !== this._prevTexture || tintChanged;
+                || texture !== this._prevTexture || tintChanged || this._prevBlendMode !== slot.blendMode;
 
             if (slot.ffdMix) {
                 for (var j = 0; j < 8; j += 2) {
@@ -217,6 +217,10 @@ function patchPixiSpine(options) {
             batchEnd |= !ffdSet;
             if (batchFinish >= 0) {
                 if (batchEnd) {
+                    if (this._prevBlendMode != slot.blendMode) {
+                        this.renderer.blendModeManager.setBlendMode(PIXI.BLEND_MODES.NORMAL);
+                        this._prevBlendMode = slot.blendMode;
+                    }
                     gl.drawElements(drawMode, batchFinish - batchStart, gl.UNSIGNED_SHORT, batchStart * 2);
                 } else {
                     batchFinish += attachment.skinnedMeshIndexSize;
@@ -489,6 +493,7 @@ function patchPixiSpine(options) {
                 skinIndices.push(ind2);
                 ww += w;
             }
+            if (1.0-ww>1e-2) console.log(ww);
             for (var i = v + 1; i < skinIndices.length; i += 3) {
                 skinIndices[i] /= ww;
             }
@@ -584,6 +589,7 @@ function patchPixiSpine(options) {
 
         this.renderer.blendModeManager.setBlendMode(PIXI.BLEND_MODES.NORMAL);
 
+        this._prevBlendMode = PIXI.BLEND_MODES.NORMAL;
         this._prevTexture = null;
         this._prevSkeleton = null;
     };
