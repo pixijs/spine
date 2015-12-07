@@ -218,12 +218,12 @@ function patchPixiSpine(options) {
             if (batchFinish >= 0) {
                 if (batchEnd) {
                     gl.drawElements(drawMode, batchFinish - batchStart, gl.UNSIGNED_SHORT, batchStart * 2);
-                    this.renderer.blendModeManager.setBlendMode(this._prevBlendMode = slot.blendMode);
                 } else {
                     batchFinish += attachment.skinnedMeshIndexSize;
                     continue;
                 }
             }
+            this.renderer.blendModeManager.setBlendMode(this._prevBlendMode = slot.blendMode);
             batchStart = attachment.skinnedMeshIndex;
             batchFinish = batchStart + attachment.skinnedMeshIndexSize;
 
