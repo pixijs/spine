@@ -194,14 +194,15 @@ function patchPixiSpine(options) {
         for (var i = 0; i < slots.length; i++) {
             var ind = drawOrder[i];
             var slot = slots[ind];
+            var alpha = slot.a * spineObj.worldAlpha;
             var attachment = slot.attachment;
             if (!attachment || typeof attachment.skinnedMeshIndex === "undefined") continue;
 
             var texture = attachment.rendererObject.page.rendererObject;
-            var tintChanged = uTint.value[3] != slot.a ||
-                uTint.value[0] != slot.r * slot.a ||
-                uTint.value[1] != slot.g * slot.a ||
-                uTint.value[2] != slot.b * slot.a;
+            var tintChanged = uTint.value[3] != alpha ||
+                uTint.value[0] != slot.r * alpha ||
+                uTint.value[1] != slot.g * alpha ||
+                uTint.value[2] != slot.b * alpha;
             //handle the batch
             var batchEnd = bonesMode || batchFinish < 0 || batchFinish != attachment.skinnedMeshIndex
                 || texture !== this._prevTexture || tintChanged || this._prevBlendMode !== slot.blendMode;
@@ -239,10 +240,10 @@ function patchPixiSpine(options) {
                 this._prevTexture = texture;
             }
             if (tintChanged) {
-                uTint.value[3] = slot.a;
-                uTint.value[0] = slot.r * slot.a;
-                uTint.value[1] = slot.g * slot.a;
-                uTint.value[2] = slot.b * slot.a;
+                uTint.value[3] = alpha;
+                uTint.value[0] = slot.r * alpha;
+                uTint.value[1] = slot.g * alpha;
+                uTint.value[2] = slot.b * alpha;
                 gl.uniform4fv(uTint._location, uTint.value);
             }
             if (!ffdSet) {
