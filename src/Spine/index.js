@@ -121,6 +121,8 @@ Spine.prototype = Object.create(PIXI.Container.prototype);
 Spine.prototype.constructor = Spine;
 module.exports = Spine;
 
+Spine.globalAutoUpdate = true;
+
 Object.defineProperties(Spine.prototype, {
     /**
      * If this flag is set to true, the spine animation will be autoupdated every time
@@ -269,11 +271,14 @@ Spine.prototype.update = function (dt)
  */
 Spine.prototype.autoUpdateTransform = function ()
 {
-    this.lastTime = this.lastTime || Date.now();
-    var timeDelta = (Date.now() - this.lastTime) * 0.001;
-    this.lastTime = Date.now();
-
-    this.update(timeDelta);
+    if (Spine.globalAutoUpdate) {
+        this.lastTime = this.lastTime || Date.now();
+        var timeDelta = (Date.now() - this.lastTime) * 0.001;
+        this.lastTime = Date.now();
+        this.update(timeDelta);
+    } else {
+        this.lastTime = 0;
+    }
 
     PIXI.Container.prototype.updateTransform.call(this);
 };
