@@ -639,8 +639,13 @@ function patchPixiSpine(options) {
     //TODO: add new interaction check
 
     core.spine.Spine.prototype.hideSlots = function() {
+        this._childrensAreInvisible = true;
         for (var i=0;i<this.slotContainers.length;i++) {
-            this.slotContainers[i].visible = false;
+            var slot = this.slotContainers[i];
+            var ch = slot.currentSprite || slot.currentMesh;
+            if (ch) {
+                ch.visible = false;
+            }
         }
     }
 
@@ -648,6 +653,7 @@ function patchPixiSpine(options) {
 
     core.spine.Spine.prototype._renderWebGL = function (renderer) {
         if (!renderer.shaderManager.plugins.skinnedMeshShader.program) {
+            this._childrensAreInvisible = false;
             return oldRender.call(this, renderer);
         }
         this.hideSlots();
@@ -670,12 +676,8 @@ function patchPixiSpine(options) {
     };
 
     core.spine.Spine.prototype.getLocalBounds = function() {
-        if (!this.spineData.skinnedMeshId)
+        if (!this._childrensAreInvisible)
             return PIXI.Container.prototype.getLocalBounds.call(this);
-        for (var i=0;i<this.slotContainers.length;i++)
-            if (this.slotContainers[i].visible) {
-                return PIXI.Container.prototype.getLocalBounds.call(this);
-            }
         up.call(this, 0);
         var bounds = PIXI.Container.prototype.getLocalBounds.call(this);
         this.hideSlots();
@@ -702,20 +704,18 @@ function patchPixiSpine(options) {
         if (!this.getBounds().contains(point.x, point.y))
             return false;
         var skeleton = this.skeleton;
-        var boundsUpdated = !this.spineData.skinnedMeshId;
+        if (this._childrensAreInvisible) {
+            up.call(this, 0);
+            PIXI.Container.prototype.updateTransform.call(this);
+            this._childrensAreInvisible = false;
+            this._boundsCache = null;
+            this.getBounds();
+        }
         for (var i=0;i<skeleton.slots.length;i++) {
             var slot = skeleton.slots[i];
             if (slot.attachment) {
                 var ch = slot.currentSprite || slot.currentMesh;
                 if (ch) {
-                    if (ch.visible && !ch._currentBounds) {
-                        //update bounds in this tick!
-                        if (!boundsUpdated) {
-                            this._boundsCache = null;
-                            this.getBounds();
-                            boundsUpdated = true;
-                        }
-                    }
                     if (ch.containsPoint(point)) return true;
                 }
             }
