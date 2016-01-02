@@ -1,6 +1,6 @@
 var Resource = PIXI.loaders.Resource,
-    async = PIXI.utils.async,
-    spine = require('../SpineRuntime');
+    spine = require('../SpineRuntime'),
+    imageLoaderAdapter = require('./imageLoaderAdapter');
 
 var atlasParser = module.exports = function () {
     return function (resource, next) {
@@ -17,34 +17,28 @@ var atlasParser = module.exports = function () {
         var atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + '.atlas';
         var atlasOptions = {
             crossOrigin: resource.crossOrigin,
-            xhrType: Resource.XHR_RESPONSE_TYPE.TEXT
+            xhrType: Resource.XHR_RESPONSE_TYPE.TEXT,
+            metadata: resource.metadata.spineMetadata
+        };
+        var imageOptions = {
+            crossOrigin: resource.crossOrigin,
+            metadata: resource.metadata.imageMetadata
         };
         var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
 
-
+        var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
         this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (res) {
-            // create a spine atlas using the loaded text
-            var spineAtlas = new spine.Atlas(this.xhr.responseText, baseUrl, res.crossOrigin);
+            new spine.Atlas(this.xhr.responseText, adapter, function(spineAtlas) {
+                var spineJsonParser = new spine.SkeletonJsonParser(new spine.AtlasAttachmentParser(spineAtlas));
+                var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
-            // spine animation
-            var spineJsonParser = new spine.SkeletonJsonParser(new spine.AtlasAttachmentParser(spineAtlas));
-            var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+                resource.spineData = skeletonData;
+                resource.spineAtlas = spineAtlas;
+                if (atlasParser.enableCaching)
+                    atlasParser.AnimCache[resource.name] = resource.spineData;
 
-            resource.spineData = skeletonData;
-            resource.spineAtlas = spineAtlas;
-            if (atlasParser.enableCaching)
-                atlasParser.AnimCache[resource.name] = resource.spineData;
-
-            // Go through each spineAtlas.pages and wait for page.rendererObject (a baseTexture) to
-            // load. Once all loaded, then call the next function.
-            async.each(spineAtlas.pages, function (page, done) {
-                if (page.rendererObject.hasLoaded) {
-                    done();
-                }
-                else {
-                    page.rendererObject.once('loaded', done);
-                }
-            }, next);
+                next();
+            });
         });
     };
 };

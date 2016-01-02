@@ -2,12 +2,17 @@ var spine = require('../SpineUtil');
 spine.AtlasReader = require('./AtlasReader');
 spine.AtlasPage = require('./AtlasPage');
 spine.AtlasRegion = require('./AtlasRegion');
+var syncImageLoaderAdapter = require('../loaders/syncImageLoaderAdapter.js')
 
-spine.Atlas = function (atlasText, baseUrl, crossOrigin)
+spine.Atlas = function (atlasText, loaderFunction, callback)
 {
-    if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length-1))
-    {
-        baseUrl += '/';
+    //TODO: remove this legacy later
+    if (typeof loaderFunction !== "function") {
+        //old syntax
+        var baseUrl = loaderFunction;
+        var crossOrigin = callback;
+        loaderFunction = syncImageLoaderAdapter(baseUrl, crossOrigin);
+        callback = null;
     }
 
     this.pages = [];
@@ -16,105 +21,116 @@ spine.Atlas = function (atlasText, baseUrl, crossOrigin)
     this.texturesLoading = 0;
 
     var self = this;
-    var resolution = PIXI.utils.getResolutionOfUrl(baseUrl);
 
     var reader = new spine.AtlasReader(atlasText);
     var tuple = [];
     tuple.length = 4;
     var page = null;
-    while (true)
-    {
-        var line = reader.readLine();
-        if (line === null) break;
-        line = reader.trim(line);
-        if (!line.length)
-            page = null;
-        else if (!page)
-        {
-            page = new spine.AtlasPage();
-            page.name = line;
 
-            if (reader.readTuple(tuple) == 2)
-            { // size is only optional for an atlas packed with an old TexturePacker.
-                page.width = parseInt(tuple[0]);
-                page.height = parseInt(tuple[1]);
-                reader.readTuple(tuple);
-            } else {
-                //and I dont want to add support of old format for meshes! we need UVs NOW!
-                console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
+    iterateParser();
+
+    function iterateParser() {
+        while (true) {
+            var line = reader.readLine();
+            if (line === null) {
+                return callback && callback(self);
             }
-            page.format = spine.Atlas.Format[tuple[0]];
+            line = reader.trim(line);
+            if (!line.length)
+                page = null;
+            else if (!page) {
+                page = new spine.AtlasPage();
+                page.name = line;
 
-            reader.readTuple(tuple);
-            page.minFilter = spine.Atlas.TextureFilter[tuple[0]];
-            page.magFilter = spine.Atlas.TextureFilter[tuple[1]];
-
-            var direction = reader.readValue();
-            page.uWrap = spine.Atlas.TextureWrap.clampToEdge;
-            page.vWrap = spine.Atlas.TextureWrap.clampToEdge;
-            if (direction == "x")
-                page.uWrap = spine.Atlas.TextureWrap.repeat;
-            else if (direction == "y")
-                page.vWrap = spine.Atlas.TextureWrap.repeat;
-            else if (direction == "xy")
-                page.uWrap = page.vWrap = spine.Atlas.TextureWrap.repeat;
-
-            page.rendererObject = PIXI.BaseTexture.fromImage(baseUrl + line, crossOrigin);
-
-            this.pages.push(page);
-
-        } else {
-            var region = new spine.AtlasRegion();
-            region.name = line;
-            region.page = page;
-
-            region.rotate = reader.readValue() == "true";
-
-            reader.readTuple(tuple);
-            var x = parseInt(tuple[0]);
-            var y = parseInt(tuple[1]);
-
-            reader.readTuple(tuple);
-            var width = parseInt(tuple[0]);
-            var height = parseInt(tuple[1]);
-
-            region.u = x / page.width;
-            region.v = y / page.height;
-            if (region.rotate)
-            {
-                region.u2 = (x + height) / page.width;
-                region.v2 = (y + width) / page.height;
-            } else {
-                region.u2 = (x + width) / page.width;
-                region.v2 = (y + height) / page.height;
-            }
-            region.x = x / resolution;
-            region.y = y / resolution;
-            region.width = Math.abs(width) / resolution;
-            region.height = Math.abs(height) / resolution;
-
-            if (reader.readTuple(tuple) == 4)
-            { // split is optional
-                region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
-
-                if (reader.readTuple(tuple) == 4)
-                { // pad is optional, but only present with splits
-                    region.pads = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
-
+                if (reader.readTuple(tuple) == 2) { // size is only optional for an atlas packed with an old TexturePacker.
+                    page.width = parseInt(tuple[0]);
+                    page.height = parseInt(tuple[1]);
                     reader.readTuple(tuple);
+                } else {
+                    //old format, detect width and height by texture
                 }
+                page.format = spine.Atlas.Format[tuple[0]];
+
+                reader.readTuple(tuple);
+                page.minFilter = spine.Atlas.TextureFilter[tuple[0]];
+                page.magFilter = spine.Atlas.TextureFilter[tuple[1]];
+
+                var direction = reader.readValue();
+                page.uWrap = spine.Atlas.TextureWrap.clampToEdge;
+                page.vWrap = spine.Atlas.TextureWrap.clampToEdge;
+                if (direction == "x")
+                    page.uWrap = spine.Atlas.TextureWrap.repeat;
+                else if (direction == "y")
+                    page.vWrap = spine.Atlas.TextureWrap.repeat;
+                else if (direction == "xy")
+                    page.uWrap = page.vWrap = spine.Atlas.TextureWrap.repeat;
+
+                // @ivanpopelyshev: I so want to use generators and "yield()" here, or at least promises
+                loaderFunction(line, function (texture) {
+                    page.rendererObject = texture;
+                    self.pages.push(page);
+                    if (!page.width || !page.height) {
+                        page.width = texture.width;
+                        page.height = texture.height;
+                        if (!page.width || !page.height) {
+                            console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
+                        }
+                    }
+                    iterateParser();
+                });
+                break;
+            } else {
+                var region = new spine.AtlasRegion();
+                region.name = line;
+                region.page = page;
+
+                region.rotate = reader.readValue() == "true";
+
+                reader.readTuple(tuple);
+                var x = parseInt(tuple[0]);
+                var y = parseInt(tuple[1]);
+
+                reader.readTuple(tuple);
+                var width = parseInt(tuple[0]);
+                var height = parseInt(tuple[1]);
+
+                region.u = x / page.width;
+                region.v = y / page.height;
+                if (region.rotate) {
+                    region.u2 = (x + height) / page.width;
+                    region.v2 = (y + width) / page.height;
+                } else {
+                    region.u2 = (x + width) / page.width;
+                    region.v2 = (y + height) / page.height;
+                }
+                //detected resolution
+                var resolution = page.rendererObject.resolution;
+                region.x = x / resolution;
+                region.y = y / resolution;
+                region.width = Math.abs(width) / resolution;
+                region.height = Math.abs(height) / resolution;
+
+                if (reader.readTuple(tuple) == 4) { // split is optional
+                    region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
+
+                    if (reader.readTuple(tuple) == 4) { // pad is optional, but only present with splits
+                        region.pads = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
+
+                        reader.readTuple(tuple);
+                    }
+                }
+
+                region.originalWidth = parseInt(tuple[0]) / resolution;
+                region.originalHeight = parseInt(tuple[1]) / resolution;
+
+                reader.readTuple(tuple);
+                region.offsetX = parseInt(tuple[0]) / resolution;
+                region.offsetY = parseInt(tuple[1]) / resolution;
+
+                region.index = parseInt(reader.readValue());
+
+                self.regions.push(region);
             }
-
-            region.originalWidth = parseInt(tuple[0]) / resolution;
-            region.originalHeight = parseInt(tuple[1]) / resolution;
-
-            reader.readTuple(tuple);
-            region.offsetX = parseInt(tuple[0]) / resolution;
-            region.offsetY = parseInt(tuple[1]) / resolution;
-
-            region.index = parseInt(reader.readValue());
-
-            this.regions.push(region);
         }
     }
 };
