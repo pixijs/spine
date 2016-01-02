@@ -51,7 +51,7 @@ Use with [pixi-compressed-textures.js](https://github.com/pixijs/pixi-compressed
 
 ```js
 //choose preferred resolution and texture type
-assetsLoader.before(PIXI.compressedTextures.extensionChooser(["@2x.atlas"]));
+PIXI.loader.before(PIXI.compressedTextures.extensionChooser(["@2x.atlas"]));
 //specify what resolutions are available for spine animations
 var options = { metadata: { spineMetadata: { choice: ["@.5x.atlas", "@2x.atlas"] } } };
 
@@ -65,7 +65,7 @@ PIXI.loader
 ### How to use compressed textures
 
 ```js
-assetsLoader.before(PIXI.compressedTextures.extensionChooser(["@2x.atlas", ".dds"]));
+PIXI.loader.before(PIXI.compressedTextures.extensionChooser(["@2x.atlas", ".dds"]));
 var options = { metadata: { spineMetadata: { choice: ["@.5x.atlas", "@2x.atlas"] }, imageMetadata: { choice: [".dds", ".pvr"] } } };
 
 PIXI.loader
