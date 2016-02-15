@@ -309,6 +309,12 @@ Spine.prototype.createSprite = function (slot, attachment)
     sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
     sprite.alpha = attachment.a;
 
+    if (descriptor.rotate) {
+        var x1 = sprite.scale.x;
+        sprite.scale.x = sprite.scale.y;
+        sprite.scale.y = x1;
+    }
+
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
     return sprite;
