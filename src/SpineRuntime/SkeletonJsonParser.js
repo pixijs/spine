@@ -58,6 +58,8 @@ spine.SkeletonJsonParser.prototype = {
             boneData.rotation = (boneMap["rotation"] || 0);
             boneData.scaleX = boneMap.hasOwnProperty("scaleX") ? boneMap["scaleX"] : 1;
             boneData.scaleY = boneMap.hasOwnProperty("scaleY") ? boneMap["scaleY"] : 1;
+            boneData.flipX = boneMap.hasOwnProperty("flipX") ? boneMap["flipX"] : false;
+            boneData.flipY = boneMap.hasOwnProperty("flipY") ? boneMap["flipY"] : false;
             boneData.inheritScale = boneMap.hasOwnProperty("inheritScale") ? boneMap["inheritScale"] : true;
             boneData.inheritRotation = boneMap.hasOwnProperty("inheritRotation") ? boneMap["inheritRotation"] : true;
             skeletonData.bones.push(boneData);
