@@ -220,7 +220,7 @@ spine.SkeletonJsonParser.prototype = {
             mesh.width = (map["width"] || 0) * scale;
             mesh.height = (map["height"] || 0) * scale;
             return mesh;
-        } else if (type == spine.AttachmentType.skinnedmesh)
+        } else if (type == spine.AttachmentType.skinnedmesh || type == spine.AttachmentType.weightedmesh)
         {
             var mesh = this.attachmentLoader.newSkinnedMeshAttachment(skin, name, path);
             if (!mesh) return null;

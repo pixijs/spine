@@ -3,7 +3,8 @@ spine.AttachmentType = {
     region: 0,
     boundingbox: 1,
     mesh: 2,
-    skinnedmesh: 3
+    skinnedmesh: 3,
+    weightedmesh : 4
 };
 module.exports = spine.AttachmentType;
 
