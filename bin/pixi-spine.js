@@ -725,7 +725,8 @@ spine.AttachmentType = {
     region: 0,
     boundingbox: 1,
     mesh: 2,
-    skinnedmesh: 3
+    skinnedmesh: 3,
+    weightedmesh : 4
 };
 module.exports = spine.AttachmentType;
 
@@ -2367,6 +2368,8 @@ spine.SkeletonJsonParser.prototype = {
             boneData.rotation = (boneMap["rotation"] || 0);
             boneData.scaleX = boneMap.hasOwnProperty("scaleX") ? boneMap["scaleX"] : 1;
             boneData.scaleY = boneMap.hasOwnProperty("scaleY") ? boneMap["scaleY"] : 1;
+            boneData.flipX = boneMap.hasOwnProperty("flipX") ? boneMap["flipX"] : false;
+            boneData.flipY = boneMap.hasOwnProperty("flipY") ? boneMap["flipY"] : false;
             boneData.inheritScale = boneMap.hasOwnProperty("inheritScale") ? boneMap["inheritScale"] : true;
             boneData.inheritRotation = boneMap.hasOwnProperty("inheritRotation") ? boneMap["inheritRotation"] : true;
             skeletonData.bones.push(boneData);
@@ -2527,7 +2530,7 @@ spine.SkeletonJsonParser.prototype = {
             mesh.width = (map["width"] || 0) * scale;
             mesh.height = (map["height"] || 0) * scale;
             return mesh;
-        } else if (type == spine.AttachmentType.skinnedmesh)
+        } else if (type == spine.AttachmentType.skinnedmesh || type == spine.AttachmentType.weightedmesh)
         {
             var mesh = this.attachmentLoader.newSkinnedMeshAttachment(skin, name, path);
             if (!mesh) return null;
@@ -3585,11 +3588,13 @@ Spine.prototype.createSprite = function (slot, attachment)
     sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
     sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
     sprite.alpha = attachment.a;
+
     if (descriptor.rotate) {
         var x1 = sprite.scale.x;
         sprite.scale.x = sprite.scale.y;
         sprite.scale.y = x1;
     }
+
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
     return sprite;
