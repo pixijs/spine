@@ -77,7 +77,7 @@ spine.RegionAttachment.prototype = {
     {
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.m00, m01 = bone.m01, m10 = bone.m10, m11 = bone.m11;
+        var m00 = bone.matrix.a, m01 = bone.matrix.c, m10 = bone.matrix.b, m11 = bone.matrix.d;
         var offset = this.offset;
         vertices[0/*X1*/] = offset[0/*X1*/] * m00 + offset[1/*Y1*/] * m01 + x;
         vertices[1/*Y1*/] = offset[0/*X1*/] * m10 + offset[1/*Y1*/] * m11 + y;

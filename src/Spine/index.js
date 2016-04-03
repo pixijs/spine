@@ -206,21 +206,29 @@ Spine.prototype.update = function (dt)
                 }
             }
 
-            var bone = slot.bone;
+            if (slotContainer.transform ) {
+                //PIXI v4.0
+                if (!slotContainer.transform._dirtyLocal) {
+                    slotContainer.transform = new PIXI.TransformStatic();
+                }
+                var transform = slotContainer.transform;
+                var lt = transform.localTransform;
+                transform._dirtyParentVersion = -1;
+                transform._dirtyLocal = 1;
+                transform._versionLocal = 1;
+                slot.bone.matrix.copy(lt);
+                lt.tx += slot.bone.skeleton.x;
+                lt.ty += slot.bone.skeleton.y;
+            } else {
+                //PIXI v3
+                var lt = slotContainer.localTransform || new PIXI.Matrix();
+                slot.bone.matrix.copy(lt);
+                lt.tx += slot.bone.skeleton.x;
+                lt.ty += slot.bone.skeleton.y;
+                slotContainer.localTransform = lt;
+                slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
+            }
 
-            slotContainer.position.x = bone.worldX + attachment.x * bone.m00 + attachment.y * bone.m01;
-            slotContainer.position.y = bone.worldY + attachment.x * bone.m10 + attachment.y * bone.m11;
-            slotContainer.scale.x = bone.worldScaleX;
-            slotContainer.scale.y = bone.worldScaleY;
-            slotContainer.rotation = -(slot.bone.worldRotation * spine.degRad);
-            if (bone.worldFlipX) {
-                slotContainer.scale.x = -slotContainer.scale.x;
-                slotContainer.rotation = -slotContainer.rotation;
-            }
-            if (bone.worldFlipY == spine.Bone.yDown) {
-                slotContainer.scale.y = -slotContainer.scale.y;
-                slotContainer.rotation = -slotContainer.rotation;
-            }
             slot.currentSprite.blendMode = slot.blendMode;
             slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
         }
@@ -249,9 +257,7 @@ Spine.prototype.update = function (dt)
                 slot.currentMesh = slot.meshes[meshName];
                 slot.currentMeshName = meshName;
             }
-
             attachment.computeWorldVertices(slot.bone.skeleton.x, slot.bone.skeleton.y, slot, slot.currentMesh.vertices);
-
         }
         else
         {
@@ -304,9 +310,11 @@ Spine.prototype.createSprite = function (slot, attachment)
     var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
     sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
     sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
-    sprite.rotation = baseRotation - (attachment.rotation * spine.degRad);
+    sprite.rotation = baseRotation + (attachment.rotation * spine.degRad);
     sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
     sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
+    sprite.position.x = attachment.x;
+    sprite.position.y = attachment.y;
     sprite.alpha = attachment.a;
 
     if (descriptor.rotate) {
@@ -314,6 +322,7 @@ Spine.prototype.createSprite = function (slot, attachment)
         sprite.scale.x = sprite.scale.y;
         sprite.scale.y = x1;
     }
+    sprite.scale.y = -sprite.scale.y;
 
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
@@ -347,4 +356,19 @@ Spine.prototype.createMesh = function (slot, attachment)
     slot.meshes[attachment.name] = strip;
 
     return strip;
+};
+
+function SlotContainerUpdateTransformV3()
+{
+    var pt = this.parent.worldTransform;
+    var wt = this.worldTransform;
+    var lt = this.localTransform;
+    wt.a  = lt.a  * pt.a + lt.b  * pt.c;
+    wt.b  = lt.a  * pt.b + lt.b  * pt.d;
+    wt.c  = lt.c  * pt.a + lt.d  * pt.c;
+    wt.d  = lt.c  * pt.b + lt.d  * pt.d;
+    wt.tx = lt.tx * pt.a + lt.ty * pt.c + pt.tx;
+    wt.ty = lt.tx * pt.b + lt.ty * pt.d + pt.ty;
+    this.worldAlpha = this.alpha * this.parent.worldAlpha;
+    this._currentBounds = null;
 };

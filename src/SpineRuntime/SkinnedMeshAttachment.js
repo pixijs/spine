@@ -51,7 +51,8 @@ spine.SkinnedMeshAttachment.prototype = {
         var bones = this.bones;
 
         var w = 0, v = 0, b = 0, f = 0, n = bones.length, nn;
-        var wx, wy, bone, vx, vy, weight;
+        var wx, wy, vx, vy, weight;
+        var m;
         if (!slot.attachmentVertices.length)
         {
             for (; v < n; w += 2)
@@ -61,12 +62,12 @@ spine.SkinnedMeshAttachment.prototype = {
                 nn = bones[v++] + v;
                 for (; v < nn; v++, b += 3)
                 {
-                    bone = skeletonBones[bones[v]];
+                    m = skeletonBones[bones[v]].matrix;
                     vx = weights[b];
                     vy = weights[b + 1];
                     weight = weights[b + 2];
-                    wx += (vx * bone.m00 + vy * bone.m01 + bone.worldX) * weight;
-                    wy += (vx * bone.m10 + vy * bone.m11 + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx + x;
                 worldVertices[w + 1] = wy + y;
@@ -80,12 +81,12 @@ spine.SkinnedMeshAttachment.prototype = {
                 nn = bones[v++] + v;
                 for (; v < nn; v++, b += 3, f += 2)
                 {
-                    bone = skeletonBones[bones[v]];
+                    m = skeletonBones[bones[v]].matrix;
                     vx = weights[b] + ffd[f];
                     vy = weights[b + 1] + ffd[f + 1];
                     weight = weights[b + 2];
-                    wx += (vx * bone.m00 + vy * bone.m01 + bone.worldX) * weight;
-                    wy += (vx * bone.m10 + vy * bone.m11 + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx + x;
                 worldVertices[w + 1] = wy + y;

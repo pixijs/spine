@@ -30,79 +30,140 @@ spine.IkConstraint.prototype = {
  * coordinate system. */
 spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
 {
-    var parentRotation = (!bone.data.inheritRotation || !bone.parent) ? 0 : bone.parent.worldRotation;
+    var parentRotation = bone.parent ? bone.parent.getWorldRotationX(): 0;
     var rotation = bone.rotation;
-    // worldY and targetY sign depends on global constant spine.Bone.yDown
-    var rotationIK = (spine.Bone.yDown?-spine.radDeg:spine.radDeg)* Math.atan2(targetY - bone.worldY, targetX - bone.worldX) - parentRotation;
+    var rotationIK = Math.atan2(targetY - bone.worldY, targetX - bone.worldX) * spine.radDeg - parentRotation;
+    if ((bone.worldSignX != bone.worldSignY) != (bone.skeleton.flipX != (bone.skeleton.flipY != spine.Bone.yDown))) rotationIK = 360 - rotationIK;
+    if (rotationIK > 180)
+        rotationIK -= 360;
+    else if (rotationIK < -180) rotationIK += 360;
     bone.rotationIK = rotation + (rotationIK - rotation) * alpha;
 };
 /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
  * target is specified in the world coordinate system.
  * @param child Any descendant bone of the parent. */
-spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDirection, alpha)
+spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, alpha)
 {
-    var childRotation = child.rotation, parentRotation = parent.rotation;
-    if (!alpha)
-    {
-        child.rotationIK = childRotation;
-        parent.rotationIK = parentRotation;
-        return;
-    }
-    var positionX, positionY, tempPosition = spine.temp;
-    var parentParent = parent.parent;
-    if (parentParent)
-    {
-        tempPosition[0] = targetX;
-        tempPosition[1] = targetY;
-        parentParent.worldToLocal(tempPosition);
-        targetX = (tempPosition[0] - parent.x) * parentParent.worldScaleX;
-        targetY = (tempPosition[1] - parent.y) * parentParent.worldScaleY;
+    if (alpha == 0) return;
+    var px = parent.x, py = parent.y, psx = parent.scaleX, psy = parent.scaleY, csx = child.scaleX, cy = child.y;
+    var offset1, offset2, sign2;
+    if (psx < 0) {
+        psx = -psx;
+        offset1 = 180;
+        sign2 = -1;
     } else {
-        targetX -= parent.x;
-        targetY -= parent.y;
+        offset1 = 0;
+        sign2 = 1;
     }
-    if (child.parent == parent)
-    {
-        positionX = child.x;
-        positionY = child.y;
+    if (psy < 0) {
+        psy = -psy;
+        sign2 = -sign2;
+    }
+    if (csx < 0) {
+        csx = -csx;
+        offset2 = 180;
+    } else
+        offset2 = 0;
+    var pp = parent.parent;
+    var ppm = pp.matrix;
+    var tx, ty, dx, dy;
+    if (pp == null) {
+        tx = targetX - px;
+        ty = targetY - py;
+        dx = child.worldX - px;
+        dy = child.worldY - py;
     } else {
-        tempPosition[0] = child.x;
-        tempPosition[1] = child.y;
-        child.parent.localToWorld(tempPosition);
-        parent.worldToLocal(tempPosition);
-        positionX = tempPosition[0];
-        positionY = tempPosition[1];
+        var a = ppm.a, b = ppm.c, c = ppm.b, d = ppm.d, invDet = 1 / (a * d - b * c);
+        var wx = ppm.tx, wy = ppm.ty, x = targetX - wx, y = targetY - wy;
+        tx = (x * d - y * b) * invDet - px;
+        ty = (y * a - x * c) * invDet - py;
+        x = child.worldX - wx;
+        y = child.worldY - wy;
+        dx = (x * d - y * b) * invDet - px;
+        dy = (y * a - x * c) * invDet - py;
     }
-    var childX = positionX * parent.worldScaleX, childY = positionY * parent.worldScaleY;
-    var offset = Math.atan2(childY, childX);
-    var len1 = Math.sqrt(childX * childX + childY * childY), len2 = child.data.length * child.worldScaleX;
-    // Based on code by Ryan Juckett with permission: Copyright (c) 2008-2009 Ryan Juckett, http://www.ryanjuckett.com/
-    var cosDenom = 2 * len1 * len2;
-    if (cosDenom < 0.0001)
-    {
-        child.rotationIK = childRotation + (Math.atan2(targetY, targetX) * spine.radDeg - parentRotation - childRotation) * alpha;
-        return;
-    }
-    var cos = (targetX * targetX + targetY * targetY - len1 * len1 - len2 * len2) / cosDenom;
-    if (cos < -1)
-        cos = -1;
-    else if (cos > 1)
-        cos = 1;
-    var childAngle = Math.acos(cos) * bendDirection;
-    var adjacent = len1 + len2 * cos, opposite = len2 * Math.sin(childAngle);
-    var parentAngle = Math.atan2(targetY * adjacent - targetX * opposite, targetX * adjacent + targetY * opposite);
-    var rotation = (parentAngle - offset) * spine.radDeg - parentRotation;
-    if (rotation > 180)
-        rotation -= 360;
-    else if (rotation < -180) //
-        rotation += 360;
-    parent.rotationIK = parentRotation + rotation * alpha;
-    rotation = (childAngle + offset) * spine.radDeg - childRotation;
-    if (rotation > 180)
-        rotation -= 360;
-    else if (rotation < -180) //
-        rotation += 360;
-    child.rotationIK = childRotation + (rotation + parent.worldRotation - child.parent.worldRotation) * alpha;
+    var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
+    outer:
+        if (Math.abs(psx - psy) <= 0.0001) {
+            l2 *= psx;
+            var cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+            if (cos < -1)
+                cos = -1;
+            else if (cos > 1) cos = 1;
+            a2 = Math.acos(cos) * bendDir;
+            var a = l1 + l2 * cos, o = l2 * Math.sin(a2);
+            a1 = Math.atan2(ty * a - tx * o, tx * a + ty * o);
+        } else {
+            cy = 0;
+            var a = psx * l2, b = psy * l2, ta = Math.atan2(ty, tx);
+            var aa = a * a, bb = b * b, ll = l1 * l1, dd = tx * tx + ty * ty;
+            var c0 = bb * ll + aa * dd - aa * bb, c1 = -2 * bb * l1, c2 = bb - aa;
+            var d = c1 * c1 - 4 * c2 * c0;
+            if (d >= 0) {
+                var q = Math.sqrt(d);
+                if (c1 < 0) q = -q;
+                q = -(c1 + q) / 2;
+                var r0 = q / c2, r1 = c0 / q;
+                var r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
+                if (r * r <= dd) {
+                    var y = Math.sqrt(dd - r * r) * bendDir;
+                    a1 = ta - Math.atan2(y, r);
+                    a2 = Math.atan2(y / psy, (r - l1) / psx);
+                    break outer;
+                }
+            }
+            var minAngle = 0, minDist = Infinity, minX = 0, minY = 0;
+            var maxAngle = 0, maxDist = 0, maxX = 0, maxY = 0;
+            var x = l1 + a, dist = x * x;
+            if (dist > maxDist) {
+                maxAngle = 0;
+                maxDist = dist;
+                maxX = x;
+            }
+            x = l1 - a;
+            dist = x * x;
+            if (dist < minDist) {
+                minAngle = PI;
+                minDist = dist;
+                minX = x;
+            }
+            var angle = Math.acos(-a * l1 / (aa - bb));
+            x = a * Math.cos(angle) + l1;
+            var y = b * Math.sin(angle);
+            dist = x * x + y * y;
+            if (dist < minDist) {
+                minAngle = angle;
+                minDist = dist;
+                minX = x;
+                minY = y;
+            }
+            if (dist > maxDist) {
+                maxAngle = angle;
+                maxDist = dist;
+                maxX = x;
+                maxY = y;
+            }
+            if (dd <= (minDist + maxDist) / 2) {
+                a1 = ta - Math.atan2(minY * bendDir, minX);
+                a2 = minAngle * bendDir;
+            } else {
+                a1 = ta - Math.atan2(maxY * bendDir, maxX);
+                a2 = maxAngle * bendDir;
+            }
+        }
+    var offset = Math.atan2(cy, child.x) * sign2;
+    a1 = (a1 - offset) * spine.radDeg + offset1;
+    a2 = (a2 + offset) * spine.radDeg * sign2 + offset2;
+    if (a1 > 180)
+        a1 -= 360;
+    else if (a1 < -180) a1 += 360;
+    if (a2 > 180)
+        a2 -= 360;
+    else if (a2 < -180) a2 += 360;
+    var rotation = parent.rotation;
+    parent.rotationIK = rotation + (a1 - rotation) * alpha;
+    rotation = child.rotation;
+    child.rotationIK = rotation + (a2 - rotation) * alpha;
 };
 module.exports = spine.IkConstraint;
 

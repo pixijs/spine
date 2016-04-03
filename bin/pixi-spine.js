@@ -738,6 +738,7 @@ spine.Bone = function (boneData, skeleton, parent)
     this.data = boneData;
     this.skeleton = skeleton;
     this.parent = parent;
+    this.matrix = new PIXI.Matrix();
     this.setToSetupPose();
 };
 spine.Bone.yDown = false;
@@ -746,59 +747,137 @@ spine.Bone.prototype = {
     rotation: 0, rotationIK: 0,
     scaleX: 1, scaleY: 1,
     flipX: false, flipY: false,
-    m00: 0, m01: 0, worldX: 0, // a b x
-    m10: 0, m11: 0, worldY: 0, // c d y
-    worldRotation: 0,
-    worldScaleX: 1, worldScaleY: 1,
-    worldFlipX: false, worldFlipY: false,
-    updateWorldTransform: function ()
-    {
+
+    worldSignX: 1, worldSignY: 1,
+    updateWorldTransform: function() {
+        var rotation = this.rotationIK;
+        var scaleX = this.scaleX;
+        var scaleY = this.scaleY;
+        var x = this.x;
+        var y = this.y;
+
+        var cos = Math.cos(rotation * spine.degRad), sin = Math.sin(rotation * spine.degRad);
+        var la = cos * scaleX, lb = -sin * scaleY, lc = sin * scaleX, ld = cos * scaleY;
         var parent = this.parent;
-        if (parent)
-        {
-            this.worldX = this.x * parent.m00 + this.y * parent.m01 + parent.worldX;
-            this.worldY = this.x * parent.m10 + this.y * parent.m11 + parent.worldY;
-            if (this.data.inheritScale)
-            {
-                this.worldScaleX = parent.worldScaleX * this.scaleX;
-                this.worldScaleY = parent.worldScaleY * this.scaleY;
-            } else {
-                this.worldScaleX = this.scaleX;
-                this.worldScaleY = this.scaleY;
+        var m = this.matrix;
+        var skeleton = this.skeleton;
+        if (!parent) { // Root bone.
+            if (skeleton.flipX) {
+                x = -x;
+                la = -la;
+                lb = -lb;
             }
-            this.worldRotation = this.data.inheritRotation ? (parent.worldRotation + this.rotationIK) : this.rotationIK;
-            this.worldFlipX = parent.worldFlipX != this.flipX;
-            this.worldFlipY = parent.worldFlipY != this.flipY;
-        } else {
-            var skeletonFlipX = this.skeleton.flipX, skeletonFlipY = this.skeleton.flipY;
-            this.worldX = skeletonFlipX ? -this.x : this.x;
-            this.worldY = (skeletonFlipY != spine.Bone.yDown) ? -this.y : this.y;
-            this.worldScaleX = this.scaleX;
-            this.worldScaleY = this.scaleY;
-            this.worldRotation = this.rotationIK;
-            this.worldFlipX = skeletonFlipX != this.flipX;
-            this.worldFlipY = skeletonFlipY != this.flipY;
+            if (skeleton.flipY !== spine.Bone.yDown) {
+                y = -y;
+                lc = -lc;
+                ld = -ld;
+            }
+            m.a = la;
+            m.c = lb;
+            m.b = lc;
+            m.d = ld;
+            m.tx = x;
+            m.ty = y;
+            this.worldSignX = spine.signum(scaleX);
+            this.worldSignY = spine.signum(scaleY);
+            return;
         }
-        var radians = this.worldRotation * spine.degRad;
-        var cos = Math.cos(radians);
-        var sin = Math.sin(radians);
-        if (this.worldFlipX)
-        {
-            this.m00 = -cos * this.worldScaleX;
-            this.m01 = sin * this.worldScaleY;
+
+
+        var pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
+        m.tx = pa * x + pb * y + parent.matrix.tx;
+        m.ty = pc * x + pd * y + parent.matrix.ty;
+        this.worldSignX = parent.worldSignX * spine.signum(scaleX);
+        this.worldSignY = parent.worldSignY * spine.signum(scaleY);
+        var data = this.data;
+
+        if (data.inheritRotation && data.inheritScale) {
+            m.a = pa * la + pb * lc;
+            m.c = pa * lb + pb * ld;
+            m.b = pc * la + pd * lc;
+            m.d = pc * lb + pd * ld;
+        } else if (data.inheritRotation) { // No scale inheritance.
+            pa = 1;
+            pb = 0;
+            pc = 0;
+            pd = 1;
+            do {
+                cos = Math.cos(parent.rotationIK * spine.degRad);
+                sin = Math.sin(parent.rotationIK * spine.degRad);
+                var temp = pa * cos + pb * sin;
+                pb = pa * -sin + pb * cos;
+                pa = temp;
+                temp = pc * cos + pd * sin;
+                pd = pc * -sin + pd * cos;
+                pc = temp;
+
+                if (!parent.data.inheritRotation) break;
+                parent = parent.parent;
+            } while (parent != null);
+            m.a = pa * la + pb * lc;
+            m.c = pa * lb + pb * ld;
+            m.b = pc * la + pd * lc;
+            m.d = pc * lb + pd * ld;
+            if (skeleton.flipX) {
+                m.a = -m.a;
+                m.c = -m.c;
+            }
+            if (skeleton.flipY !== spine.Bone.yDown) {
+                m.b = -m.b;
+                m.d = -m.d;
+            }
+        } else if (data.inheritScale) { // No rotation inheritance.
+            pa = 1;
+            pb = 0;
+            pc = 0;
+            pd = 1;
+            do {
+                var r = parent.rotation;
+                cos = Math.cos(r * spine.radDeg);
+                sin = Math.sin(r * spine.radDeg);
+                var psx = parent.scaleX, psy = parent.scaleY;
+                var za = cos * psx, zb = -sin * psy, zc = sin * psx, zd = cos * psy;
+                temp = pa * za + pb * zc;
+                pb = pa * zb + pb * zd;
+                pa = temp;
+                temp = pc * za + pd * zc;
+                pd = pc * zb + pd * zd;
+                pc = temp;
+
+                if (psx < 0) {
+                    r = -r;
+                    sin = -sin;
+                }
+                temp = pa * cos + pb * sin;
+                pb = pa * -sin + pb * cos;
+                pa = temp;
+                temp = pc * cos + pd * sin;
+                pd = pc * -sin + pd * cos;
+                pc = temp;
+
+                if (!parent.data.inheritScale) break;
+                parent = parent.parent;
+            } while (parent != null);
+            m.a = pa * la + pb * lc;
+            m.c = pa * lb + pb * ld;
+            m.b = pc * la + pd * lc;
+            m.d = pc * lb + pd * ld;
+            if (skeleton.flipX) {
+                m.a = -m.a;
+                m.c = -m.c;
+            }
+            if (skeleton.flipY !== spine.Bone.yDown) {
+                m.b = -m.b;
+                m.d = -m.d;
+            }
         } else {
-            this.m00 = cos * this.worldScaleX;
-            this.m01 = -sin * this.worldScaleY;
-        }
-        if (this.worldFlipY != spine.Bone.yDown)
-        {
-            this.m10 = -sin * this.worldScaleX;
-            this.m11 = -cos * this.worldScaleY;
-        } else {
-            this.m10 = sin * this.worldScaleX;
-            this.m11 = cos * this.worldScaleY;
+            m.a = la;
+            m.c = lb;
+            m.b = lc;
+            m.d = ld;
         }
     },
+
     setToSetupPose: function ()
     {
         var data = this.data;
@@ -813,26 +892,53 @@ spine.Bone.prototype = {
     },
     worldToLocal: function (world)
     {
-        var dx = world[0] - this.worldX, dy = world[1] - this.worldY;
-        var m00 = this.m00, m10 = this.m10, m01 = this.m01, m11 = this.m11;
-        if (this.worldFlipX != (this.worldFlipY != spine.Bone.yDown))
-        {
-            m00 = -m00;
-            m11 = -m11;
-        }
-        var invDet = 1 / (m00 * m11 - m01 * m10);
-        world[0] = dx * m00 * invDet - dy * m01 * invDet;
-        world[1] = dy * m11 * invDet - dx * m10 * invDet;
+        var m = this.matrix;
+        var dx = world[0] - m.tx, dy = m.ty;
+        var invDet = 1 / (m.a * m.d - m.b * m.c);
+        //Yep, its a bug in original spine. I hope they'll fix it: https://github.com/EsotericSoftware/spine-runtimes/issues/544
+        world[0] = dx * m.a * invDet - dy * m.c * invDet;
+        world[1] = dy * m.d * invDet - dx * m.b * invDet;
     },
     localToWorld: function (local)
     {
         var localX = local[0], localY = local[1];
-        local[0] = localX * this.m00 + localY * this.m01 + this.worldX;
-        local[1] = localX * this.m10 + localY * this.m11 + this.worldY;
+        var m = this.matrix;
+        local[0] = localX * m.a + localY * m.c + m.tx;
+        local[1] = localX * m.b + localY * m.d + m.ty;
+    },
+    getWorldRotationX: function() {
+        return Math.atan2(this.matrix.b, this.matrix.a) * spine.radDeg;
+
+    },
+    getWorldRotationY: function() {
+        return Math.atan2(this.matrix.d, this.matrix.c) * spine.radDeg;
+    },
+    getWorldScaleX: function() {
+        var a = this.matrix.a;
+        var b = this.matrix.b;
+        return Math.sqrt(a*a+b*b);
+    },
+    getWorldScaleY: function() {
+        var c = this.matrix.c;
+        var d = this.matrix.d;
+        return Math.sqrt(c * c + d * d);
     }
 };
-module.exports = spine.Bone;
 
+Object.defineProperties(spine.Bone.prototype, {
+    worldX: {
+        get: function() {
+            return this.matrix.tx;
+        }
+    },
+    worldY:  {
+        get: function() {
+            return this.matrix.ty;
+        }
+    }
+});
+
+module.exports = spine.Bone;
 
 },{"../SpineUtil":42}],13:[function(require,module,exports){
 var spine = require('../SpineUtil');
@@ -867,7 +973,7 @@ spine.BoundingBoxAttachment.prototype = {
     {
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.m00, m01 = bone.m01, m10 = bone.m10, m11 = bone.m11;
+        var m00 = bone.a, m01 = bone.c, m10 = bone.b, m11 = bone.d;
         var vertices = this.vertices;
         for (var i = 0, n = vertices.length; i < n; i += 2)
         {
@@ -1361,79 +1467,140 @@ spine.IkConstraint.prototype = {
  * coordinate system. */
 spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
 {
-    var parentRotation = (!bone.data.inheritRotation || !bone.parent) ? 0 : bone.parent.worldRotation;
+    var parentRotation = bone.parent ? bone.parent.getWorldRotationX(): 0;
     var rotation = bone.rotation;
-    // worldY and targetY sign depends on global constant spine.Bone.yDown
-    var rotationIK = (spine.Bone.yDown?-spine.radDeg:spine.radDeg)* Math.atan2(targetY - bone.worldY, targetX - bone.worldX) - parentRotation;
+    var rotationIK = Math.atan2(targetY - bone.worldY, targetX - bone.worldX) * spine.radDeg - parentRotation;
+    if ((bone.worldSignX != bone.worldSignY) != (bone.skeleton.flipX != (bone.skeleton.flipY != spine.Bone.yDown))) rotationIK = 360 - rotationIK;
+    if (rotationIK > 180)
+        rotationIK -= 360;
+    else if (rotationIK < -180) rotationIK += 360;
     bone.rotationIK = rotation + (rotationIK - rotation) * alpha;
 };
 /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
  * target is specified in the world coordinate system.
  * @param child Any descendant bone of the parent. */
-spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDirection, alpha)
+spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, alpha)
 {
-    var childRotation = child.rotation, parentRotation = parent.rotation;
-    if (!alpha)
-    {
-        child.rotationIK = childRotation;
-        parent.rotationIK = parentRotation;
-        return;
-    }
-    var positionX, positionY, tempPosition = spine.temp;
-    var parentParent = parent.parent;
-    if (parentParent)
-    {
-        tempPosition[0] = targetX;
-        tempPosition[1] = targetY;
-        parentParent.worldToLocal(tempPosition);
-        targetX = (tempPosition[0] - parent.x) * parentParent.worldScaleX;
-        targetY = (tempPosition[1] - parent.y) * parentParent.worldScaleY;
+    if (alpha == 0) return;
+    var px = parent.x, py = parent.y, psx = parent.scaleX, psy = parent.scaleY, csx = child.scaleX, cy = child.y;
+    var offset1, offset2, sign2;
+    if (psx < 0) {
+        psx = -psx;
+        offset1 = 180;
+        sign2 = -1;
     } else {
-        targetX -= parent.x;
-        targetY -= parent.y;
+        offset1 = 0;
+        sign2 = 1;
     }
-    if (child.parent == parent)
-    {
-        positionX = child.x;
-        positionY = child.y;
+    if (psy < 0) {
+        psy = -psy;
+        sign2 = -sign2;
+    }
+    if (csx < 0) {
+        csx = -csx;
+        offset2 = 180;
+    } else
+        offset2 = 0;
+    var pp = parent.parent;
+    var ppm = pp.matrix;
+    var tx, ty, dx, dy;
+    if (pp == null) {
+        tx = targetX - px;
+        ty = targetY - py;
+        dx = child.worldX - px;
+        dy = child.worldY - py;
     } else {
-        tempPosition[0] = child.x;
-        tempPosition[1] = child.y;
-        child.parent.localToWorld(tempPosition);
-        parent.worldToLocal(tempPosition);
-        positionX = tempPosition[0];
-        positionY = tempPosition[1];
+        var a = ppm.a, b = ppm.c, c = ppm.b, d = ppm.d, invDet = 1 / (a * d - b * c);
+        var wx = ppm.tx, wy = ppm.ty, x = targetX - wx, y = targetY - wy;
+        tx = (x * d - y * b) * invDet - px;
+        ty = (y * a - x * c) * invDet - py;
+        x = child.worldX - wx;
+        y = child.worldY - wy;
+        dx = (x * d - y * b) * invDet - px;
+        dy = (y * a - x * c) * invDet - py;
     }
-    var childX = positionX * parent.worldScaleX, childY = positionY * parent.worldScaleY;
-    var offset = Math.atan2(childY, childX);
-    var len1 = Math.sqrt(childX * childX + childY * childY), len2 = child.data.length * child.worldScaleX;
-    // Based on code by Ryan Juckett with permission: Copyright (c) 2008-2009 Ryan Juckett, http://www.ryanjuckett.com/
-    var cosDenom = 2 * len1 * len2;
-    if (cosDenom < 0.0001)
-    {
-        child.rotationIK = childRotation + (Math.atan2(targetY, targetX) * spine.radDeg - parentRotation - childRotation) * alpha;
-        return;
-    }
-    var cos = (targetX * targetX + targetY * targetY - len1 * len1 - len2 * len2) / cosDenom;
-    if (cos < -1)
-        cos = -1;
-    else if (cos > 1)
-        cos = 1;
-    var childAngle = Math.acos(cos) * bendDirection;
-    var adjacent = len1 + len2 * cos, opposite = len2 * Math.sin(childAngle);
-    var parentAngle = Math.atan2(targetY * adjacent - targetX * opposite, targetX * adjacent + targetY * opposite);
-    var rotation = (parentAngle - offset) * spine.radDeg - parentRotation;
-    if (rotation > 180)
-        rotation -= 360;
-    else if (rotation < -180) //
-        rotation += 360;
-    parent.rotationIK = parentRotation + rotation * alpha;
-    rotation = (childAngle + offset) * spine.radDeg - childRotation;
-    if (rotation > 180)
-        rotation -= 360;
-    else if (rotation < -180) //
-        rotation += 360;
-    child.rotationIK = childRotation + (rotation + parent.worldRotation - child.parent.worldRotation) * alpha;
+    var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
+    outer:
+        if (Math.abs(psx - psy) <= 0.0001) {
+            l2 *= psx;
+            var cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+            if (cos < -1)
+                cos = -1;
+            else if (cos > 1) cos = 1;
+            a2 = Math.acos(cos) * bendDir;
+            var a = l1 + l2 * cos, o = l2 * Math.sin(a2);
+            a1 = Math.atan2(ty * a - tx * o, tx * a + ty * o);
+        } else {
+            cy = 0;
+            var a = psx * l2, b = psy * l2, ta = Math.atan2(ty, tx);
+            var aa = a * a, bb = b * b, ll = l1 * l1, dd = tx * tx + ty * ty;
+            var c0 = bb * ll + aa * dd - aa * bb, c1 = -2 * bb * l1, c2 = bb - aa;
+            var d = c1 * c1 - 4 * c2 * c0;
+            if (d >= 0) {
+                var q = Math.sqrt(d);
+                if (c1 < 0) q = -q;
+                q = -(c1 + q) / 2;
+                var r0 = q / c2, r1 = c0 / q;
+                var r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
+                if (r * r <= dd) {
+                    var y = Math.sqrt(dd - r * r) * bendDir;
+                    a1 = ta - Math.atan2(y, r);
+                    a2 = Math.atan2(y / psy, (r - l1) / psx);
+                    break outer;
+                }
+            }
+            var minAngle = 0, minDist = Infinity, minX = 0, minY = 0;
+            var maxAngle = 0, maxDist = 0, maxX = 0, maxY = 0;
+            var x = l1 + a, dist = x * x;
+            if (dist > maxDist) {
+                maxAngle = 0;
+                maxDist = dist;
+                maxX = x;
+            }
+            x = l1 - a;
+            dist = x * x;
+            if (dist < minDist) {
+                minAngle = PI;
+                minDist = dist;
+                minX = x;
+            }
+            var angle = Math.acos(-a * l1 / (aa - bb));
+            x = a * Math.cos(angle) + l1;
+            var y = b * Math.sin(angle);
+            dist = x * x + y * y;
+            if (dist < minDist) {
+                minAngle = angle;
+                minDist = dist;
+                minX = x;
+                minY = y;
+            }
+            if (dist > maxDist) {
+                maxAngle = angle;
+                maxDist = dist;
+                maxX = x;
+                maxY = y;
+            }
+            if (dd <= (minDist + maxDist) / 2) {
+                a1 = ta - Math.atan2(minY * bendDir, minX);
+                a2 = minAngle * bendDir;
+            } else {
+                a1 = ta - Math.atan2(maxY * bendDir, maxX);
+                a2 = maxAngle * bendDir;
+            }
+        }
+    var offset = Math.atan2(cy, child.x) * sign2;
+    a1 = (a1 - offset) * spine.radDeg + offset1;
+    a2 = (a2 + offset) * spine.radDeg * sign2 + offset2;
+    if (a1 > 180)
+        a1 -= 360;
+    else if (a1 < -180) a1 += 360;
+    if (a2 > 180)
+        a2 -= 360;
+    else if (a2 < -180) a2 += 360;
+    var rotation = parent.rotation;
+    parent.rotationIK = rotation + (a1 - rotation) * alpha;
+    rotation = child.rotation;
+    child.rotationIK = rotation + (a2 - rotation) * alpha;
 };
 module.exports = spine.IkConstraint;
 
@@ -1556,7 +1723,7 @@ spine.MeshAttachment.prototype = {
         var bone = slot.bone;
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.m00, m01 = bone.m01, m10 = bone.m10, m11 = bone.m11;
+        var m00 = bone.matrix.a, m01 = bone.matrix.c, m10 = bone.matrix.b, m11 = bone.matrix.d;
         var vertices = this.vertices;
         var verticesCount = vertices.length;
         if (slot.attachmentVertices.length == verticesCount) vertices = slot.attachmentVertices;
@@ -1652,7 +1819,7 @@ spine.RegionAttachment.prototype = {
     {
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.m00, m01 = bone.m01, m10 = bone.m10, m11 = bone.m11;
+        var m00 = bone.matrix.a, m01 = bone.matrix.c, m10 = bone.matrix.b, m11 = bone.matrix.d;
         var offset = this.offset;
         vertices[0/*X1*/] = offset[0/*X1*/] * m00 + offset[1/*Y1*/] * m01 + x;
         vertices[1/*Y1*/] = offset[0/*X1*/] * m10 + offset[1/*Y1*/] * m11 + y;
@@ -3005,7 +3172,8 @@ spine.SkinnedMeshAttachment.prototype = {
         var bones = this.bones;
 
         var w = 0, v = 0, b = 0, f = 0, n = bones.length, nn;
-        var wx, wy, bone, vx, vy, weight;
+        var wx, wy, vx, vy, weight;
+        var m;
         if (!slot.attachmentVertices.length)
         {
             for (; v < n; w += 2)
@@ -3015,12 +3183,12 @@ spine.SkinnedMeshAttachment.prototype = {
                 nn = bones[v++] + v;
                 for (; v < nn; v++, b += 3)
                 {
-                    bone = skeletonBones[bones[v]];
+                    m = skeletonBones[bones[v]].matrix;
                     vx = weights[b];
                     vy = weights[b + 1];
                     weight = weights[b + 2];
-                    wx += (vx * bone.m00 + vy * bone.m01 + bone.worldX) * weight;
-                    wy += (vx * bone.m10 + vy * bone.m11 + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx + x;
                 worldVertices[w + 1] = wy + y;
@@ -3034,12 +3202,12 @@ spine.SkinnedMeshAttachment.prototype = {
                 nn = bones[v++] + v;
                 for (; v < nn; v++, b += 3, f += 2)
                 {
-                    bone = skeletonBones[bones[v]];
+                    m = skeletonBones[bones[v]].matrix;
                     vx = weights[b] + ffd[f];
                     vy = weights[b + 1] + ffd[f + 1];
                     weight = weights[b + 2];
-                    wx += (vx * bone.m00 + vy * bone.m01 + bone.worldX) * weight;
-                    wy += (vx * bone.m10 + vy * bone.m11 + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx + x;
                 worldVertices[w + 1] = wy + y;
@@ -3273,7 +3441,12 @@ module.exports = {
     degRad: Math.PI / 180,
     temp: [],
     Float32Array: (typeof(Float32Array) === 'undefined') ? Array : Float32Array,
-    Uint16Array: (typeof(Uint16Array) === 'undefined') ? Array : Uint16Array
+    Uint16Array: (typeof(Uint16Array) === 'undefined') ? Array : Uint16Array,
+    signum: function(x) {
+        if (x>0) return 1;
+        if (x<0) return -1;
+        return 0;
+    }
 };
 
 
@@ -3486,21 +3659,29 @@ Spine.prototype.update = function (dt)
                 }
             }
 
-            var bone = slot.bone;
+            if (slotContainer.transform ) {
+                //PIXI v4.0
+                if (!slotContainer.transform._dirtyLocal) {
+                    slotContainer.transform = new PIXI.TransformStatic();
+                }
+                var transform = slotContainer.transform;
+                var lt = transform.localTransform;
+                transform._dirtyParentVersion = -1;
+                transform._dirtyLocal = 1;
+                transform._versionLocal = 1;
+                slot.bone.matrix.copy(lt);
+                lt.tx += slot.bone.skeleton.x;
+                lt.ty += slot.bone.skeleton.y;
+            } else {
+                //PIXI v3
+                var lt = slotContainer.localTransform || new PIXI.Matrix();
+                slot.bone.matrix.copy(lt);
+                lt.tx += slot.bone.skeleton.x;
+                lt.ty += slot.bone.skeleton.y;
+                slotContainer.localTransform = lt;
+                slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
+            }
 
-            slotContainer.position.x = bone.worldX + attachment.x * bone.m00 + attachment.y * bone.m01;
-            slotContainer.position.y = bone.worldY + attachment.x * bone.m10 + attachment.y * bone.m11;
-            slotContainer.scale.x = bone.worldScaleX;
-            slotContainer.scale.y = bone.worldScaleY;
-            slotContainer.rotation = -(slot.bone.worldRotation * spine.degRad);
-            if (bone.worldFlipX) {
-                slotContainer.scale.x = -slotContainer.scale.x;
-                slotContainer.rotation = -slotContainer.rotation;
-            }
-            if (bone.worldFlipY == spine.Bone.yDown) {
-                slotContainer.scale.y = -slotContainer.scale.y;
-                slotContainer.rotation = -slotContainer.rotation;
-            }
             slot.currentSprite.blendMode = slot.blendMode;
             slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
         }
@@ -3529,9 +3710,7 @@ Spine.prototype.update = function (dt)
                 slot.currentMesh = slot.meshes[meshName];
                 slot.currentMeshName = meshName;
             }
-
             attachment.computeWorldVertices(slot.bone.skeleton.x, slot.bone.skeleton.y, slot, slot.currentMesh.vertices);
-
         }
         else
         {
@@ -3584,9 +3763,11 @@ Spine.prototype.createSprite = function (slot, attachment)
     var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
     sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
     sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
-    sprite.rotation = baseRotation - (attachment.rotation * spine.degRad);
+    sprite.rotation = baseRotation + (attachment.rotation * spine.degRad);
     sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
     sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
+    sprite.position.x = attachment.x;
+    sprite.position.y = attachment.y;
     sprite.alpha = attachment.a;
 
     if (descriptor.rotate) {
@@ -3594,6 +3775,7 @@ Spine.prototype.createSprite = function (slot, attachment)
         sprite.scale.x = sprite.scale.y;
         sprite.scale.y = x1;
     }
+    sprite.scale.y = -sprite.scale.y;
 
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
@@ -3627,6 +3809,21 @@ Spine.prototype.createMesh = function (slot, attachment)
     slot.meshes[attachment.name] = strip;
 
     return strip;
+};
+
+function SlotContainerUpdateTransformV3()
+{
+    var pt = this.parent.worldTransform;
+    var wt = this.worldTransform;
+    var lt = this.localTransform;
+    wt.a  = lt.a  * pt.a + lt.b  * pt.c;
+    wt.b  = lt.a  * pt.b + lt.b  * pt.d;
+    wt.c  = lt.c  * pt.a + lt.d  * pt.c;
+    wt.d  = lt.c  * pt.b + lt.d  * pt.d;
+    wt.tx = lt.tx * pt.a + lt.ty * pt.c + pt.tx;
+    wt.ty = lt.tx * pt.b + lt.ty * pt.d + pt.ty;
+    this.worldAlpha = this.alpha * this.parent.worldAlpha;
+    this._currentBounds = null;
 };
 
 },{"../SpineRuntime":41,"../loaders/atlasParser":45}],44:[function(require,module,exports){

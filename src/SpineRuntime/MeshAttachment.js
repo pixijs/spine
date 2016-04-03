@@ -48,7 +48,7 @@ spine.MeshAttachment.prototype = {
         var bone = slot.bone;
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.m00, m01 = bone.m01, m10 = bone.m10, m11 = bone.m11;
+        var m00 = bone.matrix.a, m01 = bone.matrix.c, m10 = bone.matrix.b, m11 = bone.matrix.d;
         var vertices = this.vertices;
         var verticesCount = vertices.length;
         if (slot.attachmentVertices.length == verticesCount) vertices = slot.attachmentVertices;
