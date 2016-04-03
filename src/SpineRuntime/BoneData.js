@@ -10,8 +10,7 @@ spine.BoneData.prototype = {
     rotation: 0,
     scaleX: 1, scaleY: 1,
     inheritScale: true,
-    inheritRotation: true,
-    flipX: false, flipY: false
+    inheritRotation: true
 };
 module.exports = spine.BoneData;
 

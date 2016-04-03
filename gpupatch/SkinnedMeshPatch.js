@@ -537,7 +537,7 @@ function patchPixiSpine(options) {
                     var timeline = timelines[j];
                     if (timeline instanceof spine.FfdTimeline) {
                         var mesh = timeline.attachment;
-                        timeline.skinnedMeshSkinOffset = size - mesh.skinnedMeshSkinOffset / 2;
+                        timeline.skinnedMeshSkinOffset = size;
                         var si = mesh.skinIndices;
                         if (si) {
                             //new format
@@ -615,7 +615,10 @@ function patchPixiSpine(options) {
         if (typeof offset === "undefined")
             return proto.call(this, skeleton, lastTime, time, firedEvents, alpha);
         var slot = skeleton.slots[this.slotIndex];
+        var slotAttachment = slot.attachment;
+        if (!slotAttachment.applyFFD || !slotAttachment.applyFFD(this.attachment)) return;
         if (slot.attachment != this.attachment) return;
+        offset -= slotAttachment.skinnedMeshSkinOffset / 2;
         var siLen = this.attachment.skinnedMeshSkinSize / 2;
         var frames = this.frames;
         if (time < frames[0]) return; // Time is before first frame.
@@ -644,7 +647,7 @@ function patchPixiSpine(options) {
             var slot = this.slotContainers[i];
             slot.visible = false;
         }
-    }
+    };
 
     var oldRender = core.spine.Spine.prototype._renderWebGL;
 

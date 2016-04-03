@@ -1,7 +1,7 @@
 var spine = require('../SpineUtil');
 spine.RegionAttachment = require('./RegionAttachment');
 spine.MeshAttachment = require('./MeshAttachment');
-spine.SkinnedMeshAttachment = require('./SkinnedMeshAttachment');
+spine.WeightedMeshAttachment = require('./WeightedMeshAttachment');
 spine.BoundingBoxAttachment = require('./BoundingBoxAttachment');
 spine.AtlasAttachmentParser = function (atlas)
 {
@@ -42,7 +42,7 @@ spine.AtlasAttachmentParser.prototype = {
         attachment.regionOriginalHeight = region.originalHeight;
         return attachment;
     },
-    newSkinnedMeshAttachment: function (skin, name, path)
+    newWeightedMeshAttachment: function (skin, name, path)
     {
         var region = this.atlas.findRegion(path);
         if (!region) throw "Region not found in atlas: " + path + " (skinned mesh attachment: " + name + ")";

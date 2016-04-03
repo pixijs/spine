@@ -1,11 +1,13 @@
 var spine = require('../SpineUtil') || {};
 spine.AttachmentType = require('./AttachmentType');
-spine.SkinnedMeshAttachment = function (name)
+spine.WeightedMeshAttachment = function (name)
 {
     this.name = name;
 };
-spine.SkinnedMeshAttachment.prototype = {
-    type: spine.AttachmentType.skinnedmesh,
+spine.WeightedMeshAttachment.prototype = {
+    type: spine.AttachmentType.weightedmesh,
+    parentMesh: null,
+    inheritFFD: false,
     bones: null,
     weights: null,
     uvs: null,
@@ -92,7 +94,20 @@ spine.SkinnedMeshAttachment.prototype = {
                 worldVertices[w + 1] = wy + y;
             }
         }
+    },
+    applyFFD: function(sourceAttachment) {
+        return this === sourceAttachment || (this.inheritFFD && parentMesh === sourceAttachment);
+    },
+    setParentMesh: function(parentMesh) {
+        this.parentMesh = parentMesh;
+        if (parentMesh != null) {
+            this.bones = parentMesh.bones;
+            this.weights = parentMesh.weights;
+            this.regionUVs = parentMesh.regionUVs;
+            this.triangles = parentMesh.triangles;
+            this.hullLength = parentMesh.hullLength;
+        }
     }
 };
-module.exports = spine.SkinnedMeshAttachment;
+module.exports = spine.WeightedMeshAttachment;
 

@@ -6,6 +6,8 @@ spine.MeshAttachment = function (name)
 };
 spine.MeshAttachment.prototype = {
     type: spine.AttachmentType.mesh,
+    parentMesh: null,
+    inheritFFD: false,
     vertices: null,
     uvs: null,
     regionUVs: null,
@@ -58,6 +60,18 @@ spine.MeshAttachment.prototype = {
             var vy = vertices[i + 1];
             worldVertices[i] = vx * m00 + vy * m01 + x;
             worldVertices[i + 1] = vx * m10 + vy * m11 + y;
+        }
+    },
+    applyFFD: function(sourceAttachment) {
+        return this === sourceAttachment || (this.inheritFFD && parentMesh === sourceAttachment);
+    },
+    setParentMesh: function(parentMesh) {
+        this.parentMesh = parentMesh;
+        if (parentMesh != null) {
+            this.vertices = parentMesh.vertices;
+            this.regionUVs = parentMesh.regionUVs;
+            this.triangles = parentMesh.triangles;
+            this.hullLength = parentMesh.hullLength;
         }
     }
 };

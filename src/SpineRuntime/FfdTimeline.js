@@ -24,7 +24,8 @@ spine.FfdTimeline.prototype = {
     apply: function (skeleton, lastTime, time, firedEvents, alpha)
     {
         var slot = skeleton.slots[this.slotIndex];
-        if (slot.attachment != this.attachment) return;
+        var slotAttachment = slot.attachment;
+        if (!slotAttachment.applyFFD || !slotAttachment.applyFFD(this.attachment)) return;
 
         var frames = this.frames;
         if (time < frames[0]) return; // Time is before first frame.

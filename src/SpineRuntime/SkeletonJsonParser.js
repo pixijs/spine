@@ -11,17 +11,24 @@ spine.AttachmentTimeline = require('./AttachmentTimeline');
 spine.RotateTimeline = require('./RotateTimeline');
 spine.ScaleTimeline = require('./ScaleTimeline');
 spine.TranslateTimeline = require('./TranslateTimeline');
-spine.FlipXTimeline = require('./FlipXTimeline');
-spine.FlipYTimeline = require('./FlipYTimeline');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
 spine.FfdTimeline = require('./FfdTimeline');
 spine.DrawOrderTimeline = require('./DrawOrderTimeline');
 spine.EventTimeline = require('./EventTimeline');
 spine.Event = require('./Event');
 spine.Animation = require('./Animation');
+
+function LinkedMesh(mesh, skin, slotIndex, parent) {
+    this.mesh = mesh;
+    this.skin = skin;
+    this.slotIndex = slotIndex;
+    this.parent = parent;
+}
+
 spine.SkeletonJsonParser = function (attachmentLoader)
 {
     this.attachmentLoader = attachmentLoader;
+    this.linkedMeshes = [];
 };
 spine.SkeletonJsonParser.prototype = {
     scale: 1,
@@ -58,8 +65,6 @@ spine.SkeletonJsonParser.prototype = {
             boneData.rotation = (boneMap["rotation"] || 0);
             boneData.scaleX = boneMap.hasOwnProperty("scaleX") ? boneMap["scaleX"] : 1;
             boneData.scaleY = boneMap.hasOwnProperty("scaleY") ? boneMap["scaleY"] : 1;
-            boneData.flipX = boneMap.hasOwnProperty("flipX") ? boneMap["flipX"] : false;
-            boneData.flipY = boneMap.hasOwnProperty("flipY") ? boneMap["flipY"] : false;
             boneData.inheritScale = boneMap.hasOwnProperty("inheritScale") ? boneMap["inheritScale"] : true;
             boneData.inheritRotation = boneMap.hasOwnProperty("inheritRotation") ? boneMap["inheritRotation"] : true;
             skeletonData.bones.push(boneData);
@@ -133,13 +138,24 @@ spine.SkeletonJsonParser.prototype = {
                 for (var attachmentName in slotEntry)
                 {
                     if (!slotEntry.hasOwnProperty(attachmentName)) continue;
-                    var attachment = this.readAttachment(skin, attachmentName, slotEntry[attachmentName]);
+                    var attachment = this.readAttachment(skin, slotIndex, attachmentName, slotEntry[attachmentName]);
                     if (attachment) skin.addAttachment(slotIndex, attachmentName, attachment);
                 }
             }
             skeletonData.skins.push(skin);
             if (skin.name == "default") skeletonData.defaultSkin = skin;
         }
+
+        var linkedMeshes = this.linkedMeshes;
+        // Linked meshes.
+        for (var i = 0, n = linkedMeshes.size; i < n; i++) {
+            var linkedMesh = linkedMeshes[i];
+            var skin = linkedMesh.skin ? skeletonData.findSkin(linkedMesh.skin): skeletonData.defaultSkin;
+            var parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
+            linkedMesh.mesh.setParentMesh(parent);
+            linkedMesh.mesh.updateUVs();
+        }
+        linkedMeshes.length = 0;
 
         // Events.
         var events = root["events"];
@@ -164,7 +180,7 @@ spine.SkeletonJsonParser.prototype = {
 
         return skeletonData;
     },
-    readAttachment: function (skin, name, map)
+    readAttachment: function (skin, slotIndex, name, map)
     {
         name = map["name"] || name;
 
@@ -196,73 +212,6 @@ spine.SkeletonJsonParser.prototype = {
 
             region.updateOffset();
             return region;
-        } else if (type == spine.AttachmentType.mesh)
-        {
-            var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
-            if (!mesh) return null;
-            mesh.path = path;
-            mesh.vertices = this.getFloatArray(map, "vertices", scale);
-            mesh.triangles = this.getIntArray(map, "triangles");
-            mesh.regionUVs = this.getFloatArray(map, "uvs", 1);
-            mesh.updateUVs();
-
-            color = map["color"];
-            if (color)
-            {
-                mesh.r = this.toColor(color, 0);
-                mesh.g = this.toColor(color, 1);
-                mesh.b = this.toColor(color, 2);
-                mesh.a = this.toColor(color, 3);
-            }
-
-            mesh.hullLength = (map["hull"] || 0) * 2;
-            if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
-            mesh.width = (map["width"] || 0) * scale;
-            mesh.height = (map["height"] || 0) * scale;
-            return mesh;
-        } else if (type == spine.AttachmentType.skinnedmesh || type == spine.AttachmentType.weightedmesh)
-        {
-            var mesh = this.attachmentLoader.newSkinnedMeshAttachment(skin, name, path);
-            if (!mesh) return null;
-            mesh.path = path;
-
-            var uvs = this.getFloatArray(map, "uvs", 1);
-            var vertices = this.getFloatArray(map, "vertices", 1);
-            var weights = [];
-            var bones = [];
-            for (var i = 0, n = vertices.length; i < n; )
-            {
-                var boneCount = vertices[i++] | 0;
-                bones[bones.length] = boneCount;
-                for (var nn = i + boneCount * 4; i < nn; )
-                {
-                    bones[bones.length] = vertices[i];
-                    weights[weights.length] = vertices[i + 1] * scale;
-                    weights[weights.length] = vertices[i + 2] * scale;
-                    weights[weights.length] = vertices[i + 3];
-                    i += 4;
-                }
-            }
-            mesh.bones = bones;
-            mesh.weights = weights;
-            mesh.triangles = this.getIntArray(map, "triangles");
-            mesh.regionUVs = uvs;
-            mesh.updateUVs();
-
-            color = map["color"];
-            if (color)
-            {
-                mesh.r = this.toColor(color, 0);
-                mesh.g = this.toColor(color, 1);
-                mesh.b = this.toColor(color, 2);
-                mesh.a = this.toColor(color, 3);
-            }
-
-            mesh.hullLength = (map["hull"] || 0) * 2;
-            if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
-            mesh.width = (map["width"] || 0) * scale;
-            mesh.height = (map["height"] || 0) * scale;
-            return mesh;
         } else if (type == spine.AttachmentType.boundingbox)
         {
             var attachment = this.attachmentLoader.newBoundingBoxAttachment(skin, name);
@@ -270,6 +219,83 @@ spine.SkeletonJsonParser.prototype = {
             for (var i = 0, n = vertices.length; i < n; i++)
                 attachment.vertices.push(vertices[i] * scale);
             return attachment;
+        } else if (type == spine.AttachmentType.mesh || type == spine.AttachmentType.linkedmesh)
+        {
+            var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+            if (!mesh) return null;
+            mesh.path = path;
+            color = map["color"];
+            if (color)
+            {
+                mesh.r = this.toColor(color, 0);
+                mesh.g = this.toColor(color, 1);
+                mesh.b = this.toColor(color, 2);
+                mesh.a = this.toColor(color, 3);
+            }
+            mesh.width = (map["width"] || 0) * scale;
+            mesh.height = (map["height"] || 0) * scale;
+
+            var parent = map["parent"];
+            if (!parent) {
+                mesh.vertices = this.getFloatArray(map, "vertices", scale);
+                mesh.triangles = this.getIntArray(map, "triangles");
+                mesh.regionUVs = this.getFloatArray(map, "uvs", 1);
+                mesh.updateUVs();
+                mesh.hullLength = (map["hull"] || 0) * 2;
+                if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
+            } else {
+                mesh.inheritFFD = !!map["ffd"];
+                this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
+            }
+            return mesh;
+        } else if (type == spine.AttachmentType.weightedmesh || type == spine.AttachmentType.weightedlinkedmesh)
+        {
+            var mesh = this.attachmentLoader.newWeightedMeshAttachment(skin, name, path);
+            if (!mesh) return null;
+            mesh.path = path;
+            color = map["color"];
+            if (color)
+            {
+                mesh.r = this.toColor(color, 0);
+                mesh.g = this.toColor(color, 1);
+                mesh.b = this.toColor(color, 2);
+                mesh.a = this.toColor(color, 3);
+            }
+            mesh.width = (map["width"] || 0) * scale;
+            mesh.height = (map["height"] || 0) * scale;
+
+            var parent = map["parent"];
+            if (!parent) {
+                var uvs = this.getFloatArray(map, "uvs", 1);
+                var vertices = this.getFloatArray(map, "vertices", 1);
+                var weights = [];
+                var bones = [];
+                for (var i = 0, n = vertices.length; i < n; )
+                {
+                    var boneCount = vertices[i++] | 0;
+                    bones[bones.length] = boneCount;
+                    for (var nn = i + boneCount * 4; i < nn; )
+                    {
+                        bones[bones.length] = vertices[i];
+                        weights[weights.length] = vertices[i + 1] * scale;
+                        weights[weights.length] = vertices[i + 2] * scale;
+                        weights[weights.length] = vertices[i + 3];
+                        i += 4;
+                    }
+                }
+                mesh.bones = bones;
+                mesh.weights = weights;
+                mesh.triangles = this.getIntArray(map, "triangles");
+                mesh.regionUVs = uvs;
+                mesh.updateUVs();
+
+                mesh.hullLength = (map["hull"] || 0) * 2;
+                if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
+            } else {
+                mesh.inheritFFD = !!map["ffd"];
+                this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
+            }
+            return mesh;
         }
         throw "Unknown attachment type: " + type;
     },
@@ -385,20 +411,7 @@ spine.SkeletonJsonParser.prototype = {
 
                 } else if (timelineName == "flipX" || timelineName == "flipY")
                 {
-                    var x = timelineName == "flipX";
-                    var timeline = x ? new spine.FlipXTimeline(values.length) : new spine.FlipYTimeline(values.length);
-                    timeline.boneIndex = boneIndex;
-
-                    var field = x ? "x" : "y";
-                    var frameIndex = 0;
-                    for (var i = 0, n = values.length; i < n; i++)
-                    {
-                        var valueMap = values[i];
-                        timeline.setFrame(frameIndex, valueMap["time"], valueMap[field] || false);
-                        frameIndex++;
-                    }
-                    timelines.push(timeline);
-                    duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 2 - 2]);
+                    throw "flipX and flipY are not supported in spine v3: (" + boneName + ")";
                 } else
                     throw "Invalid timeline type for a bone: " + timelineName + " (" + boneName + ")";
             }

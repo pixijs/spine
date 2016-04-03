@@ -153,8 +153,6 @@ spine.Bone.prototype = {
         this.rotationIK = this.rotation;
         this.scaleX = data.scaleX;
         this.scaleY = data.scaleY;
-        this.flipX = data.flipX;
-        this.flipY = data.flipY;
     },
     worldToLocal: function (world)
     {
