@@ -166,13 +166,13 @@ function patchPixiSpine(options) {
         if (!bonesMode) {
             var sz = 0;
             for (var i = 0; i < bones.length; i++) {
-                var bone = bones[i];
-                bonesArr[sz++] = bone.m00;
-                bonesArr[sz++] = bone.m01;
-                bonesArr[sz++] = bone.worldX;
-                bonesArr[sz++] = bone.m10;
-                bonesArr[sz++] = bone.m11;
-                bonesArr[sz++] = bone.worldY;
+                var m = bones[i].matrix;
+                bonesArr[sz++] = m.a;
+                bonesArr[sz++] = m.c;
+                bonesArr[sz++] = m.tx;
+                bonesArr[sz++] = m.b;
+                bonesArr[sz++] = m.d;
+                bonesArr[sz++] = m.ty;
             }
         }
 
