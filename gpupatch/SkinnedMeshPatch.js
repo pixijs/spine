@@ -642,10 +642,7 @@ function patchPixiSpine(options) {
         this._childrensAreInvisible = true;
         for (var i=0;i<this.slotContainers.length;i++) {
             var slot = this.slotContainers[i];
-            var ch = slot.children[0];
-            if (ch) {
-                ch.visible = false;
-            }
+            slot.visible = false;
         }
     }
 
