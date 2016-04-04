@@ -46,7 +46,7 @@ spine.AtlasAttachmentParser.prototype = {
     {
         var region = this.atlas.findRegion(path);
         if (!region) throw "Region not found in atlas: " + path + " (skinned mesh attachment: " + name + ")";
-        var attachment = new spine.SkinnedMeshAttachment(name);
+        var attachment = new spine.WeightedMeshAttachment(name);
         attachment.rendererObject = region;
         attachment.regionU = region.u;
         attachment.regionV = region.v;
