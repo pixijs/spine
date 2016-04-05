@@ -835,8 +835,8 @@ spine.Bone.prototype = {
             pd = 1;
             do {
                 var r = parent.rotation;
-                cos = Math.cos(r * spine.radDeg);
-                sin = Math.sin(r * spine.radDeg);
+                cos = Math.cos(r * spine.degRad);
+                sin = Math.sin(r * spine.degRad);
                 var psx = parent.scaleX, psy = parent.scaleY;
                 var za = cos * psx, zb = -sin * psy, zc = sin * psx, zd = cos * psy;
                 temp = pa * za + pb * zc;
