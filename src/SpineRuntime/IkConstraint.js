@@ -123,7 +123,7 @@ spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, 
             x = l1 - a;
             dist = x * x;
             if (dist < minDist) {
-                minAngle = PI;
+                minAngle = Math.PI;
                 minDist = dist;
                 minX = x;
             }

@@ -112,6 +112,7 @@ spine.Bone.prototype = {
 
                 if (psx < 0) {
                     r = -r;
+                } else {
                     sin = -sin;
                 }
                 temp = pa * cos + pb * sin;
