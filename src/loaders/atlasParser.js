@@ -15,6 +15,9 @@ var atlasParser = module.exports = function () {
          * have the same name
          */
         var atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + '.atlas';
+        //remove the baseUrl
+        atlasPath = atlasPath.replace(this.baseUrl, '');
+
         var atlasOptions = {
             crossOrigin: resource.crossOrigin,
             xhrType: Resource.XHR_RESPONSE_TYPE.TEXT,
@@ -25,6 +28,8 @@ var atlasParser = module.exports = function () {
             metadata: resource.metadata.imageMetadata
         };
         var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
+        //remove the baseUrl
+        baseUrl = baseUrl.replace(this.baseUrl, '');
 
         var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
         this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (res) {
