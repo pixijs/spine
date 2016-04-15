@@ -70,8 +70,8 @@ spine.Atlas = function (atlasText, loaderFunction, callback)
                     page.rendererObject = texture;
                     self.pages.push(page);
                     if (!page.width || !page.height) {
-                        page.width = texture.width;
-                        page.height = texture.height;
+                        page.width = texture.realWidth;
+                        page.height = texture.realHeight;
                         if (!page.width || !page.height) {
                             console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
                         }
@@ -84,7 +84,7 @@ spine.Atlas = function (atlasText, loaderFunction, callback)
                 region.name = line;
                 region.page = page;
 
-                region.rotate = reader.readValue() == "true";
+                var rotate = reader.readValue() == "true" ? 6 : 0;
 
                 reader.readTuple(tuple);
                 var x = parseInt(tuple[0]);
@@ -94,21 +94,13 @@ spine.Atlas = function (atlasText, loaderFunction, callback)
                 var width = parseInt(tuple[0]);
                 var height = parseInt(tuple[1]);
 
-                region.u = x / page.width;
-                region.v = y / page.height;
-                if (region.rotate) {
-                    region.u2 = (x + height) / page.width;
-                    region.v2 = (y + width) / page.height;
-                } else {
-                    region.u2 = (x + width) / page.width;
-                    region.v2 = (y + height) / page.height;
-                }
-                //detected resolution
                 var resolution = page.rendererObject.resolution;
-                region.x = x / resolution;
-                region.y = y / resolution;
-                region.width = Math.abs(width) / resolution;
-                region.height = Math.abs(height) / resolution;
+                x /= resolution;
+                y /= resolution;
+                width /= resolution;
+                height /= resolution;
+
+                var frame = new PIXI.Rectangle(x, y, region.rotate ? height : width, region.rotate ? width : height);
 
                 if (reader.readTuple(tuple) == 4) { // split is optional
                     region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
@@ -120,12 +112,18 @@ spine.Atlas = function (atlasText, loaderFunction, callback)
                     }
                 }
 
-                region.originalWidth = parseInt(tuple[0]) / resolution;
-                region.originalHeight = parseInt(tuple[1]) / resolution;
-
+                var originalWidth = parseInt(tuple[0]) / resolution;
+                var originalHeight = parseInt(tuple[1]) / resolution;
                 reader.readTuple(tuple);
-                region.offsetX = parseInt(tuple[0]) / resolution;
-                region.offsetY = parseInt(tuple[1]) / resolution;
+                var offsetX = parseInt(tuple[0]) / resolution;
+                var offsetY = parseInt(tuple[1]) / resolution;
+
+                var orig = new PIXI.Rectangle(0, 0, originalWidth, originalHeight);
+                var trim = new PIXI.Rectangle(offsetX, offsetY, width, height);
+
+                //TODO: pixiv3 uses different frame/crop/trim
+
+                region.rendererObject = new PIXI.Texture(region.page, frame, orig, trim, rotate);
 
                 region.index = parseInt(reader.readValue());
 
@@ -155,16 +153,7 @@ spine.Atlas.prototype = {
         {
             var region = regions[i];
             if (region.page != page) continue;
-            region.u = region.x / page.width;
-            region.v = region.y / page.height;
-            if (region.rotate)
-            {
-                region.u2 = (region.x + region.height) / page.width;
-                region.v2 = (region.y + region.width) / page.height;
-            } else {
-                region.u2 = (region.x + region.width) / page.width;
-                region.v2 = (region.y + region.height) / page.height;
-            }
+            region.rendererObject._updateUvs();
         }
     }
 };
