@@ -973,7 +973,7 @@ spine.BoundingBoxAttachment.prototype = {
     {
         x += bone.worldX;
         y += bone.worldY;
-        var m00 = bone.a, m01 = bone.c, m10 = bone.b, m11 = bone.d;
+        var m00 = bone.matrix.a, m01 = bone.matrix.c, m10 = bone.matrix.b, m11 = bone.matrix.d;
         var vertices = this.vertices;
         for (var i = 0, n = vertices.length; i < n; i += 2)
         {
