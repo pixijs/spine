@@ -6,7 +6,7 @@ spine.AtlasRegion.prototype = {
     /**
      * @member {PIXI.Texture}
      */
-    rendererObject: null,
+    texture: null,
 
     /**
      * @member {PIXI.spine.Spine.AtlasPage}
@@ -20,67 +20,97 @@ spine.AtlasRegion.prototype = {
 Object.defineProperties(spine.AtlasRegion.prototype, {
     x: {
         get: function() {
-            return this.rendererObject.frame.x;
+            return this.texture.frame.x;
         }
     },
     y: {
         get: function() {
-            return this.rendererObject.frame.y;
+            return this.texture.frame.y;
         }
     },
     width: {
         get: function() {
-            return this.rendererObject.trim.width;
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.width;
+            }
+            if (tex.trim) {
+                return tex.trim.width;
+            }
+            return tex.orig.width;
         }
     },
     height: {
         get: function() {
-            return this.rendererObject.trim.height;
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.height;
+            }
+            if (tex.trim) {
+                return tex.trim.height;
+            }
+            return tex.orig.height;
         }
     },
     u: {
         get: function() {
-            return this.rendererObject._uvs.x0;
+            return this.texture._uvs.x0;
         }
     },
     v: {
         get: function() {
-            return this.rendererObject._uvs.y0;
+            return this.texture._uvs.y0;
         }
     },
     u2: {
         get: function() {
-            return this.rendererObject._uvs.x2;
+            return this.texture._uvs.x2;
         }
     },
     v2: {
         get: function() {
-            return this.rendererObject._uvs.y2;
+            return this.texture._uvs.y2;
         }
     },
     rotate: {
         get: function() {
-            return !!this.rendererObject.rotate;
+            return !!this.texture.rotate;
         }
     },
     offsetX: {
         get: function() {
-            return this.rendererObject.trim.x;
+            var tex = this.texture;
+            return tex.trim ? tex.trim.x : 0;
         }
     },
     offsetY: {
         get: function() {
-            return this.rendererObject.trim.y;
+            var tex = this.texture;
+            return tex.trim ? tex.trim.y : 0;
         }
     },
     originalWidth: {
         get: function() {
-            return this.rendererObject.orig.width;
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.width;
+                }
+                return tex.crop.width;
+            }
+            return tex.orig.width;
         }
     },
     originalHeight: {
         get: function() {
-            return this.rendererObject.orig.height;
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.height;
+                }
+                return tex.crop.height;
+            }
+            return tex.orig.height;
         }
     }
 });

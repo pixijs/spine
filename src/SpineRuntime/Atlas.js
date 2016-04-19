@@ -42,6 +42,7 @@ spine.Atlas.prototype = {
         region.rendererObject = texture;
         region.index = -1;
         this.regions.push(region);
+        return region;
     },
     addTextureHash: function(textures) {
         for (var key in textures) {
@@ -143,7 +144,7 @@ spine.Atlas.prototype = {
                     width /= resolution;
                     height /= resolution;
 
-                    var frame = new PIXI.Rectangle(x, y, region.rotate ? height : width, region.rotate ? width : height);
+                    var frame = new PIXI.Rectangle(x, y, rotate ? height : width, rotate ? width : height);
 
                     if (reader.readTuple(tuple) == 4) { // split is optional
                         region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
@@ -162,11 +163,21 @@ spine.Atlas.prototype = {
                     var offsetY = parseInt(tuple[1]) / resolution;
 
                     var orig = new PIXI.Rectangle(0, 0, originalWidth, originalHeight);
-                    var trim = new PIXI.Rectangle(offsetX, offsetY, width, height);
+                    var trim = new PIXI.Rectangle(offsetX, originalHeight - height - offsetY, width, height);
 
                     //TODO: pixiv3 uses different frame/crop/trim
 
-                    region.rendererObject = new PIXI.Texture(region.page, frame, orig, trim, rotate);
+                    if (PIXI.VERSION[0] == '4') {
+                        // pixi v4.0.0
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, orig, trim, rotate);
+                    } else {
+                        // pixi v3.0.11
+                        var frame2 = new PIXI.Rectangle(x, y, width, height);
+                        var crop = frame;
+                        trim.width = originalWidth;
+                        trim.height = originalHeight;
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, crop, trim, rotate);
+                    }
 
                     region.index = parseInt(reader.readValue());
 
@@ -195,7 +206,7 @@ spine.Atlas.prototype = {
         {
             var region = regions[i];
             if (region.page != page) continue;
-            region.rendererObject._updateUvs();
+            region.texture._updateUvs();
         }
     }
 };

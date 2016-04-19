@@ -18,11 +18,11 @@ var atlasParser = module.exports = function () {
         var atlasOptions = {
             crossOrigin: resource.crossOrigin,
             xhrType: Resource.XHR_RESPONSE_TYPE.TEXT,
-            metadata: resource.metadata.spineMetadata
+            metadata: resource.metadata ? resource.metadata.spineMetadata : null
         };
         var imageOptions = {
             crossOrigin: resource.crossOrigin,
-            metadata: resource.metadata.imageMetadata
+            metadata: resource.metadata ? resource.metadata.imageMetadata: null
         };
         var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
 

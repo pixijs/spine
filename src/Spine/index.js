@@ -298,12 +298,12 @@ Spine.prototype.autoUpdateTransform = function ()
  */
 Spine.prototype.createSprite = function (slot, attachment)
 {
-    var sprite = new PIXI.Sprite(descriptor.rendererObject);
-
-    var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
-    sprite.scale.x = attachment.scaleX;
-    sprite.scale.y = - attachment.scaleY;
-    sprite.rotation = (attachment.rotation * spine.degRad);
+    var descriptor = attachment.rendererObject;
+    var texture = descriptor.texture;
+    var sprite = new PIXI.Sprite(texture);
+    sprite.scale.x = attachment.scaleX * attachment.width / descriptor.originalWidth;
+    sprite.scale.y = - attachment.scaleY * attachment.height / descriptor.originalHeight;
+    sprite.rotation = attachment.rotation * spine.degRad;
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;
     sprite.position.x = attachment.x;
