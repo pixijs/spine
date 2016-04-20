@@ -16,7 +16,7 @@ spine.AtlasAttachmentParser.prototype = {
         attachment.rendererObject = region;
         attachment.setUVs(region.u, region.v, region.u2, region.v2, region.rotate);
         attachment.regionOffsetX = region.offsetX;
-        attachment.regionOffsetY = region.offsetY;
+        attachment.regionOffsetY = region.spineOffsetY;
         attachment.regionWidth = region.width;
         attachment.regionHeight = region.height;
         attachment.regionOriginalWidth = region.originalWidth;

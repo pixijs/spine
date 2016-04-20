@@ -581,7 +581,7 @@ spine.AtlasAttachmentParser.prototype = {
         attachment.rendererObject = region;
         attachment.setUVs(region.u, region.v, region.u2, region.v2, region.rotate);
         attachment.regionOffsetX = region.offsetX;
-        attachment.regionOffsetY = region.offsetY;
+        attachment.regionOffsetY = region.spineOffsetY;
         attachment.regionWidth = region.width;
         attachment.regionHeight = region.height;
         attachment.regionOriginalWidth = region.originalWidth;
@@ -764,14 +764,19 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
     offsetY: {
         get: function() {
             console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
-            var tex = this.texture;
-            return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
+            return this.spineOffsetY;
         }
     },
     pixiOffsetY: {
         get: function() {
             var tex = this.texture;
             return tex.trim ? tex.trim.y : 0;
+        }
+    },
+    spineOffsetY: {
+        get: function() {
+            var tex = this.texture;
+            return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
         }
     },
     originalWidth: {
@@ -1427,7 +1432,7 @@ spine.FfdTimeline.prototype = {
     {
         var slot = skeleton.slots[this.slotIndex];
         var slotAttachment = slot.attachment;
-        if (!slotAttachment.applyFFD || !slotAttachment.applyFFD(this.attachment)) return;
+        if (slotAttachment && (!slotAttachment.applyFFD || !slotAttachment.applyFFD(this.attachment))) return;
 
         var frames = this.frames;
         if (time < frames[0]) return; // Time is before first frame.
