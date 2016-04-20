@@ -30,7 +30,7 @@ spine.MeshAttachment.prototype = {
         var texture = region.texture;
         var r = texture._uvs;
         var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-        var x = region.offsetX, y = region.offsetY;
+        var x = region.offsetX, y = region.pixiOffsetY;
         for (var i = 0; i < n; i += 2)
         {
             var u = this.regionUVs[i], v = this.regionUVs[i+1];

@@ -452,7 +452,7 @@ spine.Atlas.prototype = {
                     region.name = line;
                     region.page = page;
 
-                    var rotate = reader.readValue() == "true" ? 6 : 0;
+                    var rotate = reader.readValue() === "true" ? 6 : 0;
 
                     reader.readTuple(tuple);
                     var x = parseInt(tuple[0]);
@@ -497,10 +497,10 @@ spine.Atlas.prototype = {
                     } else {
                         // pixi v3.0.11
                         var frame2 = new PIXI.Rectangle(x, y, width, height);
-                        var crop = frame;
+                        var crop = frame2.clone();
                         trim.width = originalWidth;
                         trim.height = originalHeight;
-                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, crop, trim, rotate);
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame2, crop, trim, rotate);
                     }
 
                     region.index = parseInt(reader.readValue());
@@ -762,6 +762,13 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
         }
     },
     offsetY: {
+        get: function() {
+            console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
+            var tex = this.texture;
+            return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
+        }
+    },
+    pixiOffsetY: {
         get: function() {
             var tex = this.texture;
             return tex.trim ? tex.trim.y : 0;
@@ -1749,7 +1756,7 @@ spine.MeshAttachment.prototype = {
         var texture = region.texture;
         var r = texture._uvs;
         var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-        var x = region.offsetX, y = region.offsetY;
+        var x = region.offsetX, y = region.pixiOffsetY;
         for (var i = 0; i < n; i += 2)
         {
             var u = this.regionUVs[i], v = this.regionUVs[i+1];
@@ -3364,7 +3371,7 @@ spine.WeightedMeshAttachment.prototype = {
         var texture = region.texture;
         var r = texture._uvs;
         var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-        var x = region.offsetX, y = region.offsetY;
+        var x = region.offsetX, y = region.pixiOffsetY;
         for (var i = 0; i < n; i += 2)
         {
             var u = this.regionUVs[i], v = this.regionUVs[i+1];

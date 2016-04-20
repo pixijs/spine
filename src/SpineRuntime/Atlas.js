@@ -173,10 +173,10 @@ spine.Atlas.prototype = {
                     } else {
                         // pixi v3.0.11
                         var frame2 = new PIXI.Rectangle(x, y, width, height);
-                        var crop = frame;
+                        var crop = frame2.clone();
                         trim.width = originalWidth;
                         trim.height = originalHeight;
-                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, crop, trim, rotate);
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame2, crop, trim, rotate);
                     }
 
                     region.index = parseInt(reader.readValue());

@@ -85,6 +85,13 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
     },
     offsetY: {
         get: function() {
+            console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
+            var tex = this.texture;
+            return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
+        }
+    },
+    pixiOffsetY: {
+        get: function() {
             var tex = this.texture;
             return tex.trim ? tex.trim.y : 0;
         }
