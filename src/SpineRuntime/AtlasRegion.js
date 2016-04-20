@@ -2,17 +2,130 @@ var spine = require('../SpineUtil');
 spine.AtlasRegion = function ()
 {};
 spine.AtlasRegion.prototype = {
-    page: null,
     name: null,
-    x: 0, y: 0,
-    width: 0, height: 0,
-    u: 0, v: 0, u2: 0, v2: 0,
-    offsetX: 0, offsetY: 0,
-    originalWidth: 0, originalHeight: 0,
+    /**
+     * @member {PIXI.Texture}
+     */
+    texture: null,
+
+    /**
+     * @member {PIXI.spine.Spine.AtlasPage}
+     */
+    page: null,
     index: 0,
-    rotate: false,
     splits: null,
     pads: null
 };
+
+Object.defineProperties(spine.AtlasRegion.prototype, {
+    x: {
+        get: function() {
+            return this.texture.frame.x;
+        }
+    },
+    y: {
+        get: function() {
+            return this.texture.frame.y;
+        }
+    },
+    width: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.width;
+            }
+            if (tex.trim) {
+                return tex.trim.width;
+            }
+            return tex.orig.width;
+        }
+    },
+    height: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.height;
+            }
+            if (tex.trim) {
+                return tex.trim.height;
+            }
+            return tex.orig.height;
+        }
+    },
+    u: {
+        get: function() {
+            return this.texture._uvs.x0;
+        }
+    },
+    v: {
+        get: function() {
+            return this.texture._uvs.y0;
+        }
+    },
+    u2: {
+        get: function() {
+            return this.texture._uvs.x2;
+        }
+    },
+    v2: {
+        get: function() {
+            return this.texture._uvs.y2;
+        }
+    },
+    rotate: {
+        get: function() {
+            return !!this.texture.rotate;
+        }
+    },
+    offsetX: {
+        get: function() {
+            var tex = this.texture;
+            return tex.trim ? tex.trim.x : 0;
+        }
+    },
+    offsetY: {
+        get: function() {
+            console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
+            return this.spineOffsetY;
+        }
+    },
+    pixiOffsetY: {
+        get: function() {
+            var tex = this.texture;
+            return tex.trim ? tex.trim.y : 0;
+        }
+    },
+    spineOffsetY: {
+        get: function() {
+            var tex = this.texture;
+            return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
+        }
+    },
+    originalWidth: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.width;
+                }
+                return tex.crop.width;
+            }
+            return tex.orig.width;
+        }
+    },
+    originalHeight: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.height;
+                }
+                return tex.crop.height;
+            }
+            return tex.orig.height;
+        }
+    }
+});
+
 module.exports = spine.AtlasRegion;
 

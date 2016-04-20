@@ -16,33 +16,28 @@ spine.MeshAttachment.prototype = {
     r: 1, g: 1, b: 1, a: 1,
     path: null,
     rendererObject: null,
-    regionU: 0, regionV: 0, regionU2: 0, regionV2: 0, regionRotate: false,
-    regionOffsetX: 0, regionOffsetY: 0,
-    regionWidth: 0, regionHeight: 0,
-    regionOriginalWidth: 0, regionOriginalHeight: 0,
     edges: null,
     width: 0, height: 0,
     updateUVs: function ()
     {
-        var width = this.regionU2 - this.regionU, height = this.regionV2 - this.regionV;
         var n = this.regionUVs.length;
         if (!this.uvs || this.uvs.length != n)
         {
             this.uvs = new spine.Float32Array(n);
         }
-        if (this.regionRotate)
+        var region = this.rendererObject;
+        if (!region) return;
+        var texture = region.texture;
+        var r = texture._uvs;
+        var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
+        var x = region.offsetX, y = region.pixiOffsetY;
+        for (var i = 0; i < n; i += 2)
         {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i + 1] * width;
-                this.uvs[i + 1] = this.regionV + height - this.regionUVs[i] * height;
-            }
-        } else {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i] * width;
-                this.uvs[i + 1] = this.regionV + this.regionUVs[i + 1] * height;
-            }
+            var u = this.regionUVs[i], v = this.regionUVs[i+1];
+            u = (u * w2 - x) / w1;
+            v = (v * h2 - y) / h1;
+            this.uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1-v) + (r.x3 * (1 - u) + r.x2 * u) * v;
+            this.uvs[i+1] = (r.y0 * (1 - u) + r.y1 * u) * (1-v) + (r.y3 * (1 - u) + r.y2 * u) * v;
         }
     },
     computeWorldVertices: function (x, y, slot, worldVertices)

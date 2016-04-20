@@ -299,30 +299,16 @@ Spine.prototype.autoUpdateTransform = function ()
 Spine.prototype.createSprite = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
-    var baseTexture = descriptor.page.rendererObject;
-    var spriteRect = new PIXI.Rectangle(descriptor.x,
-                                        descriptor.y,
-                                        descriptor.rotate ? descriptor.height : descriptor.width,
-                                        descriptor.rotate ? descriptor.width : descriptor.height);
-    var spriteTexture = new PIXI.Texture(baseTexture, spriteRect);
-    var sprite = new PIXI.Sprite(spriteTexture);
-
-    var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
-    sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
-    sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
-    sprite.rotation = -baseRotation + (attachment.rotation * spine.degRad);
-    sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
-    sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
+    var texture = descriptor.texture;
+    var sprite = new PIXI.Sprite(texture);
+    sprite.scale.x = attachment.scaleX * attachment.width / descriptor.originalWidth;
+    sprite.scale.y = - attachment.scaleY * attachment.height / descriptor.originalHeight;
+    sprite.rotation = attachment.rotation * spine.degRad;
+    sprite.anchor.x = 0.5;
+    sprite.anchor.y = 0.5;
     sprite.position.x = attachment.x;
     sprite.position.y = attachment.y;
     sprite.alpha = attachment.a;
-
-    if (descriptor.rotate) {
-        var x1 = sprite.scale.x;
-        sprite.scale.x = sprite.scale.y;
-        sprite.scale.y = x1;
-    }
-    sprite.scale.y = -sprite.scale.y;
 
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
