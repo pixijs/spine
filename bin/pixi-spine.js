@@ -328,137 +328,188 @@ spine.AtlasPage = require('./AtlasPage');
 spine.AtlasRegion = require('./AtlasRegion');
 var syncImageLoaderAdapter = require('../loaders/syncImageLoaderAdapter.js')
 
-spine.Atlas = function (atlasText, loaderFunction, callback)
-{
-    //TODO: remove this legacy later
-    if (typeof loaderFunction !== "function") {
-        //old syntax
-        var baseUrl = loaderFunction;
-        var crossOrigin = callback;
-        loaderFunction = syncImageLoaderAdapter(baseUrl, crossOrigin);
-        callback = null;
-    }
-
+spine.Atlas = function(atlasText, loaderFunction, callback) {
     this.pages = [];
     this.regions = [];
-
-    this.texturesLoading = 0;
-
-    var self = this;
-
-    var reader = new spine.AtlasReader(atlasText);
-    var tuple = [];
-    tuple.length = 4;
-    var page = null;
-
-    iterateParser();
-
-    function iterateParser() {
-        while (true) {
-            var line = reader.readLine();
-            if (line === null) {
-                return callback && callback(self);
-            }
-            line = reader.trim(line);
-            if (!line.length)
-                page = null;
-            else if (!page) {
-                page = new spine.AtlasPage();
-                page.name = line;
-
-                if (reader.readTuple(tuple) == 2) { // size is only optional for an atlas packed with an old TexturePacker.
-                    page.width = parseInt(tuple[0]);
-                    page.height = parseInt(tuple[1]);
-                    reader.readTuple(tuple);
-                } else {
-                    //old format, detect width and height by texture
-                }
-                page.format = spine.Atlas.Format[tuple[0]];
-
-                reader.readTuple(tuple);
-                page.minFilter = spine.Atlas.TextureFilter[tuple[0]];
-                page.magFilter = spine.Atlas.TextureFilter[tuple[1]];
-
-                var direction = reader.readValue();
-                page.uWrap = spine.Atlas.TextureWrap.clampToEdge;
-                page.vWrap = spine.Atlas.TextureWrap.clampToEdge;
-                if (direction == "x")
-                    page.uWrap = spine.Atlas.TextureWrap.repeat;
-                else if (direction == "y")
-                    page.vWrap = spine.Atlas.TextureWrap.repeat;
-                else if (direction == "xy")
-                    page.uWrap = page.vWrap = spine.Atlas.TextureWrap.repeat;
-
-                // @ivanpopelyshev: I so want to use generators and "yield()" here, or at least promises
-                loaderFunction(line, function (texture) {
-                    page.rendererObject = texture;
-                    self.pages.push(page);
-                    if (!page.width || !page.height) {
-                        page.width = texture.width;
-                        page.height = texture.height;
-                        if (!page.width || !page.height) {
-                            console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
-                        }
-                    }
-                    iterateParser();
-                });
-                break;
-            } else {
-                var region = new spine.AtlasRegion();
-                region.name = line;
-                region.page = page;
-
-                region.rotate = reader.readValue() == "true";
-
-                reader.readTuple(tuple);
-                var x = parseInt(tuple[0]);
-                var y = parseInt(tuple[1]);
-
-                reader.readTuple(tuple);
-                var width = parseInt(tuple[0]);
-                var height = parseInt(tuple[1]);
-
-                region.u = x / page.width;
-                region.v = y / page.height;
-                if (region.rotate) {
-                    region.u2 = (x + height) / page.width;
-                    region.v2 = (y + width) / page.height;
-                } else {
-                    region.u2 = (x + width) / page.width;
-                    region.v2 = (y + height) / page.height;
-                }
-                //detected resolution
-                var resolution = page.rendererObject.resolution;
-                region.x = x / resolution;
-                region.y = y / resolution;
-                region.width = Math.abs(width) / resolution;
-                region.height = Math.abs(height) / resolution;
-
-                if (reader.readTuple(tuple) == 4) { // split is optional
-                    region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
-
-                    if (reader.readTuple(tuple) == 4) { // pad is optional, but only present with splits
-                        region.pads = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
-
-                        reader.readTuple(tuple);
-                    }
-                }
-
-                region.originalWidth = parseInt(tuple[0]) / resolution;
-                region.originalHeight = parseInt(tuple[1]) / resolution;
-
-                reader.readTuple(tuple);
-                region.offsetX = parseInt(tuple[0]) / resolution;
-                region.offsetY = parseInt(tuple[1]) / resolution;
-
-                region.index = parseInt(reader.readValue());
-
-                self.regions.push(region);
-            }
-        }
+    if (typeof atlasText === "string") {
+        this.addSpineAtlas.call(this, atlasText, loaderFunction, callback);
     }
 };
+
 spine.Atlas.prototype = {
+    addTexture: function(name, texture) {
+        var pages = this.pages;
+        var page = null;
+        for (var i=0;i<pages.length;i++) {
+            if (pages[i].rendererObject === texture.baseTexture) {
+                page = pages[i];
+                break;
+            }
+        }
+        if (page === null) {
+            page = new AtlasPage();
+            page.name = 'texturePage';
+            var baseTexture = texture.baseTexture;
+            page.width = baseTexture.realWidth;
+            page.height = baseTexture.realHeight;
+            page.rendererObject = baseTexture;
+            //those fields are not relevant in Pixi
+            page.format = 'RGBA8888';
+            page.minFilter = page.magFilter = "Nearest";
+            page.uWrap = Atlas.TextureWrap.clampToEdge;
+            page.vWrap = Atlas.TextureWrap.clampToEdge;
+            pages.push(page);
+        }
+        var region = new AtlasRegion();
+        region.name = name;
+        region.page = page;
+        region.rendererObject = texture;
+        region.index = -1;
+        this.regions.push(region);
+        return region;
+    },
+    addTextureHash: function(textures) {
+        for (var key in textures) {
+            if (textures.hasOwnProperty(key)) {
+                this.addTexture(key, textures[key]);
+            }
+        }
+    },
+    addSpineAtlas: function (atlasText, loaderFunction, callback)
+    {
+        //TODO: remove this legacy later
+        if (typeof loaderFunction !== "function") {
+            //old syntax
+            var baseUrl = loaderFunction;
+            var crossOrigin = callback;
+            loaderFunction = syncImageLoaderAdapter(baseUrl, crossOrigin);
+            callback = null;
+        }
+
+        this.texturesLoading = 0;
+
+        var self = this;
+
+        var reader = new spine.AtlasReader(atlasText);
+        var tuple = [];
+        tuple.length = 4;
+        var page = null;
+
+        iterateParser();
+
+        function iterateParser() {
+            while (true) {
+                var line = reader.readLine();
+                if (line === null) {
+                    return callback && callback(self);
+                }
+                line = reader.trim(line);
+                if (!line.length)
+                    page = null;
+                else if (!page) {
+                    page = new spine.AtlasPage();
+                    page.name = line;
+
+                    if (reader.readTuple(tuple) == 2) { // size is only optional for an atlas packed with an old TexturePacker.
+                        page.width = parseInt(tuple[0]);
+                        page.height = parseInt(tuple[1]);
+                        reader.readTuple(tuple);
+                    } else {
+                        //old format, detect width and height by texture
+                    }
+                    page.format = spine.Atlas.Format[tuple[0]];
+
+                    reader.readTuple(tuple);
+                    page.minFilter = spine.Atlas.TextureFilter[tuple[0]];
+                    page.magFilter = spine.Atlas.TextureFilter[tuple[1]];
+
+                    var direction = reader.readValue();
+                    page.uWrap = spine.Atlas.TextureWrap.clampToEdge;
+                    page.vWrap = spine.Atlas.TextureWrap.clampToEdge;
+                    if (direction == "x")
+                        page.uWrap = spine.Atlas.TextureWrap.repeat;
+                    else if (direction == "y")
+                        page.vWrap = spine.Atlas.TextureWrap.repeat;
+                    else if (direction == "xy")
+                        page.uWrap = page.vWrap = spine.Atlas.TextureWrap.repeat;
+
+                    // @ivanpopelyshev: I so want to use generators and "yield()" here, or at least promises
+                    loaderFunction(line, function (texture) {
+                        page.rendererObject = texture;
+                        self.pages.push(page);
+                        if (!page.width || !page.height) {
+                            page.width = texture.realWidth;
+                            page.height = texture.realHeight;
+                            if (!page.width || !page.height) {
+                                console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
+                            }
+                        }
+                        iterateParser();
+                    });
+                    break;
+                } else {
+                    var region = new spine.AtlasRegion();
+                    region.name = line;
+                    region.page = page;
+
+                    var rotate = reader.readValue() == "true" ? 6 : 0;
+
+                    reader.readTuple(tuple);
+                    var x = parseInt(tuple[0]);
+                    var y = parseInt(tuple[1]);
+
+                    reader.readTuple(tuple);
+                    var width = parseInt(tuple[0]);
+                    var height = parseInt(tuple[1]);
+
+                    var resolution = page.rendererObject.resolution;
+                    x /= resolution;
+                    y /= resolution;
+                    width /= resolution;
+                    height /= resolution;
+
+                    var frame = new PIXI.Rectangle(x, y, rotate ? height : width, rotate ? width : height);
+
+                    if (reader.readTuple(tuple) == 4) { // split is optional
+                        region.splits = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
+
+                        if (reader.readTuple(tuple) == 4) { // pad is optional, but only present with splits
+                            region.pads = [parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3])];
+
+                            reader.readTuple(tuple);
+                        }
+                    }
+
+                    var originalWidth = parseInt(tuple[0]) / resolution;
+                    var originalHeight = parseInt(tuple[1]) / resolution;
+                    reader.readTuple(tuple);
+                    var offsetX = parseInt(tuple[0]) / resolution;
+                    var offsetY = parseInt(tuple[1]) / resolution;
+
+                    var orig = new PIXI.Rectangle(0, 0, originalWidth, originalHeight);
+                    var trim = new PIXI.Rectangle(offsetX, originalHeight - height - offsetY, width, height);
+
+                    //TODO: pixiv3 uses different frame/crop/trim
+
+                    if (PIXI.VERSION[0] == '4') {
+                        // pixi v4.0.0
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, orig, trim, rotate);
+                    } else {
+                        // pixi v3.0.11
+                        var frame2 = new PIXI.Rectangle(x, y, width, height);
+                        var crop = frame;
+                        trim.width = originalWidth;
+                        trim.height = originalHeight;
+                        region.texture = new PIXI.Texture(region.page.rendererObject, frame, crop, trim, rotate);
+                    }
+
+                    region.index = parseInt(reader.readValue());
+
+                    self.regions.push(region);
+                }
+            }
+        }
+    },
     findRegion: function (name)
     {
         var regions = this.regions;
@@ -479,16 +530,7 @@ spine.Atlas.prototype = {
         {
             var region = regions[i];
             if (region.page != page) continue;
-            region.u = region.x / page.width;
-            region.v = region.y / page.height;
-            if (region.rotate)
-            {
-                region.u2 = (region.x + region.height) / page.width;
-                region.v2 = (region.y + region.width) / page.height;
-            } else {
-                region.u2 = (region.x + region.width) / page.width;
-                region.v2 = (region.y + region.height) / page.height;
-            }
+            region.texture._updateUvs();
         }
     }
 };
@@ -552,17 +594,6 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (mesh attachment: " + name + ")";
         var attachment = new spine.MeshAttachment(name);
         attachment.rendererObject = region;
-        attachment.regionU = region.u;
-        attachment.regionV = region.v;
-        attachment.regionU2 = region.u2;
-        attachment.regionV2 = region.v2;
-        attachment.regionRotate = region.rotate;
-        attachment.regionOffsetX = region.offsetX;
-        attachment.regionOffsetY = region.offsetY;
-        attachment.regionWidth = region.width;
-        attachment.regionHeight = region.height;
-        attachment.regionOriginalWidth = region.originalWidth;
-        attachment.regionOriginalHeight = region.originalHeight;
         return attachment;
     },
     newWeightedMeshAttachment: function (skin, name, path)
@@ -571,17 +602,6 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (skinned mesh attachment: " + name + ")";
         var attachment = new spine.WeightedMeshAttachment(name);
         attachment.rendererObject = region;
-        attachment.regionU = region.u;
-        attachment.regionV = region.v;
-        attachment.regionU2 = region.u2;
-        attachment.regionV2 = region.v2;
-        attachment.regionRotate = region.rotate;
-        attachment.regionOffsetX = region.offsetX;
-        attachment.regionOffsetY = region.offsetY;
-        attachment.regionWidth = region.width;
-        attachment.regionHeight = region.height;
-        attachment.regionOriginalWidth = region.originalWidth;
-        attachment.regionOriginalHeight = region.originalHeight;
         return attachment;
     },
     newBoundingBoxAttachment: function (skin, name)
@@ -660,18 +680,119 @@ var spine = require('../SpineUtil');
 spine.AtlasRegion = function ()
 {};
 spine.AtlasRegion.prototype = {
-    page: null,
     name: null,
-    x: 0, y: 0,
-    width: 0, height: 0,
-    u: 0, v: 0, u2: 0, v2: 0,
-    offsetX: 0, offsetY: 0,
-    originalWidth: 0, originalHeight: 0,
+    /**
+     * @member {PIXI.Texture}
+     */
+    texture: null,
+
+    /**
+     * @member {PIXI.spine.Spine.AtlasPage}
+     */
+    page: null,
     index: 0,
-    rotate: false,
     splits: null,
     pads: null
 };
+
+Object.defineProperties(spine.AtlasRegion.prototype, {
+    x: {
+        get: function() {
+            return this.texture.frame.x;
+        }
+    },
+    y: {
+        get: function() {
+            return this.texture.frame.y;
+        }
+    },
+    width: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.width;
+            }
+            if (tex.trim) {
+                return tex.trim.width;
+            }
+            return tex.orig.width;
+        }
+    },
+    height: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                return tex.crop.height;
+            }
+            if (tex.trim) {
+                return tex.trim.height;
+            }
+            return tex.orig.height;
+        }
+    },
+    u: {
+        get: function() {
+            return this.texture._uvs.x0;
+        }
+    },
+    v: {
+        get: function() {
+            return this.texture._uvs.y0;
+        }
+    },
+    u2: {
+        get: function() {
+            return this.texture._uvs.x2;
+        }
+    },
+    v2: {
+        get: function() {
+            return this.texture._uvs.y2;
+        }
+    },
+    rotate: {
+        get: function() {
+            return !!this.texture.rotate;
+        }
+    },
+    offsetX: {
+        get: function() {
+            var tex = this.texture;
+            return tex.trim ? tex.trim.x : 0;
+        }
+    },
+    offsetY: {
+        get: function() {
+            var tex = this.texture;
+            return tex.trim ? tex.trim.y : 0;
+        }
+    },
+    originalWidth: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.width;
+                }
+                return tex.crop.width;
+            }
+            return tex.orig.width;
+        }
+    },
+    originalHeight: {
+        get: function() {
+            var tex = this.texture;
+            if (PIXI.VERSION[0] == '3') {
+                if (tex.trim) {
+                    return tex.trim.height;
+                }
+                return tex.crop.height;
+            }
+            return tex.orig.height;
+        }
+    }
+});
+
 module.exports = spine.AtlasRegion;
 
 
@@ -1614,33 +1735,28 @@ spine.MeshAttachment.prototype = {
     r: 1, g: 1, b: 1, a: 1,
     path: null,
     rendererObject: null,
-    regionU: 0, regionV: 0, regionU2: 0, regionV2: 0, regionRotate: false,
-    regionOffsetX: 0, regionOffsetY: 0,
-    regionWidth: 0, regionHeight: 0,
-    regionOriginalWidth: 0, regionOriginalHeight: 0,
     edges: null,
     width: 0, height: 0,
     updateUVs: function ()
     {
-        var width = this.regionU2 - this.regionU, height = this.regionV2 - this.regionV;
         var n = this.regionUVs.length;
         if (!this.uvs || this.uvs.length != n)
         {
             this.uvs = new spine.Float32Array(n);
         }
-        if (this.regionRotate)
+        var region = this.rendererObject;
+        if (!region) return;
+        var texture = region.texture;
+        var r = texture._uvs;
+        var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
+        var x = region.offsetX, y = region.offsetY;
+        for (var i = 0; i < n; i += 2)
         {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i + 1] * width;
-                this.uvs[i + 1] = this.regionV + height - this.regionUVs[i] * height;
-            }
-        } else {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i] * width;
-                this.uvs[i + 1] = this.regionV + this.regionUVs[i + 1] * height;
-            }
+            var u = this.regionUVs[i], v = this.regionUVs[i+1];
+            u = (u * w2 - x) / w1;
+            v = (v * h2 - y) / h1;
+            this.uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1-v) + (r.x3 * (1 - u) + r.x2 * u) * v;
+            this.uvs[i+1] = (r.y0 * (1 - u) + r.y1 * u) * (1-v) + (r.y3 * (1 - u) + r.y2 * u) * v;
         }
     },
     computeWorldVertices: function (x, y, slot, worldVertices)
@@ -3233,10 +3349,6 @@ spine.WeightedMeshAttachment.prototype = {
     r: 1, g: 1, b: 1, a: 1,
     path: null,
     rendererObject: null,
-    regionU: 0, regionV: 0, regionU2: 0, regionV2: 0, regionRotate: false,
-    regionOffsetX: 0, regionOffsetY: 0,
-    regionWidth: 0, regionHeight: 0,
-    regionOriginalWidth: 0, regionOriginalHeight: 0,
     edges: null,
     width: 0, height: 0,
     updateUVs: function (u, v, u2, v2, rotate)
@@ -3247,19 +3359,19 @@ spine.WeightedMeshAttachment.prototype = {
         {
             this.uvs = new spine.Float32Array(n);
         }
-        if (this.regionRotate)
+        var region = this.rendererObject;
+        if (!region) return;
+        var texture = region.texture;
+        var r = texture._uvs;
+        var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
+        var x = region.offsetX, y = region.offsetY;
+        for (var i = 0; i < n; i += 2)
         {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i + 1] * width;
-                this.uvs[i + 1] = this.regionV + height - this.regionUVs[i] * height;
-            }
-        } else {
-            for (var i = 0; i < n; i += 2)
-            {
-                this.uvs[i] = this.regionU + this.regionUVs[i] * width;
-                this.uvs[i + 1] = this.regionV + this.regionUVs[i + 1] * height;
-            }
+            var u = this.regionUVs[i], v = this.regionUVs[i+1];
+            u = (u * w2 - x) / w1;
+            v = (v * h2 - y) / h1;
+            this.uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1-v) + (r.x3 * (1 - u) + r.x2 * u) * v;
+            this.uvs[i+1] = (r.y0 * (1 - u) + r.y1 * u) * (1-v) + (r.y3 * (1 - u) + r.y2 * u) * v;
         }
     },
     computeWorldVertices: function (x, y, slot, worldVertices)
@@ -3715,30 +3827,16 @@ Spine.prototype.autoUpdateTransform = function ()
 Spine.prototype.createSprite = function (slot, attachment)
 {
     var descriptor = attachment.rendererObject;
-    var baseTexture = descriptor.page.rendererObject;
-    var spriteRect = new PIXI.Rectangle(descriptor.x,
-                                        descriptor.y,
-                                        descriptor.rotate ? descriptor.height : descriptor.width,
-                                        descriptor.rotate ? descriptor.width : descriptor.height);
-    var spriteTexture = new PIXI.Texture(baseTexture, spriteRect);
-    var sprite = new PIXI.Sprite(spriteTexture);
-
-    var baseRotation = descriptor.rotate ? Math.PI * 0.5 : 0.0;
-    sprite.scale.x = attachment.width / descriptor.originalWidth * attachment.scaleX;
-    sprite.scale.y = attachment.height / descriptor.originalHeight * attachment.scaleY;
-    sprite.rotation = -baseRotation + (attachment.rotation * spine.degRad);
-    sprite.anchor.x = (0.5 * descriptor.originalWidth - descriptor.offsetX) / descriptor.width;
-    sprite.anchor.y = 1.0 - ((0.5 * descriptor.originalHeight - descriptor.offsetY) / descriptor.height);
+    var texture = descriptor.texture;
+    var sprite = new PIXI.Sprite(texture);
+    sprite.scale.x = attachment.scaleX * attachment.width / descriptor.originalWidth;
+    sprite.scale.y = - attachment.scaleY * attachment.height / descriptor.originalHeight;
+    sprite.rotation = attachment.rotation * spine.degRad;
+    sprite.anchor.x = 0.5;
+    sprite.anchor.y = 0.5;
     sprite.position.x = attachment.x;
     sprite.position.y = attachment.y;
     sprite.alpha = attachment.a;
-
-    if (descriptor.rotate) {
-        var x1 = sprite.scale.x;
-        sprite.scale.x = sprite.scale.y;
-        sprite.scale.y = x1;
-    }
-    sprite.scale.y = -sprite.scale.y;
 
     slot.sprites = slot.sprites || {};
     slot.sprites[descriptor.name] = sprite;
@@ -3827,11 +3925,11 @@ var atlasParser = module.exports = function () {
         var atlasOptions = {
             crossOrigin: resource.crossOrigin,
             xhrType: Resource.XHR_RESPONSE_TYPE.TEXT,
-            metadata: resource.metadata.spineMetadata
+            metadata: resource.metadata ? resource.metadata.spineMetadata : null
         };
         var imageOptions = {
             crossOrigin: resource.crossOrigin,
-            metadata: resource.metadata.imageMetadata
+            metadata: resource.metadata ? resource.metadata.imageMetadata: null
         };
         var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
 

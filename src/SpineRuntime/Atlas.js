@@ -128,7 +128,7 @@ spine.Atlas.prototype = {
                     region.name = line;
                     region.page = page;
 
-                    var rotate = reader.readValue() == "true" ? 6 : 0;
+                    var rotate = reader.readValue() === "true" ? 6 : 0;
 
                     reader.readTuple(tuple);
                     var x = parseInt(tuple[0]);
