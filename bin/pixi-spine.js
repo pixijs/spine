@@ -436,6 +436,10 @@ spine.Atlas.prototype = {
                     // @ivanpopelyshev: I so want to use generators and "yield()" here, or at least promises
                     loaderFunction(line, function (texture) {
                         page.rendererObject = texture;
+                        if (!texture.hasLoaded) {
+                            texture.width = page.width;
+                            texture.height = page.height;
+                        }
                         self.pages.push(page);
                         if (!page.width || !page.height) {
                             page.width = texture.realWidth;
@@ -504,6 +508,7 @@ spine.Atlas.prototype = {
                     }
 
                     region.index = parseInt(reader.readValue());
+                    region.texture._updateUvs();
 
                     self.regions.push(region);
                 }
@@ -594,6 +599,7 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (mesh attachment: " + name + ")";
         var attachment = new spine.MeshAttachment(name);
         attachment.rendererObject = region;
+        // region.texture.on('update', spine.MeshAttachment.prototype.updateUVs.bind(attachment));
         return attachment;
     },
     newWeightedMeshAttachment: function (skin, name, path)
@@ -602,6 +608,7 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (skinned mesh attachment: " + name + ")";
         var attachment = new spine.WeightedMeshAttachment(name);
         attachment.rendererObject = region;
+        // region.texture.on('update', spine.WeightedMeshAttachment.prototype.updateUVs.bind(attachment));
         return attachment;
     },
     newBoundingBoxAttachment: function (skin, name)
