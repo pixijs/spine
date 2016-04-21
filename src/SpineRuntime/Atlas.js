@@ -23,7 +23,7 @@ spine.Atlas.prototype = {
             }
         }
         if (page === null) {
-            page = new AtlasPage();
+            page = new spine.AtlasPage();
             page.name = 'texturePage';
             var baseTexture = texture.baseTexture;
             page.width = baseTexture.realWidth;
@@ -32,11 +32,11 @@ spine.Atlas.prototype = {
             //those fields are not relevant in Pixi
             page.format = 'RGBA8888';
             page.minFilter = page.magFilter = "Nearest";
-            page.uWrap = Atlas.TextureWrap.clampToEdge;
-            page.vWrap = Atlas.TextureWrap.clampToEdge;
+            page.uWrap = spine.Atlas.TextureWrap.clampToEdge;
+            page.vWrap = spine.Atlas.TextureWrap.clampToEdge;
             pages.push(page);
         }
-        var region = new AtlasRegion();
+        var region = new spine.AtlasRegion();
         region.name = name;
         region.page = page;
         region.rendererObject = texture;
