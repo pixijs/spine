@@ -112,6 +112,10 @@ spine.Atlas.prototype = {
                     // @ivanpopelyshev: I so want to use generators and "yield()" here, or at least promises
                     loaderFunction(line, function (texture) {
                         page.rendererObject = texture;
+                        if (!texture.hasLoaded) {
+                            texture.width = page.width;
+                            texture.height = page.height;
+                        }
                         self.pages.push(page);
                         if (!page.width || !page.height) {
                             page.width = texture.realWidth;
@@ -180,6 +184,7 @@ spine.Atlas.prototype = {
                     }
 
                     region.index = parseInt(reader.readValue());
+                    region.texture._updateUvs();
 
                     self.regions.push(region);
                 }

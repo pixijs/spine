@@ -29,6 +29,7 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (mesh attachment: " + name + ")";
         var attachment = new spine.MeshAttachment(name);
         attachment.rendererObject = region;
+        // region.texture.on('update', spine.MeshAttachment.prototype.updateUVs.bind(attachment));
         return attachment;
     },
     newWeightedMeshAttachment: function (skin, name, path)
@@ -37,6 +38,7 @@ spine.AtlasAttachmentParser.prototype = {
         if (!region) throw "Region not found in atlas: " + path + " (skinned mesh attachment: " + name + ")";
         var attachment = new spine.WeightedMeshAttachment(name);
         attachment.rendererObject = region;
+        // region.texture.on('update', spine.WeightedMeshAttachment.prototype.updateUVs.bind(attachment));
         return attachment;
     },
     newBoundingBoxAttachment: function (skin, name)
