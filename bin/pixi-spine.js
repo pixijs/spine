@@ -3928,6 +3928,24 @@ var atlasParser = module.exports = function () {
             return next();
         }
 
+        var metadataAtlas = resource.metadata ? resource.metadata.spineAtlas: null;
+        if (metadataAtlas === false) {
+            return next();
+        }
+        if (metadataAtlas && metadataAtlas.pages) {
+            //its an atlas!
+            var spineJsonParser = new spine.SkeletonJsonParser(new spine.AtlasAttachmentParser(metadataAtlas));
+            var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+
+            resource.spineData = skeletonData;
+            resource.spineAtlas = metadataAtlas;
+            if (atlasParser.enableCaching) {
+                atlasParser.AnimCache[resource.name] = resource.spineData;
+            }
+
+            next();
+        }
+
         /**
          * use a bit of hackery to load the atlas file, here we assume that the .json, .atlas and .png files
          * that correspond to the spine file are in the same base URL and that the .json and .atlas files
@@ -3951,6 +3969,7 @@ var atlasParser = module.exports = function () {
         baseUrl = baseUrl.replace(this.baseUrl, '');
 
         var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
+
         this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (res) {
             new spine.Atlas(this.xhr.responseText, adapter, function(spineAtlas) {
                 var spineJsonParser = new spine.SkeletonJsonParser(new spine.AtlasAttachmentParser(spineAtlas));
@@ -3958,8 +3977,9 @@ var atlasParser = module.exports = function () {
 
                 resource.spineData = skeletonData;
                 resource.spineAtlas = spineAtlas;
-                if (atlasParser.enableCaching)
+                if (atlasParser.enableCaching) {
                     atlasParser.AnimCache[resource.name] = resource.spineData;
+                }
 
                 next();
             });
@@ -3968,7 +3988,7 @@ var atlasParser = module.exports = function () {
 };
 
 atlasParser.AnimCache = {};
-atlasParser.enableCaching = true;
+atlasParser.enableCaching = false;
 
 },{"../SpineRuntime":39,"./imageLoaderAdapter":44}],44:[function(require,module,exports){
 var spine = require('../SpineRuntime');
