@@ -27,7 +27,16 @@ function LinkedMesh(mesh, skin, slotIndex, parent) {
 
 spine.SkeletonJsonParser = function (attachmentLoader)
 {
-    this.attachmentLoader = attachmentLoader;
+    if (attachmentLoader.pages) {
+        //its an atlas, we have to wrap it
+        this.attachmentLoader = new spine.AtlasAttachmentLoader(attachmentLoader);
+    } else {
+        //got a loader, thats good
+        this.attachmentLoader = attachmentLoader;
+    }
+    if (!attachmentLoader.newRegionAttachment) {
+        console.warn("SkeletonJsonParser accepts AtlasAttachmentLoader or atlas as first parameter");
+    }
     this.linkedMeshes = [];
 };
 spine.SkeletonJsonParser.prototype = {

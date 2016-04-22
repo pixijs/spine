@@ -39,7 +39,7 @@ spine.Atlas.prototype = {
         var region = new spine.AtlasRegion();
         region.name = name;
         region.page = page;
-        region.rendererObject = texture;
+        region.texture = texture;
         region.index = -1;
         this.regions.push(region);
         return region;
