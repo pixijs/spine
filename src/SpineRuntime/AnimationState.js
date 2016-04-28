@@ -198,6 +198,16 @@ spine.AnimationState.prototype = {
 
         return entry;
     },
+    /**
+     * Returns true if animation exists in skeleton data
+     * @param animationName
+     * @returns {boolean}
+     */
+    hasAnimationByName: function (animationName)
+    {
+        var animation = this.data.skeletonData.findAnimation(animationName);
+        return animation !== null;
+    },
     /** May be null. */
     getCurrent: function (trackIndex)
     {
