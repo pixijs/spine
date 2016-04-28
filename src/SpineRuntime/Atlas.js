@@ -44,10 +44,10 @@ spine.Atlas.prototype = {
         this.regions.push(region);
         return region;
     },
-    addTextureHash: function(textures) {
+    addTextureHash: function(textures, stripExtension) {
         for (var key in textures) {
             if (textures.hasOwnProperty(key)) {
-                this.addTexture(key, textures[key]);
+                this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
             }
         }
     },
