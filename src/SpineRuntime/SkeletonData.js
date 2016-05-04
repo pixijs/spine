@@ -7,6 +7,7 @@ spine.SkeletonData = function ()
     this.events = [];
     this.animations = [];
     this.ikConstraints = [];
+    this.transformConstraints = [];
 };
 spine.SkeletonData.prototype = {
     name: null,

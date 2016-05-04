@@ -11,6 +11,9 @@ spine.IkConstraint = function (data, skeleton)
     this.target = skeleton.findBone(data.target.name);
 };
 spine.IkConstraint.prototype = {
+    update: function() {
+        this.apply();
+    },
     apply: function ()
     {
         var target = this.target;
@@ -38,6 +41,7 @@ spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
         rotationIK -= 360;
     else if (rotationIK < -180) rotationIK += 360;
     bone.rotationIK = rotation + (rotationIK - rotation) * alpha;
+    bone.updateWorldTransform();
 };
 /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
  * target is specified in the world coordinate system.
@@ -162,8 +166,10 @@ spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, 
     else if (a2 < -180) a2 += 360;
     var rotation = parent.rotation;
     parent.rotationIK = rotation + (a1 - rotation) * alpha;
+    parent.updateWorldTransform();
     rotation = child.rotation;
     child.rotationIK = rotation + (a2 - rotation) * alpha;
+    child.updateWorldTransform();
 };
 module.exports = spine.IkConstraint;
 

@@ -29,6 +29,10 @@ spine.Skeleton = function (skeletonData)
     for (var i = 0, n = skeletonData.ikConstraints.length; i < n; i++)
         this.ikConstraints.push(new spine.IkConstraint(skeletonData.ikConstraints[i], this));
 
+    this.transformConstraints = [];
+    for (var i = 0, n = skeletonData.transformConstraints.length; i < n; i++)
+        this.transformConstraints.push(new spine.TransformConstraint(skeletonData.transformConstraints[i], this));
+
     this.boneCache = [];
     this.updateCache();
 };
@@ -43,44 +47,27 @@ spine.Skeleton.prototype = {
     {
         var ikConstraints = this.ikConstraints;
         var ikConstraintsCount = ikConstraints.length;
+        var transformConstraints = this.transformConstraints;
+        var transformConstraintsCount = transformConstraints.length;
 
-        var arrayCount = ikConstraintsCount + 1;
         var boneCache = this.boneCache;
-        if (boneCache.length > arrayCount) boneCache.length = arrayCount;
-        for (var i = 0, n = boneCache.length; i < n; i++)
-            boneCache[i].length = 0;
-        while (boneCache.length < arrayCount)
-            boneCache[boneCache.length] = [];
-
-        var nonIkBones = boneCache[0];
+        boneCache.length = 0;
         var bones = this.bones;
-
-        outer:
         for (var i = 0, n = bones.length; i < n; i++)
         {
             var bone = bones[i];
-            var current = bone;
-            do {
-                for (var ii = 0; ii < ikConstraintsCount; ii++)
-                {
-                    var ikConstraint = ikConstraints[ii];
-                    var parent = ikConstraint.bones[0];
-                    var child= ikConstraint.bones[ikConstraint.bones.length - 1];
-                    while (true)
-                    {
-                        if (current == child)
-                        {
-                            boneCache[ii].push(bone);
-                            boneCache[ii + 1].push(bone);
-                            continue outer;
-                        }
-                        if (child == parent) break;
-                        child = child.parent;
-                    }
+            boneCache.push(bone);
+            for (var j=0; j < transformConstraintsCount; j++) {
+                if (transformConstraints[j].bone == bone) {
+                    boneCache.push(transformConstraints[j]);
                 }
-                current = current.parent;
-            } while (current);
-            nonIkBones[nonIkBones.length] = bone;
+            }
+            for (var j=0; j < ikConstraintsCount; j++) {
+                if (ikConstraints[j].bones[ikConstraints[j].bones.length-1] == bone) {
+                    boneCache.push(ikConstraints[j]);
+                    break;
+                }
+            }
         }
     },
     /** Updates the world transform for each bone. */
@@ -92,15 +79,9 @@ spine.Skeleton.prototype = {
             var bone = bones[i];
             bone.rotationIK = bone.rotation;
         }
-        var i = 0, last = this.boneCache.length - 1;
-        while (true)
-        {
-            var cacheBones = this.boneCache[i];
-            for (var ii = 0, nn = cacheBones.length; ii < nn; ii++)
-                cacheBones[ii].updateWorldTransform();
-            if (i == last) break;
-            this.ikConstraints[i].apply();
-            i++;
+        var boneCache = this.boneCache;
+        for (var i = 0, n = boneCache.length; i < n; i++) {
+            boneCache[i].update();
         }
     },
     /** Sets the bones and slots to their setup pose values. */
@@ -121,6 +102,17 @@ spine.Skeleton.prototype = {
             var ikConstraint = ikConstraints[i];
             ikConstraint.bendDirection = ikConstraint.data.bendDirection;
             ikConstraint.mix = ikConstraint.data.mix;
+        }
+
+        var transformConstraints = this.transformConstraints;
+        for (var i = 0, n = transformConstraints.length; i < n; i++)
+        {
+            var constraint = transformConstraints[i];
+            var data = constraint.data;
+            constraint.rotateMix = data.rotateMix;
+            constraint.translateMix = data.translateMix;
+            constraint.scaleMix = data.scaleMix;
+            constraint.shearMix = data.shearMix;
         }
     },
     setSlotsToSetupPose: function ()
@@ -241,11 +233,18 @@ spine.Skeleton.prototype = {
         throw "Slot not found: " + slotName;
     },
     /** @return May be null. */
-    findIkConstraint: function (ikConstraintName)
+    findIkConstraint: function (constraintName)
     {
-        var ikConstraints = this.ikConstraints;
-        for (var i = 0, n = ikConstraints.length; i < n; i++)
-            if (ikConstraints[i].data.name == ikConstraintName) return ikConstraints[i];
+        var constraints = this.ikConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].data.name == constraintName) return constraints[i];
+        return null;
+    },
+    findTransformConstraint: function (constraintName)
+    {
+        var constraints = this.transformConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].data.name == constraintName) return constraints[i];
         return null;
     },
     update: function (delta)

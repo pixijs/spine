@@ -2,6 +2,7 @@ var spine = require('../SpineUtil');
 spine.SkeletonData = require('./SkeletonData');
 spine.BoneData = require('./BoneData');
 spine.IkConstraintData = require('./IkConstraintData');
+spine.TransformConstraintData = require('./IkConstraintData');
 spine.SlotData = require('./SlotData');
 spine.Skin = require('./Skin');
 spine.EventData = require('./EventData');
@@ -11,7 +12,9 @@ spine.AttachmentTimeline = require('./AttachmentTimeline');
 spine.RotateTimeline = require('./RotateTimeline');
 spine.ScaleTimeline = require('./ScaleTimeline');
 spine.TranslateTimeline = require('./TranslateTimeline');
+spine.ShearTimeline = require('./ShearTimeline');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
+spine.TransformConstraintTimeline = require('./IkConstraintTimeline');
 spine.FfdTimeline = require('./FfdTimeline');
 spine.DrawOrderTimeline = require('./DrawOrderTimeline');
 spine.EventTimeline = require('./EventTimeline');
@@ -74,6 +77,8 @@ spine.SkeletonJsonParser.prototype = {
             boneData.rotation = (boneMap["rotation"] || 0);
             boneData.scaleX = boneMap.hasOwnProperty("scaleX") ? boneMap["scaleX"] : 1;
             boneData.scaleY = boneMap.hasOwnProperty("scaleY") ? boneMap["scaleY"] : 1;
+            boneData.shearX = boneMap["shearX"] || 0;
+            boneData.shearY = boneMap["shearY"] || 0;
             boneData.inheritScale = boneMap.hasOwnProperty("inheritScale") ? boneMap["inheritScale"] : true;
             boneData.inheritRotation = boneMap.hasOwnProperty("inheritRotation") ? boneMap["inheritRotation"] : true;
             skeletonData.bones.push(boneData);
@@ -92,17 +97,43 @@ spine.SkeletonJsonParser.prototype = {
                 for (var ii = 0, nn = bones.length; ii < nn; ii++)
                 {
                     var bone = skeletonData.findBone(bones[ii]);
-                    if (!bone) throw "IK bone not found: " + bones[ii];
+                    if (!bone) throw new Error( "IK bone not found: " + bones[ii] );
                     ikConstraintData.bones.push(bone);
                 }
 
                 ikConstraintData.target = skeletonData.findBone(ikMap["target"]);
-                if (!ikConstraintData.target) throw "Target bone not found: " + ikMap["target"];
+                if (!ikConstraintData.target) throw new Error("Target bone not found: " + ikMap["target"]);
 
                 ikConstraintData.bendDirection = (!ikMap.hasOwnProperty("bendPositive") || ikMap["bendPositive"]) ? 1 : -1;
                 ikConstraintData.mix = ikMap.hasOwnProperty("mix") ? ikMap["mix"] : 1;
 
                 skeletonData.ikConstraints.push(ikConstraintData);
+            }
+        }
+
+        var transform = root["transform"];
+        if (transform) {
+            for (var i = 0, n = transform.length; i<n; i++) {
+                var transformMap = transform[i];
+                var transformData = new spine.TransformConstraintData(ikMap["name"]);
+                transformData.bone = skeletonData.findBone(transformMap["bone"]);
+                if (!transformData.bone) throw new Error("Transform bone not found: " + transformData["bone"]);
+                transformData.target = skeletonData.findBone(transformMap["target"]);
+                if (!transformData.target) throw new Error("Target bone not found: " + transformData["target"]);
+
+                transformData.offsetRotation = transformMap["rotation"] || 0;
+                transformData.offsetX = (transformMap["offsetX"] || 0) * scale;
+                transformData.offsetY = (transformMap["offsetY"] || 0) * scale;
+                transformData.offsetScaleX = (transformMap["scaleX"] || 0) * scale;
+                transformData.offsetScaleY = (transformMap["scaleY"] || 0) * scale;
+                transformData.offsetShearY = (transformMap["offsetShearY"] || 0) * scale;
+
+                transformData.rotateMix = transformMap.hasOwnProperty("rotateMix") ? transformMap["rotateMix"] : 1;
+                transformData.translateMix = transformMap.hasOwnProperty("translateMix") ? transformMap["translateMix"] : 1;
+                transformData.scaleMix = transformMap.hasOwnProperty("scaleMix") ? transformMap["scaleMix"] : 1;
+                transformData.shearMix = transformMap.hasOwnProperty("shearMix") ? transformMap["shearMix"] : 1;
+
+                skeletonData.transformConstraints.push(transformData);
             }
         }
 
@@ -392,12 +423,15 @@ spine.SkeletonJsonParser.prototype = {
                     timelines.push(timeline);
                     duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 2 - 2]);
 
-                } else if (timelineName == "translate" || timelineName == "scale")
+                } else if (timelineName == "translate" || timelineName == "scale" || timelineName == "shear")
                 {
                     var timeline;
                     var timelineScale = 1;
-                    if (timelineName == "scale")
+                    if (timelineName == "scale") {
                         timeline = new spine.ScaleTimeline(values.length);
+                    } else if (timelineName == "shear") {
+                        timeline = new spine.ShearTimeline(values.length);
+                    }
                     else
                     {
                         timeline = new spine.TranslateTimeline(values.length);
@@ -446,6 +480,30 @@ spine.SkeletonJsonParser.prototype = {
             }
             timelines.push(timeline);
             duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 3 - 3]);
+        }
+
+        var transformMap = map["transform"];
+        for (var transformConstraintName in transformMap)
+        {
+            if (!transformMap.hasOwnProperty(transformConstraintName)) continue;
+            var transformConstraint = skeletonData.findTransformConstraint(transformConstraintName);
+            var values = transformMap[transformConstraintName];
+            var timeline = new spine.TransformConstraintTimeline(values.length);
+            timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOf(transformConstraint);
+            var frameIndex = 0;
+            for (var i = 0, n = values.length; i < n; i++)
+            {
+                var valueMap = values[i];
+                var rotateMix = valueMap.hasOwnProperty("rotateMix") ? valueMap["rotateMix"] : 1;
+                var translateMix = valueMap.hasOwnProperty("translateMix") ? valueMap["translateMix"] : 1;
+                var scaleMix = valueMap.hasOwnProperty("scaleMix") ? valueMap["scaleMix"] : 1;
+                var shearMix = valueMap.hasOwnProperty("shearMix") ? valueMap["shearMix"] : 1;
+                timeline.setFrame(frameIndex, valueMap["time"], translateMix, scaleMix, shearMix);
+                this.readCurve(timeline, frameIndex, valueMap);
+                frameIndex++;
+            }
+            timelines.push(timeline);
+            duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 5 - 5]);
         }
 
         var ffd = map["ffd"];

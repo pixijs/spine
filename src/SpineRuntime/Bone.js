@@ -12,18 +12,25 @@ spine.Bone.prototype = {
     x: 0, y: 0,
     rotation: 0, rotationIK: 0,
     scaleX: 1, scaleY: 1,
+    shearX: 0, shearY: 0,
     flipX: false, flipY: false,
 
     worldSignX: 1, worldSignY: 1,
+    update: function() {
+        this.rotationIK = this.rotation;
+        this.updateWorldTransform();
+    },
     updateWorldTransform: function() {
         var rotation = this.rotationIK;
         var scaleX = this.scaleX;
         var scaleY = this.scaleY;
         var x = this.x;
         var y = this.y;
+        var rotationX = rotation + this.shearX;
+        var rotationY = rotation + 90 + this.shearY;
 
-        var cos = Math.cos(rotation * spine.degRad), sin = Math.sin(rotation * spine.degRad);
-        var la = cos * scaleX, lb = -sin * scaleY, lc = sin * scaleX, ld = cos * scaleY;
+        var la = Math.cos(rotationX * spine.degRad) * scaleX, lb = Math.cos(rotationY * spine.degRad) * scaleY,
+            lc = Math.sin(rotationX * spine.degRad) * scaleX, ld = Math.sin(rotationY * spine.degRad) * scaleY;
         var parent = this.parent;
         var m = this.matrix;
         var skeleton = this.skeleton;
@@ -154,6 +161,8 @@ spine.Bone.prototype = {
         this.rotationIK = this.rotation;
         this.scaleX = data.scaleX;
         this.scaleY = data.scaleY;
+        this.shearX = data.shearX;
+        this.shearY = data.shearY;
     },
     worldToLocal: function (world)
     {
