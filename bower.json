@@ -1,0 +1,21 @@
+{
+  "name": "pixi-spine",
+  "version": "1.0.18",
+  "main": "bin/pixi-spine.min.js",
+  "dependencies": {
+    "pixi.js": "*"
+  },
+  "ignore": [
+    "gpupatch",
+    "gulp",
+    "src",
+    "test",
+    ".editorconfig",
+    ".gitignore",
+    ".jshintrc",
+    "docs.json",
+    "gulpfile.js",
+    "jsdoc_docs_conf.json",
+    "package.json"
+  ]
+}
