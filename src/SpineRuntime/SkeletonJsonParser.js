@@ -2,7 +2,7 @@ var spine = require('../SpineUtil');
 spine.SkeletonData = require('./SkeletonData');
 spine.BoneData = require('./BoneData');
 spine.IkConstraintData = require('./IkConstraintData');
-spine.TransformConstraintData = require('./IkConstraintData');
+spine.TransformConstraintData = require('./TransformConstraintData');
 spine.SlotData = require('./SlotData');
 spine.Skin = require('./Skin');
 spine.EventData = require('./EventData');
@@ -14,7 +14,7 @@ spine.ScaleTimeline = require('./ScaleTimeline');
 spine.TranslateTimeline = require('./TranslateTimeline');
 spine.ShearTimeline = require('./ShearTimeline');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
-spine.TransformConstraintTimeline = require('./IkConstraintTimeline');
+spine.TransformConstraintTimeline = require('./TransformConstraintTimeline');
 spine.FfdTimeline = require('./FfdTimeline');
 spine.DrawOrderTimeline = require('./DrawOrderTimeline');
 spine.EventTimeline = require('./EventTimeline');
@@ -49,6 +49,7 @@ spine.SkeletonJsonParser.prototype = {
         var skeletonData = new spine.SkeletonData();
         skeletonData.name = name;
 
+        var scale = this.scale;
         // Skeleton.
         var skeletonMap = root["skeleton"];
         if (skeletonMap)
@@ -115,7 +116,7 @@ spine.SkeletonJsonParser.prototype = {
         if (transform) {
             for (var i = 0, n = transform.length; i<n; i++) {
                 var transformMap = transform[i];
-                var transformData = new spine.TransformConstraintData(ikMap["name"]);
+                var transformData = new spine.TransformConstraintData(transformMap["name"]);
                 transformData.bone = skeletonData.findBone(transformMap["bone"]);
                 if (!transformData.bone) throw new Error("Transform bone not found: " + transformData["bone"]);
                 transformData.target = skeletonData.findBone(transformMap["target"]);

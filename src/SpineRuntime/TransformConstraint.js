@@ -29,7 +29,7 @@ spine.TransformConstraint.prototype = {
         var rotateMix = this.rotateMix;
         if (rotateMix > 0) {
             var a = bm.a, b = bm.c, c = bm.b, d = bm.d;
-            var r = Math.atan2(tm.b, tm.a) - Math.atan2(c, a) + this.offsetRotation * spine.degRad;
+            var r = Math.atan2(tm.b, tm.a) - Math.atan2(c, a);
             if (r > Math.PI)
                 r -= Math.PI*2;
             else if (r < -Math.PI) r += Math.PI*2;
@@ -73,9 +73,9 @@ spine.TransformConstraint.prototype = {
         if (translateMix > 0) {
             tempVec[0] = this.offsetX;
             tempVec[1] = this.offsetY;
-            target.localToWorld(tempVec);
-            bm.tx += (tempVec.x - bm.tx) * translateMix;
-            bm.ty += (tempVec.y - bm.ty) * translateMix;
+            this.target.localToWorld(tempVec);
+            bm.tx += (tempVec[0] - bm.tx) * translateMix;
+            bm.ty += (tempVec[1] - bm.ty) * translateMix;
         }
     }
 };

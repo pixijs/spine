@@ -73,13 +73,21 @@ spine.SkeletonData.prototype = {
         return null;
     },
     /** @return May be null. */
-    findIkConstraint: function (ikConstraintName)
+    findIkConstraint: function (constraintName)
     {
-        var ikConstraints = this.ikConstraints;
-        for (var i = 0, n = ikConstraints.length; i < n; i++)
-            if (ikConstraints[i].name == ikConstraintName) return ikConstraints[i];
+        var constraints = this.ikConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].name == constraintName) return constraints[i];
         return null;
-    }
+    },
+    /** @return May be null. */
+    findTransformConstraint: function (constraintName)
+    {
+        var constraints = this.transformConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].name == constraintName) return constraints[i];
+        return null;
+    },
 };
 module.exports = spine.SkeletonData;
 

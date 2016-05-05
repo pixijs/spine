@@ -40,9 +40,9 @@ spine.TransformConstraintTimeline.prototype = {
 
         // Interpolate between the previous frame and the current frame.
         var frame = spine.Animation.binarySearch(frames, time, 5);
-        var frameTime = frames[frameIndex];
-        var percent = 1 - (time - frameTime) / (frames[frameIndex + -5/*PREV_FRAME_TIME*/] - frameTime);
-        percent = this.curves.getCurvePercent(frameIndex / 5 - 1, percent);
+        var frameTime = frames[frame];
+        var percent = 1 - (time - frameTime) / (frames[frame + -5/*PREV_FRAME_TIME*/] - frameTime);
+        percent = this.curves.getCurvePercent(frame / 5 - 1, percent);
 
         var rotate = frames[frame + -4/*PREV_ROTATE_MIX*/];
         var translate = frames[frame + -3/*PREV_TRANSLATE_MIX*/];
