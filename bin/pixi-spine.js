@@ -2613,13 +2613,21 @@ spine.SkeletonData.prototype = {
         return null;
     },
     /** @return May be null. */
-    findIkConstraint: function (ikConstraintName)
+    findIkConstraint: function (constraintName)
     {
-        var ikConstraints = this.ikConstraints;
-        for (var i = 0, n = ikConstraints.length; i < n; i++)
-            if (ikConstraints[i].name == ikConstraintName) return ikConstraints[i];
+        var constraints = this.ikConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].name == constraintName) return constraints[i];
         return null;
-    }
+    },
+    /** @return May be null. */
+    findTransformConstraint: function (constraintName)
+    {
+        var constraints = this.transformConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].name == constraintName) return constraints[i];
+        return null;
+    },
 };
 module.exports = spine.SkeletonData;
 
@@ -2629,7 +2637,7 @@ var spine = require('../SpineUtil');
 spine.SkeletonData = require('./SkeletonData');
 spine.BoneData = require('./BoneData');
 spine.IkConstraintData = require('./IkConstraintData');
-spine.TransformConstraintData = require('./IkConstraintData');
+spine.TransformConstraintData = require('./TransformConstraintData');
 spine.SlotData = require('./SlotData');
 spine.Skin = require('./Skin');
 spine.EventData = require('./EventData');
@@ -2641,7 +2649,7 @@ spine.ScaleTimeline = require('./ScaleTimeline');
 spine.TranslateTimeline = require('./TranslateTimeline');
 spine.ShearTimeline = require('./ShearTimeline');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
-spine.TransformConstraintTimeline = require('./IkConstraintTimeline');
+spine.TransformConstraintTimeline = require('./TransformConstraintTimeline');
 spine.FfdTimeline = require('./FfdTimeline');
 spine.DrawOrderTimeline = require('./DrawOrderTimeline');
 spine.EventTimeline = require('./EventTimeline');
@@ -2676,6 +2684,7 @@ spine.SkeletonJsonParser.prototype = {
         var skeletonData = new spine.SkeletonData();
         skeletonData.name = name;
 
+        var scale = this.scale;
         // Skeleton.
         var skeletonMap = root["skeleton"];
         if (skeletonMap)
@@ -2742,7 +2751,7 @@ spine.SkeletonJsonParser.prototype = {
         if (transform) {
             for (var i = 0, n = transform.length; i<n; i++) {
                 var transformMap = transform[i];
-                var transformData = new spine.TransformConstraintData(ikMap["name"]);
+                var transformData = new spine.TransformConstraintData(transformMap["name"]);
                 transformData.bone = skeletonData.findBone(transformMap["bone"]);
                 if (!transformData.bone) throw new Error("Transform bone not found: " + transformData["bone"]);
                 transformData.target = skeletonData.findBone(transformMap["target"]);
@@ -3313,7 +3322,7 @@ spine.SkeletonJsonParser.prototype = {
 module.exports = spine.SkeletonJsonParser;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./AttachmentTimeline":10,"./AttachmentType":11,"./BoneData":13,"./ColorTimeline":15,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./SkeletonData":32,"./Skin":34,"./SlotData":36,"./TranslateTimeline":41}],34:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./AttachmentTimeline":10,"./AttachmentType":11,"./BoneData":13,"./ColorTimeline":15,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./SkeletonData":32,"./Skin":34,"./SlotData":36,"./TransformConstraintData":39,"./TransformConstraintTimeline":40,"./TranslateTimeline":41}],34:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Skin = function (name)
 {
@@ -3473,7 +3482,7 @@ spine.TransformConstraint.prototype = {
         var rotateMix = this.rotateMix;
         if (rotateMix > 0) {
             var a = bm.a, b = bm.c, c = bm.b, d = bm.d;
-            var r = Math.atan2(tm.b, tm.a) - Math.atan2(c, a) + this.offsetRotation * spine.degRad;
+            var r = Math.atan2(tm.b, tm.a) - Math.atan2(c, a);
             if (r > Math.PI)
                 r -= Math.PI*2;
             else if (r < -Math.PI) r += Math.PI*2;
@@ -3517,9 +3526,9 @@ spine.TransformConstraint.prototype = {
         if (translateMix > 0) {
             tempVec[0] = this.offsetX;
             tempVec[1] = this.offsetY;
-            target.localToWorld(tempVec);
-            bm.tx += (tempVec.x - bm.tx) * translateMix;
-            bm.ty += (tempVec.y - bm.ty) * translateMix;
+            this.target.localToWorld(tempVec);
+            bm.tx += (tempVec[0] - bm.tx) * translateMix;
+            bm.ty += (tempVec[1] - bm.ty) * translateMix;
         }
     }
 };
@@ -3592,9 +3601,9 @@ spine.TransformConstraintTimeline.prototype = {
 
         // Interpolate between the previous frame and the current frame.
         var frame = spine.Animation.binarySearch(frames, time, 5);
-        var frameTime = frames[frameIndex];
-        var percent = 1 - (time - frameTime) / (frames[frameIndex + -5/*PREV_FRAME_TIME*/] - frameTime);
-        percent = this.curves.getCurvePercent(frameIndex / 5 - 1, percent);
+        var frameTime = frames[frame];
+        var percent = 1 - (time - frameTime) / (frames[frame + -5/*PREV_FRAME_TIME*/] - frameTime);
+        percent = this.curves.getCurvePercent(frame / 5 - 1, percent);
 
         var rotate = frames[frame + -4/*PREV_ROTATE_MIX*/];
         var translate = frames[frame + -3/*PREV_TRANSLATE_MIX*/];
