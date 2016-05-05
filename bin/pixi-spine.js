@@ -8,7 +8,7 @@ module.exports = PIXI.spine = {
     loaders:        require('./loaders')
 };
 
-},{"./Spine":41,"./SpineRuntime":39,"./loaders":45}],2:[function(require,module,exports){
+},{"./Spine":45,"./SpineRuntime":43,"./loaders":49}],2:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = function (name, timelines, duration)
 {
@@ -80,7 +80,7 @@ spine.Animation.linearSearch = function (values, target, step)
 };
 module.exports = spine.Animation;
 
-},{"../SpineUtil":40}],3:[function(require,module,exports){
+},{"../SpineUtil":44}],3:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.TrackEntry = require('./TrackEntry');
 spine.AnimationState = function (stateData)
@@ -281,6 +281,16 @@ spine.AnimationState.prototype = {
 
         return entry;
     },
+    /**
+     * Returns true if animation exists in skeleton data
+     * @param animationName
+     * @returns {boolean}
+     */
+    hasAnimationByName: function (animationName)
+    {
+        var animation = this.data.skeletonData.findAnimation(animationName);
+        return animation !== null;
+    },
     /** May be null. */
     getCurrent: function (trackIndex)
     {
@@ -291,7 +301,7 @@ spine.AnimationState.prototype = {
 module.exports = spine.AnimationState;
 
 
-},{"../SpineUtil":40,"./TrackEntry":36}],4:[function(require,module,exports){
+},{"../SpineUtil":44,"./TrackEntry":37}],4:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AnimationStateData = function (skeletonData)
 {
@@ -321,7 +331,7 @@ spine.AnimationStateData.prototype = {
 module.exports = spine.AnimationStateData;
 
 
-},{"../SpineUtil":40}],5:[function(require,module,exports){
+},{"../SpineUtil":44}],5:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasReader = require('./AtlasReader');
 spine.AtlasPage = require('./AtlasPage');
@@ -368,10 +378,10 @@ spine.Atlas.prototype = {
         this.regions.push(region);
         return region;
     },
-    addTextureHash: function(textures) {
+    addTextureHash: function(textures, stripExtension) {
         for (var key in textures) {
             if (textures.hasOwnProperty(key)) {
-                this.addTexture(key, textures[key]);
+                this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
             }
         }
     },
@@ -567,7 +577,7 @@ spine.Atlas.TextureWrap = {
 };
 module.exports = spine.Atlas;
 
-},{"../SpineUtil":40,"../loaders/syncImageLoaderAdapter.js":46,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9}],6:[function(require,module,exports){
+},{"../SpineUtil":44,"../loaders/syncImageLoaderAdapter.js":50,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9}],6:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.RegionAttachment = require('./RegionAttachment');
 spine.MeshAttachment = require('./MeshAttachment');
@@ -619,7 +629,7 @@ spine.AtlasAttachmentParser.prototype = {
 module.exports = spine.AtlasAttachmentParser;
 
 
-},{"../SpineUtil":40,"./BoundingBoxAttachment":14,"./MeshAttachment":25,"./RegionAttachment":26,"./WeightedMeshAttachment":38}],7:[function(require,module,exports){
+},{"../SpineUtil":44,"./BoundingBoxAttachment":14,"./MeshAttachment":25,"./RegionAttachment":26,"./WeightedMeshAttachment":42}],7:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasPage = function ()
 {};
@@ -637,7 +647,7 @@ spine.AtlasPage.prototype = {
 module.exports = spine.AtlasPage;
 
 
-},{"../SpineUtil":40}],8:[function(require,module,exports){
+},{"../SpineUtil":44}],8:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasReader = function (text)
 {
@@ -682,7 +692,7 @@ spine.AtlasReader.prototype = {
 module.exports = spine.AtlasReader;
 
 
-},{"../SpineUtil":40}],9:[function(require,module,exports){
+},{"../SpineUtil":44}],9:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasRegion = function ()
 {};
@@ -815,7 +825,7 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
 module.exports = spine.AtlasRegion;
 
 
-},{"../SpineUtil":40}],10:[function(require,module,exports){
+},{"../SpineUtil":44}],10:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Curves = require('./Curves');
 spine.Animation = require('./Animation');
@@ -859,7 +869,7 @@ spine.AttachmentTimeline.prototype = {
 module.exports = spine.AttachmentTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],11:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],11:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = {
     region: 0,
@@ -873,7 +883,7 @@ spine.AttachmentType = {
 module.exports = spine.AttachmentType;
 
 
-},{"../SpineUtil":40}],12:[function(require,module,exports){
+},{"../SpineUtil":44}],12:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Bone = function (boneData, skeleton, parent)
 {
@@ -888,18 +898,25 @@ spine.Bone.prototype = {
     x: 0, y: 0,
     rotation: 0, rotationIK: 0,
     scaleX: 1, scaleY: 1,
+    shearX: 0, shearY: 0,
     flipX: false, flipY: false,
 
     worldSignX: 1, worldSignY: 1,
+    update: function() {
+        this.rotationIK = this.rotation;
+        this.updateWorldTransform();
+    },
     updateWorldTransform: function() {
         var rotation = this.rotationIK;
         var scaleX = this.scaleX;
         var scaleY = this.scaleY;
         var x = this.x;
         var y = this.y;
+        var rotationX = rotation + this.shearX;
+        var rotationY = rotation + 90 + this.shearY;
 
-        var cos = Math.cos(rotation * spine.degRad), sin = Math.sin(rotation * spine.degRad);
-        var la = cos * scaleX, lb = -sin * scaleY, lc = sin * scaleX, ld = cos * scaleY;
+        var la = Math.cos(rotationX * spine.degRad) * scaleX, lb = Math.cos(rotationY * spine.degRad) * scaleY,
+            lc = Math.sin(rotationX * spine.degRad) * scaleX, ld = Math.sin(rotationY * spine.degRad) * scaleY;
         var parent = this.parent;
         var m = this.matrix;
         var skeleton = this.skeleton;
@@ -1030,6 +1047,8 @@ spine.Bone.prototype = {
         this.rotationIK = this.rotation;
         this.scaleX = data.scaleX;
         this.scaleY = data.scaleY;
+        this.shearX = data.shearX;
+        this.shearY = data.shearY;
     },
     worldToLocal: function (world)
     {
@@ -1081,7 +1100,7 @@ Object.defineProperties(spine.Bone.prototype, {
 
 module.exports = spine.Bone;
 
-},{"../SpineUtil":40}],13:[function(require,module,exports){
+},{"../SpineUtil":44}],13:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.BoneData = function (name, parent)
 {
@@ -1093,13 +1112,14 @@ spine.BoneData.prototype = {
     x: 0, y: 0,
     rotation: 0,
     scaleX: 1, scaleY: 1,
+    shearX: 0, shearY: 0,
     inheritScale: true,
     inheritRotation: true
 };
 module.exports = spine.BoneData;
 
 
-},{"../SpineUtil":40}],14:[function(require,module,exports){
+},{"../SpineUtil":44}],14:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = require('./AttachmentType');
 spine.BoundingBoxAttachment = function (name)
@@ -1127,7 +1147,7 @@ spine.BoundingBoxAttachment.prototype = {
 module.exports = spine.BoundingBoxAttachment;
 
 
-},{"../SpineUtil":40,"./AttachmentType":11}],15:[function(require,module,exports){
+},{"../SpineUtil":44,"./AttachmentType":11}],15:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1200,7 +1220,7 @@ spine.ColorTimeline.prototype = {
 module.exports = spine.ColorTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],16:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],16:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Curves = function (frameCount)
 {
@@ -1279,7 +1299,7 @@ spine.Curves.prototype = {
 module.exports = spine.Curves;
 
 
-},{"../SpineUtil":40}],17:[function(require,module,exports){
+},{"../SpineUtil":44}],17:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.DrawOrderTimeline = function (frameCount)
@@ -1326,7 +1346,7 @@ spine.DrawOrderTimeline.prototype = {
 module.exports = spine.DrawOrderTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2}],18:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2}],18:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Event = function (data)
 {
@@ -1340,7 +1360,7 @@ spine.Event.prototype = {
 module.exports = spine.Event;
 
 
-},{"../SpineUtil":40}],19:[function(require,module,exports){
+},{"../SpineUtil":44}],19:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.EventData = function (name)
 {
@@ -1354,7 +1374,7 @@ spine.EventData.prototype = {
 module.exports = spine.EventData;
 
 
-},{"../SpineUtil":40}],20:[function(require,module,exports){
+},{"../SpineUtil":44}],20:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.EventTimeline = function (frameCount)
@@ -1411,7 +1431,7 @@ spine.EventTimeline.prototype = {
 module.exports = spine.EventTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2}],21:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2}],21:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1497,7 +1517,7 @@ spine.FfdTimeline.prototype = {
 module.exports = spine.FfdTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],22:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],22:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.IkConstraint = function (data, skeleton)
 {
@@ -1511,6 +1531,9 @@ spine.IkConstraint = function (data, skeleton)
     this.target = skeleton.findBone(data.target.name);
 };
 spine.IkConstraint.prototype = {
+    update: function() {
+        this.apply();
+    },
     apply: function ()
     {
         var target = this.target;
@@ -1538,6 +1561,7 @@ spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
         rotationIK -= 360;
     else if (rotationIK < -180) rotationIK += 360;
     bone.rotationIK = rotation + (rotationIK - rotation) * alpha;
+    bone.updateWorldTransform();
 };
 /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
  * target is specified in the world coordinate system.
@@ -1662,13 +1686,15 @@ spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, 
     else if (a2 < -180) a2 += 360;
     var rotation = parent.rotation;
     parent.rotationIK = rotation + (a1 - rotation) * alpha;
+    parent.updateWorldTransform();
     rotation = child.rotation;
     child.rotationIK = rotation + (a2 - rotation) * alpha;
+    child.updateWorldTransform();
 };
 module.exports = spine.IkConstraint;
 
 
-},{"../SpineUtil":40}],23:[function(require,module,exports){
+},{"../SpineUtil":44}],23:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.IkConstraintData = function (name)
 {
@@ -1683,7 +1709,7 @@ spine.IkConstraintData.prototype = {
 module.exports = spine.IkConstraintData;
 
 
-},{"../SpineUtil":40}],24:[function(require,module,exports){
+},{"../SpineUtil":44}],24:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1735,7 +1761,7 @@ spine.IkConstraintTimeline.prototype = {
 module.exports = spine.IkConstraintTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],25:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],25:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.MeshAttachment = function (name)
@@ -1811,7 +1837,7 @@ spine.MeshAttachment.prototype = {
 module.exports = spine.MeshAttachment;
 
 
-},{"../SpineUtil":40,"./AttachmentType":11}],26:[function(require,module,exports){
+},{"../SpineUtil":44,"./AttachmentType":11}],26:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = require('./AttachmentType');
 spine.RegionAttachment = function (name)
@@ -1906,7 +1932,7 @@ spine.RegionAttachment.prototype = {
 module.exports = spine.RegionAttachment;
 
 
-},{"../SpineUtil":40,"./AttachmentType":11}],27:[function(require,module,exports){
+},{"../SpineUtil":44,"./AttachmentType":11}],27:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1969,7 +1995,7 @@ spine.RotateTimeline.prototype = {
 module.exports = spine.RotateTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],28:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],28:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -2021,7 +2047,59 @@ spine.ScaleTimeline.prototype = {
 module.exports = spine.ScaleTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],29:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],29:[function(require,module,exports){
+var spine = require('../SpineUtil');
+spine.Animation = require('./Animation');
+spine.Curves = require('./Curves');
+spine.ShearTimeline = function (frameCount)
+{
+    this.curves = new spine.Curves(frameCount);
+    this.frames = []; // time, x, y, ...
+    this.frames.length = frameCount * 3;
+};
+spine.ShearTimeline.prototype = {
+    boneIndex: 0,
+    getFrameCount: function ()
+    {
+        return this.frames.length / 3;
+    },
+    setFrame: function (frameIndex, time, x, y)
+    {
+        frameIndex *= 3;
+        this.frames[frameIndex] = time;
+        this.frames[frameIndex + 1] = x;
+        this.frames[frameIndex + 2] = y;
+    },
+    apply: function (skeleton, lastTime, time, firedEvents, alpha)
+    {
+        var frames = this.frames;
+        if (time < frames[0]) return; // Time is before first frame.
+
+        var bone = skeleton.bones[this.boneIndex];
+
+        if (time >= frames[frames.length - 3])
+        { // Time is after last frame.
+            bone.shearX += (bone.data.shearX * frames[frames.length - 2] - bone.shearX) * alpha;
+            bone.shearY += (bone.data.shearY * frames[frames.length - 1] - bone.shearY) * alpha;
+            return;
+        }
+
+        // Interpolate between the previous frame and the current frame.
+        var frameIndex = spine.Animation.binarySearch(frames, time, 3);
+        var prevFrameX = frames[frameIndex - 2];
+        var prevFrameY = frames[frameIndex - 1];
+        var frameTime = frames[frameIndex];
+        var percent = 1 - (time - frameTime) / (frames[frameIndex + -3/*PREV_FRAME_TIME*/] - frameTime);
+        percent = this.curves.getCurvePercent(frameIndex / 3 - 1, percent);
+
+        bone.shearX += (bone.data.shearX + (prevFrameX + (frames[frameIndex + 1/*FRAME_X*/] - prevFrameX) * percent) - bone.shearX) * alpha;
+        bone.shearY += (bone.data.shearY + (prevFrameY + (frames[frameIndex + 2/*FRAME_Y*/] - prevFrameY) * percent) - bone.shearY) * alpha;
+    }
+};
+module.exports = spine.ShearTimeline;
+
+
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],30:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Bone = require('./Bone');
 spine.Slot = require('./Slot');
@@ -2053,6 +2131,10 @@ spine.Skeleton = function (skeletonData)
     for (var i = 0, n = skeletonData.ikConstraints.length; i < n; i++)
         this.ikConstraints.push(new spine.IkConstraint(skeletonData.ikConstraints[i], this));
 
+    this.transformConstraints = [];
+    for (var i = 0, n = skeletonData.transformConstraints.length; i < n; i++)
+        this.transformConstraints.push(new spine.TransformConstraint(skeletonData.transformConstraints[i], this));
+
     this.boneCache = [];
     this.updateCache();
 };
@@ -2067,44 +2149,27 @@ spine.Skeleton.prototype = {
     {
         var ikConstraints = this.ikConstraints;
         var ikConstraintsCount = ikConstraints.length;
+        var transformConstraints = this.transformConstraints;
+        var transformConstraintsCount = transformConstraints.length;
 
-        var arrayCount = ikConstraintsCount + 1;
         var boneCache = this.boneCache;
-        if (boneCache.length > arrayCount) boneCache.length = arrayCount;
-        for (var i = 0, n = boneCache.length; i < n; i++)
-            boneCache[i].length = 0;
-        while (boneCache.length < arrayCount)
-            boneCache[boneCache.length] = [];
-
-        var nonIkBones = boneCache[0];
+        boneCache.length = 0;
         var bones = this.bones;
-
-        outer:
         for (var i = 0, n = bones.length; i < n; i++)
         {
             var bone = bones[i];
-            var current = bone;
-            do {
-                for (var ii = 0; ii < ikConstraintsCount; ii++)
-                {
-                    var ikConstraint = ikConstraints[ii];
-                    var parent = ikConstraint.bones[0];
-                    var child= ikConstraint.bones[ikConstraint.bones.length - 1];
-                    while (true)
-                    {
-                        if (current == child)
-                        {
-                            boneCache[ii].push(bone);
-                            boneCache[ii + 1].push(bone);
-                            continue outer;
-                        }
-                        if (child == parent) break;
-                        child = child.parent;
-                    }
+            boneCache.push(bone);
+            for (var j=0; j < transformConstraintsCount; j++) {
+                if (transformConstraints[j].bone == bone) {
+                    boneCache.push(transformConstraints[j]);
                 }
-                current = current.parent;
-            } while (current);
-            nonIkBones[nonIkBones.length] = bone;
+            }
+            for (var j=0; j < ikConstraintsCount; j++) {
+                if (ikConstraints[j].bones[ikConstraints[j].bones.length-1] == bone) {
+                    boneCache.push(ikConstraints[j]);
+                    break;
+                }
+            }
         }
     },
     /** Updates the world transform for each bone. */
@@ -2116,15 +2181,9 @@ spine.Skeleton.prototype = {
             var bone = bones[i];
             bone.rotationIK = bone.rotation;
         }
-        var i = 0, last = this.boneCache.length - 1;
-        while (true)
-        {
-            var cacheBones = this.boneCache[i];
-            for (var ii = 0, nn = cacheBones.length; ii < nn; ii++)
-                cacheBones[ii].updateWorldTransform();
-            if (i == last) break;
-            this.ikConstraints[i].apply();
-            i++;
+        var boneCache = this.boneCache;
+        for (var i = 0, n = boneCache.length; i < n; i++) {
+            boneCache[i].update();
         }
     },
     /** Sets the bones and slots to their setup pose values. */
@@ -2145,6 +2204,17 @@ spine.Skeleton.prototype = {
             var ikConstraint = ikConstraints[i];
             ikConstraint.bendDirection = ikConstraint.data.bendDirection;
             ikConstraint.mix = ikConstraint.data.mix;
+        }
+
+        var transformConstraints = this.transformConstraints;
+        for (var i = 0, n = transformConstraints.length; i < n; i++)
+        {
+            var constraint = transformConstraints[i];
+            var data = constraint.data;
+            constraint.rotateMix = data.rotateMix;
+            constraint.translateMix = data.translateMix;
+            constraint.scaleMix = data.scaleMix;
+            constraint.shearMix = data.shearMix;
         }
     },
     setSlotsToSetupPose: function ()
@@ -2265,11 +2335,18 @@ spine.Skeleton.prototype = {
         throw "Slot not found: " + slotName;
     },
     /** @return May be null. */
-    findIkConstraint: function (ikConstraintName)
+    findIkConstraint: function (constraintName)
     {
-        var ikConstraints = this.ikConstraints;
-        for (var i = 0, n = ikConstraints.length; i < n; i++)
-            if (ikConstraints[i].data.name == ikConstraintName) return ikConstraints[i];
+        var constraints = this.ikConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].data.name == constraintName) return constraints[i];
+        return null;
+    },
+    findTransformConstraint: function (constraintName)
+    {
+        var constraints = this.transformConstraints;
+        for (var i = 0, n = constraints.length; i < n; i++)
+            if (constraints[i].data.name == constraintName) return constraints[i];
         return null;
     },
     update: function (delta)
@@ -2286,7 +2363,7 @@ spine.Skeleton.prototype = {
 module.exports = spine.Skeleton;
 
 
-},{"../SpineUtil":40,"./Bone":12,"./IkConstraint":22,"./Slot":34}],30:[function(require,module,exports){
+},{"../SpineUtil":44,"./Bone":12,"./IkConstraint":22,"./Slot":35}],31:[function(require,module,exports){
 var spine = require('../SpineRuntime') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.SkeletonBounds = function ()
@@ -2460,7 +2537,7 @@ spine.SkeletonBounds.prototype = {
 module.exports = spine.SkeletonBounds;
 
 
-},{"../SpineRuntime":39,"./AttachmentType":11}],31:[function(require,module,exports){
+},{"../SpineRuntime":43,"./AttachmentType":11}],32:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SkeletonData = function ()
 {
@@ -2470,6 +2547,7 @@ spine.SkeletonData = function ()
     this.events = [];
     this.animations = [];
     this.ikConstraints = [];
+    this.transformConstraints = [];
 };
 spine.SkeletonData.prototype = {
     name: null,
@@ -2546,11 +2624,12 @@ spine.SkeletonData.prototype = {
 module.exports = spine.SkeletonData;
 
 
-},{"../SpineUtil":40}],32:[function(require,module,exports){
+},{"../SpineUtil":44}],33:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SkeletonData = require('./SkeletonData');
 spine.BoneData = require('./BoneData');
 spine.IkConstraintData = require('./IkConstraintData');
+spine.TransformConstraintData = require('./IkConstraintData');
 spine.SlotData = require('./SlotData');
 spine.Skin = require('./Skin');
 spine.EventData = require('./EventData');
@@ -2560,7 +2639,9 @@ spine.AttachmentTimeline = require('./AttachmentTimeline');
 spine.RotateTimeline = require('./RotateTimeline');
 spine.ScaleTimeline = require('./ScaleTimeline');
 spine.TranslateTimeline = require('./TranslateTimeline');
+spine.ShearTimeline = require('./ShearTimeline');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
+spine.TransformConstraintTimeline = require('./IkConstraintTimeline');
 spine.FfdTimeline = require('./FfdTimeline');
 spine.DrawOrderTimeline = require('./DrawOrderTimeline');
 spine.EventTimeline = require('./EventTimeline');
@@ -2623,6 +2704,8 @@ spine.SkeletonJsonParser.prototype = {
             boneData.rotation = (boneMap["rotation"] || 0);
             boneData.scaleX = boneMap.hasOwnProperty("scaleX") ? boneMap["scaleX"] : 1;
             boneData.scaleY = boneMap.hasOwnProperty("scaleY") ? boneMap["scaleY"] : 1;
+            boneData.shearX = boneMap["shearX"] || 0;
+            boneData.shearY = boneMap["shearY"] || 0;
             boneData.inheritScale = boneMap.hasOwnProperty("inheritScale") ? boneMap["inheritScale"] : true;
             boneData.inheritRotation = boneMap.hasOwnProperty("inheritRotation") ? boneMap["inheritRotation"] : true;
             skeletonData.bones.push(boneData);
@@ -2641,17 +2724,43 @@ spine.SkeletonJsonParser.prototype = {
                 for (var ii = 0, nn = bones.length; ii < nn; ii++)
                 {
                     var bone = skeletonData.findBone(bones[ii]);
-                    if (!bone) throw "IK bone not found: " + bones[ii];
+                    if (!bone) throw new Error( "IK bone not found: " + bones[ii] );
                     ikConstraintData.bones.push(bone);
                 }
 
                 ikConstraintData.target = skeletonData.findBone(ikMap["target"]);
-                if (!ikConstraintData.target) throw "Target bone not found: " + ikMap["target"];
+                if (!ikConstraintData.target) throw new Error("Target bone not found: " + ikMap["target"]);
 
                 ikConstraintData.bendDirection = (!ikMap.hasOwnProperty("bendPositive") || ikMap["bendPositive"]) ? 1 : -1;
                 ikConstraintData.mix = ikMap.hasOwnProperty("mix") ? ikMap["mix"] : 1;
 
                 skeletonData.ikConstraints.push(ikConstraintData);
+            }
+        }
+
+        var transform = root["transform"];
+        if (transform) {
+            for (var i = 0, n = transform.length; i<n; i++) {
+                var transformMap = transform[i];
+                var transformData = new spine.TransformConstraintData(ikMap["name"]);
+                transformData.bone = skeletonData.findBone(transformMap["bone"]);
+                if (!transformData.bone) throw new Error("Transform bone not found: " + transformData["bone"]);
+                transformData.target = skeletonData.findBone(transformMap["target"]);
+                if (!transformData.target) throw new Error("Target bone not found: " + transformData["target"]);
+
+                transformData.offsetRotation = transformMap["rotation"] || 0;
+                transformData.offsetX = (transformMap["offsetX"] || 0) * scale;
+                transformData.offsetY = (transformMap["offsetY"] || 0) * scale;
+                transformData.offsetScaleX = (transformMap["scaleX"] || 0) * scale;
+                transformData.offsetScaleY = (transformMap["scaleY"] || 0) * scale;
+                transformData.offsetShearY = (transformMap["offsetShearY"] || 0) * scale;
+
+                transformData.rotateMix = transformMap.hasOwnProperty("rotateMix") ? transformMap["rotateMix"] : 1;
+                transformData.translateMix = transformMap.hasOwnProperty("translateMix") ? transformMap["translateMix"] : 1;
+                transformData.scaleMix = transformMap.hasOwnProperty("scaleMix") ? transformMap["scaleMix"] : 1;
+                transformData.shearMix = transformMap.hasOwnProperty("shearMix") ? transformMap["shearMix"] : 1;
+
+                skeletonData.transformConstraints.push(transformData);
             }
         }
 
@@ -2941,12 +3050,15 @@ spine.SkeletonJsonParser.prototype = {
                     timelines.push(timeline);
                     duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 2 - 2]);
 
-                } else if (timelineName == "translate" || timelineName == "scale")
+                } else if (timelineName == "translate" || timelineName == "scale" || timelineName == "shear")
                 {
                     var timeline;
                     var timelineScale = 1;
-                    if (timelineName == "scale")
+                    if (timelineName == "scale") {
                         timeline = new spine.ScaleTimeline(values.length);
+                    } else if (timelineName == "shear") {
+                        timeline = new spine.ShearTimeline(values.length);
+                    }
                     else
                     {
                         timeline = new spine.TranslateTimeline(values.length);
@@ -2995,6 +3107,30 @@ spine.SkeletonJsonParser.prototype = {
             }
             timelines.push(timeline);
             duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 3 - 3]);
+        }
+
+        var transformMap = map["transform"];
+        for (var transformConstraintName in transformMap)
+        {
+            if (!transformMap.hasOwnProperty(transformConstraintName)) continue;
+            var transformConstraint = skeletonData.findTransformConstraint(transformConstraintName);
+            var values = transformMap[transformConstraintName];
+            var timeline = new spine.TransformConstraintTimeline(values.length);
+            timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOf(transformConstraint);
+            var frameIndex = 0;
+            for (var i = 0, n = values.length; i < n; i++)
+            {
+                var valueMap = values[i];
+                var rotateMix = valueMap.hasOwnProperty("rotateMix") ? valueMap["rotateMix"] : 1;
+                var translateMix = valueMap.hasOwnProperty("translateMix") ? valueMap["translateMix"] : 1;
+                var scaleMix = valueMap.hasOwnProperty("scaleMix") ? valueMap["scaleMix"] : 1;
+                var shearMix = valueMap.hasOwnProperty("shearMix") ? valueMap["shearMix"] : 1;
+                timeline.setFrame(frameIndex, valueMap["time"], translateMix, scaleMix, shearMix);
+                this.readCurve(timeline, frameIndex, valueMap);
+                frameIndex++;
+            }
+            timelines.push(timeline);
+            duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 5 - 5]);
         }
 
         var ffd = map["ffd"];
@@ -3177,7 +3313,7 @@ spine.SkeletonJsonParser.prototype = {
 module.exports = spine.SkeletonJsonParser;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./AttachmentTimeline":10,"./AttachmentType":11,"./BoneData":13,"./ColorTimeline":15,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./RotateTimeline":27,"./ScaleTimeline":28,"./SkeletonData":31,"./Skin":33,"./SlotData":35,"./TranslateTimeline":37}],33:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./AttachmentTimeline":10,"./AttachmentType":11,"./BoneData":13,"./ColorTimeline":15,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./SkeletonData":32,"./Skin":34,"./SlotData":36,"./TranslateTimeline":41}],34:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Skin = function (name)
 {
@@ -3212,7 +3348,7 @@ spine.Skin.prototype = {
 module.exports = spine.Skin;
 
 
-},{"../SpineUtil":40}],34:[function(require,module,exports){
+},{"../SpineUtil":44}],35:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Slot = function (slotData, bone)
 {
@@ -3262,7 +3398,7 @@ spine.Slot.prototype = {
 module.exports = spine.Slot;
 
 
-},{"../SpineUtil":40}],35:[function(require,module,exports){
+},{"../SpineUtil":44}],36:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SlotData = function (name, boneData)
 {
@@ -3289,7 +3425,7 @@ spine.SlotData.prototype = {
 module.exports = spine.SlotData;
 
 
-},{"../SpineUtil":40}],36:[function(require,module,exports){
+},{"../SpineUtil":44}],37:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.TrackEntry = function ()
 {};
@@ -3305,7 +3441,176 @@ spine.TrackEntry.prototype = {
 module.exports = spine.TrackEntry;
 
 
-},{"../SpineUtil":40}],37:[function(require,module,exports){
+},{"../SpineUtil":44}],38:[function(require,module,exports){
+var spine = require('../SpineUtil');
+var tempVec = [0, 0];
+spine.TransformConstraint = function (data, skeleton)
+{
+    this.data = data;
+    this.translateMix = data.translateMix;
+    this.rotateMix = data.rotateMix;
+    this.scaleMix = data.scaleMix;
+    this.shearMix = data.shearMix;
+    this.offsetX = data.offsetX;
+    this.offsetY = data.offsetY;
+    this.offsetScaleX = data.offsetScaleX;
+    this.offsetScaleY = data.offsetScaleY;
+    this.offsetShearY = data.offsetShearY;
+
+    this.bone = skeleton.findBone(data.bone.name);
+    this.target = skeleton.findBone(data.target.name);
+};
+
+spine.TransformConstraint.prototype = {
+    update: function() {
+        this.apply();
+    },
+    apply: function ()
+    {
+        var bm = this.bone.matrix;
+        var tm = this.target.matrix;
+
+        var rotateMix = this.rotateMix;
+        if (rotateMix > 0) {
+            var a = bm.a, b = bm.c, c = bm.b, d = bm.d;
+            var r = Math.atan2(tm.b, tm.a) - Math.atan2(c, a) + this.offsetRotation * spine.degRad;
+            if (r > Math.PI)
+                r -= Math.PI*2;
+            else if (r < -Math.PI) r += Math.PI*2;
+            r *= rotateMix;
+            var cos = Math.cos(r), sin = Math.sin(r);
+            bm.a = cos * a - sin * c;
+            bm.c = cos * b - sin * d;
+            bm.b = sin * a + cos * c;
+            bm.d = sin * b + cos * d;
+        }
+
+        var scaleMix = this.rotateMix;
+        if (scaleMix > 0) {
+            var bs = Math.sqrt(bm.a * bm.a + bm.b * bm.b);
+            var ts = Math.sqrt(tm.a * tm.a + tm.b * tm.b);
+            var s = bs > 0.00001 ? (bs + (ts - bs + this.offsetScaleX) * scaleMix) / bs : 0;
+            bm.a *= s;
+            bm.b *= s;
+            bs = Math.sqrt(bm.c * bm.c + bm.d * bm.d);
+            ts = Math.sqrt(bm.c * bm.c + bm.d * bm.d);
+            s = bs > 0.00001 ? (bs + (ts - bs + this.offsetScaleY) * scaleMix) / bs : 0;
+            bm.c *= s;
+            bm.d *= s;
+        }
+
+        var shearMix = this.shearMix;
+        if (shearMix > 0) {
+            var b = bm.c, d = bm.d;
+            var by = Math.atan2(d, b);
+            var r = Math.atan2(tm.d, tm.c) - Math.atan2(tm.b, target.a) - (by - Math.atan2(bm.b, bm.a));
+            if (r > Math.PI)
+                r -= Math.PI*2;
+            else if (r < -Math.PI) r += Math.PI*2;
+            r = by + (r + this.offsetShearY * spine.degRad) * shearMix;
+            var s = Math.sqrt(b * b + d * d);
+            bm.c = Math.cos(r) * s;
+            bm.d = Math.sin(r) * s;
+        }
+
+        var translateMix = this.translateMix;
+        if (translateMix > 0) {
+            tempVec[0] = this.offsetX;
+            tempVec[1] = this.offsetY;
+            target.localToWorld(tempVec);
+            bm.tx += (tempVec.x - bm.tx) * translateMix;
+            bm.ty += (tempVec.y - bm.ty) * translateMix;
+        }
+    }
+};
+
+module.exports = spine.TransformConstraint;
+
+},{"../SpineUtil":44}],39:[function(require,module,exports){
+var spine = require('../SpineUtil') || {};
+spine.TransformConstraintData = function (name)
+{
+    this.name = name;
+    this.bone = null;
+};
+spine.TransformConstraintData.prototype = {
+    target: null,
+    rotateMix: 1,
+    translateMix: 1,
+    scaleMix: 1,
+    shearMix: 1,
+    offsetRotation: 0,
+    offsetX: 0,
+    offsetY: 0,
+    offsetScaleX: 0,
+    offsetScaleY: 0,
+    offsetShearY: 0
+};
+module.exports = spine.TransformConstraintData;
+
+
+},{"../SpineUtil":44}],40:[function(require,module,exports){
+var spine = require('../SpineUtil') || {};
+spine.Animation = require('./Animation');
+spine.Curves = require('./Curves');
+spine.TransformConstraintTimeline = function (frameCount)
+{
+    this.curves = new spine.Curves(frameCount);
+    this.frames = []; // time, mix, bendDirection, ...
+    this.frames.length = frameCount * 3;
+};
+spine.TransformConstraintTimeline.prototype = {
+    transformConstraintIndex: 0,
+    getFrameCount: function ()
+    {
+        return this.frames.length / 5;
+    },
+    setFrame: function (frameIndex, time, rotateMix, translateMix, scaleMix, shareMix)
+    {
+        frameIndex *= 5;
+        this.frames[frameIndex] = time;
+        this.frames[frameIndex + 1] = rotateMix;
+        this.frames[frameIndex + 2] = translateMix;
+        this.frames[frameIndex + 3] = scaleMix;
+        this.frames[frameIndex + 4] = shareMix;
+    },
+    apply: function (skeleton, lastTime, time, firedEvents, alpha)
+    {
+        var frames = this.frames;
+        if (time < frames[0]) return; // Time is before first frame.
+
+        var constraint = skeleton.transformConstraints[this.transformConstraintIndex];
+
+        if (time >= frames[frames.length - 5])
+        { // Time is after last frame.
+            constraint.rotateMix += (frames[i - 3] - constraint.rotateMix) * alpha;
+            constraint.translateMix += (frames[i - 2] - constraint.translateMix) * alpha;
+            constraint.scaleMix += (frames[i - 1] - constraint.scaleMix) * alpha;
+            constraint.shearMix += (frames[i] - constraint.shearMix) * alpha;
+            return;
+        }
+
+        // Interpolate between the previous frame and the current frame.
+        var frame = spine.Animation.binarySearch(frames, time, 5);
+        var frameTime = frames[frameIndex];
+        var percent = 1 - (time - frameTime) / (frames[frameIndex + -5/*PREV_FRAME_TIME*/] - frameTime);
+        percent = this.curves.getCurvePercent(frameIndex / 5 - 1, percent);
+
+        var rotate = frames[frame + -4/*PREV_ROTATE_MIX*/];
+        var translate = frames[frame + -3/*PREV_TRANSLATE_MIX*/];
+        var scale = frames[frame + -2/*PREV_SCALE_MIX*/];
+        var shear = frames[frame + -1/*PREV_SHEAR_MIX*/];
+        constraint.rotateMix += (rotate + (frames[frame + 1/*ROTATE_MIX*/] - rotate) * percent - constraint.rotateMix) * alpha;
+        constraint.translateMix += (translate + (frames[frame + 2/*TRANSLATE_MIX*/] - translate) * percent - constraint.translateMix)
+            * alpha;
+        constraint.scaleMix += (scale + (frames[frame + 3/*SCALE_MIX*/] - scale) * percent - constraint.scaleMix) * alpha;
+        constraint.shearMix += (shear + (frames[frame + 4/*SHEAR_MIX*/] - shear) * percent - constraint.shearMix) * alpha;
+    }
+};
+module.exports = spine.TransformConstraintTimeline;
+
+
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],41:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -3357,7 +3662,7 @@ spine.TranslateTimeline.prototype = {
 module.exports = spine.TranslateTimeline;
 
 
-},{"../SpineUtil":40,"./Animation":2,"./Curves":16}],38:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],42:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.WeightedMeshAttachment = function (name)
@@ -3468,7 +3773,7 @@ spine.WeightedMeshAttachment.prototype = {
 module.exports = spine.WeightedMeshAttachment;
 
 
-},{"../SpineUtil":40,"./AttachmentType":11}],39:[function(require,module,exports){
+},{"../SpineUtil":44,"./AttachmentType":11}],43:[function(require,module,exports){
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.1
@@ -3522,10 +3827,14 @@ spine.FfdTimeline = require('./FfdTimeline');
 spine.IkConstraintData = require('./IkConstraintData');
 spine.IkConstraint = require('./IkConstraint');
 spine.IkConstraintTimeline = require('./IkConstraintTimeline');
+spine.TransformConstraintData = require('./TransformConstraintData');
+spine.TransformConstraint = require('./TransformConstraint');
+spine.TransformConstraintTimeline = require('./TransformConstraintTimeline');
 spine.MeshAttachment = require('./MeshAttachment');
 spine.RegionAttachment = require('./RegionAttachment');
 spine.RotateTimeline = require('./RotateTimeline');
 spine.ScaleTimeline = require('./ScaleTimeline');
+spine.ShearTimeline = require('./ShearTimeline');
 spine.SkeletonBounds = require('./SkeletonBounds');
 spine.SkeletonData = require('./SkeletonData');
 spine.Skeleton = require('./Skeleton');
@@ -3538,7 +3847,7 @@ spine.TrackEntry = require('./TrackEntry');
 spine.TranslateTimeline = require('./TranslateTimeline');
 module.exports = spine;
 
-},{"../SpineUtil":40,"./Animation":2,"./AnimationState":3,"./AnimationStateData":4,"./Atlas":5,"./AtlasAttachmentParser":6,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9,"./AttachmentTimeline":10,"./AttachmentType":11,"./Bone":12,"./BoneData":13,"./BoundingBoxAttachment":14,"./ColorTimeline":15,"./Curves":16,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraint":22,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./MeshAttachment":25,"./RegionAttachment":26,"./RotateTimeline":27,"./ScaleTimeline":28,"./Skeleton":29,"./SkeletonBounds":30,"./SkeletonData":31,"./SkeletonJsonParser":32,"./Skin.js":33,"./Slot":34,"./SlotData":35,"./TrackEntry":36,"./TranslateTimeline":37,"./WeightedMeshAttachment":38}],40:[function(require,module,exports){
+},{"../SpineUtil":44,"./Animation":2,"./AnimationState":3,"./AnimationStateData":4,"./Atlas":5,"./AtlasAttachmentParser":6,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9,"./AttachmentTimeline":10,"./AttachmentType":11,"./Bone":12,"./BoneData":13,"./BoundingBoxAttachment":14,"./ColorTimeline":15,"./Curves":16,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraint":22,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./MeshAttachment":25,"./RegionAttachment":26,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./Skeleton":30,"./SkeletonBounds":31,"./SkeletonData":32,"./SkeletonJsonParser":33,"./Skin.js":34,"./Slot":35,"./SlotData":36,"./TrackEntry":37,"./TransformConstraint":38,"./TransformConstraintData":39,"./TransformConstraintTimeline":40,"./TranslateTimeline":41,"./WeightedMeshAttachment":42}],44:[function(require,module,exports){
 module.exports = {
     radDeg: 180 / Math.PI,
     degRad: Math.PI / 180,
@@ -3553,7 +3862,7 @@ module.exports = {
 };
 
 
-},{}],41:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 var atlasParser = require('../loaders/atlasParser');
 
@@ -3915,7 +4224,7 @@ function SlotContainerUpdateTransformV3()
     this._currentBounds = null;
 };
 
-},{"../SpineRuntime":39,"../loaders/atlasParser":43}],42:[function(require,module,exports){
+},{"../SpineRuntime":43,"../loaders/atlasParser":47}],46:[function(require,module,exports){
 /**
  * @file        Spine resource loader
  * @author      Ivan Popelyshev <ivan.popelyshev@gmail.com>
@@ -3932,7 +4241,7 @@ var atlasParser = require('./atlasParser');
 PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
 PIXI.loader.use(atlasParser());
 
-},{"./atlasParser":43}],43:[function(require,module,exports){
+},{"./atlasParser":47}],47:[function(require,module,exports){
 var Resource = PIXI.loaders.Resource,
     spine = require('../SpineRuntime'),
     imageLoaderAdapter = require('./imageLoaderAdapter');
@@ -4006,7 +4315,7 @@ var atlasParser = module.exports = function () {
 atlasParser.AnimCache = {};
 atlasParser.enableCaching = false;
 
-},{"../SpineRuntime":39,"./imageLoaderAdapter":44}],44:[function(require,module,exports){
+},{"../SpineRuntime":43,"./imageLoaderAdapter":48}],48:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 
 module.exports = function (loader, namePrefix, baseUrl, imageOptions) {
@@ -4023,7 +4332,7 @@ module.exports = function (loader, namePrefix, baseUrl, imageOptions) {
     }
 };
 
-},{"../SpineRuntime":39}],45:[function(require,module,exports){
+},{"../SpineRuntime":43}],49:[function(require,module,exports){
 module.exports = {
     atlasParser: require('./atlasParser'),
     Loader: require('./Loader'),
@@ -4031,7 +4340,7 @@ module.exports = {
     imageLoaderAdapter: require('./imageLoaderAdapter')
 };
 
-},{"./Loader":42,"./atlasParser":43,"./imageLoaderAdapter":44,"./syncImageLoaderAdapter":46}],46:[function(require,module,exports){
+},{"./Loader":46,"./atlasParser":47,"./imageLoaderAdapter":48,"./syncImageLoaderAdapter":50}],50:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 
 module.exports = function (baseUrl, crossOrigin) {
@@ -4044,7 +4353,7 @@ module.exports = function (baseUrl, crossOrigin) {
     }
 };
 
-},{"../SpineRuntime":39}]},{},[1])
+},{"../SpineRuntime":43}]},{},[1])
 
 
 //# sourceMappingURL=pixi-spine.js.map
