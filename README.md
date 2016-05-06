@@ -62,6 +62,54 @@ PIXI.loader
     });
 ```
 
+### How to use pre-loaded json and atlas files
+
+```js
+var rawSkeletonData = JSON.parse("$jsondata"); //your skeleton.json file here
+var rawAtlasData = "$atlasdata"; //your atlas file 
+
+var spineAtlas = new spine.Atlas(rawAtlasData, function(line, callback) {
+        //pass the image here.
+        callback(PIXI.BaseTexture.fromImage(line));
+    }); //specify path, image.png will be added automatically
+
+var spineJsonParser = new PIXI.spine.SkeletonJsonParser(new PIXI.spine.AtlasAttachmentParser(spineAtlas));
+var skeletonData = spineJsonParser.readSkeletonData(rawSkeletonData);
+
+//now we can create spine instance
+var spine = new PIXI.spine(skeletonData);
+```
+
+### How to use pixi spritesheet with it
+
+```js
+var spine = PIXI.spine;
+var loader = new PIXI.loaders.Loader();
+loader.add('spritesheet', 'myspritesheet.json', function(res1) {
+    var atlas = new spine.Atlas();
+	atlas.addTextureHash(res1.textures, true);
+	//second parameter is stripExtension=true because we dont need '.png' inside region names 
+	
+	//res1 is the same as loader.resources['spritesheet']
+	loader.add('spineboy', 'spineboy.json', { metadata: { spineAtlas: atlas } }, 
+		function(res2) {
+			var mySpineBoy = new spine.Spine(res2.spineData);
+			stage.addChild(mySpineBoy);
+		});
+})
+```
+
+### How to run animation
+
+```js
+var spineBoy = new PIXI.spine.Spine(spineBoyData);
+//run forever, little boy!
+spineBoy.state.setAnimationByName(0, 'run', true);
+//dont run too fast
+spineBoy.state.timeScale = 0.1;
+```
+
+
 ### How to use compressed textures
 
 ```js
