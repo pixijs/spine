@@ -103,10 +103,12 @@ loader.add('spritesheet', 'myspritesheet.json', function(res1) {
 
 ```js
 var spineBoy = new PIXI.spine.Spine(spineBoyData);
-//run forever, little boy!
-spineBoy.state.setAnimationByName(0, 'run', true);
-//dont run too fast
-spineBoy.state.timeScale = 0.1;
+if (spineBoy.state.hasAnimationByName('run')) {
+	//run forever, little boy!
+	spineBoy.state.setAnimationByName(0, 'run', true);
+	//dont run too fast
+	spineBoy.state.timeScale = 0.1;
+}
 ```
 
 
