@@ -955,86 +955,80 @@ spine.Bone.prototype = {
             m.c = pa * lb + pb * ld;
             m.b = pc * la + pd * lc;
             m.d = pc * lb + pd * ld;
-        } else if (data.inheritRotation) { // No scale inheritance.
-            pa = 1;
-            pb = 0;
-            pc = 0;
-            pd = 1;
-            do {
-                cos = Math.cos(parent.rotationIK * spine.degRad);
-                sin = Math.sin(parent.rotationIK * spine.degRad);
-                var temp = pa * cos + pb * sin;
-                pb = pa * -sin + pb * cos;
-                pa = temp;
-                temp = pc * cos + pd * sin;
-                pd = pc * -sin + pd * cos;
-                pc = temp;
-
-                if (!parent.data.inheritRotation) break;
-                parent = parent.parent;
-            } while (parent != null);
-            m.a = pa * la + pb * lc;
-            m.c = pa * lb + pb * ld;
-            m.b = pc * la + pd * lc;
-            m.d = pc * lb + pd * ld;
-            if (skeleton.flipX) {
-                m.a = -m.a;
-                m.c = -m.c;
-            }
-            if (skeleton.flipY !== spine.Bone.yDown) {
-                m.b = -m.b;
-                m.d = -m.d;
-            }
-        } else if (data.inheritScale) { // No rotation inheritance.
-            pa = 1;
-            pb = 0;
-            pc = 0;
-            pd = 1;
-            do {
-                var r = parent.rotation;
-                cos = Math.cos(r * spine.degRad);
-                sin = Math.sin(r * spine.degRad);
-                var psx = parent.scaleX, psy = parent.scaleY;
-                var za = cos * psx, zb = -sin * psy, zc = sin * psx, zd = cos * psy;
-                temp = pa * za + pb * zc;
-                pb = pa * zb + pb * zd;
-                pa = temp;
-                temp = pc * za + pd * zc;
-                pd = pc * zb + pd * zd;
-                pc = temp;
-
-                if (psx < 0) {
-                    r = -r;
-                } else {
-                    sin = -sin;
-                }
-                temp = pa * cos + pb * sin;
-                pb = pa * -sin + pb * cos;
-                pa = temp;
-                temp = pc * cos + pd * sin;
-                pd = pc * -sin + pd * cos;
-                pc = temp;
-
-                if (!parent.data.inheritScale) break;
-                parent = parent.parent;
-            } while (parent != null);
-            m.a = pa * la + pb * lc;
-            m.c = pa * lb + pb * ld;
-            m.b = pc * la + pd * lc;
-            m.d = pc * lb + pd * ld;
-            if (skeleton.flipX) {
-                m.a = -m.a;
-                m.c = -m.c;
-            }
-            if (skeleton.flipY !== spine.Bone.yDown) {
-                m.b = -m.b;
-                m.d = -m.d;
-            }
         } else {
-            m.a = la;
-            m.c = lb;
-            m.b = lc;
-            m.d = ld;
+            if (data.inheritRotation) { // No scale inheritance.
+                pa = 1;
+                pb = 0;
+                pc = 0;
+                pd = 1;
+                do {
+                    cos = Math.cos(parent.rotationIK * spine.degRad);
+                    sin = Math.sin(parent.rotationIK * spine.degRad);
+                    var temp = pa * cos + pb * sin;
+                    pb = pa * -sin + pb * cos;
+                    pa = temp;
+                    temp = pc * cos + pd * sin;
+                    pd = pc * -sin + pd * cos;
+                    pc = temp;
+
+                    if (!parent.data.inheritRotation) break;
+                    parent = parent.parent;
+                } while (parent != null);
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+            } else if (data.inheritScale) { // No rotation inheritance.
+                pa = 1;
+                pb = 0;
+                pc = 0;
+                pd = 1;
+                do {
+                    var r = parent.rotationIK;
+                    cos = Math.cos(r * spine.degRad);
+                    sin = Math.sin(r * spine.degRad);
+                    var psx = parent.scaleX, psy = parent.scaleY;
+                    var za = cos * psx, zb = -sin * psy, zc = sin * psx, zd = cos * psy;
+                    temp = pa * za + pb * zc;
+                    pb = pa * zb + pb * zd;
+                    pa = temp;
+                    temp = pc * za + pd * zc;
+                    pd = pc * zb + pd * zd;
+                    pc = temp;
+
+                    if (psx < 0) {
+                        r = -r;
+                    } else {
+                        sin = -sin;
+                    }
+                    temp = pa * cos + pb * sin;
+                    pb = pa * -sin + pb * cos;
+                    pa = temp;
+                    temp = pc * cos + pd * sin;
+                    pd = pc * -sin + pd * cos;
+                    pc = temp;
+
+                    if (!parent.data.inheritScale) break;
+                    parent = parent.parent;
+                } while (parent != null);
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+            } else {
+                m.a = la;
+                m.c = lb;
+                m.b = lc;
+                m.d = ld;
+            }
+            if (skeleton.flipX) {
+                m.a = -m.a;
+                m.c = -m.c;
+            }
+            if (skeleton.flipY !== spine.Bone.yDown) {
+                m.b = -m.b;
+                m.d = -m.d;
+            }
         }
     },
 
