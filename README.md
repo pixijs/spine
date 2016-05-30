@@ -81,22 +81,29 @@ var spine = new PIXI.spine(skeletonData);
 ```
 
 ### How to use pixi spritesheet with it
-
+It's possible to load each image separately as opposed to loading in just one spritesheet. This can be useful if SVGs are needed instead of providing many PNG files. Simply create an Atlas object and pass in an object of image names and PIXI textures, like so:
 ```js
 var spine = PIXI.spine;
 var loader = new PIXI.loaders.Loader();
-loader.add('spritesheet', 'myspritesheet.json', function(res1) {
-    var atlas = new spine.Atlas();
-	atlas.addTextureHash(res1.textures, true);
-	//second parameter is stripExtension=true because we dont need '.png' inside region names 
-	
-	//res1 is the same as loader.resources['spritesheet']
-	loader.add('spineboy', 'spineboy.json', { metadata: { spineAtlas: atlas } }, 
-		function(res2) {
-			var mySpineBoy = new spine.Spine(res2.spineData);
-			stage.addChild(mySpineBoy);
-		});
-})
+var atlas = new spine.SpineRuntime.Atlas();
+/**
+ * Example below shows the textures hardcoded below, but it's also possible to load in a JSON 
+ * file with these values using:
+ * loader.add('spritesheet', 'myspritesheet.json', callback);
+ */
+var allTextures = {
+  'head': PIXI.Texture.fromImage('head.svg'),
+  'left-eye': PIXI.Texture.fromImage('left-eye.svg')
+};
+//second parameter is stripExtension=true because we dont need '.png' inside region names 
+atlas.addTextureHash(allTextures, true);
+
+PIXI.loader
+    .add('spineboy', 'spineboy.json', {metadata: {spineAtlas: atlas}})
+    .load(function(response) {
+      var mySpineBoy = new PIXI.spine.Spine(response.resources.boy.spineData);
+      stage.addChild(mySpineBoy);
+    });
 ```
 
 ### How to run animation
@@ -104,10 +111,10 @@ loader.add('spritesheet', 'myspritesheet.json', function(res1) {
 ```js
 var spineBoy = new PIXI.spine.Spine(spineBoyData);
 if (spineBoy.state.hasAnimationByName('run')) {
-	//run forever, little boy!
-	spineBoy.state.setAnimationByName(0, 'run', true);
-	//dont run too fast
-	spineBoy.state.timeScale = 0.1;
+    //run forever, little boy!
+    spineBoy.state.setAnimationByName(0, 'run', true);
+    //dont run too fast
+    spineBoy.state.timeScale = 0.1;
 }
 ```
 
