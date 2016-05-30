@@ -207,15 +207,25 @@ Spine.prototype.update = function (dt)
             }
 
             if (slotContainer.transform ) {
-                //PIXI v4.0
-                if (!slotContainer.transform._dirtyLocal) {
-                    slotContainer.transform = new PIXI.TransformStatic();
-                }
                 var transform = slotContainer.transform;
-                var lt = transform.localTransform;
-                transform._dirtyParentVersion = -1;
-                transform._dirtyLocal = 1;
-                transform._versionLocal = 1;
+                //PIXI v4.1
+                var lt;
+                if (slotContainer.transform.matrix2d) {
+                    lt = transform.matrix2d;
+                    transform._dirtyVersion++;
+                    transform.version = transform._dirtyVersion;
+                    transform.isStatic = true;
+                    transform.operMode = 0;
+                } else {
+                //PIXI v4.0
+                    if (!slotContainer.transform._dirtyLocal) {
+                        slotContainer.transform = new PIXI.TransformStatic();
+                    }
+                    lt = transform.localTransform;
+                    transform._dirtyParentVersion = -1;
+                    transform._dirtyLocal = 1;
+                    transform._versionLocal = 1;
+                }
                 slot.bone.matrix.copy(lt);
                 lt.tx += slot.bone.skeleton.x;
                 lt.ty += slot.bone.skeleton.y;
