@@ -129,7 +129,7 @@ var spineCharacter = new PIXI.spine.Spine(resources.boy.spineData);
 var skeleton = spineCharacter.skeleton;
 
 function setSkinByName(skinName) {
-  skeleton.skin = null;
+  skeleton.setSkin(null);
   skeleton.setSkinByName('darker');
 }
 
