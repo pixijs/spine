@@ -218,8 +218,9 @@ Spine.prototype.update = function (dt)
                     transform.operMode = 0;
                 } else {
                 //PIXI v4.0
-                    if (!slotContainer.transform._dirtyLocal) {
-                        slotContainer.transform = new PIXI.TransformStatic();
+                    if (!transform._dirtyLocal) {
+                        transform = new PIXI.TransformStatic();
+                        slotContainer.transform = transform;
                     }
                     lt = transform.localTransform;
                     transform._dirtyParentVersion = -1;
@@ -240,7 +241,7 @@ Spine.prototype.update = function (dt)
             }
 
             slot.currentSprite.blendMode = slot.blendMode;
-            slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r,slot.g,slot.b]);
+            slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r * attachment.r, slot.g * attachment.g, slot.b * attachment.b]);
         }
         else if (type === spine.AttachmentType.skinnedmesh || type === spine.AttachmentType.mesh)
         {
