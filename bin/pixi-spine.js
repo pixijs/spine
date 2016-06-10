@@ -2073,8 +2073,8 @@ spine.ShearTimeline.prototype = {
 
         if (time >= frames[frames.length - 3])
         { // Time is after last frame.
-            bone.shearX += (bone.data.shearX * frames[frames.length - 2] - bone.shearX) * alpha;
-            bone.shearY += (bone.data.shearY * frames[frames.length - 1] - bone.shearY) * alpha;
+            bone.shearX += (bone.data.shearX + frames[frames.length - 2] - bone.shearX) * alpha;
+            bone.shearY += (bone.data.shearY + frames[frames.length - 1] - bone.shearY) * alpha;
             return;
         }
 
