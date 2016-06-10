@@ -4285,7 +4285,11 @@ var atlasParser = module.exports = function () {
             next();
         }
 
-        var metadataAtlasSuffix = resource.metadata ? resource.metadata.spineAtlasSuffix: '.atlas';
+        var metadataAtlasSuffix = '.atlas';
+        if (resource.metadata && resource.metadata.spineAtlasSuffix) {
+            metadataAtlasSuffix = resource.metadata.spineAtlasSuffix;
+        }
+
         /**
          * use a bit of hackery to load the atlas file, here we assume that the .json, .atlas and .png files
          * that correspond to the spine file are in the same base URL and that the .json and .atlas files
