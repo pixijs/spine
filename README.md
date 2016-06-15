@@ -160,6 +160,46 @@ PIXI.loader
     });
 ```
 
+### How to change region attachment texture
+
+```js
+//let 'spine' be Spine object
+var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);
+//let 'num' be the number of the slot with mesh. 
+var num = spine.skeleton.findSlotIndex('meshSlot');
+//let myTexture be the texture you are assigning. it can be something from the spritesheet
+var myTexture = loader.resources['newRegionTexture'].texture;
+
+var slot = spine.skeleton.slots[num];
+var slotContainer = spine.slotContainers[num];
+//the same as slotContainer.children[0]
+if (slot.currentSprite) {
+    slot.currentSprite.texture = myTexture;
+}
+```
+
+### How to change mesh attachment texture
+
+```js
+//let 'spine' be Spine object
+var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);
+//let 'num' be the number of the slot with mesh. 
+var num = spine.skeleton.findSlotIndex('meshSlot');
+//let myTexture be the texture you are assigning. it can be something from the spritesheet
+var myTexture = loader.resources['newMeshTexture'].texture;
+
+var slot = spine.skeleton.slots[num];
+var attachment = slot.attachment;
+var slotContainer = spine.slotContainers[num];
+
+attachment.rendererObject.texture = myTexture;
+attachment.updateUVs();
+//the same as slotContainer.children[0]
+if (slot.currentMesh) {
+    slot.currentMesh.texture = myTexture;
+}
+```
+
 ## Building
 
 You will need to have [node][node] and [gulp][gulp] setup on your machine.
