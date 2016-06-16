@@ -208,16 +208,24 @@ Spine.prototype.update = function (dt)
 
             if (slotContainer.transform ) {
                 var transform = slotContainer.transform;
-                //PIXI v4.1
                 var lt;
                 if (slotContainer.transform.matrix2d) {
+                    //gameofbombs pixi fork
                     lt = transform.matrix2d;
                     transform._dirtyVersion++;
                     transform.version = transform._dirtyVersion;
                     transform.isStatic = true;
                     transform.operMode = 0;
+                } else
+                if (PIXI.TransformManual) {
+                    //PIXI v4.0
+                    if (transform.position) {
+                        transform = new PIXI.TransformManual();
+                        slotContainer.transform = transform;
+                    }
+                    lt = transform.localTransform;
                 } else {
-                //PIXI v4.0
+                    //PIXI v4.0rc
                     if (!transform._dirtyLocal) {
                         transform = new PIXI.TransformStatic();
                         slotContainer.transform = transform;
@@ -243,7 +251,7 @@ Spine.prototype.update = function (dt)
             slot.currentSprite.blendMode = slot.blendMode;
             slot.currentSprite.tint = PIXI.utils.rgb2hex([slot.r * attachment.r, slot.g * attachment.g, slot.b * attachment.b]);
         }
-        else if (type === spine.AttachmentType.skinnedmesh || type === spine.AttachmentType.mesh)
+        else if (type === spine.AttachmentType.skinnedmesh || type === spine.AttachmentType.mesh || type === spine.AttachmentType.linkedmesh)
         {
             if (!slot.currentMeshName || slot.currentMeshName !== attachment.name)
             {
@@ -269,6 +277,10 @@ Spine.prototype.update = function (dt)
                 slot.currentMeshName = meshName;
             }
             attachment.computeWorldVertices(slot.bone.skeleton.x, slot.bone.skeleton.y, slot, slot.currentMesh.vertices);
+            if (PIXI.VERSION[0] !== '3') {
+                // PIXI version 4
+                slot.currentMesh.dirty = true;
+            }
         }
         else
         {
@@ -353,6 +365,75 @@ Spine.prototype.createMesh = function (slot, attachment)
     slot.meshes[attachment.name] = strip;
 
     return strip;
+};
+
+/**
+ * Changes texture in attachment in specific slot.
+ *
+ * PIXI runtime feature, it was made to satisfy our users.
+ *
+ * @param slotName {string}
+ * @param [texture = null] {PIXI.Texture} If null, take default (original) texture
+ * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
+ * @returns {boolean} Success flag
+ */
+Spine.prototype.hackTextureBySlotIndex = function(slotIndex, texture, size) {
+    var slot = this.skeleton.slots[slotIndex];
+    if (!slot) {
+        return false;
+    }
+    var attachment = slot.attachment;
+    if (!attachment || !attachment.hackRegion) {
+        return false;
+    }
+    var region = null;
+    if (texture) {
+        region = new spine.AtlasRegion();
+        region.texture = texture;
+        region.size = size;
+    }
+
+    attachment.hackRegion(region);
+    var descriptor = attachment.rendererObject;
+    if (slot.currentSprite) {
+        var sprite = slot.currentSprite;
+        sprite.texture = descriptor.texture;
+        sprite.scale.x = attachment.width / descriptor.originalWidth;
+        sprite.scale.y = - attachment.height / descriptor.originalHeight;
+    }
+    if (slot.currentMesh) {
+        var mesh = slot.currentMesh;
+        mesh.texture = descriptor.texture;
+        for (var i = 0; i < attachment.uvs.length; i++) {
+            mesh.uvs[i] = attachment.uvs[i];
+        }
+        if (PIXI.VERSION[0] !== '3') {
+            // PIXI version 4
+            mesh.indexDirty = true;
+        } else {
+            // PIXI version 3
+            mesh.dirty = true;
+        }
+    }
+    return true;
+};
+
+/**
+ * Changes texture in attachment in specific slot.
+ *
+ * PIXI runtime feature, it was made to satisfy our users.
+ *
+ * @param slotName {string}
+ * @param [texture = null] {PIXI.Texture} If null, take default (original) texture
+ * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
+ * @returns {boolean} Success flag
+ */
+Spine.prototype.hackTextureBySlotName = function(slotName, texture, size) {
+    var index = this.skeleton.findSlotIndex(slotName);
+    if (index == -1) {
+        return false;
+    }
+    return this.hackTextureBySlotIndex(index,texture, size);
 };
 
 function SlotContainerUpdateTransformV3()

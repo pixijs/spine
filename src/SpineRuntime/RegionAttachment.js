@@ -87,6 +87,21 @@ spine.RegionAttachment.prototype = {
         vertices[5/*X3*/] = offset[4/*X3*/] * m10 + offset[5/*X3*/] * m11 + y;
         vertices[6/*X4*/] = offset[6/*X4*/] * m00 + offset[7/*Y4*/] * m01 + x;
         vertices[7/*Y4*/] = offset[6/*X4*/] * m10 + offset[7/*Y4*/] * m11 + y;
+    },
+    hackRegion: function(newRegion) {
+        if (!newRegion) {
+            if (!this.oldRegion) return;
+            newRegion = this.oldRegion;
+        }
+        if (!this.oldRegion) {
+            this.oldRegion = this.rendererObject;
+            this.oldRegion.size = { width: this.width, height: this.height };
+        }
+        this.rendererObject = newRegion;
+        if (newRegion.size) {
+            this.width = newRegion.size.width;
+            this.height = newRegion.size.height;
+        }
     }
 };
 module.exports = spine.RegionAttachment;

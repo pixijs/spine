@@ -147,6 +147,23 @@ setSkinByName('lighter');
 ```
 If the skin is changed whilst the spineCharacter is animating, there may be a problem with the draw order of some assets. This will resolve when the animation finishes it's loop or the animation is restarted.
 
+### Changing texture the pixi way
+
+```js
+//let 'spine' be Spine object
+var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);
+//let myTexture be the texture you are assigning. it can be something from the spritesheet
+var myTexture = loader.resources['newRegionTexture'].texture;
+
+spine.hackTextureBySlotName('head', myTexture);
+
+//Region attachments are tricky: they must have width and height, specify it if your texture differs from old one
+spine.hackTextureBySlotName('arm', myTexture, { width: 100, height : 100 });
+//If you want texture have its natural size, pass it. pixiV3 - texture.frame, pixiV4 - texture.orig
+spine.hackTextureBySlotName('arm', myTexture, texture.orig || texture.frame);
+```
+
+
 ### How to use compressed textures
 
 ```js
@@ -158,46 +175,6 @@ PIXI.loader
     .load(function (loader, resources) {
         var animation = new PIXI.spine.Spine(resources.spineCharacter.spineData);
     });
-```
-
-### How to change region attachment texture
-
-```js
-//let 'spine' be Spine object
-var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);
-//let 'num' be the number of the slot with mesh. 
-var num = spine.skeleton.findSlotIndex('meshSlot');
-//let myTexture be the texture you are assigning. it can be something from the spritesheet
-var myTexture = loader.resources['newRegionTexture'].texture;
-
-var slot = spine.skeleton.slots[num];
-var slotContainer = spine.slotContainers[num];
-//the same as slotContainer.children[0]
-if (slot.currentSprite) {
-    slot.currentSprite.texture = myTexture;
-}
-```
-
-### How to change mesh attachment texture
-
-```js
-//let 'spine' be Spine object
-var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);
-//let 'num' be the number of the slot with mesh. 
-var num = spine.skeleton.findSlotIndex('meshSlot');
-//let myTexture be the texture you are assigning. it can be something from the spritesheet
-var myTexture = loader.resources['newMeshTexture'].texture;
-
-var slot = spine.skeleton.slots[num];
-var attachment = slot.attachment;
-var slotContainer = spine.slotContainers[num];
-
-attachment.rendererObject.texture = myTexture;
-attachment.updateUVs();
-//the same as slotContainer.children[0]
-if (slot.currentMesh) {
-    slot.currentMesh.texture = myTexture;
-}
 ```
 
 ## Building

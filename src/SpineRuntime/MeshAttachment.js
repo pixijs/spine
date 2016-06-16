@@ -68,6 +68,17 @@ spine.MeshAttachment.prototype = {
             this.triangles = parentMesh.triangles;
             this.hullLength = parentMesh.hullLength;
         }
+    },
+    hackRegion: function(newRegion) {
+        if (!newRegion) {
+            if (!this.oldRegion) return;
+            newRegion = this.oldRegion;
+        }
+        if (!this.oldRegion) {
+            this.oldRegion = this.rendererObject;
+        }
+        this.rendererObject = newRegion;
+        this.updateUVs();
     }
 };
 module.exports = spine.MeshAttachment;

@@ -100,7 +100,7 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
             var tex = this.texture;
             return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
         }
-    },
+    },  
     originalWidth: {
         get: function() {
             var tex = this.texture;
