@@ -147,7 +147,7 @@ setSkinByName('lighter');
 ```
 If the skin is changed whilst the spineCharacter is animating, there may be a problem with the draw order of some assets. This will resolve when the animation finishes it's loop or the animation is restarted.
 
-### Changing texture the pixi way
+### Changing the texture the direct way (hacks)
 
 ```js
 //let 'spine' be Spine object
