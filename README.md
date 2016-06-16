@@ -160,7 +160,7 @@ spine.hackTextureBySlotName('head', myTexture);
 //Region attachments are tricky: they must have width and height, specify it if your texture differs from old one
 spine.hackTextureBySlotName('arm', myTexture, { width: 100, height : 100 });
 //If you want texture have its natural size, pass it. pixiV3 - texture.frame, pixiV4 - texture.orig
-spine.hackTextureBySlotName('arm', myTexture, texture.orig || texture.frame);
+spine.hackTextureBySlotIndex(7, myTexture, texture.orig || texture.frame);
 ```
 
 
