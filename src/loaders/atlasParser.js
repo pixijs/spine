@@ -24,7 +24,7 @@ var atlasParser = module.exports = function () {
                 atlasParser.AnimCache[resource.name] = resource.spineData;
             }
 
-            next();
+            return next();
         }
 
         var metadataAtlasSuffix = '.atlas';
