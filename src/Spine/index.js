@@ -104,6 +104,14 @@ function Spine(spineData)
      * @member {boolean}
      */
     this.autoUpdate = true;
+
+    /**
+     * The tint applied to all spine slots. This is a [r,g,b] value. A value of [1,1,1] will remove any tint effect.
+     *
+     * @member {number}
+     * @memberof PIXI.spine.Spine#
+     */
+    this.tintRgb = new Float32Array([1, 1, 1]);
 }
 
 Spine.fromAtlas = function(resourceName) {
@@ -132,7 +140,7 @@ Object.defineProperties(Spine.prototype, {
      * autoupdate enabled but are harder to achieve.
      *
      * @member {boolean}
-     * @memberof Spine#
+     * @memberof PIXI.spine.Spine#
      * @default true
      */
     autoUpdate: {
@@ -144,6 +152,21 @@ Object.defineProperties(Spine.prototype, {
         set: function (value)
         {
             this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+        }
+    },
+    /**
+     * The tint applied to the spine object. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
+     *
+     * @member {number}
+     * @memberof PIXI.spine.Spine#
+     * @default 0xFFFFFF
+     */
+    tint: {
+        get: function() {
+            return PIXI.utils.rgb2hex(this.tintRgb);
+        },
+        set: function(value) {
+            this.tintRgb = PIXI.utils.hex2rgb(value, this.tintRgb);
         }
     }
 });
@@ -168,6 +191,10 @@ Spine.prototype.update = function (dt)
     {
         this.children[i] = this.slotContainers[drawOrder[i]];
     }
+
+    var r0 = this.tintRgb[0];
+    var g0 = this.tintRgb[1];
+    var b0 = this.tintRgb[2];
 
     for (i = 0, n = slots.length; i < n; i++)
     {
@@ -249,9 +276,9 @@ Spine.prototype.update = function (dt)
                 slotContainer.localTransform = lt;
                 slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
             }
-            tempRgb[0] = slot.r * attachment.r;
-            tempRgb[1] = slot.g * attachment.g;
-            tempRgb[2] = slot.b * attachment.b;
+            tempRgb[0] = r0 * slot.r * attachment.r;
+            tempRgb[1] = g0 * slot.g * attachment.g;
+            tempRgb[2] = b0 * slot.b * attachment.b;
             slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
             slot.currentSprite.blendMode = slot.blendMode;
         }
@@ -286,9 +313,9 @@ Spine.prototype.update = function (dt)
                 slot.currentMesh.dirty = true;
                 //only for PIXI v4
                 var tintRgb = slot.currentMesh.tintRgb;
-                tintRgb[0] = slot.r * attachment.r;
-                tintRgb[1] = slot.g * attachment.g;
-                tintRgb[2] = slot.b * attachment.b;
+                tintRgb[0] = r0 * slot.r * attachment.r;
+                tintRgb[1] = g0 * slot.g * attachment.g;
+                tintRgb[2] = b0 * slot.b * attachment.b;
             }
             slot.currentMesh.blendMode = slot.blendMode;
         }
