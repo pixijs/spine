@@ -37,6 +37,24 @@ spine.IkConstraint.apply1 = function (bone, targetX, targetY, alpha)
     var rotation = bone.rotation;
     var rotationIK = Math.atan2(targetY - bone.worldY, targetX - bone.worldX) * spine.radDeg - parentRotation;
     if ((bone.worldSignX != bone.worldSignY) != (bone.skeleton.flipX != (bone.skeleton.flipY != spine.Bone.yDown))) rotationIK = 360 - rotationIK;
+
+    //OLD ONE:
+
+    // float parentRotation = bone.parent == null ? 0 : bone.parent.getWorldRotationX();
+    // float rotation = bone.rotation;
+    // float rotationIK = atan2(targetY - bone.worldY, targetX - bone.worldX) * radDeg - parentRotation;
+    // if ((bone.worldSignX != bone.worldSignY) != (bone.skeleton.flipX != bone.skeleton.flipY)) rotationIK = 360 - rotationIK;
+
+    //NEW ONE
+
+    // var pp = bone.parent;
+    // float id = 1 / (pp.a * pp.d - pp.b * pp.c);
+    // float x = targetX - pp.worldX, y = targetY - pp.worldY;
+    // float tx = (x * pp.d - y * pp.b) * id - bone.x, ty = (y * pp.a - x * pp.c) * id - bone.y;
+    // float rotationIK = atan2(ty, tx) * radDeg - bone.shearX;
+    // if (bone.scaleX < 0) rotationIK += 180;
+
+
     if (rotationIK > 180)
         rotationIK -= 360;
     else if (rotationIK < -180) rotationIK += 360;
@@ -86,6 +104,33 @@ spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, 
         dx = (x * d - y * b) * invDet - px;
         dy = (y * a - x * c) * invDet - py;
     }
+
+    //OLD ONE
+    // float tx, ty, dx, dy;
+    // if (pp == null) {
+    //     tx = targetX - px;
+    //     ty = targetY - py;
+    //     dx = child.worldX - px;
+    //     dy = child.worldY - py;
+    // } else {
+    //     float a = pp.a, b = pp.b, c = pp.c, d = pp.d, invDet = 1 / (a * d - b * c);
+    //     float wx = pp.worldX, wy = pp.worldY, x = targetX - wx, y = targetY - wy;
+    //     tx = (x * d - y * b) * invDet - px;
+    //     ty = (y * a - x * c) * invDet - py;
+    //     x = child.worldX - wx;
+    //     y = child.worldY - wy;
+    //     dx = (x * d - y * b) * invDet - px;
+    //     dy = (y * a - x * c) * invDet - py;
+    // }
+
+    //NEW ONE
+    // float ppa = pp.a, ppb = pp.b, ppc = pp.c, ppd = pp.d, id = 1 / (ppa * ppd - ppb * ppc);
+    // float x = targetX - pp.worldX, y = targetY - pp.worldY;
+    // float tx = (x * ppd - y * ppb) * id - px, ty = (y * ppa - x * ppc) * id - py;
+    // x = child.worldX - pp.worldX;
+    // y = child.worldY - pp.worldY;
+    // float dx = (x * ppd - y * ppb) * id - px, dy = (y * ppa - x * ppc) * id - py;
+
     var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
     outer:
         if (Math.abs(psx - psy) <= 0.0001) {
