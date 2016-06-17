@@ -181,11 +181,6 @@ Spine.prototype.update = function (dt)
             continue;
         }
 
-        tempRgb[0] = slot.r * attachment.r;
-        tempRgb[1] = slot.g * attachment.g;
-        tempRgb[2] = slot.b * attachment.b;
-        var tint = PIXI.utils.rgb2hex(tempRgb);
-
         var type = attachment.type;
         if (type === spine.AttachmentType.region)
         {
@@ -254,9 +249,11 @@ Spine.prototype.update = function (dt)
                 slotContainer.localTransform = lt;
                 slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
             }
-
+            tempRgb[0] = slot.r * attachment.r;
+            tempRgb[1] = slot.g * attachment.g;
+            tempRgb[2] = slot.b * attachment.b;
+            slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
             slot.currentSprite.blendMode = slot.blendMode;
-            slot.currentSprite.tint = tint;
         }
         else if (type === spine.AttachmentType.skinnedmesh || type === spine.AttachmentType.mesh || type === spine.AttachmentType.linkedmesh)
         {
@@ -287,9 +284,13 @@ Spine.prototype.update = function (dt)
             if (PIXI.VERSION[0] !== '3') {
                 // PIXI version 4
                 slot.currentMesh.dirty = true;
+                //only for PIXI v4
+                var tintRgb = slot.currentMesh.tintRgb;
+                tintRgb[0] = slot.r * attachment.r;
+                tintRgb[1] = slot.g * attachment.g;
+                tintRgb[2] = slot.b * attachment.b;
             }
             slot.currentMesh.blendMode = slot.blendMode;
-            slot.currentMesh.tint = tint;
         }
         else
         {
