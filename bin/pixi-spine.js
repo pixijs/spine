@@ -2964,7 +2964,8 @@ spine.SkeletonJsonParser.prototype = {
             type == spine.AttachmentType.weightedmesh || type == spine.AttachmentType.weightedlinkedmesh)
         {
             var vertexCount = map["vertexCount"] || 0;
-            if (vertexCount === 0 || vertexCount * 2 === map["vertices"].length) {
+            if (vertexCount * 2 === map["vertices"].length ||
+                map["vertices"].length === map["uvs"].length) {
                 //regular mesh
                 var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
                 if (!mesh) return null;
