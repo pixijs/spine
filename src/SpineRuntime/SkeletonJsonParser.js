@@ -260,83 +260,84 @@ spine.SkeletonJsonParser.prototype = {
             for (var i = 0, n = vertices.length; i < n; i++)
                 attachment.vertices.push(vertices[i] * scale);
             return attachment;
-        } else if (type == spine.AttachmentType.mesh || type == spine.AttachmentType.linkedmesh)
+        } else if (type == spine.AttachmentType.mesh || type == spine.AttachmentType.linkedmesh ||
+            type == spine.AttachmentType.weightedmesh || type == spine.AttachmentType.weightedlinkedmesh)
         {
-            var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
-            if (!mesh) return null;
-            mesh.path = path;
-            color = map["color"];
-            if (color)
-            {
-                mesh.r = this.toColor(color, 0);
-                mesh.g = this.toColor(color, 1);
-                mesh.b = this.toColor(color, 2);
-                mesh.a = this.toColor(color, 3);
-            }
-            mesh.width = (map["width"] || 0) * scale;
-            mesh.height = (map["height"] || 0) * scale;
-
-            var parent = map["parent"];
-            if (!parent) {
-                mesh.vertices = this.getFloatArray(map, "vertices", scale);
-                mesh.triangles = this.getIntArray(map, "triangles");
-                mesh.regionUVs = this.getFloatArray(map, "uvs", 1);
-                mesh.updateUVs();
-                mesh.hullLength = (map["hull"] || 0) * 2;
-                if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
-            } else {
-                mesh.inheritFFD = !!map["ffd"];
-                this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
-            }
-            return mesh;
-        } else if (type == spine.AttachmentType.weightedmesh || type == spine.AttachmentType.weightedlinkedmesh)
-        {
-            var mesh = this.attachmentLoader.newWeightedMeshAttachment(skin, name, path);
-            if (!mesh) return null;
-            mesh.path = path;
-            color = map["color"];
-            if (color)
-            {
-                mesh.r = this.toColor(color, 0);
-                mesh.g = this.toColor(color, 1);
-                mesh.b = this.toColor(color, 2);
-                mesh.a = this.toColor(color, 3);
-            }
-            mesh.width = (map["width"] || 0) * scale;
-            mesh.height = (map["height"] || 0) * scale;
-
-            var parent = map["parent"];
-            if (!parent) {
-                var uvs = this.getFloatArray(map, "uvs", 1);
-                var vertices = this.getFloatArray(map, "vertices", 1);
-                var weights = [];
-                var bones = [];
-                for (var i = 0, n = vertices.length; i < n; )
-                {
-                    var boneCount = vertices[i++] | 0;
-                    bones[bones.length] = boneCount;
-                    for (var nn = i + boneCount * 4; i < nn; )
-                    {
-                        bones[bones.length] = vertices[i];
-                        weights[weights.length] = vertices[i + 1] * scale;
-                        weights[weights.length] = vertices[i + 2] * scale;
-                        weights[weights.length] = vertices[i + 3];
-                        i += 4;
-                    }
+            var vertexCount = map["vertexCount"] || 0;
+            if (vertexCount === 0 || vertexCount * 2 === map["vertices"].length) {
+                //regular mesh
+                var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                if (!mesh) return null;
+                mesh.path = path;
+                color = map["color"];
+                if (color) {
+                    mesh.r = this.toColor(color, 0);
+                    mesh.g = this.toColor(color, 1);
+                    mesh.b = this.toColor(color, 2);
+                    mesh.a = this.toColor(color, 3);
                 }
-                mesh.bones = bones;
-                mesh.weights = weights;
-                mesh.triangles = this.getIntArray(map, "triangles");
-                mesh.regionUVs = uvs;
-                mesh.updateUVs();
+                mesh.width = (map["width"] || 0) * scale;
+                mesh.height = (map["height"] || 0) * scale;
 
-                mesh.hullLength = (map["hull"] || 0) * 2;
-                if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
+                var parent = map["parent"];
+                if (!parent) {
+                    mesh.vertices = this.getFloatArray(map, "vertices", scale);
+                    mesh.triangles = this.getIntArray(map, "triangles");
+                    mesh.regionUVs = this.getFloatArray(map, "uvs", 1);
+                    mesh.updateUVs();
+                    mesh.hullLength = (map["hull"] || 0) * 2;
+                    if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
+                } else {
+                    mesh.inheritFFD = !!map["ffd"];
+                    this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
+                }
+                return mesh;
             } else {
-                mesh.inheritFFD = !!map["ffd"];
-                this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
+                //weighted mesh
+                var mesh = this.attachmentLoader.newWeightedMeshAttachment(skin, name, path);
+                if (!mesh) return null;
+                mesh.path = path;
+                color = map["color"];
+                if (color) {
+                    mesh.r = this.toColor(color, 0);
+                    mesh.g = this.toColor(color, 1);
+                    mesh.b = this.toColor(color, 2);
+                    mesh.a = this.toColor(color, 3);
+                }
+                mesh.width = (map["width"] || 0) * scale;
+                mesh.height = (map["height"] || 0) * scale;
+
+                var parent = map["parent"];
+                if (!parent) {
+                    var uvs = this.getFloatArray(map, "uvs", 1);
+                    var vertices = this.getFloatArray(map, "vertices", 1);
+                    var weights = [];
+                    var bones = [];
+                    for (var i = 0, n = vertices.length; i < n;) {
+                        var boneCount = vertices[i++] | 0;
+                        bones[bones.length] = boneCount;
+                        for (var nn = i + boneCount * 4; i < nn;) {
+                            bones[bones.length] = vertices[i];
+                            weights[weights.length] = vertices[i + 1] * scale;
+                            weights[weights.length] = vertices[i + 2] * scale;
+                            weights[weights.length] = vertices[i + 3];
+                            i += 4;
+                        }
+                    }
+                    mesh.bones = bones;
+                    mesh.weights = weights;
+                    mesh.triangles = this.getIntArray(map, "triangles");
+                    mesh.regionUVs = uvs;
+                    mesh.updateUVs();
+
+                    mesh.hullLength = (map["hull"] || 0) * 2;
+                    if (map["edges"]) mesh.edges = this.getIntArray(map, "edges");
+                } else {
+                    mesh.inheritFFD = !!map["ffd"];
+                    this.linkedMeshes.push(new LinkedMesh(mesh, map["skin"] || null, slotIndex, parent));
+                }
+                return mesh;
             }
-            return mesh;
         }
         throw "Unknown attachment type: " + type;
     },
@@ -507,7 +508,7 @@ spine.SkeletonJsonParser.prototype = {
             duration = Math.max(duration, timeline.frames[timeline.getFrameCount() * 5 - 5]);
         }
 
-        var ffd = map["ffd"];
+        var ffd = map["deform"] || map["ffd"];
         for (var skinName in ffd)
         {
             var skin = skeletonData.findSkin(skinName);
