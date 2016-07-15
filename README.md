@@ -13,7 +13,7 @@ var PIXI = require('pixi.js'),
     spine = require('pixi-spine');
 
 PIXI.loader
-    .add('spineCharacter', 'spine-data-1/HERO.json');
+    .add('spineCharacter', 'spine-data-1/HERO.json')
     .load(function (loader, resources) {
         var animation = new spine.Spine(resources.spineCharacter.spineData);
 
@@ -27,7 +27,7 @@ If you are just including the built files, pixi spine adds itself to a pixi name
 
 ```js
 PIXI.loader
-    .add('spineCharacter', 'spine-data-1/HERO.json');
+    .add('spineCharacter', 'spine-data-1/HERO.json')
     .load(function (loader, resources) {
         var animation = new PIXI.spine.Spine(resources.spineCharacter.spineData);
 
