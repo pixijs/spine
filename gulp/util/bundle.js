@@ -38,6 +38,7 @@ function rebundle() {
 function createBundler(args) {
     args = args || {};
     args.debug = true;
+    args.standalone = 'PIXI.spine';
 
     return browserify(paths.jsEntry, args);
 }
