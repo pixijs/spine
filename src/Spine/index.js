@@ -1,5 +1,6 @@
 var spine = require('../SpineRuntime');
 var atlasParser = require('../loaders/atlasParser');
+var TransformBase = PIXI.TransformBase || PIXI.TransformManual;
 
 /* Esoteric Software SPINE wrapper for pixi.js */
 spine.Bone.yDown = true;
@@ -245,24 +246,25 @@ Spine.prototype.update = function (dt)
                     transform.version = transform._dirtyVersion;
                     transform.isStatic = true;
                     transform.operMode = 0;
-                } else
-                if (PIXI.TransformManual) {
-                    //PIXI v4.0
-                    if (transform.position) {
-                        transform = new PIXI.TransformManual();
-                        slotContainer.transform = transform;
-                    }
-                    lt = transform.localTransform;
                 } else {
-                    //PIXI v4.0rc
-                    if (!transform._dirtyLocal) {
-                        transform = new PIXI.TransformStatic();
-                        slotContainer.transform = transform;
+                    if (TransformBase) {
+                        //PIXI v4.0
+                        if (transform.position) {
+                            transform = new PIXI.TransformBase();
+                            slotContainer.transform = transform;
+                        }
+                        lt = transform.localTransform;
+                    } else {
+                        //PIXI v4.0rc
+                        if (!transform._dirtyLocal) {
+                            transform = new PIXI.TransformStatic();
+                            slotContainer.transform = transform;
+                        }
+                        lt = transform.localTransform;
+                        transform._dirtyParentVersion = -1;
+                        transform._dirtyLocal = 1;
+                        transform._versionLocal = 1;
                     }
-                    lt = transform.localTransform;
-                    transform._dirtyParentVersion = -1;
-                    transform._dirtyLocal = 1;
-                    transform._versionLocal = 1;
                 }
                 slot.bone.matrix.copy(lt);
                 lt.tx += slot.bone.skeleton.x;
