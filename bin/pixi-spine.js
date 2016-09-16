@@ -1,14 +1,11 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}(g.PIXI || (g.PIXI = {})).spine = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**
- * @namespace PIXI.spine
+/*!
+ * pixi-spine - v1.1.0
+ * Compiled Fri Sep 16 2016 13:17:54 GMT+0300 (RTZ 2 (зима))
+ *
+ * pixi-spine is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
  */
-module.exports = PIXI.spine = { // "PIXI.spine" assignment is here for people/plugins who use plugin both through require and as a plugin.
-    Spine:          require('./Spine'),
-    SpineRuntime:   require('./SpineRuntime'),
-    loaders:        require('./loaders')
-};
-
-},{"./Spine":45,"./SpineRuntime":43,"./loaders":49}],2:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.pixiSpine = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = function (name, timelines, duration)
 {
@@ -80,7 +77,7 @@ spine.Animation.linearSearch = function (values, target, step)
 };
 module.exports = spine.Animation;
 
-},{"../SpineUtil":44}],3:[function(require,module,exports){
+},{"../SpineUtil":43}],2:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.TrackEntry = require('./TrackEntry');
 spine.AnimationState = function (stateData)
@@ -301,7 +298,7 @@ spine.AnimationState.prototype = {
 module.exports = spine.AnimationState;
 
 
-},{"../SpineUtil":44,"./TrackEntry":37}],4:[function(require,module,exports){
+},{"../SpineUtil":43,"./TrackEntry":36}],3:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AnimationStateData = function (skeletonData)
 {
@@ -331,7 +328,7 @@ spine.AnimationStateData.prototype = {
 module.exports = spine.AnimationStateData;
 
 
-},{"../SpineUtil":44}],5:[function(require,module,exports){
+},{"../SpineUtil":43}],4:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasReader = require('./AtlasReader');
 spine.AtlasPage = require('./AtlasPage');
@@ -577,7 +574,7 @@ spine.Atlas.TextureWrap = {
 };
 module.exports = spine.Atlas;
 
-},{"../SpineUtil":44,"../loaders/syncImageLoaderAdapter.js":50,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9}],6:[function(require,module,exports){
+},{"../SpineUtil":43,"../loaders/syncImageLoaderAdapter.js":49,"./AtlasPage":6,"./AtlasReader":7,"./AtlasRegion":8}],5:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.RegionAttachment = require('./RegionAttachment');
 spine.MeshAttachment = require('./MeshAttachment');
@@ -629,7 +626,7 @@ spine.AtlasAttachmentParser.prototype = {
 module.exports = spine.AtlasAttachmentParser;
 
 
-},{"../SpineUtil":44,"./BoundingBoxAttachment":14,"./MeshAttachment":25,"./RegionAttachment":26,"./WeightedMeshAttachment":42}],7:[function(require,module,exports){
+},{"../SpineUtil":43,"./BoundingBoxAttachment":13,"./MeshAttachment":24,"./RegionAttachment":25,"./WeightedMeshAttachment":41}],6:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasPage = function ()
 {};
@@ -647,7 +644,7 @@ spine.AtlasPage.prototype = {
 module.exports = spine.AtlasPage;
 
 
-},{"../SpineUtil":44}],8:[function(require,module,exports){
+},{"../SpineUtil":43}],7:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasReader = function (text)
 {
@@ -692,7 +689,7 @@ spine.AtlasReader.prototype = {
 module.exports = spine.AtlasReader;
 
 
-},{"../SpineUtil":44}],9:[function(require,module,exports){
+},{"../SpineUtil":43}],8:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AtlasRegion = function ()
 {};
@@ -825,7 +822,7 @@ Object.defineProperties(spine.AtlasRegion.prototype, {
 module.exports = spine.AtlasRegion;
 
 
-},{"../SpineUtil":44}],10:[function(require,module,exports){
+},{"../SpineUtil":43}],9:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Curves = require('./Curves');
 spine.Animation = require('./Animation');
@@ -869,7 +866,7 @@ spine.AttachmentTimeline.prototype = {
 module.exports = spine.AttachmentTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],11:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],10:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = {
     region: 0,
@@ -883,7 +880,7 @@ spine.AttachmentType = {
 module.exports = spine.AttachmentType;
 
 
-},{"../SpineUtil":44}],12:[function(require,module,exports){
+},{"../SpineUtil":43}],11:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Bone = function (boneData, skeleton, parent)
 {
@@ -1094,7 +1091,7 @@ Object.defineProperties(spine.Bone.prototype, {
 
 module.exports = spine.Bone;
 
-},{"../SpineUtil":44}],13:[function(require,module,exports){
+},{"../SpineUtil":43}],12:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.BoneData = function (name, parent)
 {
@@ -1113,7 +1110,7 @@ spine.BoneData.prototype = {
 module.exports = spine.BoneData;
 
 
-},{"../SpineUtil":44}],14:[function(require,module,exports){
+},{"../SpineUtil":43}],13:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = require('./AttachmentType');
 spine.BoundingBoxAttachment = function (name)
@@ -1141,7 +1138,7 @@ spine.BoundingBoxAttachment.prototype = {
 module.exports = spine.BoundingBoxAttachment;
 
 
-},{"../SpineUtil":44,"./AttachmentType":11}],15:[function(require,module,exports){
+},{"../SpineUtil":43,"./AttachmentType":10}],14:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1214,7 +1211,7 @@ spine.ColorTimeline.prototype = {
 module.exports = spine.ColorTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],16:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],15:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Curves = function (frameCount)
 {
@@ -1293,7 +1290,7 @@ spine.Curves.prototype = {
 module.exports = spine.Curves;
 
 
-},{"../SpineUtil":44}],17:[function(require,module,exports){
+},{"../SpineUtil":43}],16:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.DrawOrderTimeline = function (frameCount)
@@ -1340,7 +1337,7 @@ spine.DrawOrderTimeline.prototype = {
 module.exports = spine.DrawOrderTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2}],18:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1}],17:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Event = function (data)
 {
@@ -1354,7 +1351,7 @@ spine.Event.prototype = {
 module.exports = spine.Event;
 
 
-},{"../SpineUtil":44}],19:[function(require,module,exports){
+},{"../SpineUtil":43}],18:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.EventData = function (name)
 {
@@ -1368,7 +1365,7 @@ spine.EventData.prototype = {
 module.exports = spine.EventData;
 
 
-},{"../SpineUtil":44}],20:[function(require,module,exports){
+},{"../SpineUtil":43}],19:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.EventTimeline = function (frameCount)
@@ -1425,7 +1422,7 @@ spine.EventTimeline.prototype = {
 module.exports = spine.EventTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2}],21:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1}],20:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1511,7 +1508,7 @@ spine.FfdTimeline.prototype = {
 module.exports = spine.FfdTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],22:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],21:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.IkConstraint = function (data, skeleton)
 {
@@ -1733,7 +1730,7 @@ spine.IkConstraint.apply2 = function (parent, child, targetX, targetY, bendDir, 
 module.exports = spine.IkConstraint;
 
 
-},{"../SpineUtil":44}],23:[function(require,module,exports){
+},{"../SpineUtil":43}],22:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.IkConstraintData = function (name)
 {
@@ -1748,7 +1745,7 @@ spine.IkConstraintData.prototype = {
 module.exports = spine.IkConstraintData;
 
 
-},{"../SpineUtil":44}],24:[function(require,module,exports){
+},{"../SpineUtil":43}],23:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -1800,7 +1797,7 @@ spine.IkConstraintTimeline.prototype = {
 module.exports = spine.IkConstraintTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],25:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],24:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.MeshAttachment = function (name)
@@ -1887,7 +1884,7 @@ spine.MeshAttachment.prototype = {
 module.exports = spine.MeshAttachment;
 
 
-},{"../SpineUtil":44,"./AttachmentType":11}],26:[function(require,module,exports){
+},{"../SpineUtil":43,"./AttachmentType":10}],25:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.AttachmentType = require('./AttachmentType');
 spine.RegionAttachment = function (name)
@@ -1997,7 +1994,7 @@ spine.RegionAttachment.prototype = {
 module.exports = spine.RegionAttachment;
 
 
-},{"../SpineUtil":44,"./AttachmentType":11}],27:[function(require,module,exports){
+},{"../SpineUtil":43,"./AttachmentType":10}],26:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -2060,7 +2057,7 @@ spine.RotateTimeline.prototype = {
 module.exports = spine.RotateTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],28:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],27:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -2112,7 +2109,7 @@ spine.ScaleTimeline.prototype = {
 module.exports = spine.ScaleTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],29:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],28:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -2164,7 +2161,7 @@ spine.ShearTimeline.prototype = {
 module.exports = spine.ShearTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],30:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],29:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Bone = require('./Bone');
 spine.Slot = require('./Slot');
@@ -2428,7 +2425,7 @@ spine.Skeleton.prototype = {
 module.exports = spine.Skeleton;
 
 
-},{"../SpineUtil":44,"./Bone":12,"./IkConstraint":22,"./Slot":35}],31:[function(require,module,exports){
+},{"../SpineUtil":43,"./Bone":11,"./IkConstraint":21,"./Slot":34}],30:[function(require,module,exports){
 var spine = require('../SpineRuntime') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.SkeletonBounds = function ()
@@ -2602,7 +2599,7 @@ spine.SkeletonBounds.prototype = {
 module.exports = spine.SkeletonBounds;
 
 
-},{"../SpineRuntime":43,"./AttachmentType":11}],32:[function(require,module,exports){
+},{"../SpineRuntime":42,"./AttachmentType":10}],31:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SkeletonData = function ()
 {
@@ -2697,7 +2694,7 @@ spine.SkeletonData.prototype = {
 module.exports = spine.SkeletonData;
 
 
-},{"../SpineUtil":44}],33:[function(require,module,exports){
+},{"../SpineUtil":43}],32:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SkeletonData = require('./SkeletonData');
 spine.BoneData = require('./BoneData');
@@ -3389,7 +3386,7 @@ spine.SkeletonJsonParser.prototype = {
 module.exports = spine.SkeletonJsonParser;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./AttachmentTimeline":10,"./AttachmentType":11,"./BoneData":13,"./ColorTimeline":15,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./SkeletonData":32,"./Skin":34,"./SlotData":36,"./TransformConstraintData":39,"./TransformConstraintTimeline":40,"./TranslateTimeline":41}],34:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./AttachmentTimeline":9,"./AttachmentType":10,"./BoneData":12,"./ColorTimeline":14,"./DrawOrderTimeline":16,"./Event":17,"./EventData":18,"./EventTimeline":19,"./FfdTimeline":20,"./IkConstraintData":22,"./IkConstraintTimeline":23,"./RotateTimeline":26,"./ScaleTimeline":27,"./ShearTimeline":28,"./SkeletonData":31,"./Skin":33,"./SlotData":35,"./TransformConstraintData":38,"./TransformConstraintTimeline":39,"./TranslateTimeline":40}],33:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Skin = function (name)
 {
@@ -3424,7 +3421,7 @@ spine.Skin.prototype = {
 module.exports = spine.Skin;
 
 
-},{"../SpineUtil":44}],35:[function(require,module,exports){
+},{"../SpineUtil":43}],34:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Slot = function (slotData, bone)
 {
@@ -3474,7 +3471,7 @@ spine.Slot.prototype = {
 module.exports = spine.Slot;
 
 
-},{"../SpineUtil":44}],36:[function(require,module,exports){
+},{"../SpineUtil":43}],35:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.SlotData = function (name, boneData)
 {
@@ -3501,7 +3498,7 @@ spine.SlotData.prototype = {
 module.exports = spine.SlotData;
 
 
-},{"../SpineUtil":44}],37:[function(require,module,exports){
+},{"../SpineUtil":43}],36:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.TrackEntry = function ()
 {};
@@ -3517,7 +3514,7 @@ spine.TrackEntry.prototype = {
 module.exports = spine.TrackEntry;
 
 
-},{"../SpineUtil":44}],38:[function(require,module,exports){
+},{"../SpineUtil":43}],37:[function(require,module,exports){
 var spine = require('../SpineUtil');
 var tempVec = [0, 0];
 spine.TransformConstraint = function (data, skeleton)
@@ -3602,7 +3599,7 @@ spine.TransformConstraint.prototype = {
 
 module.exports = spine.TransformConstraint;
 
-},{"../SpineUtil":44}],39:[function(require,module,exports){
+},{"../SpineUtil":43}],38:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.TransformConstraintData = function (name)
 {
@@ -3625,7 +3622,7 @@ spine.TransformConstraintData.prototype = {
 module.exports = spine.TransformConstraintData;
 
 
-},{"../SpineUtil":44}],40:[function(require,module,exports){
+},{"../SpineUtil":43}],39:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -3686,7 +3683,7 @@ spine.TransformConstraintTimeline.prototype = {
 module.exports = spine.TransformConstraintTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],41:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],40:[function(require,module,exports){
 var spine = require('../SpineUtil');
 spine.Animation = require('./Animation');
 spine.Curves = require('./Curves');
@@ -3738,7 +3735,7 @@ spine.TranslateTimeline.prototype = {
 module.exports = spine.TranslateTimeline;
 
 
-},{"../SpineUtil":44,"./Animation":2,"./Curves":16}],42:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./Curves":15}],41:[function(require,module,exports){
 var spine = require('../SpineUtil') || {};
 spine.AttachmentType = require('./AttachmentType');
 spine.WeightedMeshAttachment = function (name)
@@ -3849,7 +3846,7 @@ spine.WeightedMeshAttachment.prototype = {
 module.exports = spine.WeightedMeshAttachment;
 
 
-},{"../SpineUtil":44,"./AttachmentType":11}],43:[function(require,module,exports){
+},{"../SpineUtil":43,"./AttachmentType":10}],42:[function(require,module,exports){
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.1
@@ -3923,7 +3920,7 @@ spine.TrackEntry = require('./TrackEntry');
 spine.TranslateTimeline = require('./TranslateTimeline');
 module.exports = spine;
 
-},{"../SpineUtil":44,"./Animation":2,"./AnimationState":3,"./AnimationStateData":4,"./Atlas":5,"./AtlasAttachmentParser":6,"./AtlasPage":7,"./AtlasReader":8,"./AtlasRegion":9,"./AttachmentTimeline":10,"./AttachmentType":11,"./Bone":12,"./BoneData":13,"./BoundingBoxAttachment":14,"./ColorTimeline":15,"./Curves":16,"./DrawOrderTimeline":17,"./Event":18,"./EventData":19,"./EventTimeline":20,"./FfdTimeline":21,"./IkConstraint":22,"./IkConstraintData":23,"./IkConstraintTimeline":24,"./MeshAttachment":25,"./RegionAttachment":26,"./RotateTimeline":27,"./ScaleTimeline":28,"./ShearTimeline":29,"./Skeleton":30,"./SkeletonBounds":31,"./SkeletonData":32,"./SkeletonJsonParser":33,"./Skin.js":34,"./Slot":35,"./SlotData":36,"./TrackEntry":37,"./TransformConstraint":38,"./TransformConstraintData":39,"./TransformConstraintTimeline":40,"./TranslateTimeline":41,"./WeightedMeshAttachment":42}],44:[function(require,module,exports){
+},{"../SpineUtil":43,"./Animation":1,"./AnimationState":2,"./AnimationStateData":3,"./Atlas":4,"./AtlasAttachmentParser":5,"./AtlasPage":6,"./AtlasReader":7,"./AtlasRegion":8,"./AttachmentTimeline":9,"./AttachmentType":10,"./Bone":11,"./BoneData":12,"./BoundingBoxAttachment":13,"./ColorTimeline":14,"./Curves":15,"./DrawOrderTimeline":16,"./Event":17,"./EventData":18,"./EventTimeline":19,"./FfdTimeline":20,"./IkConstraint":21,"./IkConstraintData":22,"./IkConstraintTimeline":23,"./MeshAttachment":24,"./RegionAttachment":25,"./RotateTimeline":26,"./ScaleTimeline":27,"./ShearTimeline":28,"./Skeleton":29,"./SkeletonBounds":30,"./SkeletonData":31,"./SkeletonJsonParser":32,"./Skin.js":33,"./Slot":34,"./SlotData":35,"./TrackEntry":36,"./TransformConstraint":37,"./TransformConstraintData":38,"./TransformConstraintTimeline":39,"./TranslateTimeline":40,"./WeightedMeshAttachment":41}],43:[function(require,module,exports){
 module.exports = {
     radDeg: 180 / Math.PI,
     degRad: Math.PI / 180,
@@ -3938,7 +3935,7 @@ module.exports = {
 };
 
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 var atlasParser = require('../loaders/atlasParser');
 var TransformBase = PIXI.TransformBase || PIXI.TransformManual;
@@ -4431,7 +4428,7 @@ function SlotContainerUpdateTransformV3()
     this._currentBounds = null;
 };
 
-},{"../SpineRuntime":43,"../loaders/atlasParser":47}],46:[function(require,module,exports){
+},{"../SpineRuntime":42,"../loaders/atlasParser":46}],45:[function(require,module,exports){
 /**
  * @file        Spine resource loader
  * @author      Ivan Popelyshev <ivan.popelyshev@gmail.com>
@@ -4448,7 +4445,7 @@ var atlasParser = require('./atlasParser');
 PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
 PIXI.loader.use(atlasParser());
 
-},{"./atlasParser":47}],47:[function(require,module,exports){
+},{"./atlasParser":46}],46:[function(require,module,exports){
 var Resource = PIXI.loaders.Resource,
     spine = require('../SpineRuntime'),
     imageLoaderAdapter = require('./imageLoaderAdapter');
@@ -4527,7 +4524,7 @@ var atlasParser = module.exports = function () {
 atlasParser.AnimCache = {};
 atlasParser.enableCaching = false;
 
-},{"../SpineRuntime":43,"./imageLoaderAdapter":48}],48:[function(require,module,exports){
+},{"../SpineRuntime":42,"./imageLoaderAdapter":47}],47:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 
 module.exports = function (loader, namePrefix, baseUrl, imageOptions) {
@@ -4544,7 +4541,7 @@ module.exports = function (loader, namePrefix, baseUrl, imageOptions) {
     }
 };
 
-},{"../SpineRuntime":43}],49:[function(require,module,exports){
+},{"../SpineRuntime":42}],48:[function(require,module,exports){
 module.exports = {
     atlasParser: require('./atlasParser'),
     Loader: require('./Loader'),
@@ -4552,7 +4549,7 @@ module.exports = {
     imageLoaderAdapter: require('./imageLoaderAdapter')
 };
 
-},{"./Loader":46,"./atlasParser":47,"./imageLoaderAdapter":48,"./syncImageLoaderAdapter":50}],50:[function(require,module,exports){
+},{"./Loader":45,"./atlasParser":46,"./imageLoaderAdapter":47,"./syncImageLoaderAdapter":49}],49:[function(require,module,exports){
 var spine = require('../SpineRuntime');
 
 module.exports = function (baseUrl, crossOrigin) {
@@ -4565,7 +4562,17 @@ module.exports = function (baseUrl, crossOrigin) {
     }
 };
 
-},{"../SpineRuntime":43}]},{},[1])(1)
+},{"../SpineRuntime":42}],50:[function(require,module,exports){
+/**
+ * @namespace PIXI.spine
+ */
+module.exports = PIXI.spine = { // "PIXI.spine" assignment is here for people/plugins who use plugin both through require and as a plugin.
+    Spine:          require('./Spine'),
+    SpineRuntime:   require('./SpineRuntime'),
+    loaders:        require('./loaders')
+};
+
+},{"./Spine":44,"./SpineRuntime":42,"./loaders":48}]},{},[50])(50)
 });
 
 

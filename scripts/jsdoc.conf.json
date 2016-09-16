@@ -4,10 +4,10 @@
     },
     "source": {
         "include": [
-            "./src/index.js",
-            "./src/display/DisplayObject.js"
+            "./src/"
         ],
         "exclude": [
+            "./src/polyfill/"
         ],
         "includePattern": ".+\\.js(doc)?$",
         "excludePattern": "(^|\\/|\\\\)_"
@@ -21,14 +21,24 @@
         "default"       : {
             "outputSourceFiles" : true
         },
-        "systemName"    : "PIXI",
-        "footer"        : "",
-        "copyright"     : "PIXI Copyright © 2013-2015 Mat Groves.",
-        "navType"       : "vertical",
-        "theme"         : "cerulean",
-        "linenums"      : true,
-        "collapseSymbols": false,
-        "inverseNav"    : true
+        "applicationName": "PIXI",
+        "footer"        : "Made with ♥ by Ivan Popelyshev, Mario Zechner",
+        "copyright"     : "PIXI Copyright © 2013-2016 Mat Groves. Spine Copyright © 2013-2016, Esoteric Software",
+        "disqus": "",
+        "googleAnalytics": "",
+        "openGraph": {
+            "title": "",
+            "type": "website",
+            "image": "",
+            "site_name": "",
+            "url": ""
+        },
+        "meta": {
+            "title": "",
+            "description": "",
+            "keyword": ""
+        },
+        "linenums"      : true
     },
     "markdown"  : {
         "parser"        : "gfm",
@@ -40,7 +50,6 @@
         "private"       : false,
         "lenient"       : true,
         "destination"   : "./docs",
-        "template"      : "./node_modules/ink-docstrap/template"
-
+        "template"      : "./node_modules/jaguarjs-jsdoc"
     }
 }
