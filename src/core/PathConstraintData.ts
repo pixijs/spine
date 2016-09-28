@@ -1,10 +1,12 @@
+import {BoneData} from "./BoneData";
+import {SlotData} from "./SlotData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
- * 
+ *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
- * 
+ *
  * You are granted a perpetual, non-exclusive, non-sublicensable, and
  * non-transferable license to use, install, execute, and perform the Spine
  * Runtimes software and derivative works solely for personal or internal
@@ -16,7 +18,7 @@
  * or other intellectual property or proprietary rights notices on or in the
  * Software, including any copy thereof. Redistributions in binary or source
  * form must include this license and terms.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -29,31 +31,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module spine {
-	export class PathConstraintData {
-		name: string;
-		bones = new Array<BoneData>();
-		target: SlotData;
-		positionMode: PositionMode;
-		spacingMode: SpacingMode;
-		rotateMode: RotateMode;
-		offsetRotation: number;
-		position: number; spacing: number; rotateMix: number; translateMix: number;
+export class PathConstraintData {
+    name: string;
+    bones = new Array<BoneData>();
+    target: SlotData;
+    positionMode: PositionMode;
+    spacingMode: SpacingMode;
+    rotateMode: RotateMode;
+    offsetRotation: number;
+    position: number; spacing: number; rotateMix: number; translateMix: number;
 
-		constructor (name: string) {
-			this.name = name;
-		}
-	}
+    constructor (name: string) {
+        this.name = name;
+    }
+}
 
-	export enum PositionMode {
-		Fixed, Percent
-	}
+export enum PositionMode {
+    Fixed, Percent
+}
 
-	export enum SpacingMode {
-		Length, Fixed, Percent
-	}
+export enum SpacingMode {
+    Length, Fixed, Percent
+}
 
-	export enum RotateMode {
-		Tangent, Chain, ChainScale
-	}
+export enum RotateMode {
+    Tangent, Chain, ChainScale
 }

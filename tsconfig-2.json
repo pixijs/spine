@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+        "target": "es6",
+        "moduleResolution": "node",
+		"noImplicitAny": true,
+		"removeComments": true,
+		"preserveConstEnums": true,
+        "outDir": "build/",
+        "sourceMap": true,
+		"declaration": true
+	},
+    "files": ["src/index.ts"]
+}

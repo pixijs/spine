@@ -1,10 +1,11 @@
+import {BoneData} from "./BoneData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
- * 
+ *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
- * 
+ *
  * You are granted a perpetual, non-exclusive, non-sublicensable, and
  * non-transferable license to use, install, execute, and perform the Spine
  * Runtimes software and derivative works solely for personal or internal
@@ -16,7 +17,7 @@
  * or other intellectual property or proprietary rights notices on or in the
  * Software, including any copy thereof. Redistributions in binary or source
  * form must include this license and terms.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -29,17 +30,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module spine {
-	export class TransformConstraintData {
-		name: string;
-		bones = new Array<BoneData>();
-		target: BoneData;
-		rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
-		offsetRotation = 0; offsetX = 0; offsetY = 0; offsetScaleX = 0; offsetScaleY = 0; offsetShearY = 0;
+export class TransformConstraintData {
+    name: string;
+    bones = new Array<BoneData>();
+    target: BoneData;
+    rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
+    offsetRotation = 0; offsetX = 0; offsetY = 0; offsetScaleX = 0; offsetScaleY = 0; offsetShearY = 0;
 
-		constructor (name: string) {
-			if (name == null) throw new Error("name cannot be null.");
-			this.name = name;
-		}
-	}
+    constructor (name: string) {
+        if (name == null) throw new Error("name cannot be null.");
+        this.name = name;
+    }
 }

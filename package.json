@@ -22,11 +22,11 @@
     "clean": "rimraf bin && mkdirp bin",
     "prestart": "npm run clean",
     "start": "parallelshell \"npm run watch\"",
-    "watch": "pixify -o pixi-spine -w",
+    "watch": "pixify-ts -n PIXI.spine -o pixi-spine -w",
     "watch:lint": "watch \"jshint --reporter=scripts/reporter.js scripts src test || exit 0\" src",
     "lint": "jshint --reporter=scripts/reporter.js scripts src",
     "prebuild": "npm run clean",
-    "build": "pixify -o pixi-spine",
+    "build": "pixify-ts -n PIXI.spine -o pixi-spine",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md"
   },
   "files": [
@@ -51,7 +51,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "parallelshell": "^2.0.0",
-    "pixify": "^1.4.0",
+    "pixify-ts": "^1.4.0",
     "rimraf": "^2.5.3",
     "watch": "^0.19.1"
   },

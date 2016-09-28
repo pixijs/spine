@@ -1,10 +1,16 @@
+import {Skin} from "../Skin";
+import {RegionAttachment} from "./RegionAttachment";
+import {MeshAttachment} from "./MeshAttachment";
+import {BoundingBoxAttachment} from "./BoundingBoxAttachment";
+import {PathAttachment} from "./PathAttachment";
+
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
- * 
+ *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
- * 
+ *
  * You are granted a perpetual, non-exclusive, non-sublicensable, and
  * non-transferable license to use, install, execute, and perform the Spine
  * Runtimes software and derivative works solely for personal or internal
@@ -16,7 +22,7 @@
  * or other intellectual property or proprietary rights notices on or in the
  * Software, including any copy thereof. Redistributions in binary or source
  * form must include this license and terms.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -29,18 +35,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module spine {
-	export interface AttachmentLoader {
-		/** @return May be null to not load an attachment. */
-		newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
+export interface AttachmentLoader {
+    /** @return May be null to not load an attachment. */
+    newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
 
-		/** @return May be null to not load an attachment. */
-		newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment;
+    /** @return May be null to not load an attachment. */
+    newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment;
 
-		/** @return May be null to not load an attachment. */
-		newBoundingBoxAttachment (skin: Skin, name: string) : BoundingBoxAttachment;
+    /** @return May be null to not load an attachment. */
+    newBoundingBoxAttachment (skin: Skin, name: string) : BoundingBoxAttachment;
 
-		/** @return May be null to not load an attachment */
-		newPathAttachment(skin: Skin, name: string): PathAttachment;
-	}
+    /** @return May be null to not load an attachment */
+    newPathAttachment(skin: Skin, name: string): PathAttachment;
 }

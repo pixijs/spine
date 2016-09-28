@@ -1,10 +1,11 @@
+import {EventData} from "./EventData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
- * 
+ *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
- * 
+ *
  * You are granted a perpetual, non-exclusive, non-sublicensable, and
  * non-transferable license to use, install, execute, and perform the Spine
  * Runtimes software and derivative works solely for personal or internal
@@ -16,7 +17,7 @@
  * or other intellectual property or proprietary rights notices on or in the
  * Software, including any copy thereof. Redistributions in binary or source
  * form must include this license and terms.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
@@ -29,18 +30,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module spine {
-	export class Event {
-		data: EventData;
-		intValue: number;
-		floatValue: number;
-		stringValue: string;
-		time: number;
+export class Event {
+    data: EventData;
+    intValue: number;
+    floatValue: number;
+    stringValue: string;
+    time: number;
 
-		constructor (time: number, data: EventData) {
-			if (data == null) throw new Error("data cannot be null.");
-			this.time = time;
-			this.data = data;
-		}
-	}
+    constructor (time: number, data: EventData) {
+        if (data == null) throw new Error("data cannot be null.");
+        this.time = time;
+        this.data = data;
+    }
 }
