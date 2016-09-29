@@ -54,11 +54,100 @@ export enum TextureWrap {
 }
 
 export class TextureRegion {
-    renderObject: any;
-    u = 0; v = 0;
-    u2 = 0; v2 = 0;
-    width = 0; height = 0;
-    rotate = false;
-    offsetX = 0; offsetY = 0;
-    originalWidth = 0; originalHeight = 0;
+    texture: PIXI.Texture;
+
+    //thats for overrides
+    size: PIXI.Rectangle = null;
+
+    get width(): number {
+        const tex = this.texture;
+        if (PIXI.VERSION[0] == '3') {
+            return tex.crop.width;
+        }
+        if (tex.trim) {
+            return tex.trim.width;
+        }
+        return tex.orig.width;
+    }
+
+    get height(): number {
+        const tex = this.texture;
+        if (PIXI.VERSION[0] == '3') {
+            return tex.crop.height;
+        }
+        if (tex.trim) {
+            return tex.trim.height;
+        }
+        return tex.orig.height;
+    }
+
+    get u(): number {
+        return this.texture._uvs.x0;
+    }
+
+    get v(): number {
+        return this.texture._uvs.y0;
+    }
+
+    get u2(): number {
+        return this.texture._uvs.x2;
+    }
+
+    get v2(): number {
+        return this.texture._uvs.y2;
+    }
+
+    get offsetX(): number {
+        const tex = this.texture;
+        return tex.trim ? tex.trim.x : 0;
+    }
+
+    get offsetY(): number {
+        console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
+        return this.spineOffsetY;
+    }
+
+    get pixiOffsetY(): number {
+        const tex = this.texture;
+        return tex.trim ? tex.trim.y : 0;
+    }
+
+    get spineOffsetY(): number {
+        var tex = this.texture;
+        return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
+    }
+
+    get originalWidth(): number {
+        var tex = this.texture;
+        if (PIXI.VERSION[0] == '3') {
+            if (tex.trim) {
+                return tex.trim.width;
+            }
+            return tex.crop.width;
+        }
+        return tex.orig.width;
+    }
+
+    get originalHeight(): number {
+        const tex = this.texture;
+        if (PIXI.VERSION[0] == '3') {
+            if (tex.trim) {
+                return tex.trim.height;
+            }
+            return tex.crop.height;
+        }
+        return tex.orig.height;
+    }
+
+    get x(): number {
+        return this.texture.frame.x;
+    }
+
+    get y(): number {
+        return this.texture.frame.y;
+    }
+
+    get rotate(): boolean {
+        return this.texture.rotate !== 0;
+    }
 }

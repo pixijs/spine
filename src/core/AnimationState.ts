@@ -2,6 +2,7 @@ import {Skeleton} from "./Skeleton";
 import {MathUtils, Utils} from "./Utils";
 import {Animation} from "./Animation";
 import {AnimationStateData} from "./AnimationStateData";
+import {Event} from "./Event";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -216,6 +217,12 @@ export class AnimationState {
         let animation = this.data.skeletonData.findAnimation(animationName);
         if (animation == null) throw new Error("Animation not found: " + animationName);
         return this.addAnimationWith(trackIndex, animation, loop, delay);
+    }
+
+    hasAnimationByName(animationName: string): boolean
+    {
+        let animation = this.data.skeletonData.findAnimation(animationName);
+        return animation !== null;
     }
 
     /** Adds an animation to be played delay seconds after the current or last queued animation.

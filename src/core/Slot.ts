@@ -2,6 +2,7 @@ import {Attachment} from "./attachments";
 import {SlotData} from "./SlotData";
 import {Bone} from "./Bone";
 import {Color} from "./Utils";
+import {TextureRegion} from "./Texture";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -34,10 +35,23 @@ import {Color} from "./Utils";
  *****************************************************************************/
 
 export class Slot {
+    //this is for PIXI
+    currentMesh: any;
+    currentSprite: any;
+    meshes: any;
+    currentMeshName: String;
+    sprites: any;
+    currentSpriteName: String;
+    blendMode: number;
+    //assign hack region a bit later
+    tempRegion: TextureRegion;
+    tempAttachment: Attachment;
+
+    //canon
     data: SlotData;
     bone: Bone;
     color: Color;
-    private attachment: Attachment;
+    attachment: Attachment;
     private attachmentTime: number;
     attachmentVertices = new Array<number>();
 
@@ -47,6 +61,7 @@ export class Slot {
         this.data = data;
         this.bone = bone;
         this.color = new Color();
+        this.blendMode = data.blendMode;
         this.setToSetupPose();
     }
 

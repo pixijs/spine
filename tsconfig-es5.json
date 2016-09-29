@@ -5,7 +5,7 @@
 		"noImplicitAny": true,
 		"removeComments": true,
 		"preserveConstEnums": true,
-        "outDir": "build/",
+        "outFile": "build-es5/pixi-spine.js",
         "sourceMap": true,
 		"declaration": true
 	},

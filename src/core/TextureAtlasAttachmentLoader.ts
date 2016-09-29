@@ -43,9 +43,8 @@ export class TextureAtlasAttachmentLoader implements AttachmentLoader {
     newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment {
         let region = this.atlas.findRegion(path);
         if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-        region.renderObject = region;
         let attachment = new RegionAttachment(name);
-        attachment.setRegion(region);
+        attachment.region = region;
         return attachment;
     }
 
@@ -53,7 +52,6 @@ export class TextureAtlasAttachmentLoader implements AttachmentLoader {
     newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment {
         let region = this.atlas.findRegion(path);
         if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-        region.renderObject = region;
         let attachment = new MeshAttachment(name);
         attachment.region = region;
         return attachment;

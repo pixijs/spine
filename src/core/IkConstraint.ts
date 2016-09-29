@@ -76,10 +76,10 @@ export class IkConstraint implements Updatable {
     /** Adjusts the bone rotation so the tip is as close to the target position as possible. The target is specified in the world
      * coordinate system. */
     apply1 (bone: Bone, targetX: number, targetY: number, alpha: number) {
-        let pp = bone.parent;
+        let pp = bone.parent.matrix;
         let id = 1 / (pp.a * pp.d - pp.b * pp.c);
-        let x = targetX - pp.worldX, y = targetY - pp.worldY;
-        let tx = (x * pp.d - y * pp.b) * id - bone.x, ty = (y * pp.a - x * pp.c) * id - bone.y;
+        let x = targetX - pp.tx, y = targetY - pp.ty;
+        let tx = (x * pp.d - y * pp.c) * id - bone.x, ty = (y * pp.a - x * pp.b) * id - bone.y;
         let rotationIK = Math.atan2(ty, tx) * MathUtils.radDeg - bone.shearX - bone.rotation;
         if (bone.scaleX < 0) rotationIK += 180;
         if (rotationIK > 180)
@@ -116,26 +116,28 @@ export class IkConstraint implements Updatable {
             os2 = 180;
         } else
             os2 = 0;
-        let cx = child.x, cy = 0, cwx = 0, cwy = 0, a = parent.a, b = parent.b, c = parent.c, d = parent.d;
+        let pm = parent.matrix;
+        let cx = child.x, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
         let u = Math.abs(psx - psy) <= 0.0001;
         if (!u) {
             cy = 0;
-            cwx = a * cx + parent.worldX;
-            cwy = c * cx + parent.worldY;
+            cwx = a * cx + pm.tx;
+            cwy = c * cx + pm.ty;
         } else {
             cy = child.y;
-            cwx = a * cx + b * cy + parent.worldX;
-            cwy = c * cx + d * cy + parent.worldY;
+            cwx = a * cx + b * cy + pm.tx;
+            cwy = c * cx + d * cy + pm.ty;
         }
         let pp = parent.parent;
-        a = pp.a;
-        b = pp.b;
-        c = pp.c;
-        d = pp.d;
-        let id = 1 / (a * d - b * c), x = targetX - pp.worldX, y = targetY - pp.worldY;
+        let ppm = parent.parent.matrix;
+        a = ppm.a;
+        b = ppm.c;
+        c = ppm.b;
+        d = ppm.d;
+        let id = 1 / (a * d - b * c), x = targetX - ppm.tx, y = targetY - ppm.ty;
         let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
-        x = cwx - pp.worldX;
-        y = cwy - pp.worldY;
+        x = cwx - ppm.tx;
+        y = cwy - ppm.ty;
         let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
         let l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
         outer:

@@ -67,9 +67,10 @@ export abstract class VertexAttachment extends Attachment {
         if (bones == null) {
             if (deformArray.length > 0) vertices = deformArray;
             let bone = slot.bone;
-            x += bone.worldX;
-            y += bone.worldY;
-            let a = bone.a, b = bone.b, c = bone.c, d = bone.d;
+            let m = bone.matrix;
+            x += m.tx;
+            y += m.ty;
+            let a = m.a, b = m.c, c = m.b, d = m.d;
             for (let v = start, w = offset; w < count; v += 2, w += 2) {
                 let vx = vertices[v], vy = vertices[v + 1];
                 worldVertices[w] = vx * a + vy * b + x;
@@ -91,9 +92,10 @@ export abstract class VertexAttachment extends Attachment {
                 n += v;
                 for (; v < n; v++, b += 3) {
                     let bone = skeletonBones[bones[v]];
+                    let m = bone.matrix;
                     let vx = vertices[b], vy = vertices[b + 1], weight = vertices[b + 2];
-                    wx += (vx * bone.a + vy * bone.b + bone.worldX) * weight;
-                    wy += (vx * bone.c + vy * bone.d + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx;
                 worldVertices[w + 1] = wy;
@@ -106,9 +108,10 @@ export abstract class VertexAttachment extends Attachment {
                 n += v;
                 for (; v < n; v++, b += 3, f += 2) {
                     let bone = skeletonBones[bones[v]];
+                    let m = bone.matrix;
                     let vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1], weight = vertices[b + 2];
-                    wx += (vx * bone.a + vy * bone.b + bone.worldX) * weight;
-                    wy += (vx * bone.c + vy * bone.d + bone.worldY) * weight;
+                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
                 }
                 worldVertices[w] = wx;
                 worldVertices[w + 1] = wy;

@@ -233,7 +233,7 @@ export class SkeletonJson {
             let parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
             if (parent == null) throw new Error("Parent mesh not found: " + linkedMesh.parent);
             linkedMesh.mesh.setParentMesh(<MeshAttachment> parent);
-            linkedMesh.mesh.updateUVs();
+            // linkedMesh.mesh.updateUVs();
         }
         this.linkedMeshes.length = 0;
 
@@ -283,7 +283,6 @@ export class SkeletonJson {
                 let color: string = this.getValue(map, "color", null);
                 if (color != null) region.color.setFromString(color);
 
-                region.updateOffset();
                 return region;
             }
             case "boundingbox": {
@@ -315,7 +314,7 @@ export class SkeletonJson {
                 this.readVertices(map, mesh, uvs.length);
                 mesh.triangles = map.triangles;
                 mesh.regionUVs = uvs;
-                mesh.updateUVs();
+                // mesh.updateUVs();
 
                 mesh.hullLength = this.getValue(map, "hull", 0) * 2;
                 return mesh;
@@ -689,12 +688,11 @@ export class SkeletonJson {
         return map[prop] !== undefined ? map[prop] : defaultValue;
     }
 
-    static blendModeFromString (str: string) {
-        str = str.toLowerCase();
-        if (str == "normal") return BlendMode.Normal;
-        if (str == "additive") return BlendMode.Additive;
-        if (str == "multiply") return BlendMode.Multiply;
-        if (str == "screen") return BlendMode.Screen;
+    static blendModeFromString (str: string): number {
+        if (str === 'multiply') return PIXI.BLEND_MODES.MULTIPLY;
+        if (str === 'additive') return PIXI.BLEND_MODES.ADD;
+        if (str === 'screen') return PIXI.BLEND_MODES.SCREEN;
+        if (str === 'normal') return PIXI.BLEND_MODES.NORMAL;
         throw new Error(`Unknown blend mode: ${str}`);
     }
 

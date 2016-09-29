@@ -38,7 +38,7 @@ export class SlotData {
     boneData: BoneData;
     color = new Color(1, 1, 1, 1);
     attachmentName: string;
-    blendMode: BlendMode;
+    blendMode: number;
 
     constructor (index: number, name: string, boneData: BoneData) {
         if (index < 0) throw new Error("index must be >= 0.");

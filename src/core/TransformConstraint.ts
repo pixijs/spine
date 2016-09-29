@@ -62,13 +62,15 @@ export class TransformConstraint implements Updatable {
     update () {
         let rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
         let target = this.target;
-        let ta = target.a, tb = target.b, tc = target.c, td = target.d;
+        let tm = target.matrix;
+        let ta = tm.a, tb = tm.c, tc = tm.b, td = tm.d;
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
+            let m = bone.matrix;
 
             if (rotateMix > 0) {
-                let a = bone.a, b = bone.b, c = bone.c, d = bone.d;
+                let a = m.a, b = m.c, c = m.b, d = m.d;
                 let r = Math.atan2(tc, ta) - Math.atan2(c, a) + this.data.offsetRotation * MathUtils.degRad;
                 if (r > MathUtils.PI)
                     r -= MathUtils.PI2;
@@ -76,44 +78,44 @@ export class TransformConstraint implements Updatable {
                     r += MathUtils.PI2;
                 r *= rotateMix;
                 let cos = Math.cos(r), sin = Math.sin(r);
-                bone.a = cos * a - sin * c;
-                bone.b = cos * b - sin * d;
-                bone.c = sin * a + cos * c;
-                bone.d = sin * b + cos * d;
+                m.a = cos * a - sin * c;
+                m.c = cos * b - sin * d;
+                m.b = sin * a + cos * c;
+                m.d = sin * b + cos * d;
             }
 
             if (translateMix > 0) {
                 let temp = this.temp;
                 target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
-                bone.worldX += (temp.x - bone.worldX) * translateMix;
-                bone.worldY += (temp.y - bone.worldY) * translateMix;
+                m.tx += (temp.x - bone.worldX) * translateMix;
+                m.ty += (temp.y - bone.worldY) * translateMix;
             }
 
             if (scaleMix > 0) {
-                let bs = Math.sqrt(bone.a * bone.a + bone.c * bone.c);
+                let bs = Math.sqrt(m.a * m.a + m.b * m.b);
                 let ts = Math.sqrt(ta * ta + tc * tc);
                 let s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleX) * scaleMix) / bs : 0;
-                bone.a *= s;
-                bone.c *= s;
-                bs = Math.sqrt(bone.b * bone.b + bone.d * bone.d);
+                m.a *= s;
+                m.b *= s;
+                bs = Math.sqrt(m.c * m.c + m.d * m.d);
                 ts = Math.sqrt(tb * tb + td * td);
                 s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleY) * scaleMix) / bs : 0;
-                bone.b *= s;
-                bone.d *= s;
+                m.c *= s;
+                m.d *= s;
             }
 
             if (shearMix > 0) {
-                let b = bone.b, d = bone.d;
+                let b = m.c, d = m.d;
                 let by = Math.atan2(d, b);
-                let r = Math.atan2(td, tb) - Math.atan2(tc, ta) - (by - Math.atan2(bone.c, bone.a));
+                let r = Math.atan2(td, tb) - Math.atan2(tc, ta) - (by - Math.atan2(m.b, m.a));
                 if (r > MathUtils.PI)
                     r -= MathUtils.PI2;
                 else if (r < -MathUtils.PI)
                     r += MathUtils.PI2;
                 r = by + (r + this.data.offsetShearY * MathUtils.degRad) * shearMix;
                 let s = Math.sqrt(b * b + d * d);
-                bone.b = Math.cos(r) * s;
-                bone.d = Math.sin(r) * s;
+                m.c = Math.cos(r) * s;
+                m.d = Math.sin(r) * s;
             }
         }
     }

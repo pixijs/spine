@@ -1,25 +1,22 @@
 # pixi-spine
 
-Spine implementation for pixi v3
+Spine implementation for pixi v4
 
-## Usage
-
-### Browserify
-
-If you use browserify you can use pixi-spine like this:
+IMPORTANT! Following functions were renamed in pixi-spine 1.1.0:
 
 ```js
-var PIXI = require('pixi.js'),
-    spine = require('pixi-spine');
+Atlas to TextureAtlas
+SkeletonJsonParser to SkeletonJson
 
-PIXI.loader
-    .add('spineCharacter', 'spine-data-1/HERO.json')
-    .load(function (loader, resources) {
-        var animation = new spine.Spine(resources.spineCharacter.spineData);
+setAnimation to setAnimationWith
+setAnimationByName to setAnimation
 
-        // add the animation to the scene and render...
-    });
+addAnimation to addAnimationWith
+addAnimationByName to addAnimation
+hasAnimationByName to hasAnimation
 ```
+
+## Usage
 
 ### Prebuilt Files
 
@@ -35,14 +32,38 @@ PIXI.loader
     });
 ```
 
+### Typescript
+
+Either you add pixi-spine as npm dependency, either as a prebuilt with definition file from "build-es5" folder
+
+```ts
+declare module PIXI {
+    declare module spine {
+        import * as sp from 'pixi-spine';
+        export = sp;
+    }
+}
+```
+
 ### How to use spine events
 
-```js
-// animation is the instantiated pixi-spine object
+This is stupid, I know, that's java port, I'll fix this later. If you dont specify at least one function, it'll crash.
 
-animation.state.onEvent = function(i, event) {
-  console.log('event fired!', i, event);
-};
+```js
+animation.state.addListener({
+    /** Invoked when the current animation triggers an event. */
+    event : function(trackIndex, event) { alert('event fired '+event.data) }
+    
+    /** Invoked when the current animation has completed.
+     * @param loopCount The number of times the animation reached the end. */
+    complete : function(trackIndex, loopCount) {}
+    
+        /** Invoked just after the current animation is set. */
+    start: function (trackIndex) {}
+    
+        /** Invoked just before the current animation is replaced. */
+    end: function (trackIndex) {}
+})
 ```
 
 ### How to choose resolution
@@ -119,9 +140,9 @@ PIXI.loader
 
 ```js
 var spineBoy = new PIXI.spine.Spine(spineBoyData);
-if (spineBoy.state.hasAnimationByName('run')) {
+if (spineBoy.state.hasAnimation('run')) {
     //run forever, little boy!
-    spineBoy.state.setAnimationByName(0, 'run', true);
+    spineBoy.state.setAnimation(0, 'run', true);
     //dont run too fast
     spineBoy.state.timeScale = 0.1;
 }

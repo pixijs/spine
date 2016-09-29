@@ -87,7 +87,8 @@ export class PathConstraint implements Updatable {
             if (scale) lengths = Utils.setArraySize(this.lengths, boneCount);
             for (let i = 0, n = spacesCount - 1; i < n;) {
                 let bone = bones[i];
-                let length = bone.data.length, x = length * bone.a, y = length * bone.c;
+                let m = bone.matrix;
+                let length = bone.data.length, x = length * m.a, y = length * m.b;
                 length = Math.sqrt(x * x + y * y);
                 if (scale) lengths[i] = length;
                 spaces[++i] = lengthSpacing ? Math.max(0, length + spacing) : spacing;
@@ -105,21 +106,22 @@ export class PathConstraint implements Updatable {
         let tip = rotateMode == RotateMode.Chain && offsetRotation == 0;
         for (let i = 0, p = 3; i < boneCount; i++, p += 3) {
             let bone = bones[i];
-            bone.worldX += (boneX - skeletonX - bone.worldX) * translateMix;
-            bone.worldY += (boneY - skeletonY - bone.worldY) * translateMix;
+            let m = bone.matrix;
+            m.tx += (boneX - skeletonX - bone.worldX) * translateMix;
+            m.ty += (boneY - skeletonY - bone.worldY) * translateMix;
             let x = positions[p], y = positions[p + 1], dx = x - boneX, dy = y - boneY;
             if (scale) {
                 let length = lengths[i];
                 if (length != 0) {
                     let s = (Math.sqrt(dx * dx + dy * dy) / length - 1) * rotateMix + 1;
-                    bone.a *= s;
-                    bone.c *= s;
+                    m.a *= s;
+                    m.b *= s;
                 }
             }
             boneX = x;
             boneY = y;
             if (rotate) {
-                let a = bone.a, b = bone.b, c = bone.c, d = bone.d, r = 0, cos = 0, sin = 0;
+                let a = m.a, b = m.c, c = m.b, d = m.d, r = 0, cos = 0, sin = 0;
                 if (tangents)
                     r = positions[p - 1];
                 else if (spaces[i + 1] == 0)
@@ -141,10 +143,10 @@ export class PathConstraint implements Updatable {
                 r *= rotateMix;
                 cos = Math.cos(r);
                 sin = Math.sin(r);
-                bone.a = cos * a - sin * c;
-                bone.b = cos * b - sin * d;
-                bone.c = sin * a + cos * c;
-                bone.d = sin * b + cos * d;
+                m.a = cos * a - sin * c;
+                m.c = cos * b - sin * d;
+                m.b = sin * a + cos * c;
+                m.d = sin * b + cos * d;
             }
         }
     }

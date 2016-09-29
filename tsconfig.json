@@ -1,8 +1,10 @@
 {
 	"compilerOptions": {
         "moduleResolution": "node",
+        "target": "es5",
 		"noImplicitAny": true,
 		"removeComments": true,
 		"preserveConstEnums": true
-	}
+	},
+    "files": ["src/index.ts", "src/pixi.js.d.ts"]
 }

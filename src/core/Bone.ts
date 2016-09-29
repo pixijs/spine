@@ -34,6 +34,18 @@ import {MathUtils, Vector2} from "./Utils";
  *****************************************************************************/
 
 export class Bone implements Updatable {
+    static yDown: boolean = false;
+    //be careful! Spine b,c is c,b in pixi matrix
+    matrix = new PIXI.Matrix();
+
+    get worldX(): number {
+        return this.matrix.tx;
+    }
+
+    get worldY(): number {
+        return this.matrix.ty;
+    }
+
     data: BoneData;
     skeleton: Skeleton;
     parent: Bone;
@@ -41,8 +53,6 @@ export class Bone implements Updatable {
     x = 0; y = 0; rotation = 0; scaleX = 0; scaleY = 0; shearX = 0; shearY = 0;
     appliedRotation = 0;
 
-    a = 0; b = 0; worldX = 0;
-    c = 0; d = 0; worldY = 0;
     worldSignX = 0; worldSignY = 0;
 
     sorted = false;
@@ -76,6 +86,7 @@ export class Bone implements Updatable {
         let lc = MathUtils.sinDeg(rotation + shearX) * scaleX, ld = MathUtils.sinDeg(rotationY) * scaleY;
 
         let parent = this.parent;
+        let m = this.matrix;
         if (parent == null) { // Root bone.
             let skeleton = this.skeleton;
             if (skeleton.flipX) {
@@ -83,33 +94,33 @@ export class Bone implements Updatable {
                 la = -la;
                 lb = -lb;
             }
-            if (skeleton.flipY) {
+            if (skeleton.flipY !== Bone.yDown) {
                 y = -y;
                 lc = -lc;
                 ld = -ld;
             }
-            this.a = la;
-            this.b = lb;
-            this.c = lc;
-            this.d = ld;
-            this.worldX = x;
-            this.worldY = y;
+            m.a = la;
+            m.c = lb;
+            m.b = lc;
+            m.d = ld;
+            m.tx = x;
+            m.ty = y;
             this.worldSignX = MathUtils.signum(scaleX);
             this.worldSignY = MathUtils.signum(scaleY);
             return;
         }
 
-        let pa = parent.a, pb = parent.b, pc = parent.c, pd = parent.d;
-        this.worldX = pa * x + pb * y + parent.worldX;
-        this.worldY = pc * x + pd * y + parent.worldY;
+        let pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
+        m.tx = pa * x + pb * y + parent.matrix.tx;
+        m.ty = pc * x + pd * y + parent.matrix.ty;
         this.worldSignX = parent.worldSignX * MathUtils.signum(scaleX);
         this.worldSignY = parent.worldSignY * MathUtils.signum(scaleY);
 
         if (this.data.inheritRotation && this.data.inheritScale) {
-            this.a = pa * la + pb * lc;
-            this.b = pa * lb + pb * ld;
-            this.c = pc * la + pd * lc;
-            this.d = pc * lb + pd * ld;
+            m.a = pa * la + pb * lc;
+            m.c = pa * lb + pb * ld;
+            m.b = pc * la + pd * lc;
+            m.d = pc * lb + pd * ld;
         } else {
             if (this.data.inheritRotation) { // No scale inheritance.
                 pa = 1;
@@ -128,10 +139,10 @@ export class Bone implements Updatable {
                     if (!parent.data.inheritRotation) break;
                     parent = parent.parent;
                 } while (parent != null);
-                this.a = pa * la + pb * lc;
-                this.b = pa * lb + pb * ld;
-                this.c = pc * la + pd * lc;
-                this.d = pc * lb + pd * ld;
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
             } else if (this.data.inheritScale) { // No rotation inheritance.
                 pa = 1;
                 pb = 0;
@@ -159,23 +170,23 @@ export class Bone implements Updatable {
                     if (!parent.data.inheritScale) break;
                     parent = parent.parent;
                 } while (parent != null);
-                this.a = pa * la + pb * lc;
-                this.b = pa * lb + pb * ld;
-                this.c = pc * la + pd * lc;
-                this.d = pc * lb + pd * ld;
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
             } else {
-                this.a = la;
-                this.b = lb;
-                this.c = lc;
-                this.d = ld;
+                m.a = la;
+                m.c = lb;
+                m.b = lc;
+                m.d = ld;
             }
             if (this.skeleton.flipX) {
-                this.a = -this.a;
-                this.b = -this.b;
+                m.a = -m.a;
+                m.c = -m.c;
             }
-            if (this.skeleton.flipY) {
-                this.c = -this.c;
-                this.d = -this.d;
+            if (this.skeleton.flipY !== Bone.yDown) {
+                m.b = -m.b;
+                m.d = -m.d;
             }
         }
     }
@@ -192,42 +203,45 @@ export class Bone implements Updatable {
     }
 
     getWorldRotationX () {
-        return Math.atan2(this.c, this.a) * MathUtils.radDeg;
+        return Math.atan2(this.matrix.b, this.matrix.a) * MathUtils.radDeg;
     }
 
     getWorldRotationY () {
-        return Math.atan2(this.d, this.b) * MathUtils.radDeg;
+        return Math.atan2(this.matrix.d, this.matrix.c) * MathUtils.radDeg;
     }
 
     getWorldScaleX () {
-        return Math.sqrt(this.a * this.a + this.b * this.b) * this.worldSignX;
+        return Math.sqrt(this.matrix.a * this.matrix.a + this.matrix.b * this.matrix.b) * this.worldSignX;
     }
 
     getWorldScaleY () {
-        return Math.sqrt(this.c * this.c + this.d * this.d) * this.worldSignY;
+        return Math.sqrt(this.matrix.c * this.matrix.c + this.matrix.d * this.matrix.d) * this.worldSignY;
     }
 
     worldToLocalRotationX () {
         let parent = this.parent;
         if (parent == null) return this.rotation;
-        let pa = parent.a, pb = parent.b, pc = parent.c, pd = parent.d, a = this.a, c = this.c;
+        let pm = parent.matrix;
+        let pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d, a = this.matrix.a, c = this.matrix.b;
         return Math.atan2(pa * c - pc * a, pd * a - pb * c) * MathUtils.radDeg;
     }
 
     worldToLocalRotationY () {
         let parent = this.parent;
         if (parent == null) return this.rotation;
-        let pa = parent.a, pb = parent.b, pc = parent.c, pd = parent.d, b = this.b, d = this.d;
+        let pm = parent.matrix;
+        let pa = pm.a, pb = pm.b, pc = pm.c, pd = pm.d, b = this.matrix.c, d = this.matrix.d;
         return Math.atan2(pa * d - pc * b, pd * b - pb * d) * MathUtils.radDeg;
     }
 
     rotateWorld (degrees: number) {
-        let a = this.a, b = this.b, c = this.c, d = this.d;
+        let m = this.matrix;
+        let a = this.matrix.a, b = m.c, c = m.b, d = m.d;
         let cos = MathUtils.cosDeg(degrees), sin = MathUtils.sinDeg(degrees);
-        this.a = cos * a - sin * c;
-        this.b = cos * b - sin * d;
-        this.c = sin * a + cos * c;
-        this.d = sin * b + cos * d;
+        m.a = cos * a - sin * c;
+        m.c = cos * b - sin * d;
+        m.b = sin * a + cos * c;
+        m.d = sin * b + cos * d;
     }
 
     /** Computes the local transform from the world transform. This can be useful to perform processing on the local transform
@@ -237,30 +251,32 @@ export class Bone implements Updatable {
      * transform values may differ from the original values but are functionally the same. */
     updateLocalTransform () {
         let parent = this.parent;
+        let m = this.matrix;
         if (parent == null) {
-            this.x = this.worldX;
-            this.y = this.worldY;
-            this.rotation = Math.atan2(this.c, this.a) * MathUtils.radDeg;
-            this.scaleX = Math.sqrt(this.a * this.a + this.c * this.c);
-            this.scaleY = Math.sqrt(this.b * this.b + this.d * this.d);
-            let det = this.a * this.d - this.b * this.c;
+            this.x = m.tx;
+            this.y = m.ty;
+            this.rotation = Math.atan2(m.b, m.a) * MathUtils.radDeg;
+            this.scaleX = Math.sqrt(m.a * m.a + m.b * m.b);
+            this.scaleY = Math.sqrt(m.c * m.c + m.d * m.d);
+            let det = m.a * m.d - m.b * m.c;
             this.shearX = 0;
-            this.shearY = Math.atan2(this.a * this.b + this.c * this.d, det) * MathUtils.radDeg;
+            this.shearY = Math.atan2(m.a * m.c + m.b * m.d, det) * MathUtils.radDeg;
             return;
         }
-        let pa = parent.a, pb = parent.b, pc = parent.c, pd = parent.d;
+        let pm = parent.matrix;
+        let pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d;
         let pid = 1 / (pa * pd - pb * pc);
-        let dx = this.worldX - parent.worldX, dy = this.worldY - parent.worldY;
+        let dx = m.tx - pm.tx, dy = m.ty - pm.ty;
         this.x = (dx * pd * pid - dy * pb * pid);
         this.y = (dy * pa * pid - dx * pc * pid);
         let ia = pid * pd;
         let id = pid * pa;
         let ib = pid * pb;
         let ic = pid * pc;
-        let ra = ia * this.a - ib * this.c;
-        let rb = ia * this.b - ib * this.d;
-        let rc = id * this.c - ic * this.a;
-        let rd = id * this.d - ic * this.b;
+        let ra = ia * m.a - ib * m.b;
+        let rb = ia * m.c - ib * m.d;
+        let rc = id * m.b - ic * m.a;
+        let rd = id * m.d - ic * m.c;
         this.shearX = 0;
         this.scaleX = Math.sqrt(ra * ra + rc * rc);
         if (this.scaleX > 0.0001) {
@@ -278,18 +294,20 @@ export class Bone implements Updatable {
     }
 
     worldToLocal (world: Vector2) {
-        let a = this.a, b = this.b, c = this.c, d = this.d;
+        let m = this.matrix;
+        let a = m.a, b = m.c, c = m.b, d = m.d;
         let invDet = 1 / (a * d - b * c);
-        let x = world.x - this.worldX, y = world.y - this.worldY;
+        let x = world.x - m.tx, y = world.y - m.ty;
         world.x = (x * d * invDet - y * b * invDet);
         world.y = (y * a * invDet - x * c * invDet);
         return world;
     }
 
     localToWorld (local: Vector2) {
+        let m = this.matrix;
         let x = local.x, y = local.y;
-        local.x = x * this.a + y * this.b + this.worldX;
-        local.y = x * this.c + y * this.d + this.worldY;
+        local.x = x * m.a + y * m.c + m.tx;
+        local.y = x * m.b + y * m.d + m.ty;
         return local;
     }
 }

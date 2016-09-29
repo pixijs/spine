@@ -179,7 +179,8 @@ export class DebugUtils {
     static logBones(skeleton: Skeleton) {
         for (let i = 0; i < skeleton.bones.length; i++) {
             let bone = skeleton.bones[i];
-            console.log(bone.data.name + ", " + bone.a + ", " + bone.b + ", " + bone.c + ", " + bone.d + ", " + bone.worldX + ", " + bone.worldY);
+            let m = bone.matrix;
+            console.log(bone.data.name + ", " + m.a + ", " + m.b + ", " + m.c + ", " + m.d + ", " + m.tx + ", " + m.ty);
         }
     }
 }
