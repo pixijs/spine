@@ -1,4 +1,4 @@
-import {Disposable} from "./Utils";
+import {Disposable, Map} from "./Utils";
 import {Texture, TextureWrap, TextureRegion, TextureFilter} from "./Texture";
 /******************************************************************************
  * Spine Runtimes Software License
@@ -38,6 +38,45 @@ export class TextureAtlas implements Disposable {
     constructor(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any) {
         if (atlasText) {
             this.addSpineAtlas(atlasText, textureLoader, callback);
+        }
+    }
+
+    addTexture(name: string, texture: PIXI.Texture) {
+        let pages = this.pages;
+        let page: TextureAtlasPage = null;
+        for (var i=0;i<pages.length;i++) {
+            if (pages[i].baseTexture === texture.baseTexture) {
+                page = pages[i];
+                break;
+            }
+        }
+        if (page === null) {
+            page = new TextureAtlasPage();
+            page.name = 'texturePage';
+            var baseTexture = texture.baseTexture;
+            page.width = baseTexture.realWidth;
+            page.height = baseTexture.realHeight;
+            page.baseTexture = baseTexture;
+            //those fields are not relevant in Pixi
+            page.minFilter = page.magFilter = TextureFilter.Nearest;
+            page.uWrap = TextureWrap.ClampToEdge;
+            page.vWrap = TextureWrap.ClampToEdge;
+            pages.push(page);
+        }
+        var region = new TextureAtlasRegion();
+        region.name = name;
+        region.page = page;
+        region.texture = texture;
+        region.index = -1;
+        this.regions.push(region);
+        return region;
+    }
+
+    addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean) {
+        for (var key in textures) {
+            if (textures.hasOwnProperty(key)) {
+                this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
+            }
         }
     }
 

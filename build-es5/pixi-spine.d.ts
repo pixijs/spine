@@ -27,6 +27,10 @@ declare module "core/Bone" {
     import { Skeleton } from "core/Skeleton";
     import { Vector2 } from "core/Utils";
     export class Bone implements Updatable {
+        static yDown: boolean;
+        matrix: PIXI.Matrix;
+        worldX: number;
+        worldY: number;
         data: BoneData;
         skeleton: Skeleton;
         parent: Bone;
@@ -39,12 +43,6 @@ declare module "core/Bone" {
         shearX: number;
         shearY: number;
         appliedRotation: number;
-        a: number;
-        b: number;
-        worldX: number;
-        c: number;
-        d: number;
-        worldY: number;
         worldSignX: number;
         worldSignY: number;
         sorted: boolean;
@@ -588,51 +586,14 @@ declare module "core/BlendMode" {
 declare module "core/SlotData" {
     import { BoneData } from "core/BoneData";
     import { Color } from "core/Utils";
-    import { BlendMode } from "core/BlendMode";
     export class SlotData {
         index: number;
         name: string;
         boneData: BoneData;
         color: Color;
         attachmentName: string;
-        blendMode: BlendMode;
+        blendMode: number;
         constructor(index: number, name: string, boneData: BoneData);
-    }
-}
-declare module "core/Slot" {
-    import { Attachment } from "core/attachments/index";
-    import { SlotData } from "core/SlotData";
-    import { Bone } from "core/Bone";
-    import { Color } from "core/Utils";
-    export class Slot {
-        data: SlotData;
-        bone: Bone;
-        color: Color;
-        private attachment;
-        private attachmentTime;
-        attachmentVertices: number[];
-        constructor(data: SlotData, bone: Bone);
-        getAttachment(): Attachment;
-        setAttachment(attachment: Attachment): void;
-        setAttachmentTime(time: number): void;
-        getAttachmentTime(): number;
-        setToSetupPose(): void;
-    }
-}
-declare module "core/attachments/Attachment" {
-    import { Slot } from "core/Slot";
-    export abstract class Attachment {
-        name: string;
-        constructor(name: string);
-    }
-    export abstract class VertexAttachment extends Attachment {
-        bones: Array<number>;
-        vertices: ArrayLike<number>;
-        worldVerticesLength: number;
-        constructor(name: string);
-        computeWorldVertices(slot: Slot, worldVertices: ArrayLike<number>): void;
-        computeWorldVerticesWith(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number): void;
-        applyDeform(sourceAttachment: VertexAttachment): boolean;
     }
 }
 declare module "core/Texture" {
@@ -661,18 +622,69 @@ declare module "core/Texture" {
         Repeat = 10497,
     }
     export class TextureRegion {
-        renderObject: any;
+        texture: PIXI.Texture;
+        size: PIXI.Rectangle;
+        width: number;
+        height: number;
         u: number;
         v: number;
         u2: number;
         v2: number;
-        width: number;
-        height: number;
-        rotate: boolean;
         offsetX: number;
         offsetY: number;
+        pixiOffsetY: number;
+        spineOffsetY: number;
         originalWidth: number;
         originalHeight: number;
+        x: number;
+        y: number;
+        rotate: boolean;
+    }
+}
+declare module "core/Slot" {
+    import { Attachment } from "core/attachments/index";
+    import { SlotData } from "core/SlotData";
+    import { Bone } from "core/Bone";
+    import { Color } from "core/Utils";
+    import { TextureRegion } from "core/Texture";
+    export class Slot {
+        currentMesh: any;
+        currentSprite: any;
+        meshes: any;
+        currentMeshName: String;
+        sprites: any;
+        currentSpriteName: String;
+        blendMode: number;
+        tempRegion: TextureRegion;
+        tempAttachment: Attachment;
+        data: SlotData;
+        bone: Bone;
+        color: Color;
+        attachment: Attachment;
+        private attachmentTime;
+        attachmentVertices: number[];
+        constructor(data: SlotData, bone: Bone);
+        getAttachment(): Attachment;
+        setAttachment(attachment: Attachment): void;
+        setAttachmentTime(time: number): void;
+        getAttachmentTime(): number;
+        setToSetupPose(): void;
+    }
+}
+declare module "core/attachments/Attachment" {
+    import { Slot } from "core/Slot";
+    export abstract class Attachment {
+        name: string;
+        constructor(name: string);
+    }
+    export abstract class VertexAttachment extends Attachment {
+        bones: Array<number>;
+        vertices: ArrayLike<number>;
+        worldVerticesLength: number;
+        constructor(name: string);
+        computeWorldVertices(slot: Slot, worldVertices: ArrayLike<number>): void;
+        computeWorldVerticesWith(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number): void;
+        applyDeform(sourceAttachment: VertexAttachment): boolean;
     }
 }
 declare module "core/attachments/RegionAttachment" {
@@ -681,46 +693,6 @@ declare module "core/attachments/RegionAttachment" {
     import { TextureRegion } from "core/Texture";
     import { Slot } from "core/Slot";
     export class RegionAttachment extends Attachment {
-        static OX1: number;
-        static OY1: number;
-        static OX2: number;
-        static OY2: number;
-        static OX3: number;
-        static OY3: number;
-        static OX4: number;
-        static OY4: number;
-        static X1: number;
-        static Y1: number;
-        static C1R: number;
-        static C1G: number;
-        static C1B: number;
-        static C1A: number;
-        static U1: number;
-        static V1: number;
-        static X2: number;
-        static Y2: number;
-        static C2R: number;
-        static C2G: number;
-        static C2B: number;
-        static C2A: number;
-        static U2: number;
-        static V2: number;
-        static X3: number;
-        static Y3: number;
-        static C3R: number;
-        static C3G: number;
-        static C3B: number;
-        static C3A: number;
-        static U3: number;
-        static V3: number;
-        static X4: number;
-        static Y4: number;
-        static C4R: number;
-        static C4G: number;
-        static C4B: number;
-        static C4A: number;
-        static U4: number;
-        static V4: number;
         x: number;
         y: number;
         scaleX: number;
@@ -730,14 +702,8 @@ declare module "core/attachments/RegionAttachment" {
         height: number;
         color: Color;
         path: string;
-        rendererObject: any;
         region: TextureRegion;
-        offset: ArrayLike<number>;
-        vertices: ArrayLike<number>;
-        tempColor: Color;
         constructor(name: string);
-        setRegion(region: TextureRegion): void;
-        updateOffset(): void;
         updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number>;
     }
 }
@@ -750,7 +716,6 @@ declare module "core/attachments/MeshAttachment" {
         region: TextureRegion;
         path: string;
         regionUVs: ArrayLike<number>;
-        worldVertices: ArrayLike<number>;
         triangles: Array<number>;
         color: Color;
         hullLength: number;
@@ -758,8 +723,8 @@ declare module "core/attachments/MeshAttachment" {
         inheritDeform: boolean;
         tempColor: Color;
         constructor(name: string);
-        updateUVs(): void;
         updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number>;
+        updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number>;
         applyDeform(sourceAttachment: VertexAttachment): boolean;
         getParentMesh(): MeshAttachment;
         setParentMesh(parentMesh: MeshAttachment): void;
@@ -829,48 +794,60 @@ declare module "core/AnimationStateData" {
         getMix(from: Animation, to: Animation): number;
     }
 }
-declare module "core/AssetManager" {
-    import { Disposable, Map } from "core/Utils";
-    export class AssetManager implements Disposable {
-        private pathPrefix;
-        private textureLoader;
-        private assets;
-        private errors;
-        private toLoad;
-        private loaded;
-        constructor(textureLoader: (image: HTMLImageElement) => any, pathPrefix?: string);
-        loadText(path: string, success?: (path: string, text: string) => void, error?: (path: string, error: string) => void): void;
-        loadTexture(path: string, success?: (path: string, image: HTMLImageElement) => void, error?: (path: string, error: string) => void): void;
-        get(path: string): any;
-        remove(path: string): void;
-        removeAll(): void;
-        isLoadingComplete(): boolean;
-        getToLoad(): number;
-        getLoaded(): number;
-        dispose(): void;
-        hasErrors(): boolean;
-        getErrors(): Map<string>;
+declare module "core/AnimationState" {
+    import { Skeleton } from "core/Skeleton";
+    import { Animation } from "core/Animation";
+    import { AnimationStateData } from "core/AnimationStateData";
+    import { Event } from "core/Event";
+    export class AnimationState {
+        data: AnimationStateData;
+        tracks: TrackEntry[];
+        events: Event[];
+        timeScale: number;
+        constructor(data?: AnimationStateData);
+        update(delta: number): void;
+        apply(skeleton: Skeleton): void;
+        clearTracks(): void;
+        clearTrack(trackIndex: number): void;
+        freeAll(entry: TrackEntry): void;
+        expandToIndex(index: number): TrackEntry;
+        setCurrent(index: number, entry: TrackEntry): void;
+        setAnimation(trackIndex: number, animationName: string, loop: boolean): TrackEntry;
+        setAnimationWith(trackIndex: number, animation: Animation, loop: boolean): TrackEntry;
+        addAnimation(trackIndex: number, animationName: string, loop: boolean, delay: number): TrackEntry;
+        hasAnimation(animationName: string): boolean;
+        addAnimationWith(trackIndex: number, animation: Animation, loop: boolean, delay: number): TrackEntry;
+        getCurrent(trackIndex: number): TrackEntry;
+        onComplete: (trackIndex: number, loopCount: number) => any;
+        onEvent: (trackIndex: number, event: Event) => any;
+        onStart: (trackIndex: number) => any;
+        onEnd: (trackIndex: number) => any;
+        private static deprecatedWarning1;
+        setAnimationByName(trackIndex: number, animationName: string, loop: boolean): void;
+        private static deprecatedWarning2;
+        addAnimationByName(trackIndex: number, animationName: string, loop: boolean, delay: number): void;
+        private static deprecatedWarning3;
+        hasAnimationByName(animationName: string): boolean;
     }
-}
-declare module "core/SharedAssetManager" {
-    import { Disposable, Map } from "core/Utils";
-    export class SharedAssetManager implements Disposable {
-        private pathPrefix;
-        private clientAssets;
-        private queuedAssets;
-        private rawAssets;
-        private errors;
-        constructor(pathPrefix?: string);
-        private queueAsset(clientId, textureLoader, path);
-        loadText(clientId: string, path: string): void;
-        loadJson(clientId: string, path: string): void;
-        loadTexture(clientId: string, textureLoader: (image: HTMLImageElement) => any, path: string): void;
-        get(clientId: string, path: string): any;
-        private updateClientAssets(clientAssets);
-        isLoadingComplete(clientId: string): boolean;
-        dispose(): void;
-        hasErrors(): boolean;
-        getErrors(): Map<string>;
+    export class TrackEntry {
+        next: TrackEntry;
+        previous: TrackEntry;
+        animation: Animation;
+        loop: boolean;
+        delay: number;
+        time: number;
+        lastTime: number;
+        endTime: number;
+        timeScale: number;
+        mixTime: number;
+        mixDuration: number;
+        mix: number;
+        onComplete: (trackIndex: number, loopCount: number) => any;
+        onEvent: (trackIndex: number, event: Event) => any;
+        onStart: (trackIndex: number) => any;
+        onEnd: (trackIndex: number) => any;
+        reset(): void;
+        isComplete(): boolean;
     }
 }
 declare module "core/SkeletonBounds" {
@@ -904,7 +881,6 @@ declare module "core/SkeletonJson" {
     import { Skin } from "core/Skin";
     import { Attachment, AttachmentLoader, VertexAttachment } from "core/attachments/index";
     import { CurveTimeline } from "core/Animation";
-    import { BlendMode } from "core/BlendMode";
     export class SkeletonJson {
         attachmentLoader: AttachmentLoader;
         scale: number;
@@ -916,20 +892,23 @@ declare module "core/SkeletonJson" {
         readAnimation(map: any, name: string, skeletonData: SkeletonData): void;
         readCurve(map: any, timeline: CurveTimeline, frameIndex: number): void;
         getValue(map: any, prop: string, defaultValue: any): any;
-        static blendModeFromString(str: string): BlendMode;
+        static blendModeFromString(str: string): number;
         static positionModeFromString(str: string): PositionMode;
         static spacingModeFromString(str: string): SpacingMode;
         static rotateModeFromString(str: string): RotateMode;
     }
 }
 declare module "core/TextureAtlas" {
-    import { Disposable } from "core/Utils";
-    import { Texture, TextureWrap, TextureRegion, TextureFilter } from "core/Texture";
+    import { Disposable, Map } from "core/Utils";
+    import { TextureWrap, TextureRegion, TextureFilter } from "core/Texture";
     export class TextureAtlas implements Disposable {
         pages: TextureAtlasPage[];
         regions: TextureAtlasRegion[];
-        constructor(atlasText: string, textureLoader: (path: string) => any);
-        private load(atlasText, textureLoader);
+        constructor(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any);
+        addTexture(name: string, texture: PIXI.Texture): TextureAtlasRegion;
+        addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean): void;
+        addSpineAtlas(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any): void;
+        private load(atlasText, textureLoader, callback);
         findRegion(name: string): TextureAtlasRegion;
         dispose(): void;
     }
@@ -939,18 +918,15 @@ declare module "core/TextureAtlas" {
         magFilter: TextureFilter;
         uWrap: TextureWrap;
         vWrap: TextureWrap;
-        texture: Texture;
+        baseTexture: PIXI.BaseTexture;
         width: number;
         height: number;
+        setFilters(): void;
     }
     export class TextureAtlasRegion extends TextureRegion {
         page: TextureAtlasPage;
         name: string;
-        x: number;
-        y: number;
         index: number;
-        rotate: boolean;
-        texture: Texture;
     }
 }
 declare module "core/TextureAtlasAttachmentLoader" {
@@ -967,11 +943,10 @@ declare module "core/TextureAtlasAttachmentLoader" {
     }
 }
 declare module "core/index" {
-    import * as attachments from "core/attachments/index";
-    export { attachments };
+    export * from "core/attachments/index";
     export { Timeline, ColorTimeline, AttachmentTimeline, RotateTimeline, TranslateTimeline, ScaleTimeline, ShearTimeline, IkConstraintTimeline, TransformConstraintTimeline, PathConstraintPositionTimeline, PathConstraintSpacingTimeline, PathConstraintMixTimeline, DeformTimeline, DrawOrderTimeline, EventTimeline, Animation, CurveTimeline } from "core/Animation";
+    export { AnimationState } from "core/AnimationState";
     export { AnimationStateData } from "core/AnimationStateData";
-    export { AssetManager } from "core/AssetManager";
     export { BlendMode } from "core/BlendMode";
     export { Bone } from "core/Bone";
     export { BoneData } from "core/BoneData";
@@ -981,7 +956,6 @@ declare module "core/index" {
     export { IkConstraintData } from "core/IkConstraintData";
     export { PathConstraint } from "core/PathConstraint";
     export { PathConstraintData, SpacingMode, RotateMode, PositionMode } from "core/PathConstraintData";
-    export { SharedAssetManager } from "core/SharedAssetManager";
     export { Skeleton } from "core/Skeleton";
     export { SkeletonBounds } from "core/SkeletonBounds";
     export { SkeletonData } from "core/SkeletonData";
@@ -990,14 +964,53 @@ declare module "core/index" {
     export { Slot } from "core/Slot";
     export { SlotData } from "core/SlotData";
     export { Texture, TextureWrap, TextureRegion, TextureFilter } from "core/Texture";
-    export { TextureAtlas } from "core/TextureAtlas";
+    export { TextureAtlas, TextureAtlasRegion } from "core/TextureAtlas";
     export { TextureAtlasAttachmentLoader } from "core/TextureAtlasAttachmentLoader";
     export { TransformConstraint } from "core/TransformConstraint";
     export { TransformConstraintData } from "core/TransformConstraintData";
     export { Updatable } from "core/Updatable";
     export { Disposable, Map, Utils, Pool, MathUtils, Color, Vector2 } from "core/Utils";
 }
+declare module "loaders" {
+    export function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
+    export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: String, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
+    export function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
+}
+declare module "Spine" {
+    import * as spine from "core/index";
+    export class SpineSprite extends PIXI.Sprite {
+        region: spine.TextureRegion;
+        constructor(tex: PIXI.Texture);
+    }
+    export class SpineMesh extends PIXI.mesh.Mesh {
+        region: spine.TextureRegion;
+        constructor(texture: PIXI.Texture, vertices?: ArrayLike<number>, uvs?: ArrayLike<number>, indices?: ArrayLike<number>, drawMode?: number);
+    }
+    export class Spine extends PIXI.Container {
+        static globalAutoUpdate: boolean;
+        tintRgb: ArrayLike<number>;
+        spineData: spine.SkeletonData;
+        skeleton: spine.Skeleton;
+        stateData: spine.AnimationStateData;
+        state: spine.AnimationState;
+        slotContainers: Array<PIXI.Container>;
+        constructor(spineData: spine.SkeletonData);
+        autoUpdate: boolean;
+        tint: number;
+        update(dt: number): void;
+        private setSpriteRegion(attachment, sprite, region);
+        private setMeshRegion(attachment, mesh, region);
+        protected lastTime: number;
+        autoUpdateTransform(): void;
+        createSprite(slot: spine.Slot, attachment: spine.RegionAttachment): SpineSprite;
+        createMesh(slot: spine.Slot, attachment: spine.MeshAttachment): SpineMesh;
+        hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
+        hackTextureBySlotName: (slotName: String, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
+    }
+}
 declare module "index" {
     import * as core from "core/index";
-    export { core };
+    import * as loaders from "loaders";
+    export { core, loaders };
+    export { Spine, SpineMesh, SpineSprite } from "Spine";
 }

@@ -38,7 +38,6 @@ export class AnimationState {
     data: AnimationStateData;
     tracks = new Array<TrackEntry>();
     events = new Array<Event>();
-    listeners = new Array<AnimationStateListener>();
     timeScale = 1;
 
     constructor (data: AnimationStateData = null) {
@@ -80,7 +79,6 @@ export class AnimationState {
 
     apply (skeleton: Skeleton) {
         let events = this.events;
-        let listenerCount = this.listeners.length;
 
         for (let i = 0; i < this.tracks.length; i++) {
             let current = this.tracks[i];
@@ -112,17 +110,15 @@ export class AnimationState {
 
             for (let ii = 0, nn = events.length; ii < nn; ii++) {
                 let event = events[ii];
-                if (current.listener != null) current.listener.event(i, event);
-                for (let iii = 0; iii < listenerCount; iii++)
-                    this.listeners[iii].event(i, event);
+                if (current.onEvent) current.onEvent(i, event);
+                if (this.onEvent) this.onEvent(i, event);
             }
 
             // Check if completed the animation or a loop iteration.
             if (loop ? (lastTime % endTime > time % endTime) : (lastTime < endTime && time >= endTime)) {
                 let count = MathUtils.toInt(time / endTime);
-                if (current.listener != null) current.listener.complete(i, count);
-                for (let ii = 0, nn = this.listeners.length; ii < nn; ii++)
-                    this.listeners[ii].complete(i, count);
+                if (current.onComplete) current.onComplete(i, count);
+                if (this.onComplete) this.onComplete(i, count);
             }
 
             current.lastTime = current.time;
@@ -140,9 +136,8 @@ export class AnimationState {
         let current = this.tracks[trackIndex];
         if (current == null) return;
 
-        if (current.listener != null) current.listener.end(trackIndex);
-        for (let i = 0, n = this.listeners.length; i < n; i++)
-            this.listeners[i].end(trackIndex);
+        if (current.onEnd) current.onEnd(trackIndex);
+        if (this.onEnd) this.onEnd(trackIndex);
 
         this.tracks[trackIndex] = null;
 
@@ -169,9 +164,8 @@ export class AnimationState {
             let previous = current.previous;
             current.previous = null;
 
-            if (current.listener != null) current.listener.end(index);
-            for (let i = 0, n = this.listeners.length; i < n; i++)
-                this.listeners[i].end(index);
+            if (entry.onEnd) entry.onEnd(index);
+            if (this.onEnd) this.onEnd(index);
 
             entry.mixDuration = this.data.getMix(current.animation, entry.animation);
             if (entry.mixDuration > 0) {
@@ -187,9 +181,8 @@ export class AnimationState {
 
         this.tracks[index] = entry;
 
-        if (entry.listener != null) entry.listener.start(index);
-        for (let i = 0, n = this.listeners.length; i < n; i++)
-            this.listeners[i].start(index);
+        if (entry.onStart) entry.onStart(index);
+        if (this.onStart) this.onStart(index);
     }
 
     /** @see #setAnimation(int, Animation, boolean) */
@@ -219,7 +212,7 @@ export class AnimationState {
         return this.addAnimationWith(trackIndex, animation, loop, delay);
     }
 
-    hasAnimationByName(animationName: string): boolean
+    hasAnimation(animationName: string): boolean
     {
         let animation = this.data.skeletonData.findAnimation(animationName);
         return animation !== null;
@@ -258,20 +251,38 @@ export class AnimationState {
         return this.tracks[trackIndex];
     }
 
-    /** Adds a listener to receive events for all animations. */
-    addListener (listener: AnimationStateListener) {
-        if (listener == null) throw new Error("listener cannot be null.");
-        this.listeners.push(listener);
+    onComplete: (trackIndex: number, loopCount: number) => any;
+    onEvent: (trackIndex: number, event: Event) => any;
+    onStart: (trackIndex: number) => any;
+    onEnd: (trackIndex: number) => any;
+
+    private static deprecatedWarning1: boolean = false;
+    setAnimationByName (trackIndex: number, animationName: string, loop: boolean) {
+        if (!AnimationState.deprecatedWarning1) {
+            AnimationState.deprecatedWarning1 = true;
+            console.warn("Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
+        }
+        this.setAnimation(trackIndex, animationName, loop);
     }
 
-    /** Removes the listener added with {@link #addListener(AnimationStateListener)}. */
-    removeListener (listener: AnimationStateListener) {
-        let index = this.listeners.indexOf(listener);
-        if (index >= 0) this.listeners.splice(index, 1);
+    private static deprecatedWarning2: boolean = false;
+    addAnimationByName (trackIndex: number, animationName: string, loop: boolean, delay: number) {
+        if (!AnimationState.deprecatedWarning2) {
+            AnimationState.deprecatedWarning2 = true;
+            console.warn("Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
+        }
+        this.addAnimation(trackIndex, animationName, loop, delay);
     }
 
-    clearListeners () {
-        this.listeners.length = 0;
+    private static deprecatedWarning3: boolean = false;
+    hasAnimationByName (animationName: string): boolean
+    {
+        if (!AnimationState.deprecatedWarning3) {
+            AnimationState.deprecatedWarning3 = true;
+            console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
+        }
+        let animation = this.data.skeletonData.findAnimation(animationName);
+        return animation !== null;
     }
 }
 
@@ -281,14 +292,17 @@ export class TrackEntry {
     loop = false;
     delay = 0; time = 0; lastTime = -1; endTime = 0; timeScale = 1;
     mixTime = 0; mixDuration = 0;
-    listener: AnimationStateListener;
     mix = 1;
+
+    onComplete: (trackIndex: number, loopCount: number) => any;
+    onEvent: (trackIndex: number, event: Event) => any;
+    onStart: (trackIndex: number) => any;
+    onEnd: (trackIndex: number) => any;
 
     reset () {
         this.next = null;
         this.previous = null;
         this.animation = null;
-        this.listener = null;
         this.timeScale = 1;
         this.lastTime = -1; // Trigger events on frame zero.
         this.time = 0;
@@ -298,33 +312,4 @@ export class TrackEntry {
     isComplete () : boolean {
         return this.time >= this.endTime;
     }
-}
-
-export abstract class AnimationStateAdapter implements AnimationStateListener {
-    event (trackIndex: number, event: Event) {
-    }
-
-    complete (trackIndex: number, loopCount: number) {
-    }
-
-    start (trackIndex: number) {
-    }
-
-    end (trackIndex: number) {
-    }
-}
-
-export interface AnimationStateListener {
-    /** Invoked when the current animation triggers an event. */
-    event (trackIndex: number, event: Event): void;
-
-    /** Invoked when the current animation has completed.
-     * @param loopCount The number of times the animation reached the end. */
-    complete (trackIndex: number, loopCount: number): void;
-
-    /** Invoked just after the current animation is set. */
-    start (trackIndex: number): void;
-
-    /** Invoked just before the current animation is replaced. */
-    end (trackIndex: number): void;
 }

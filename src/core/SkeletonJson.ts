@@ -293,6 +293,9 @@ export class SkeletonJson {
                 if (color != null) box.color.setFromString(color);
                 return box;
             }
+            //weightedmesh is deprecated but who cares
+            case "weightedmesh":
+            case "skinnedmesh":
             case "mesh":
             case "linkedmesh": {
                 let path = this.getValue(map, "path", name);

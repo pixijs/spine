@@ -9,5 +9,5 @@
         "sourceMap": true,
 		"declaration": true
 	},
-    "files": ["src/index.ts"]
+    "files": ["src/index.ts", "src/pixi.js.d.ts"]
 }

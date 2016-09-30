@@ -1,8 +1,8 @@
 # pixi-spine
 
-Spine implementation for pixi v4
+Spine implementation for pixi v3 and pixi v4.
 
-IMPORTANT! Following functions were renamed in pixi-spine 1.1.0:
+IMPORTANT! Following classes and functions were renamed in pixi-spine 1.1.0:
 
 ```js
 Atlas to TextureAtlas
@@ -13,6 +13,7 @@ setAnimationByName to setAnimation
 
 addAnimation to addAnimationWith
 addAnimationByName to addAnimation
+
 hasAnimationByName to hasAnimation
 ```
 
@@ -47,23 +48,15 @@ declare module PIXI {
 
 ### How to use spine events
 
-This is stupid, I know, that's java port, I'll fix this later. If you dont specify at least one function, it'll crash.
 
 ```js
-animation.state.addListener({
-    /** Invoked when the current animation triggers an event. */
-    event : function(trackIndex, event) { alert('event fired '+event.data) }
-    
-    /** Invoked when the current animation has completed.
-     * @param loopCount The number of times the animation reached the end. */
-    complete : function(trackIndex, loopCount) {}
-    
-        /** Invoked just after the current animation is set. */
-    start: function (trackIndex) {}
-    
-        /** Invoked just before the current animation is replaced. */
-    end: function (trackIndex) {}
-})
+animation.state.onEvent = function(trackIndex, event) { console.log('event fired '+event.data) }
+animation.state.onComplete = function(trackIndex, loopCount) { console.log('track '+trackIndex+' completed '+count+' times') }
+animation.state.onStart =function(trackIndex) { console.log('animation is set at '+trackIndex) }
+animation.state.onEnd = function(trackIndex) { console.log('animation was ended at '+trackIndex) }
+//same for track, if it exists
+animation.state.addAnimation(0, 'walk', true);
+animation.state.tracks[0].onEnd = function(trackIndex, count) { console.log('my track ended :)') }
 ```
 
 ### How to choose resolution

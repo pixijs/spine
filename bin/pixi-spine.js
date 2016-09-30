@@ -1,6 +1,6 @@
 /*!
  * pixi-spine - v1.1.0
- * Compiled Thu Sep 29 2016 07:26:19 GMT+0300 (RTZ 2 (зима))
+ * Compiled Fri Sep 30 2016 19:25:11 GMT+0300 (RTZ 2 (зима))
  *
  * pixi-spine is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -1048,7 +1048,6 @@ var AnimationState = (function () {
         if (data === void 0) { data = null; }
         this.tracks = new Array();
         this.events = new Array();
-        this.listeners = new Array();
         this.timeScale = 1;
         if (data == null)
             throw new Error("data cannot be null.");
@@ -1086,7 +1085,6 @@ var AnimationState = (function () {
     };
     AnimationState.prototype.apply = function (skeleton) {
         var events = this.events;
-        var listenerCount = this.listeners.length;
         for (var i = 0; i < this.tracks.length; i++) {
             var current = this.tracks[i];
             if (current == null)
@@ -1115,17 +1113,17 @@ var AnimationState = (function () {
             }
             for (var ii = 0, nn = events.length; ii < nn; ii++) {
                 var event_1 = events[ii];
-                if (current.listener != null)
-                    current.listener.event(i, event_1);
-                for (var iii = 0; iii < listenerCount; iii++)
-                    this.listeners[iii].event(i, event_1);
+                if (current.onEvent)
+                    current.onEvent(i, event_1);
+                if (this.onEvent)
+                    this.onEvent(i, event_1);
             }
             if (loop ? (lastTime % endTime > time % endTime) : (lastTime < endTime && time >= endTime)) {
                 var count = Utils_1.MathUtils.toInt(time / endTime);
-                if (current.listener != null)
-                    current.listener.complete(i, count);
-                for (var ii = 0, nn = this.listeners.length; ii < nn; ii++)
-                    this.listeners[ii].complete(i, count);
+                if (current.onComplete)
+                    current.onComplete(i, count);
+                if (this.onComplete)
+                    this.onComplete(i, count);
             }
             current.lastTime = current.time;
         }
@@ -1141,10 +1139,10 @@ var AnimationState = (function () {
         var current = this.tracks[trackIndex];
         if (current == null)
             return;
-        if (current.listener != null)
-            current.listener.end(trackIndex);
-        for (var i = 0, n = this.listeners.length; i < n; i++)
-            this.listeners[i].end(trackIndex);
+        if (current.onEnd)
+            current.onEnd(trackIndex);
+        if (this.onEnd)
+            this.onEnd(trackIndex);
         this.tracks[trackIndex] = null;
         this.freeAll(current);
     };
@@ -1166,10 +1164,10 @@ var AnimationState = (function () {
         if (current != null) {
             var previous = current.previous;
             current.previous = null;
-            if (current.listener != null)
-                current.listener.end(index);
-            for (var i = 0, n = this.listeners.length; i < n; i++)
-                this.listeners[i].end(index);
+            if (entry.onEnd)
+                entry.onEnd(index);
+            if (this.onEnd)
+                this.onEnd(index);
             entry.mixDuration = this.data.getMix(current.animation, entry.animation);
             if (entry.mixDuration > 0) {
                 entry.mixTime = 0;
@@ -1182,10 +1180,10 @@ var AnimationState = (function () {
             }
         }
         this.tracks[index] = entry;
-        if (entry.listener != null)
-            entry.listener.start(index);
-        for (var i = 0, n = this.listeners.length; i < n; i++)
-            this.listeners[i].start(index);
+        if (entry.onStart)
+            entry.onStart(index);
+        if (this.onStart)
+            this.onStart(index);
     };
     AnimationState.prototype.setAnimation = function (trackIndex, animationName, loop) {
         var animation = this.data.skeletonData.findAnimation(animationName);
@@ -1210,7 +1208,7 @@ var AnimationState = (function () {
             throw new Error("Animation not found: " + animationName);
         return this.addAnimationWith(trackIndex, animation, loop, delay);
     };
-    AnimationState.prototype.hasAnimationByName = function (animationName) {
+    AnimationState.prototype.hasAnimation = function (animationName) {
         var animation = this.data.skeletonData.findAnimation(animationName);
         return animation !== null;
     };
@@ -1241,19 +1239,31 @@ var AnimationState = (function () {
             return null;
         return this.tracks[trackIndex];
     };
-    AnimationState.prototype.addListener = function (listener) {
-        if (listener == null)
-            throw new Error("listener cannot be null.");
-        this.listeners.push(listener);
+    AnimationState.prototype.setAnimationByName = function (trackIndex, animationName, loop) {
+        if (!AnimationState.deprecatedWarning1) {
+            AnimationState.deprecatedWarning1 = true;
+            console.warn("Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
+        }
+        this.setAnimation(trackIndex, animationName, loop);
     };
-    AnimationState.prototype.removeListener = function (listener) {
-        var index = this.listeners.indexOf(listener);
-        if (index >= 0)
-            this.listeners.splice(index, 1);
+    AnimationState.prototype.addAnimationByName = function (trackIndex, animationName, loop, delay) {
+        if (!AnimationState.deprecatedWarning2) {
+            AnimationState.deprecatedWarning2 = true;
+            console.warn("Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
+        }
+        this.addAnimation(trackIndex, animationName, loop, delay);
     };
-    AnimationState.prototype.clearListeners = function () {
-        this.listeners.length = 0;
+    AnimationState.prototype.hasAnimationByName = function (animationName) {
+        if (!AnimationState.deprecatedWarning3) {
+            AnimationState.deprecatedWarning3 = true;
+            console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
+        }
+        var animation = this.data.skeletonData.findAnimation(animationName);
+        return animation !== null;
     };
+    AnimationState.deprecatedWarning1 = false;
+    AnimationState.deprecatedWarning2 = false;
+    AnimationState.deprecatedWarning3 = false;
     return AnimationState;
 }());
 exports.AnimationState = AnimationState;
@@ -1273,7 +1283,6 @@ var TrackEntry = (function () {
         this.next = null;
         this.previous = null;
         this.animation = null;
-        this.listener = null;
         this.timeScale = 1;
         this.lastTime = -1;
         this.time = 0;
@@ -1284,20 +1293,6 @@ var TrackEntry = (function () {
     return TrackEntry;
 }());
 exports.TrackEntry = TrackEntry;
-var AnimationStateAdapter = (function () {
-    function AnimationStateAdapter() {
-    }
-    AnimationStateAdapter.prototype.event = function (trackIndex, event) {
-    };
-    AnimationStateAdapter.prototype.complete = function (trackIndex, loopCount) {
-    };
-    AnimationStateAdapter.prototype.start = function (trackIndex) {
-    };
-    AnimationStateAdapter.prototype.end = function (trackIndex) {
-    };
-    return AnimationStateAdapter;
-}());
-exports.AnimationStateAdapter = AnimationStateAdapter;
 },{"./Utils":26}],4:[function(require,module,exports){
 "use strict";
 var AnimationStateData = (function () {
@@ -3167,6 +3162,8 @@ var SkeletonJson = (function () {
                     box.color.setFromString(color);
                 return box;
             }
+            case "weightedmesh":
+            case "skinnedmesh":
             case "mesh":
             case "linkedmesh": {
                 var path = this.getValue(map, "path", name);
@@ -3902,6 +3899,42 @@ var TextureAtlas = (function () {
             this.addSpineAtlas(atlasText, textureLoader, callback);
         }
     }
+    TextureAtlas.prototype.addTexture = function (name, texture) {
+        var pages = this.pages;
+        var page = null;
+        for (var i = 0; i < pages.length; i++) {
+            if (pages[i].baseTexture === texture.baseTexture) {
+                page = pages[i];
+                break;
+            }
+        }
+        if (page === null) {
+            page = new TextureAtlasPage();
+            page.name = 'texturePage';
+            var baseTexture = texture.baseTexture;
+            page.width = baseTexture.realWidth;
+            page.height = baseTexture.realHeight;
+            page.baseTexture = baseTexture;
+            page.minFilter = page.magFilter = Texture_1.TextureFilter.Nearest;
+            page.uWrap = Texture_1.TextureWrap.ClampToEdge;
+            page.vWrap = Texture_1.TextureWrap.ClampToEdge;
+            pages.push(page);
+        }
+        var region = new TextureAtlasRegion();
+        region.name = name;
+        region.page = page;
+        region.texture = texture;
+        region.index = -1;
+        this.regions.push(region);
+        return region;
+    };
+    TextureAtlas.prototype.addTextureHash = function (textures, stripExtension) {
+        for (var key in textures) {
+            if (textures.hasOwnProperty(key)) {
+                this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
+            }
+        }
+    };
     TextureAtlas.prototype.addSpineAtlas = function (atlasText, textureLoader, callback) {
         return this.load(atlasText, textureLoader, callback);
     };
