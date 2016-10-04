@@ -50,6 +50,15 @@ export class AnimationStateData {
         this.setMixWith(from, to, duration);
     }
 
+    private static deprecatedWarning1: boolean = false;
+    setMixByName(fromName: string, toName: string, duration: number) {
+        if (!AnimationStateData.deprecatedWarning1) {
+            AnimationStateData.deprecatedWarning1 = true;
+            console.warn("Deprecation Warning: AnimationStateData.setMixByName is deprecated, please use setMix from now on.");
+        }
+        this.setMix(fromName, toName, duration);
+    }
+
     setMixWith (from: Animation, to: Animation, duration: number) {
         if (from == null) throw new Error("from cannot be null.");
         if (to == null) throw new Error("to cannot be null.");

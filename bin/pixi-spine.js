@@ -1,6 +1,6 @@
 /*!
- * pixi-spine - v1.1.0
- * Compiled Fri Sep 30 2016 19:25:11 GMT+0300 (RTZ 2 (зима))
+ * pixi-spine - v1.1.2
+ * Compiled Wed Oct 05 2016 01:55:01 GMT+0300 (RTZ 2 (зима))
  *
  * pixi-spine is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -65,7 +65,7 @@ var Spine = (function (_super) {
             this.addChild(slotContainer);
             if (attachment instanceof spine.RegionAttachment) {
                 var spriteName = attachment.region.name;
-                var sprite = this.createSprite(slot, attachment);
+                var sprite = this.createSprite(slot, attachment, spriteName);
                 slot.currentSprite = sprite;
                 slot.currentSpriteName = spriteName;
                 slotContainer.addChild(sprite);
@@ -138,7 +138,7 @@ var Spine = (function (_super) {
                             slot.sprites[spriteName].visible = true;
                         }
                         else {
-                            var sprite = this.createSprite(slot, attachment);
+                            var sprite = this.createSprite(slot, attachment, spriteName);
                             slotContainer.addChild(sprite);
                         }
                         slot.currentSprite = slot.sprites[spriteName];
@@ -258,7 +258,7 @@ var Spine = (function (_super) {
         PIXI.Container.prototype.updateTransform.call(this);
     };
     ;
-    Spine.prototype.createSprite = function (slot, attachment) {
+    Spine.prototype.createSprite = function (slot, attachment, defName) {
         var region = attachment.region;
         if (slot.tempAttachment === attachment) {
             region = slot.tempRegion;
@@ -276,7 +276,7 @@ var Spine = (function (_super) {
         sprite.region = attachment.region;
         this.setSpriteRegion(attachment, sprite, attachment.region);
         slot.sprites = slot.sprites || {};
-        slot.sprites[attachment.name] = sprite;
+        slot.sprites[defName] = sprite;
         return sprite;
     };
     ;
@@ -1312,6 +1312,13 @@ var AnimationStateData = (function () {
             throw new Error("Animation not found: " + toName);
         this.setMixWith(from, to, duration);
     };
+    AnimationStateData.prototype.setMixByName = function (fromName, toName, duration) {
+        if (!AnimationStateData.deprecatedWarning1) {
+            AnimationStateData.deprecatedWarning1 = true;
+            console.warn("Deprecation Warning: AnimationStateData.setMixByName is deprecated, please use setMix from now on.");
+        }
+        this.setMix(fromName, toName, duration);
+    };
     AnimationStateData.prototype.setMixWith = function (from, to, duration) {
         if (from == null)
             throw new Error("from cannot be null.");
@@ -1325,6 +1332,7 @@ var AnimationStateData = (function () {
         var value = this.animationToMixTime[key];
         return value === undefined ? this.defaultMix : value;
     };
+    AnimationStateData.deprecatedWarning1 = false;
     return AnimationStateData;
 }());
 exports.AnimationStateData = AnimationStateData;

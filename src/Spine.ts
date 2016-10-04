@@ -105,7 +105,7 @@ export class Spine extends PIXI.Container {
 
             if (attachment instanceof spine.RegionAttachment) {
                 var spriteName = attachment.region.name;
-                var sprite = this.createSprite(slot, attachment);
+                var sprite = this.createSprite(slot, attachment, spriteName);
                 slot.currentSprite = sprite;
                 slot.currentSpriteName = spriteName;
                 slotContainer.addChild(sprite);
@@ -218,7 +218,7 @@ export class Spine extends PIXI.Container {
                             slot.sprites[spriteName].visible = true;
                         }
                         else {
-                            var sprite = this.createSprite(slot, attachment);
+                            var sprite = this.createSprite(slot, attachment, spriteName);
                             slotContainer.addChild(sprite);
                         }
                         slot.currentSprite = slot.sprites[spriteName];
@@ -369,7 +369,7 @@ export class Spine extends PIXI.Container {
      * @param attachment {spine.RegionAttachment} The attachment that the sprite will represent
      * @private
      */
-    createSprite(slot: spine.Slot, attachment: spine.RegionAttachment) {
+    createSprite(slot: spine.Slot, attachment: spine.RegionAttachment, defName: string) {
         let region = attachment.region;
         if (slot.tempAttachment === attachment) {
             region = slot.tempRegion;
@@ -389,7 +389,7 @@ export class Spine extends PIXI.Container {
         this.setSpriteRegion(attachment, sprite, attachment.region);
 
         slot.sprites = slot.sprites || {};
-        slot.sprites[attachment.name] = sprite;
+        slot.sprites[defName] = sprite;
         return sprite;
     };
 
