@@ -1,6 +1,6 @@
 /*!
- * pixi-spine - v1.1.2
- * Compiled Wed Oct 05 2016 01:55:01 GMT+0300 (RTZ 2 (зима))
+ * pixi-spine - v1.1.3
+ * Compiled Fri Oct 07 2016 01:10:27 GMT+0300 (RTZ 2 (зима))
  *
  * pixi-spine is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -3623,7 +3623,7 @@ var Skin = (function () {
                 for (var key in dictionary) {
                     var skinAttachment = dictionary[key];
                     if (slotAttachment == skinAttachment) {
-                        var attachment = this.getAttachment(slotIndex, key);
+                        var attachment = this.getAttachment(slotIndex, name);
                         if (attachment != null)
                             slot.setAttachment(attachment);
                         break;

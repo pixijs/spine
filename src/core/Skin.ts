@@ -66,7 +66,7 @@ export class Skin {
                 for (let key in dictionary) {
                     let skinAttachment:Attachment = dictionary[key];
                     if (slotAttachment == skinAttachment) {
-                        let attachment = this.getAttachment(slotIndex, key);
+                        let attachment = this.getAttachment(slotIndex, name);
                         if (attachment != null) slot.setAttachment(attachment);
                         break;
                     }
