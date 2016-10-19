@@ -746,12 +746,13 @@ export class SkeletonJson {
     }
 
     static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean) {
+        console.log("Deprecation Warning: re-export your model with spine 3.5, or downgrade to pixi-spine 1.1 branch. There were many breaking changes, place breakpoint here if you want to know which model is broken");
         if (inheritRotation && inheritScale) {
             return TransformMode.Normal;
         } else if (inheritRotation) {
-            return TransformMode.InheritRotation;
+            return TransformMode.NoScaleOrReflection;
         } else if (inheritScale) {
-            return TransformMode.InheritScale;
+            return TransformMode.NoRotationOrReflection;
         } else {
             return TransformMode.OnlyTranslation;
         }

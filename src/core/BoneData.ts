@@ -47,5 +47,5 @@ export class BoneData {
 }
 
 export enum TransformMode {
-    Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection, InheritRotation, InheritScale
+    Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection
 }

@@ -1,6 +1,6 @@
 /*!
  * pixi-spine - v1.2.0
- * Compiled Wed Oct 19 2016 21:49:57 GMT+0300 (RTZ 2 (зима))
+ * Compiled Wed Oct 19 2016 21:56:10 GMT+0300 (RTZ 2 (зима))
  *
  * pixi-spine is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -1541,74 +1541,6 @@ var Bone = (function () {
                 }
                 return;
             }
-            case BoneData_1.TransformMode.InheritRotation: {
-                var rotationY = rotation + 90 + shearY;
-                var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
-                var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
-                var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
-                var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
-                pa = 1;
-                pb = 0;
-                pc = 0;
-                pd = 1;
-                do {
-                    var cos = Utils_1.MathUtils.cosDeg(parent.arotation), sin = Utils_1.MathUtils.sinDeg(parent.arotation);
-                    var temp = pa * cos + pb * sin;
-                    pb = pb * cos - pa * sin;
-                    pa = temp;
-                    temp = pc * cos + pd * sin;
-                    pd = pd * cos - pc * sin;
-                    pc = temp;
-                    if (parent.data.transformMode === BoneData_1.TransformMode.InheritScale ||
-                        parent.data.transformMode === BoneData_1.TransformMode.OnlyTranslation)
-                        break;
-                    parent = parent.parent;
-                } while (parent != null);
-                m.a = pa * la + pb * lc;
-                m.c = pa * lb + pb * ld;
-                m.b = pc * la + pd * lc;
-                m.d = pc * lb + pd * ld;
-                break;
-            }
-            case BoneData_1.TransformMode.InheritScale: {
-                var rotationY = rotation + 90 + shearY;
-                var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
-                var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
-                var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
-                var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
-                pa = 1;
-                pb = 0;
-                pc = 0;
-                pd = 1;
-                do {
-                    var cos = Utils_1.MathUtils.cosDeg(parent.arotation), sin = Utils_1.MathUtils.sinDeg(parent.arotation);
-                    var psx = parent.scaleX, psy = parent.scaleY;
-                    var za = cos * psx, zb = sin * psy, zc = sin * psx, zd = cos * psy;
-                    var temp = pa * za + pb * zc;
-                    pb = pb * zd - pa * zb;
-                    pa = temp;
-                    temp = pc * za + pd * zc;
-                    pd = pd * zd - pc * zb;
-                    pc = temp;
-                    if (psx >= 0)
-                        sin = -sin;
-                    temp = pa * cos + pb * sin;
-                    pb = pb * cos - pa * sin;
-                    pa = temp;
-                    temp = pc * cos + pd * sin;
-                    pd = pd * cos - pc * sin;
-                    pc = temp;
-                    if (parent.data.transformMode === BoneData_1.TransformMode.InheritRotation ||
-                        parent.data.transformMode === BoneData_1.TransformMode.OnlyTranslation)
-                        break;
-                    parent = parent.parent;
-                } while (parent != null);
-                m.a = pa * la + pb * lc;
-                m.c = pa * lb + pb * ld;
-                m.b = pc * la + pd * lc;
-                m.d = pc * lb + pd * ld;
-                break;
-            }
         }
         if (this.skeleton.flipX) {
             m.a = -m.a;
@@ -1758,8 +1690,6 @@ exports.BoneData = BoneData;
     TransformMode[TransformMode["NoRotationOrReflection"] = 2] = "NoRotationOrReflection";
     TransformMode[TransformMode["NoScale"] = 3] = "NoScale";
     TransformMode[TransformMode["NoScaleOrReflection"] = 4] = "NoScaleOrReflection";
-    TransformMode[TransformMode["InheritRotation"] = 5] = "InheritRotation";
-    TransformMode[TransformMode["InheritScale"] = 6] = "InheritScale";
 })(exports.TransformMode || (exports.TransformMode = {}));
 var TransformMode = exports.TransformMode;
 },{}],9:[function(require,module,exports){
@@ -3760,14 +3690,15 @@ var SkeletonJson = (function () {
         throw new Error("Unknown transform mode: " + str);
     };
     SkeletonJson.transformModeLegacy = function (inheritRotation, inheritScale) {
+        console.log("Deprecation Warning: re-export your model with spine 3.5, or downgrade to pixi-spine 1.1 branch. There were many breaking changes, place breakpoint here if you want to know which model is broken");
         if (inheritRotation && inheritScale) {
             return BoneData_1.TransformMode.Normal;
         }
         else if (inheritRotation) {
-            return BoneData_1.TransformMode.InheritRotation;
+            return BoneData_1.TransformMode.NoScaleOrReflection;
         }
         else if (inheritScale) {
-            return BoneData_1.TransformMode.InheritScale;
+            return BoneData_1.TransformMode.NoRotationOrReflection;
         }
         else {
             return BoneData_1.TransformMode.OnlyTranslation;
