@@ -1,6 +1,6 @@
 /*!
- * pixi-spine - v1.1.3
- * Compiled Fri Oct 07 2016 01:10:27 GMT+0300 (RTZ 2 (зима))
+ * pixi-spine - v1.2.0
+ * Compiled Wed Oct 19 2016 21:49:57 GMT+0300 (RTZ 2 (зима))
  *
  * pixi-spine is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -175,14 +175,10 @@ var Spine = (function (_super) {
                         }
                     }
                     slot.bone.matrix.copy(lt_1);
-                    lt_1.tx += slot.bone.skeleton.x;
-                    lt_1.ty += slot.bone.skeleton.y;
                 }
                 else {
                     var lt = slotContainer.localTransform || new PIXI.Matrix();
                     slot.bone.matrix.copy(lt);
-                    lt.tx += slot.bone.skeleton.x;
-                    lt.ty += slot.bone.skeleton.y;
                     slotContainer.localTransform = lt;
                     slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                 }
@@ -1338,6 +1334,38 @@ var AnimationStateData = (function () {
 exports.AnimationStateData = AnimationStateData;
 },{}],5:[function(require,module,exports){
 "use strict";
+var attachments_1 = require("./attachments");
+var AtlasAttachmentLoader = (function () {
+    function AtlasAttachmentLoader(atlas) {
+        this.atlas = atlas;
+    }
+    AtlasAttachmentLoader.prototype.newRegionAttachment = function (skin, name, path) {
+        var region = this.atlas.findRegion(path);
+        if (region == null)
+            throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
+        var attachment = new attachments_1.RegionAttachment(name);
+        attachment.region = region;
+        return attachment;
+    };
+    AtlasAttachmentLoader.prototype.newMeshAttachment = function (skin, name, path) {
+        var region = this.atlas.findRegion(path);
+        if (region == null)
+            throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
+        var attachment = new attachments_1.MeshAttachment(name);
+        attachment.region = region;
+        return attachment;
+    };
+    AtlasAttachmentLoader.prototype.newBoundingBoxAttachment = function (skin, name) {
+        return new attachments_1.BoundingBoxAttachment(name);
+    };
+    AtlasAttachmentLoader.prototype.newPathAttachment = function (skin, name) {
+        return new attachments_1.PathAttachment(name);
+    };
+    return AtlasAttachmentLoader;
+}());
+exports.AtlasAttachmentLoader = AtlasAttachmentLoader;
+},{"./attachments":33}],6:[function(require,module,exports){
+"use strict";
 (function (BlendMode) {
     BlendMode[BlendMode["Normal"] = 0] = "Normal";
     BlendMode[BlendMode["Additive"] = 1] = "Additive";
@@ -1345,8 +1373,9 @@ exports.AnimationStateData = AnimationStateData;
     BlendMode[BlendMode["Screen"] = 3] = "Screen";
 })(exports.BlendMode || (exports.BlendMode = {}));
 var BlendMode = exports.BlendMode;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
+var BoneData_1 = require("./BoneData");
 var Utils_1 = require("./Utils");
 var Bone = (function () {
     function Bone(data, skeleton, parent) {
@@ -1359,9 +1388,14 @@ var Bone = (function () {
         this.scaleY = 0;
         this.shearX = 0;
         this.shearY = 0;
-        this.appliedRotation = 0;
-        this.worldSignX = 0;
-        this.worldSignY = 0;
+        this.ax = 0;
+        this.ay = 0;
+        this.arotation = 0;
+        this.ascaleX = 0;
+        this.ascaleY = 0;
+        this.ashearX = 0;
+        this.ashearY = 0;
+        this.appliedValid = false;
         this.sorted = false;
         if (data == null)
             throw new Error("data cannot be null.");
@@ -1393,13 +1427,22 @@ var Bone = (function () {
         this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
     };
     Bone.prototype.updateWorldTransformWith = function (x, y, rotation, scaleX, scaleY, shearX, shearY) {
-        this.appliedRotation = rotation;
-        var rotationY = rotation + 90 + shearY;
-        var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX, lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
-        var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX, ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
+        this.ax = x;
+        this.ay = y;
+        this.arotation = rotation;
+        this.ascaleX = scaleX;
+        this.ascaleY = scaleY;
+        this.ashearX = shearX;
+        this.ashearY = shearY;
+        this.appliedValid = true;
         var parent = this.parent;
         var m = this.matrix;
         if (parent == null) {
+            var rotationY = rotation + 90 + shearY;
+            var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
+            var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
+            var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
+            var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
             var skeleton = this.skeleton;
             if (skeleton.flipX) {
                 x = -x;
@@ -1415,38 +1458,109 @@ var Bone = (function () {
             m.c = lb;
             m.b = lc;
             m.d = ld;
-            m.tx = x;
-            m.ty = y;
-            this.worldSignX = Utils_1.MathUtils.signum(scaleX);
-            this.worldSignY = Utils_1.MathUtils.signum(scaleY);
+            m.tx = x + skeleton.x;
+            m.ty = y + skeleton.y;
             return;
         }
         var pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
         m.tx = pa * x + pb * y + parent.matrix.tx;
         m.ty = pc * x + pd * y + parent.matrix.ty;
-        this.worldSignX = parent.worldSignX * Utils_1.MathUtils.signum(scaleX);
-        this.worldSignY = parent.worldSignY * Utils_1.MathUtils.signum(scaleY);
-        if (this.data.inheritRotation && this.data.inheritScale) {
-            m.a = pa * la + pb * lc;
-            m.c = pa * lb + pb * ld;
-            m.b = pc * la + pd * lc;
-            m.d = pc * lb + pd * ld;
-        }
-        else {
-            if (this.data.inheritRotation) {
+        switch (this.data.transformMode) {
+            case BoneData_1.TransformMode.Normal: {
+                var rotationY = rotation + 90 + shearY;
+                var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
+                var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
+                var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
+                var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+                return;
+            }
+            case BoneData_1.TransformMode.OnlyTranslation: {
+                var rotationY = rotation + 90 + shearY;
+                m.a = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
+                m.c = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
+                m.b = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
+                m.d = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
+                break;
+            }
+            case BoneData_1.TransformMode.NoRotationOrReflection: {
+                var s = pa * pa + pc * pc;
+                var prx = 0;
+                if (s > 0.0001) {
+                    s = Math.abs(pa * pd - pb * pc) / s;
+                    pb = pc * s;
+                    pd = pa * s;
+                    prx = Math.atan2(pc, pa) * Utils_1.MathUtils.radDeg;
+                }
+                else {
+                    pa = 0;
+                    pc = 0;
+                    prx = 90 - Math.atan2(pd, pb) * Utils_1.MathUtils.radDeg;
+                }
+                var rx = rotation + shearX - prx;
+                var ry = rotation + shearY - prx + 90;
+                var la = Utils_1.MathUtils.cosDeg(rx) * scaleX;
+                var lb = Utils_1.MathUtils.cosDeg(ry) * scaleY;
+                var lc = Utils_1.MathUtils.sinDeg(rx) * scaleX;
+                var ld = Utils_1.MathUtils.sinDeg(ry) * scaleY;
+                m.a = pa * la - pb * lc;
+                m.c = pa * lb - pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+                break;
+            }
+            case BoneData_1.TransformMode.NoScale:
+            case BoneData_1.TransformMode.NoScaleOrReflection: {
+                var cos = Utils_1.MathUtils.cosDeg(rotation);
+                var sin = Utils_1.MathUtils.sinDeg(rotation);
+                var za = pa * cos + pb * sin;
+                var zc = pc * cos + pd * sin;
+                var s = Math.sqrt(za * za + zc * zc);
+                if (s > 0.00001)
+                    s = 1 / s;
+                za *= s;
+                zc *= s;
+                s = Math.sqrt(za * za + zc * zc);
+                var r = Math.PI / 2 + Math.atan2(zc, za);
+                var zb = Math.cos(r) * s;
+                var zd = Math.sin(r) * s;
+                var la = Utils_1.MathUtils.cosDeg(shearX) * scaleX;
+                var lb = Utils_1.MathUtils.cosDeg(90 + shearY) * scaleY;
+                var lc = Utils_1.MathUtils.sinDeg(shearX) * scaleX;
+                var ld = Utils_1.MathUtils.sinDeg(90 + shearY) * scaleY;
+                m.a = za * la + zb * lc;
+                m.c = za * lb + zb * ld;
+                m.b = zc * la + zd * lc;
+                m.d = zc * lb + zd * ld;
+                if (this.data.transformMode != BoneData_1.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : (this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown) {
+                    m.b = -m.b;
+                    m.d = -m.d;
+                }
+                return;
+            }
+            case BoneData_1.TransformMode.InheritRotation: {
+                var rotationY = rotation + 90 + shearY;
+                var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
+                var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
+                var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
+                var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
                 pa = 1;
                 pb = 0;
                 pc = 0;
                 pd = 1;
                 do {
-                    var cos = Utils_1.MathUtils.cosDeg(parent.appliedRotation), sin = Utils_1.MathUtils.sinDeg(parent.appliedRotation);
+                    var cos = Utils_1.MathUtils.cosDeg(parent.arotation), sin = Utils_1.MathUtils.sinDeg(parent.arotation);
                     var temp = pa * cos + pb * sin;
                     pb = pb * cos - pa * sin;
                     pa = temp;
                     temp = pc * cos + pd * sin;
                     pd = pd * cos - pc * sin;
                     pc = temp;
-                    if (!parent.data.inheritRotation)
+                    if (parent.data.transformMode === BoneData_1.TransformMode.InheritScale ||
+                        parent.data.transformMode === BoneData_1.TransformMode.OnlyTranslation)
                         break;
                     parent = parent.parent;
                 } while (parent != null);
@@ -1454,14 +1568,20 @@ var Bone = (function () {
                 m.c = pa * lb + pb * ld;
                 m.b = pc * la + pd * lc;
                 m.d = pc * lb + pd * ld;
+                break;
             }
-            else if (this.data.inheritScale) {
+            case BoneData_1.TransformMode.InheritScale: {
+                var rotationY = rotation + 90 + shearY;
+                var la = Utils_1.MathUtils.cosDeg(rotation + shearX) * scaleX;
+                var lb = Utils_1.MathUtils.cosDeg(rotationY) * scaleY;
+                var lc = Utils_1.MathUtils.sinDeg(rotation + shearX) * scaleX;
+                var ld = Utils_1.MathUtils.sinDeg(rotationY) * scaleY;
                 pa = 1;
                 pb = 0;
                 pc = 0;
                 pd = 1;
                 do {
-                    var cos = Utils_1.MathUtils.cosDeg(parent.appliedRotation), sin = Utils_1.MathUtils.sinDeg(parent.appliedRotation);
+                    var cos = Utils_1.MathUtils.cosDeg(parent.arotation), sin = Utils_1.MathUtils.sinDeg(parent.arotation);
                     var psx = parent.scaleX, psy = parent.scaleY;
                     var za = cos * psx, zb = sin * psy, zc = sin * psx, zd = cos * psy;
                     var temp = pa * za + pb * zc;
@@ -1478,7 +1598,8 @@ var Bone = (function () {
                     temp = pc * cos + pd * sin;
                     pd = pd * cos - pc * sin;
                     pc = temp;
-                    if (!parent.data.inheritScale)
+                    if (parent.data.transformMode === BoneData_1.TransformMode.InheritRotation ||
+                        parent.data.transformMode === BoneData_1.TransformMode.OnlyTranslation)
                         break;
                     parent = parent.parent;
                 } while (parent != null);
@@ -1486,21 +1607,16 @@ var Bone = (function () {
                 m.c = pa * lb + pb * ld;
                 m.b = pc * la + pd * lc;
                 m.d = pc * lb + pd * ld;
+                break;
             }
-            else {
-                m.a = la;
-                m.c = lb;
-                m.b = lc;
-                m.d = ld;
-            }
-            if (this.skeleton.flipX) {
-                m.a = -m.a;
-                m.c = -m.c;
-            }
-            if (this.skeleton.flipY !== Bone.yDown) {
-                m.b = -m.b;
-                m.d = -m.d;
-            }
+        }
+        if (this.skeleton.flipX) {
+            m.a = -m.a;
+            m.c = -m.c;
+        }
+        if (this.skeleton.flipY != Bone.yDown) {
+            m.b = -m.b;
+            m.d = -m.d;
         }
     };
     Bone.prototype.setToSetupPose = function () {
@@ -1520,26 +1636,26 @@ var Bone = (function () {
         return Math.atan2(this.matrix.d, this.matrix.c) * Utils_1.MathUtils.radDeg;
     };
     Bone.prototype.getWorldScaleX = function () {
-        return Math.sqrt(this.matrix.a * this.matrix.a + this.matrix.b * this.matrix.b) * this.worldSignX;
+        var m = this.matrix;
+        return Math.sqrt(m.a * m.a + m.c * m.c);
     };
     Bone.prototype.getWorldScaleY = function () {
-        return Math.sqrt(this.matrix.c * this.matrix.c + this.matrix.d * this.matrix.d) * this.worldSignY;
+        var m = this.matrix;
+        return Math.sqrt(m.b * m.b + m.d * m.d);
     };
     Bone.prototype.worldToLocalRotationX = function () {
         var parent = this.parent;
         if (parent == null)
-            return this.rotation;
-        var pm = parent.matrix;
-        var pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d, a = this.matrix.a, c = this.matrix.b;
-        return Math.atan2(pa * c - pc * a, pd * a - pb * c) * Utils_1.MathUtils.radDeg;
+            return this.arotation;
+        var pm = parent.matrix, m = this.matrix;
+        return Math.atan2(pm.a * m.b - pm.b * m.a, pm.d * m.a - pm.c * m.b) * Utils_1.MathUtils.radDeg;
     };
     Bone.prototype.worldToLocalRotationY = function () {
         var parent = this.parent;
         if (parent == null)
-            return this.rotation;
-        var pm = parent.matrix;
-        var pa = pm.a, pb = pm.b, pc = pm.c, pd = pm.d, b = this.matrix.c, d = this.matrix.d;
-        return Math.atan2(pa * d - pc * b, pd * b - pb * d) * Utils_1.MathUtils.radDeg;
+            return this.arotation;
+        var pm = parent.matrix, m = this.matrix;
+        return Math.atan2(pm.a * m.d - pm.b * m.c, pm.d * m.c - pm.c * m.d) * Utils_1.MathUtils.radDeg;
     };
     Bone.prototype.rotateWorld = function (degrees) {
         var m = this.matrix;
@@ -1549,50 +1665,49 @@ var Bone = (function () {
         m.c = cos * b - sin * d;
         m.b = sin * a + cos * c;
         m.d = sin * b + cos * d;
+        this.appliedValid = false;
     };
-    Bone.prototype.updateLocalTransform = function () {
+    Bone.prototype.updateAppliedTransform = function () {
+        this.appliedValid = true;
         var parent = this.parent;
         var m = this.matrix;
         if (parent == null) {
-            this.x = m.tx;
-            this.y = m.ty;
-            this.rotation = Math.atan2(m.b, m.a) * Utils_1.MathUtils.radDeg;
-            this.scaleX = Math.sqrt(m.a * m.a + m.b * m.b);
-            this.scaleY = Math.sqrt(m.c * m.c + m.d * m.d);
-            var det = m.a * m.d - m.b * m.c;
-            this.shearX = 0;
-            this.shearY = Math.atan2(m.a * m.c + m.b * m.d, det) * Utils_1.MathUtils.radDeg;
+            this.ax = m.tx;
+            this.ay = m.ty;
+            this.arotation = Math.atan2(m.b, m.a) * Utils_1.MathUtils.radDeg;
+            this.ascaleX = Math.sqrt(m.a * m.a + m.b * m.b);
+            this.ascaleY = Math.sqrt(m.c * m.c + m.d * m.d);
+            this.ashearX = 0;
+            this.ashearY = Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) * Utils_1.MathUtils.radDeg;
             return;
         }
         var pm = parent.matrix;
-        var pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d;
-        var pid = 1 / (pa * pd - pb * pc);
+        var pid = 1 / (pm.a * pm.d - pm.b * pm.c);
         var dx = m.tx - pm.tx, dy = m.ty - pm.ty;
-        this.x = (dx * pd * pid - dy * pb * pid);
-        this.y = (dy * pa * pid - dx * pc * pid);
-        var ia = pid * pd;
-        var id = pid * pa;
-        var ib = pid * pb;
-        var ic = pid * pc;
+        this.ax = (dx * pm.d * pid - dy * pm.c * pid);
+        this.ay = (dy * pm.a * pid - dx * pm.b * pid);
+        var ia = pid * pm.d;
+        var id = pid * pm.a;
+        var ib = pid * pm.c;
+        var ic = pid * pm.b;
         var ra = ia * m.a - ib * m.b;
         var rb = ia * m.c - ib * m.d;
         var rc = id * m.b - ic * m.a;
         var rd = id * m.d - ic * m.c;
-        this.shearX = 0;
-        this.scaleX = Math.sqrt(ra * ra + rc * rc);
-        if (this.scaleX > 0.0001) {
+        this.ashearX = 0;
+        this.ascaleX = Math.sqrt(ra * ra + rc * rc);
+        if (this.ascaleX > 0.0001) {
             var det = ra * rd - rb * rc;
-            this.scaleY = det / this.scaleX;
-            this.shearY = Math.atan2(ra * rb + rc * rd, det) * Utils_1.MathUtils.radDeg;
-            this.rotation = Math.atan2(rc, ra) * Utils_1.MathUtils.radDeg;
+            this.ascaleY = det / this.ascaleX;
+            this.ashearY = Math.atan2(ra * rb + rc * rd, det) * Utils_1.MathUtils.radDeg;
+            this.arotation = Math.atan2(rc, ra) * Utils_1.MathUtils.radDeg;
         }
         else {
-            this.scaleX = 0;
-            this.scaleY = Math.sqrt(rb * rb + rd * rd);
-            this.shearY = 0;
-            this.rotation = 90 - Math.atan2(rd, rb) * Utils_1.MathUtils.radDeg;
+            this.ascaleX = 0;
+            this.ascaleY = Math.sqrt(rb * rb + rd * rd);
+            this.ashearY = 0;
+            this.arotation = 90 - Math.atan2(rd, rb) * Utils_1.MathUtils.radDeg;
         }
-        this.appliedRotation = this.rotation;
     };
     Bone.prototype.worldToLocal = function (world) {
         var m = this.matrix;
@@ -1614,7 +1729,7 @@ var Bone = (function () {
     return Bone;
 }());
 exports.Bone = Bone;
-},{"./Utils":26}],7:[function(require,module,exports){
+},{"./BoneData":8,"./Utils":26}],8:[function(require,module,exports){
 "use strict";
 var BoneData = (function () {
     function BoneData(index, name, parent) {
@@ -1625,8 +1740,7 @@ var BoneData = (function () {
         this.scaleY = 1;
         this.shearX = 0;
         this.shearY = 0;
-        this.inheritRotation = true;
-        this.inheritScale = true;
+        this.transformMode = TransformMode.Normal;
         if (index < 0)
             throw new Error("index must be >= 0.");
         if (name == null)
@@ -1638,7 +1752,17 @@ var BoneData = (function () {
     return BoneData;
 }());
 exports.BoneData = BoneData;
-},{}],8:[function(require,module,exports){
+(function (TransformMode) {
+    TransformMode[TransformMode["Normal"] = 0] = "Normal";
+    TransformMode[TransformMode["OnlyTranslation"] = 1] = "OnlyTranslation";
+    TransformMode[TransformMode["NoRotationOrReflection"] = 2] = "NoRotationOrReflection";
+    TransformMode[TransformMode["NoScale"] = 3] = "NoScale";
+    TransformMode[TransformMode["NoScaleOrReflection"] = 4] = "NoScaleOrReflection";
+    TransformMode[TransformMode["InheritRotation"] = 5] = "InheritRotation";
+    TransformMode[TransformMode["InheritScale"] = 6] = "InheritScale";
+})(exports.TransformMode || (exports.TransformMode = {}));
+var TransformMode = exports.TransformMode;
+},{}],9:[function(require,module,exports){
 "use strict";
 var Event = (function () {
     function Event(time, data) {
@@ -1650,7 +1774,7 @@ var Event = (function () {
     return Event;
 }());
 exports.Event = Event;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 var EventData = (function () {
     function EventData(name) {
@@ -1659,7 +1783,7 @@ var EventData = (function () {
     return EventData;
 }());
 exports.EventData = EventData;
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 var Utils_1 = require("./Utils");
 var IkConstraint = (function () {
@@ -1679,6 +1803,9 @@ var IkConstraint = (function () {
             this.bones.push(skeleton.findBone(data.bones[i].name));
         this.target = skeleton.findBone(data.target.name);
     }
+    IkConstraint.prototype.getOrder = function () {
+        return this.data.order;
+    };
     IkConstraint.prototype.apply = function () {
         this.update();
     };
@@ -1695,25 +1822,31 @@ var IkConstraint = (function () {
         }
     };
     IkConstraint.prototype.apply1 = function (bone, targetX, targetY, alpha) {
+        if (!bone.appliedValid)
+            bone.updateAppliedTransform();
         var pp = bone.parent.matrix;
         var id = 1 / (pp.a * pp.d - pp.b * pp.c);
         var x = targetX - pp.tx, y = targetY - pp.ty;
-        var tx = (x * pp.d - y * pp.c) * id - bone.x, ty = (y * pp.a - x * pp.b) * id - bone.y;
-        var rotationIK = Math.atan2(ty, tx) * Utils_1.MathUtils.radDeg - bone.shearX - bone.rotation;
-        if (bone.scaleX < 0)
+        var tx = (x * pp.d - y * pp.c) * id - bone.ax, ty = (y * pp.a - x * pp.b) * id - bone.ay;
+        var rotationIK = Math.atan2(ty, tx) * Utils_1.MathUtils.radDeg - bone.ashearX - bone.arotation;
+        if (bone.ascaleX < 0)
             rotationIK += 180;
         if (rotationIK > 180)
             rotationIK -= 360;
         else if (rotationIK < -180)
             rotationIK += 360;
-        bone.updateWorldTransformWith(bone.x, bone.y, bone.rotation + rotationIK * alpha, bone.scaleX, bone.scaleY, bone.shearX, bone.shearY);
+        bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, bone.ascaleX, bone.ascaleY, bone.ashearX, bone.ashearY);
     };
     IkConstraint.prototype.apply2 = function (parent, child, targetX, targetY, bendDir, alpha) {
         if (alpha == 0) {
             child.updateWorldTransform();
             return;
         }
-        var px = parent.x, py = parent.y, psx = parent.scaleX, psy = parent.scaleY, csx = child.scaleX;
+        if (!parent.appliedValid)
+            parent.updateAppliedTransform();
+        if (!child.appliedValid)
+            child.updateAppliedTransform();
+        var px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
         var os1 = 0, os2 = 0, s2 = 0;
         if (psx < 0) {
             psx = -psx;
@@ -1735,7 +1868,7 @@ var IkConstraint = (function () {
         else
             os2 = 0;
         var pm = parent.matrix;
-        var cx = child.x, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
+        var cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
         var u = Math.abs(psx - psy) <= 0.0001;
         if (!u) {
             cy = 0;
@@ -1743,7 +1876,7 @@ var IkConstraint = (function () {
             cwy = c * cx + pm.ty;
         }
         else {
-            cy = child.y;
+            cy = child.ay;
             cwx = a * cx + b * cy + pm.tx;
             cwy = c * cx + d * cy + pm.ty;
         }
@@ -1834,28 +1967,29 @@ var IkConstraint = (function () {
             }
         }
         var os = Math.atan2(cy, cx) * s2;
-        var rotation = parent.rotation;
+        var rotation = parent.arotation;
         a1 = (a1 - os) * Utils_1.MathUtils.radDeg + os1 - rotation;
         if (a1 > 180)
             a1 -= 360;
         else if (a1 < -180)
             a1 += 360;
-        parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.scaleX, parent.scaleY, 0, 0);
-        rotation = child.rotation;
-        a2 = ((a2 + os) * Utils_1.MathUtils.radDeg - child.shearX) * s2 + os2 - rotation;
+        parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.ascaleX, parent.ascaleY, 0, 0);
+        rotation = child.arotation;
+        a2 = ((a2 + os) * Utils_1.MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
         if (a2 > 180)
             a2 -= 360;
         else if (a2 < -180)
             a2 += 360;
-        child.updateWorldTransformWith(cx, cy, rotation + a2 * alpha, child.scaleX, child.scaleY, child.shearX, child.shearY);
+        child.updateWorldTransformWith(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
     };
     return IkConstraint;
 }());
 exports.IkConstraint = IkConstraint;
-},{"./Utils":26}],11:[function(require,module,exports){
+},{"./Utils":26}],12:[function(require,module,exports){
 "use strict";
 var IkConstraintData = (function () {
     function IkConstraintData(name) {
+        this.order = 0;
         this.bones = new Array();
         this.bendDirection = 1;
         this.mix = 1;
@@ -1864,7 +1998,7 @@ var IkConstraintData = (function () {
     return IkConstraintData;
 }());
 exports.IkConstraintData = IkConstraintData;
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 var PathConstraintData_1 = require("./PathConstraintData");
 var attachments_1 = require("./attachments");
@@ -1933,15 +2067,13 @@ var PathConstraint = (function () {
                 spaces[i] = spacing;
         }
         var positions = this.computeWorldPositions(attachment, spacesCount, tangents, data.positionMode == PathConstraintData_1.PositionMode.Percent, spacingMode == PathConstraintData_1.SpacingMode.Percent);
-        var skeleton = this.target.bone.skeleton;
-        var skeletonX = skeleton.x, skeletonY = skeleton.y;
         var boneX = positions[0], boneY = positions[1], offsetRotation = data.offsetRotation;
         var tip = rotateMode == PathConstraintData_1.RotateMode.Chain && offsetRotation == 0;
         for (var i = 0, p = 3; i < boneCount; i++, p += 3) {
             var bone = bones[i];
             var m = bone.matrix;
-            m.tx += (boneX - skeletonX - bone.worldX) * translateMix;
-            m.ty += (boneY - skeletonY - bone.worldY) * translateMix;
+            m.tx += (boneX - m.tx) * translateMix;
+            m.ty += (boneY - m.ty) * translateMix;
             var x = positions[p], y = positions[p + 1], dx = x - boneX, dy = y - boneY;
             if (scale) {
                 var length_2 = lengths[i];
@@ -1981,6 +2113,7 @@ var PathConstraint = (function () {
                 m.b = sin * a + cos * c;
                 m.d = sin * b + cos * d;
             }
+            bone.appliedValid = false;
         }
     };
     PathConstraint.prototype.computeWorldPositions = function (path, spacesCount, tangents, percentPosition, percentSpacing) {
@@ -2207,7 +2340,7 @@ var PathConstraint = (function () {
         out[o + 2] = r;
     };
     PathConstraint.prototype.addCurvePosition = function (p, x1, y1, cx1, cy1, cx2, cy2, x2, y2, out, o, tangents) {
-        if (p == 0)
+        if (p == 0 || isNaN(p))
             p = 0.0001;
         var tt = p * p, ttt = tt * p, u = 1 - p, uu = u * u, uuu = uu * u;
         var ut = u * p, ut3 = ut * 3, uut3 = u * ut3, utt3 = ut3 * p;
@@ -2217,16 +2350,20 @@ var PathConstraint = (function () {
         if (tangents)
             out[o + 2] = Math.atan2(y - (y1 * uu + cy1 * ut * 2 + cy2 * tt), x - (x1 * uu + cx1 * ut * 2 + cx2 * tt));
     };
+    PathConstraint.prototype.getOrder = function () {
+        return this.data.order;
+    };
     PathConstraint.NONE = -1;
     PathConstraint.BEFORE = -2;
     PathConstraint.AFTER = -3;
     return PathConstraint;
 }());
 exports.PathConstraint = PathConstraint;
-},{"./PathConstraintData":13,"./Utils":26,"./attachments":33}],13:[function(require,module,exports){
+},{"./PathConstraintData":14,"./Utils":26,"./attachments":33}],14:[function(require,module,exports){
 "use strict";
 var PathConstraintData = (function () {
     function PathConstraintData(name) {
+        this.order = 0;
         this.bones = new Array();
         this.name = name;
     }
@@ -2250,7 +2387,7 @@ var SpacingMode = exports.SpacingMode;
     RotateMode[RotateMode["ChainScale"] = 2] = "ChainScale";
 })(exports.RotateMode || (exports.RotateMode = {}));
 var RotateMode = exports.RotateMode;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 var Slot_1 = require("./Slot");
 var Bone_1 = require("./Bone");
@@ -2262,6 +2399,7 @@ var attachments_1 = require("./attachments");
 var Skeleton = (function () {
     function Skeleton(data) {
         this._updateCache = new Array();
+        this.updateCacheReset = new Array();
         this.time = 0;
         this.flipX = false;
         this.flipY = false;
@@ -2293,7 +2431,6 @@ var Skeleton = (function () {
             this.drawOrder.push(slot);
         }
         this.ikConstraints = new Array();
-        this.ikConstraintsSorted = new Array();
         for (var i = 0; i < data.ikConstraints.length; i++) {
             var ikConstraintData = data.ikConstraints[i];
             this.ikConstraints.push(new IkConstraint_1.IkConstraint(ikConstraintData, this));
@@ -2317,81 +2454,86 @@ var Skeleton = (function () {
         var bones = this.bones;
         for (var i = 0, n = bones.length; i < n; i++)
             bones[i].sorted = false;
-        var ikConstraints = this.ikConstraintsSorted;
-        ikConstraints.length = 0;
-        for (var i = 0; i < this.ikConstraints.length; i++)
-            ikConstraints.push(this.ikConstraints[i]);
-        var ikCount = ikConstraints.length;
-        for (var i = 0, level = 0, n = ikCount; i < n; i++) {
-            var ik = ikConstraints[i];
-            var bone = ik.bones[0].parent;
-            for (level = 0; bone != null; level++)
-                bone = bone.parent;
-            ik.level = level;
-        }
-        for (var i = 1, ii = 0; i < ikCount; i++) {
-            var ik = ikConstraints[i];
-            var level = ik.level;
-            for (ii = i - 1; ii >= 0; ii--) {
-                var other = ikConstraints[ii];
-                if (other.level < level)
-                    break;
-                ikConstraints[ii + 1] = other;
-            }
-            ikConstraints[ii + 1] = ik;
-        }
-        for (var i = 0, n = ikConstraints.length; i < n; i++) {
-            var constraint = ikConstraints[i];
-            var target = constraint.target;
-            this.sortBone(target);
-            var constrained = constraint.bones;
-            var parent_2 = constrained[0];
-            this.sortBone(parent_2);
-            updateCache.push(constraint);
-            this.sortReset(parent_2.children);
-            constrained[constrained.length - 1].sorted = true;
-        }
-        var pathConstraints = this.pathConstraints;
-        for (var i = 0, n = pathConstraints.length; i < n; i++) {
-            var constraint = pathConstraints[i];
-            var slot = constraint.target;
-            var slotIndex = slot.data.index;
-            var slotBone = slot.bone;
-            if (this.skin != null)
-                this.sortPathConstraintAttachment(this.skin, slotIndex, slotBone);
-            if (this.data.defaultSkin != null && this.data.defaultSkin != this.skin)
-                this.sortPathConstraintAttachment(this.data.defaultSkin, slotIndex, slotBone);
-            for (var ii = 0, nn = this.data.skins.length; ii < nn; ii++)
-                this.sortPathConstraintAttachment(this.data.skins[ii], slotIndex, slotBone);
-            var attachment = slot.getAttachment();
-            if (attachment instanceof attachments_1.PathAttachment)
-                this.sortPathConstraintAttachmentWith(attachment, slotBone);
-            var constrained = constraint.bones;
-            var boneCount = constrained.length;
-            for (var ii = 0; ii < boneCount; ii++)
-                this.sortBone(constrained[ii]);
-            updateCache.push(constraint);
-            for (var ii = 0; ii < boneCount; ii++)
-                this.sortReset(constrained[ii].children);
-            for (var ii = 0; ii < boneCount; ii++)
-                constrained[ii].sorted = true;
-        }
+        var ikConstraints = this.ikConstraints;
         var transformConstraints = this.transformConstraints;
-        for (var i = 0, n = transformConstraints.length; i < n; i++) {
-            var constraint = transformConstraints[i];
-            this.sortBone(constraint.target);
-            var constrained = constraint.bones;
-            var boneCount = constrained.length;
-            for (var ii = 0; ii < boneCount; ii++)
-                this.sortBone(constrained[ii]);
-            updateCache.push(constraint);
-            for (var ii = 0; ii < boneCount; ii++)
-                this.sortReset(constrained[ii].children);
-            for (var ii = 0; ii < boneCount; ii++)
-                constrained[ii].sorted = true;
+        var pathConstraints = this.pathConstraints;
+        var ikCount = ikConstraints.length, transformCount = transformConstraints.length, pathCount = pathConstraints.length;
+        var constraintCount = ikCount + transformCount + pathCount;
+        outer: for (var i = 0; i < constraintCount; i++) {
+            for (var ii = 0; ii < ikCount; ii++) {
+                var constraint = ikConstraints[ii];
+                if (constraint.data.order == i) {
+                    this.sortIkConstraint(constraint);
+                    continue outer;
+                }
+            }
+            for (var ii = 0; ii < transformCount; ii++) {
+                var constraint = transformConstraints[ii];
+                if (constraint.data.order == i) {
+                    this.sortTransformConstraint(constraint);
+                    continue outer;
+                }
+            }
+            for (var ii = 0; ii < pathCount; ii++) {
+                var constraint = pathConstraints[ii];
+                if (constraint.data.order == i) {
+                    this.sortPathConstraint(constraint);
+                    continue outer;
+                }
+            }
         }
         for (var i = 0, n = bones.length; i < n; i++)
             this.sortBone(bones[i]);
+    };
+    Skeleton.prototype.sortIkConstraint = function (constraint) {
+        var target = constraint.target;
+        this.sortBone(target);
+        var constrained = constraint.bones;
+        var parent = constrained[0];
+        this.sortBone(parent);
+        if (constrained.length > 1) {
+            var child = constrained[constrained.length - 1];
+            if (!(this._updateCache.indexOf(child) > -1))
+                this.updateCacheReset.push(child);
+        }
+        this._updateCache.push(constraint);
+        this.sortReset(parent.children);
+        constrained[constrained.length - 1].sorted = true;
+    };
+    Skeleton.prototype.sortPathConstraint = function (constraint) {
+        var slot = constraint.target;
+        var slotIndex = slot.data.index;
+        var slotBone = slot.bone;
+        if (this.skin != null)
+            this.sortPathConstraintAttachment(this.skin, slotIndex, slotBone);
+        if (this.data.defaultSkin != null && this.data.defaultSkin != this.skin)
+            this.sortPathConstraintAttachment(this.data.defaultSkin, slotIndex, slotBone);
+        for (var ii = 0, nn = this.data.skins.length; ii < nn; ii++)
+            this.sortPathConstraintAttachment(this.data.skins[ii], slotIndex, slotBone);
+        var attachment = slot.getAttachment();
+        if (attachment instanceof attachments_1.PathAttachment)
+            this.sortPathConstraintAttachmentWith(attachment, slotBone);
+        var constrained = constraint.bones;
+        var boneCount = constrained.length;
+        for (var ii = 0; ii < boneCount; ii++)
+            this.sortBone(constrained[ii]);
+        this._updateCache.push(constraint);
+        for (var ii = 0; ii < boneCount; ii++)
+            this.sortReset(constrained[ii].children);
+        for (var ii = 0; ii < boneCount; ii++)
+            constrained[ii].sorted = true;
+    };
+    Skeleton.prototype.sortTransformConstraint = function (constraint) {
+        this.sortBone(constraint.target);
+        var constrained = constraint.bones;
+        var boneCount = constrained.length;
+        for (var ii = 0; ii < boneCount; ii++)
+            this.sortBone(constrained[ii]);
+        this._updateCache.push(constraint);
+        for (var ii = 0; ii < boneCount; ii++)
+            this.sortReset(constrained[ii].children);
+        for (var ii = 0; ii < boneCount; ii++)
+            constrained[ii].sorted = true;
     };
     Skeleton.prototype.sortPathConstraintAttachment = function (skin, slotIndex, slotBone) {
         var attachments = skin.attachments[slotIndex];
@@ -2409,9 +2551,13 @@ var Skeleton = (function () {
             this.sortBone(slotBone);
         else {
             var bones = this.bones;
-            for (var i = 0; i < pathBones.length; i++) {
-                var boneIndex = pathBones[i];
-                this.sortBone(bones[boneIndex]);
+            var i = 0;
+            while (i < pathBones.length) {
+                var boneCount = pathBones[i++];
+                for (var n = i + boneCount; i < n; i++) {
+                    var boneIndex = pathBones[i];
+                    this.sortBone(bones[boneIndex]);
+                }
             }
         }
     };
@@ -2433,6 +2579,18 @@ var Skeleton = (function () {
         }
     };
     Skeleton.prototype.updateWorldTransform = function () {
+        var updateCacheReset = this.updateCacheReset;
+        for (var i = 0, n = updateCacheReset.length; i < n; i++) {
+            var bone = updateCacheReset[i];
+            bone.ax = bone.x;
+            bone.ay = bone.y;
+            bone.arotation = bone.rotation;
+            bone.ascaleX = bone.scaleX;
+            bone.ascaleY = bone.scaleY;
+            bone.ashearX = bone.shearX;
+            bone.ashearY = bone.shearY;
+            bone.appliedValid = true;
+        }
         var updateCache = this._updateCache;
         for (var i = 0, n = updateCache.length; i < n; i++)
             updateCache[i].update();
@@ -2647,7 +2805,7 @@ var Skeleton = (function () {
     return Skeleton;
 }());
 exports.Skeleton = Skeleton;
-},{"./Bone":6,"./IkConstraint":10,"./PathConstraint":12,"./Slot":19,"./TransformConstraint":24,"./Utils":26,"./attachments":33}],15:[function(require,module,exports){
+},{"./Bone":7,"./IkConstraint":11,"./PathConstraint":13,"./Slot":20,"./TransformConstraint":24,"./Utils":26,"./attachments":33}],16:[function(require,module,exports){
 "use strict";
 var Utils_1 = require("./Utils");
 var attachments_1 = require("./attachments");
@@ -2807,7 +2965,7 @@ var SkeletonBounds = (function () {
     return SkeletonBounds;
 }());
 exports.SkeletonBounds = SkeletonBounds;
-},{"./Utils":26,"./attachments":33}],16:[function(require,module,exports){
+},{"./Utils":26,"./attachments":33}],17:[function(require,module,exports){
 "use strict";
 var SkeletonData = (function () {
     function SkeletonData() {
@@ -2819,6 +2977,7 @@ var SkeletonData = (function () {
         this.ikConstraints = new Array();
         this.transformConstraints = new Array();
         this.pathConstraints = new Array();
+        this.fps = 0;
     }
     SkeletonData.prototype.findBone = function (boneName) {
         if (boneName == null)
@@ -2938,7 +3097,7 @@ var SkeletonData = (function () {
     return SkeletonData;
 }());
 exports.SkeletonData = SkeletonData;
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 var SkeletonData_1 = require("./SkeletonData");
 var BoneData_1 = require("./BoneData");
@@ -2967,6 +3126,7 @@ var SkeletonJson = (function () {
             skeletonData.version = skeletonMap.spine;
             skeletonData.width = skeletonMap.width;
             skeletonData.height = skeletonMap.height;
+            skeletonData.fps = skeletonMap.fps;
             skeletonData.imagesPath = skeletonMap.images;
         }
         if (root.bones) {
@@ -2988,8 +3148,12 @@ var SkeletonJson = (function () {
                 data.scaleY = this.getValue(boneMap, "scaleY", 1);
                 data.shearX = this.getValue(boneMap, "shearX", 0);
                 data.shearY = this.getValue(boneMap, "shearY", 0);
-                data.inheritRotation = this.getValue(boneMap, "inheritRotation", true);
-                data.inheritScale = this.getValue(boneMap, "inheritScale", true);
+                if (boneMap.hasOwnProperty("inheritScale") || boneMap.hasOwnProperty("inheritRotation")) {
+                    data.transformMode = SkeletonJson.transformModeLegacy(this.getValue(boneMap, "inheritRotation", true), this.getValue(boneMap, "inheritScale", true));
+                }
+                else {
+                    data.transformMode = SkeletonJson.transformModeFromString(this.getValue(boneMap, "transform", "normal"));
+                }
                 skeletonData.bones.push(data);
             }
         }
@@ -3014,6 +3178,7 @@ var SkeletonJson = (function () {
             for (var i = 0; i < root.ik.length; i++) {
                 var constraintMap = root.ik[i];
                 var data = new IkConstraintData_1.IkConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
                 for (var j = 0; j < constraintMap.bones.length; j++) {
                     var boneName = constraintMap.bones[j];
                     var bone = skeletonData.findBone(boneName);
@@ -3034,6 +3199,7 @@ var SkeletonJson = (function () {
             for (var i = 0; i < root.transform.length; i++) {
                 var constraintMap = root.transform[i];
                 var data = new TransformConstraintData_1.TransformConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
                 for (var j = 0; j < constraintMap.bones.length; j++) {
                     var boneName = constraintMap.bones[j];
                     var bone = skeletonData.findBone(boneName);
@@ -3062,6 +3228,7 @@ var SkeletonJson = (function () {
             for (var i = 0; i < root.path.length; i++) {
                 var constraintMap = root.path[i];
                 var data = new PathConstraintData_1.PathConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
                 for (var j = 0; j < constraintMap.bones.length; j++) {
                     var boneName = constraintMap.bones[j];
                     var bone = skeletonData.findBone(boneName);
@@ -3578,6 +3745,34 @@ var SkeletonJson = (function () {
             return PathConstraintData_1.RotateMode.ChainScale;
         throw new Error("Unknown rotate mode: " + str);
     };
+    SkeletonJson.transformModeFromString = function (str) {
+        str = str.toLowerCase();
+        if (str == "normal")
+            return BoneData_1.TransformMode.Normal;
+        if (str == "onlytranslation")
+            return BoneData_1.TransformMode.OnlyTranslation;
+        if (str == "norotationorreflection")
+            return BoneData_1.TransformMode.NoRotationOrReflection;
+        if (str == "noscale")
+            return BoneData_1.TransformMode.NoScale;
+        if (str == "noscaleorreflection")
+            return BoneData_1.TransformMode.NoScaleOrReflection;
+        throw new Error("Unknown transform mode: " + str);
+    };
+    SkeletonJson.transformModeLegacy = function (inheritRotation, inheritScale) {
+        if (inheritRotation && inheritScale) {
+            return BoneData_1.TransformMode.Normal;
+        }
+        else if (inheritRotation) {
+            return BoneData_1.TransformMode.InheritRotation;
+        }
+        else if (inheritScale) {
+            return BoneData_1.TransformMode.InheritScale;
+        }
+        else {
+            return BoneData_1.TransformMode.OnlyTranslation;
+        }
+    };
     return SkeletonJson;
 }());
 exports.SkeletonJson = SkeletonJson;
@@ -3590,7 +3785,7 @@ var LinkedMesh = (function () {
     }
     return LinkedMesh;
 }());
-},{"./Animation":2,"./BoneData":7,"./Event":8,"./EventData":9,"./IkConstraintData":11,"./PathConstraintData":13,"./SkeletonData":16,"./Skin":18,"./SlotData":20,"./TransformConstraintData":25,"./Utils":26}],18:[function(require,module,exports){
+},{"./Animation":2,"./BoneData":8,"./Event":9,"./EventData":10,"./IkConstraintData":12,"./PathConstraintData":14,"./SkeletonData":17,"./Skin":19,"./SlotData":21,"./TransformConstraintData":25,"./Utils":26}],19:[function(require,module,exports){
 "use strict";
 var Skin = (function () {
     function Skin(name) {
@@ -3636,7 +3831,7 @@ var Skin = (function () {
     return Skin;
 }());
 exports.Skin = Skin;
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 var Utils_1 = require("./Utils");
 var Slot = (function () {
@@ -3680,7 +3875,7 @@ var Slot = (function () {
     return Slot;
 }());
 exports.Slot = Slot;
-},{"./Utils":26}],20:[function(require,module,exports){
+},{"./Utils":26}],21:[function(require,module,exports){
 "use strict";
 var Utils_1 = require("./Utils");
 var SlotData = (function () {
@@ -3699,7 +3894,7 @@ var SlotData = (function () {
     return SlotData;
 }());
 exports.SlotData = SlotData;
-},{"./Utils":26}],21:[function(require,module,exports){
+},{"./Utils":26}],22:[function(require,module,exports){
 "use strict";
 var Texture = (function () {
     function Texture(image) {
@@ -3891,7 +4086,7 @@ var TextureRegion = (function () {
     return TextureRegion;
 }());
 exports.TextureRegion = TextureRegion;
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -4133,39 +4328,7 @@ var TextureAtlasRegion = (function (_super) {
     return TextureAtlasRegion;
 }(Texture_1.TextureRegion));
 exports.TextureAtlasRegion = TextureAtlasRegion;
-},{"./Texture":21}],23:[function(require,module,exports){
-"use strict";
-var attachments_1 = require("./attachments");
-var TextureAtlasAttachmentLoader = (function () {
-    function TextureAtlasAttachmentLoader(atlas) {
-        this.atlas = atlas;
-    }
-    TextureAtlasAttachmentLoader.prototype.newRegionAttachment = function (skin, name, path) {
-        var region = this.atlas.findRegion(path);
-        if (region == null)
-            throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-        var attachment = new attachments_1.RegionAttachment(name);
-        attachment.region = region;
-        return attachment;
-    };
-    TextureAtlasAttachmentLoader.prototype.newMeshAttachment = function (skin, name, path) {
-        var region = this.atlas.findRegion(path);
-        if (region == null)
-            throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-        var attachment = new attachments_1.MeshAttachment(name);
-        attachment.region = region;
-        return attachment;
-    };
-    TextureAtlasAttachmentLoader.prototype.newBoundingBoxAttachment = function (skin, name) {
-        return new attachments_1.BoundingBoxAttachment(name);
-    };
-    TextureAtlasAttachmentLoader.prototype.newPathAttachment = function (skin, name) {
-        return new attachments_1.PathAttachment(name);
-    };
-    return TextureAtlasAttachmentLoader;
-}());
-exports.TextureAtlasAttachmentLoader = TextureAtlasAttachmentLoader;
-},{"./attachments":33}],24:[function(require,module,exports){
+},{"./Texture":22}],24:[function(require,module,exports){
 "use strict";
 var Utils_1 = require("./Utils");
 var TransformConstraint = (function () {
@@ -4195,13 +4358,13 @@ var TransformConstraint = (function () {
     TransformConstraint.prototype.update = function () {
         var rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
         var target = this.target;
-        var tm = target.matrix;
-        var ta = tm.a, tb = tm.c, tc = tm.b, td = tm.d;
+        var ta = target.matrix.a, tb = target.matrix.c, tc = target.matrix.b, td = target.matrix.d;
         var bones = this.bones;
         for (var i = 0, n = bones.length; i < n; i++) {
             var bone = bones[i];
             var m = bone.matrix;
-            if (rotateMix > 0) {
+            var modified = false;
+            if (rotateMix != 0) {
                 var a = m.a, b = m.c, c = m.b, d = m.d;
                 var r = Math.atan2(tc, ta) - Math.atan2(c, a) + this.data.offsetRotation * Utils_1.MathUtils.degRad;
                 if (r > Utils_1.MathUtils.PI)
@@ -4214,24 +4377,29 @@ var TransformConstraint = (function () {
                 m.c = cos * b - sin * d;
                 m.b = sin * a + cos * c;
                 m.d = sin * b + cos * d;
+                modified = true;
             }
-            if (translateMix > 0) {
+            if (translateMix != 0) {
                 var temp = this.temp;
                 target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
-                m.tx += (temp.x - bone.worldX) * translateMix;
-                m.ty += (temp.y - bone.worldY) * translateMix;
+                m.tx += (temp.x - m.tx) * translateMix;
+                m.ty += (temp.y - m.ty) * translateMix;
+                modified = true;
             }
             if (scaleMix > 0) {
-                var bs = Math.sqrt(m.a * m.a + m.b * m.b);
+                var s = Math.sqrt(m.a * m.a + m.b * m.b);
                 var ts = Math.sqrt(ta * ta + tc * tc);
-                var s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleX) * scaleMix) / bs : 0;
+                if (s > 0.00001)
+                    s = (s + (ts - s + this.data.offsetScaleX) * scaleMix) / s;
                 m.a *= s;
                 m.b *= s;
-                bs = Math.sqrt(m.c * m.c + m.d * m.d);
+                s = Math.sqrt(m.c * m.c + m.d * m.d);
                 ts = Math.sqrt(tb * tb + td * td);
-                s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleY) * scaleMix) / bs : 0;
+                if (s > 0.00001)
+                    s = (s + (ts - s + this.data.offsetScaleY) * scaleMix) / s;
                 m.c *= s;
                 m.d *= s;
+                modified = true;
             }
             if (shearMix > 0) {
                 var b = m.c, d = m.d;
@@ -4245,8 +4413,14 @@ var TransformConstraint = (function () {
                 var s = Math.sqrt(b * b + d * d);
                 m.c = Math.cos(r) * s;
                 m.d = Math.sin(r) * s;
+                modified = true;
             }
+            if (modified)
+                bone.appliedValid = false;
         }
+    };
+    TransformConstraint.prototype.getOrder = function () {
+        return this.data.order;
     };
     return TransformConstraint;
 }());
@@ -4255,6 +4429,7 @@ exports.TransformConstraint = TransformConstraint;
 "use strict";
 var TransformConstraintData = (function () {
     function TransformConstraintData(name) {
+        this.order = 0;
         this.bones = new Array();
         this.rotateMix = 0;
         this.translateMix = 0;
@@ -4541,7 +4716,6 @@ var VertexAttachment = (function (_super) {
     VertexAttachment.prototype.computeWorldVerticesWith = function (slot, start, count, worldVertices, offset) {
         count += offset;
         var skeleton = slot.bone.skeleton;
-        var x = skeleton.x, y = skeleton.y;
         var deformArray = slot.attachmentVertices;
         var vertices = this.vertices;
         var bones = this.bones;
@@ -4550,8 +4724,8 @@ var VertexAttachment = (function (_super) {
                 vertices = deformArray;
             var bone = slot.bone;
             var m = bone.matrix;
-            x += m.tx;
-            y += m.ty;
+            var x = m.tx;
+            var y = m.ty;
             var a = m.a, b = m.c, c = m.b, d = m.d;
             for (var v_1 = start, w = offset; w < count; v_1 += 2, w += 2) {
                 var vx = vertices[v_1], vy = vertices[v_1 + 1];
@@ -4569,7 +4743,7 @@ var VertexAttachment = (function (_super) {
         var skeletonBones = skeleton.bones;
         if (deformArray.length == 0) {
             for (var w = offset, b = skip * 3; w < count; w += 2) {
-                var wx = x, wy = y;
+                var wx = 0, wy = 0;
                 var n = bones[v++];
                 n += v;
                 for (; v < n; v++, b += 3) {
@@ -4586,7 +4760,7 @@ var VertexAttachment = (function (_super) {
         else {
             var deform = deformArray;
             for (var w = offset, b = skip * 3, f = skip << 1; w < count; w += 2) {
-                var wx = x, wy = y;
+                var wx = 0, wy = 0;
                 var n = bones[v++];
                 n += v;
                 for (; v < n; v++, b += 3, f += 2) {
@@ -4792,6 +4966,7 @@ var Bone_1 = require("./Bone");
 exports.Bone = Bone_1.Bone;
 var BoneData_1 = require("./BoneData");
 exports.BoneData = BoneData_1.BoneData;
+exports.TransformMode = BoneData_1.TransformMode;
 var Event_1 = require("./Event");
 exports.Event = Event_1.Event;
 var EventData_1 = require("./EventData");
@@ -4829,8 +5004,8 @@ exports.TextureFilter = Texture_1.TextureFilter;
 var TextureAtlas_1 = require("./TextureAtlas");
 exports.TextureAtlas = TextureAtlas_1.TextureAtlas;
 exports.TextureAtlasRegion = TextureAtlas_1.TextureAtlasRegion;
-var TextureAtlasAttachmentLoader_1 = require("./TextureAtlasAttachmentLoader");
-exports.TextureAtlasAttachmentLoader = TextureAtlasAttachmentLoader_1.TextureAtlasAttachmentLoader;
+var AtlasAttachmentLoader_1 = require("./AtlasAttachmentLoader");
+exports.AtlasAttachmentLoader = AtlasAttachmentLoader_1.AtlasAttachmentLoader;
 var TransformConstraint_1 = require("./TransformConstraint");
 exports.TransformConstraint = TransformConstraint_1.TransformConstraint;
 var TransformConstraintData_1 = require("./TransformConstraintData");
@@ -4841,7 +5016,7 @@ exports.Pool = Utils_1.Pool;
 exports.MathUtils = Utils_1.MathUtils;
 exports.Color = Utils_1.Color;
 exports.Vector2 = Utils_1.Vector2;
-},{"./Animation":2,"./AnimationState":3,"./AnimationStateData":4,"./BlendMode":5,"./Bone":6,"./BoneData":7,"./Event":8,"./EventData":9,"./IkConstraint":10,"./IkConstraintData":11,"./PathConstraint":12,"./PathConstraintData":13,"./Skeleton":14,"./SkeletonBounds":15,"./SkeletonData":16,"./SkeletonJson":17,"./Skin":18,"./Slot":19,"./SlotData":20,"./Texture":21,"./TextureAtlas":22,"./TextureAtlasAttachmentLoader":23,"./TransformConstraint":24,"./TransformConstraintData":25,"./Utils":26,"./attachments":33}],35:[function(require,module,exports){
+},{"./Animation":2,"./AnimationState":3,"./AnimationStateData":4,"./AtlasAttachmentLoader":5,"./BlendMode":6,"./Bone":7,"./BoneData":8,"./Event":9,"./EventData":10,"./IkConstraint":11,"./IkConstraintData":12,"./PathConstraint":13,"./PathConstraintData":14,"./Skeleton":15,"./SkeletonBounds":16,"./SkeletonData":17,"./SkeletonJson":18,"./Skin":19,"./Slot":20,"./SlotData":21,"./Texture":22,"./TextureAtlas":23,"./TransformConstraint":24,"./TransformConstraintData":25,"./Utils":26,"./attachments":33}],35:[function(require,module,exports){
 "use strict";
 var spine = require("./core");
 function atlasParser() {
@@ -4854,7 +5029,7 @@ function atlasParser() {
             return next();
         }
         if (metadataAtlas && metadataAtlas.pages) {
-            var spineJsonParser = new spine.SkeletonJson(new spine.TextureAtlasAttachmentLoader(metadataAtlas));
+            var spineJsonParser = new spine.SkeletonJson(new spine.AtlasAttachmentLoader(metadataAtlas));
             var skeletonData = spineJsonParser.readSkeletonData(resource.data);
             resource.spineData = skeletonData;
             resource.spineAtlas = metadataAtlas;
@@ -4880,7 +5055,7 @@ function atlasParser() {
         var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
         this.add(resource.name + '_atlas', atlasPath, atlasOptions, function () {
             new spine.TextureAtlas(this.xhr.responseText, adapter, function (spineAtlas) {
-                var spineJsonParser = new spine.SkeletonJson(new spine.TextureAtlasAttachmentLoader(spineAtlas));
+                var spineJsonParser = new spine.SkeletonJson(new spine.AtlasAttachmentLoader(spineAtlas));
                 var skeletonData = spineJsonParser.readSkeletonData(resource.data);
                 resource.spineData = skeletonData;
                 resource.spineAtlas = spineAtlas;
