@@ -104,7 +104,7 @@ export class Spine extends PIXI.Container {
             this.addChild(slotContainer);
 
             if (attachment instanceof spine.RegionAttachment) {
-                var spriteName = attachment.region.name;
+                var spriteName = (attachment.region as TextureAtlasRegion).name;
                 var sprite = this.createSprite(slot, attachment, spriteName);
                 slot.currentSprite = sprite;
                 slot.currentSpriteName = spriteName;
@@ -257,14 +257,10 @@ export class Spine extends PIXI.Container {
                         }
                     }
                     slot.bone.matrix.copy(lt);
-                    lt.tx += slot.bone.skeleton.x;
-                    lt.ty += slot.bone.skeleton.y;
                 } else {
                     //PIXI v3
                     var lt = slotContainer.localTransform || new PIXI.Matrix();
                     slot.bone.matrix.copy(lt);
-                    lt.tx += slot.bone.skeleton.x;
-                    lt.ty += slot.bone.skeleton.y;
                     slotContainer.localTransform = lt;
                     slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                 }

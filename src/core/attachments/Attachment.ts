@@ -1,4 +1,5 @@
 import {Slot} from "../Slot";
+import {ArrayLike} from "../Utils";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -60,7 +61,6 @@ export abstract class VertexAttachment extends Attachment {
     computeWorldVerticesWith (slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number) {
         count += offset;
         let skeleton = slot.bone.skeleton;
-        let x = skeleton.x, y = skeleton.y;
         let deformArray = slot.attachmentVertices;
         let vertices = this.vertices;
         let bones = this.bones;
@@ -68,8 +68,8 @@ export abstract class VertexAttachment extends Attachment {
             if (deformArray.length > 0) vertices = deformArray;
             let bone = slot.bone;
             let m = bone.matrix;
-            x += m.tx;
-            y += m.ty;
+            let x = m.tx;
+            let y = m.ty;
             let a = m.a, b = m.c, c = m.b, d = m.d;
             for (let v = start, w = offset; w < count; v += 2, w += 2) {
                 let vx = vertices[v], vy = vertices[v + 1];
@@ -87,7 +87,7 @@ export abstract class VertexAttachment extends Attachment {
         let skeletonBones = skeleton.bones;
         if (deformArray.length == 0) {
             for (let w = offset, b = skip * 3; w < count; w += 2) {
-                let wx = x, wy = y;
+                let wx = 0, wy = 0;
                 let n = bones[v++];
                 n += v;
                 for (; v < n; v++, b += 3) {
@@ -103,7 +103,7 @@ export abstract class VertexAttachment extends Attachment {
         } else {
             let deform = deformArray;
             for (let w = offset, b = skip * 3, f = skip << 1; w < count; w += 2) {
-                let wx = x, wy = y;
+                let wx = 0, wy = 0;
                 let n = bones[v++];
                 n += v;
                 for (; v < n; v++, b += 3, f += 2) {

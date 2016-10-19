@@ -1,8 +1,8 @@
-import {Updatable} from "./Updatable";
 import {TransformConstraintData} from "./TransformConstraintData";
 import {Bone} from "./Bone";
 import {Vector2, MathUtils} from "./Utils";
 import {Skeleton} from "./Skeleton";
+import {Constraint} from "./Constraint";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -34,7 +34,7 @@ import {Skeleton} from "./Skeleton";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class TransformConstraint implements Updatable {
+export class TransformConstraint implements Constraint {
     data: TransformConstraintData;
     bones: Array<Bone>;
     target: Bone;
@@ -62,14 +62,14 @@ export class TransformConstraint implements Updatable {
     update () {
         let rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
         let target = this.target;
-        let tm = target.matrix;
-        let ta = tm.a, tb = tm.c, tc = tm.b, td = tm.d;
+        let ta = target.matrix.a, tb = target.matrix.c, tc = target.matrix.b, td = target.matrix.d;
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
             let m = bone.matrix;
+            let modified = false;
 
-            if (rotateMix > 0) {
+            if (rotateMix != 0) {
                 let a = m.a, b = m.c, c = m.b, d = m.d;
                 let r = Math.atan2(tc, ta) - Math.atan2(c, a) + this.data.offsetRotation * MathUtils.degRad;
                 if (r > MathUtils.PI)
@@ -82,26 +82,29 @@ export class TransformConstraint implements Updatable {
                 m.c = cos * b - sin * d;
                 m.b = sin * a + cos * c;
                 m.d = sin * b + cos * d;
+                modified = true;
             }
 
-            if (translateMix > 0) {
+            if (translateMix != 0) {
                 let temp = this.temp;
                 target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
-                m.tx += (temp.x - bone.worldX) * translateMix;
-                m.ty += (temp.y - bone.worldY) * translateMix;
+                m.tx += (temp.x - m.tx) * translateMix;
+                m.ty += (temp.y - m.ty) * translateMix;
+                modified = true;
             }
 
             if (scaleMix > 0) {
-                let bs = Math.sqrt(m.a * m.a + m.b * m.b);
+                let s = Math.sqrt(m.a * m.a + m.b * m.b);
                 let ts = Math.sqrt(ta * ta + tc * tc);
-                let s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleX) * scaleMix) / bs : 0;
+                if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleX) * scaleMix) / s;
                 m.a *= s;
                 m.b *= s;
-                bs = Math.sqrt(m.c * m.c + m.d * m.d);
+                s = Math.sqrt(m.c * m.c + m.d * m.d);
                 ts = Math.sqrt(tb * tb + td * td);
-                s = bs > 0.00001 ? (bs + (ts - bs + this.data.offsetScaleY) * scaleMix) / bs : 0;
+                if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleY) * scaleMix) / s;
                 m.c *= s;
                 m.d *= s;
+                modified = true;
             }
 
             if (shearMix > 0) {
@@ -116,7 +119,14 @@ export class TransformConstraint implements Updatable {
                 let s = Math.sqrt(b * b + d * d);
                 m.c = Math.cos(r) * s;
                 m.d = Math.sin(r) * s;
+                modified = true;
             }
+
+            if (modified) bone.appliedValid = false;
         }
+    }
+
+    getOrder () {
+        return this.data.order;
     }
 }

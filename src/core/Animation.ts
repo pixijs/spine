@@ -1,7 +1,7 @@
 import {Event} from "./Event";
 import {Skeleton} from "./Skeleton";
 import {PathConstraint} from "./PathConstraint";
-import {Utils, MathUtils, Color} from "./Utils";
+import {Utils, MathUtils, Color, ArrayLike} from "./Utils";
 import {TransformConstraint} from "./TransformConstraint";
 import {IkConstraint} from "./IkConstraint";
 import {VertexAttachment, Attachment} from "./attachments";

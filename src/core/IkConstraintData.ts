@@ -32,6 +32,7 @@ import {BoneData} from "./BoneData";
 
 export class IkConstraintData {
     name: string;
+    order = 0;
     bones = new Array<BoneData>();
     target: BoneData;
     bendDirection = 1;

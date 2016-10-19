@@ -1,9 +1,6 @@
-import {Skin} from "./Skin";
-import {AttachmentLoader, BoundingBoxAttachment, MeshAttachment, PathAttachment, RegionAttachment} from "./attachments";
-import {TextureAtlas} from "./TextureAtlas";
+import {Updatable} from "./Updatable";
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -32,38 +29,6 @@ import {TextureAtlas} from "./TextureAtlas";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class TextureAtlasAttachmentLoader implements AttachmentLoader {
-    atlas: TextureAtlas;
-
-    constructor (atlas: TextureAtlas) {
-        this.atlas = atlas;
-    }
-
-    /** @return May be null to not load an attachment. */
-    newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-        let attachment = new RegionAttachment(name);
-        attachment.region = region;
-        return attachment;
-    }
-
-    /** @return May be null to not load an attachment. */
-    newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-        let attachment = new MeshAttachment(name);
-        attachment.region = region;
-        return attachment;
-    }
-
-    /** @return May be null to not load an attachment. */
-    newBoundingBoxAttachment (skin: Skin, name: string) : BoundingBoxAttachment {
-        return new BoundingBoxAttachment(name);
-    }
-
-    /** @return May be null to not load an attachment */
-    newPathAttachment (skin: Skin, name: string): PathAttachment {
-        return new PathAttachment(name);
-    }
+export interface Constraint extends Updatable {
+    getOrder(): number;
 }

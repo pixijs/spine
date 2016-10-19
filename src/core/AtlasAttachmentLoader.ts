@@ -1,5 +1,6 @@
-import {BoneData} from "./BoneData";
-import {SlotData} from "./SlotData";
+import {Skin} from "./Skin";
+import {AttachmentLoader, BoundingBoxAttachment, MeshAttachment, PathAttachment, RegionAttachment} from "./attachments";
+import {TextureAtlas} from "./TextureAtlas";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -31,30 +32,38 @@ import {SlotData} from "./SlotData";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class PathConstraintData {
-    name: string;
-    order = 0;
-    bones = new Array<BoneData>();
-    target: SlotData;
-    positionMode: PositionMode;
-    spacingMode: SpacingMode;
-    rotateMode: RotateMode;
-    offsetRotation: number;
-    position: number; spacing: number; rotateMix: number; translateMix: number;
+export class AtlasAttachmentLoader implements AttachmentLoader {
+    atlas: TextureAtlas;
 
-    constructor (name: string) {
-        this.name = name;
+    constructor (atlas: TextureAtlas) {
+        this.atlas = atlas;
     }
-}
 
-export enum PositionMode {
-    Fixed, Percent
-}
+    /** @return May be null to not load an attachment. */
+    newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment {
+        let region = this.atlas.findRegion(path);
+        if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
+        let attachment = new RegionAttachment(name);
+        attachment.region = region;
+        return attachment;
+    }
 
-export enum SpacingMode {
-    Length, Fixed, Percent
-}
+    /** @return May be null to not load an attachment. */
+    newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment {
+        let region = this.atlas.findRegion(path);
+        if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
+        let attachment = new MeshAttachment(name);
+        attachment.region = region;
+        return attachment;
+    }
 
-export enum RotateMode {
-    Tangent, Chain, ChainScale
+    /** @return May be null to not load an attachment. */
+    newBoundingBoxAttachment (skin: Skin, name: string) : BoundingBoxAttachment {
+        return new BoundingBoxAttachment(name);
+    }
+
+    /** @return May be null to not load an attachment */
+    newPathAttachment (skin: Skin, name: string): PathAttachment {
+        return new PathAttachment(name);
+    }
 }

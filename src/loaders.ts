@@ -13,7 +13,7 @@ export function atlasParser() {
         }
         if (metadataAtlas && metadataAtlas.pages) {
             //its an atlas!
-            var spineJsonParser = new spine.SkeletonJson(new spine.TextureAtlasAttachmentLoader(metadataAtlas));
+            var spineJsonParser = new spine.SkeletonJson(new spine.AtlasAttachmentLoader(metadataAtlas));
             var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
             resource.spineData = skeletonData;
@@ -53,7 +53,7 @@ export function atlasParser() {
 
         this.add(resource.name + '_atlas', atlasPath, atlasOptions, function () {
             new spine.TextureAtlas(this.xhr.responseText, adapter, function(spineAtlas) {
-                var spineJsonParser = new spine.SkeletonJson(new spine.TextureAtlasAttachmentLoader(spineAtlas));
+                var spineJsonParser = new spine.SkeletonJson(new spine.AtlasAttachmentLoader(spineAtlas));
                 var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
                 resource.spineData = skeletonData;

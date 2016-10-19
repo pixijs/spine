@@ -1,10 +1,10 @@
-import {Updatable} from "./Updatable";
 import {PathConstraintData, SpacingMode, RotateMode, PositionMode} from "./PathConstraintData";
 import {Bone} from "./Bone";
 import {Slot} from "./Slot";
 import {Skeleton} from "./Skeleton";
 import {PathAttachment} from "./attachments";
 import {Utils, MathUtils} from "./Utils";
+import {Constraint} from "./Constraint";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -36,7 +36,7 @@ import {Utils, MathUtils} from "./Utils";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class PathConstraint implements Updatable {
+export class PathConstraint implements Constraint {
     static NONE = -1; static BEFORE = -2; static AFTER = -3;
 
     data: PathConstraintData;
@@ -100,15 +100,13 @@ export class PathConstraint implements Updatable {
 
         let positions = this.computeWorldPositions(<PathAttachment>attachment, spacesCount, tangents,
             data.positionMode == PositionMode.Percent, spacingMode == SpacingMode.Percent);
-        let skeleton = this.target.bone.skeleton;
-        let skeletonX = skeleton.x, skeletonY = skeleton.y;
         let boneX = positions[0], boneY = positions[1], offsetRotation = data.offsetRotation;
         let tip = rotateMode == RotateMode.Chain && offsetRotation == 0;
         for (let i = 0, p = 3; i < boneCount; i++, p += 3) {
             let bone = bones[i];
             let m = bone.matrix;
-            m.tx += (boneX - skeletonX - bone.worldX) * translateMix;
-            m.ty += (boneY - skeletonY - bone.worldY) * translateMix;
+            m.tx += (boneX - m.tx) * translateMix;
+            m.ty += (boneY - m.ty) * translateMix;
             let x = positions[p], y = positions[p + 1], dx = x - boneX, dy = y - boneY;
             if (scale) {
                 let length = lengths[i];
@@ -148,6 +146,7 @@ export class PathConstraint implements Updatable {
                 m.b = sin * a + cos * c;
                 m.d = sin * b + cos * d;
             }
+            bone.appliedValid = false;
         }
     }
 
@@ -384,12 +383,16 @@ export class PathConstraint implements Updatable {
 
     addCurvePosition (p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
         out: Array<number>, o: number, tangents: boolean) {
-        if (p == 0) p = 0.0001;
+        if (p == 0 || isNaN(p)) p = 0.0001;
         let tt = p * p, ttt = tt * p, u = 1 - p, uu = u * u, uuu = uu * u;
         let ut = u * p, ut3 = ut * 3, uut3 = u * ut3, utt3 = ut3 * p;
         let x = x1 * uuu + cx1 * uut3 + cx2 * utt3 + x2 * ttt, y = y1 * uuu + cy1 * uut3 + cy2 * utt3 + y2 * ttt;
         out[o] = x;
         out[o + 1] = y;
         if (tangents) out[o + 2] = Math.atan2(y - (y1 * uu + cy1 * ut * 2 + cy2 * tt), x - (x1 * uu + cx1 * ut * 2 + cx2 * tt));
+    }
+
+    getOrder () {
+        return this.data.order;
     }
 }

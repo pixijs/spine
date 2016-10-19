@@ -1,5 +1,5 @@
 import {Updatable} from "./Updatable";
-import {BoneData} from "./BoneData";
+import {BoneData, TransformMode} from "./BoneData";
 import {Skeleton} from "./Skeleton";
 import {MathUtils, Vector2} from "./Utils";
 /******************************************************************************
@@ -51,9 +51,8 @@ export class Bone implements Updatable {
     parent: Bone;
     children = new Array<Bone>();
     x = 0; y = 0; rotation = 0; scaleX = 0; scaleY = 0; shearX = 0; shearY = 0;
-    appliedRotation = 0;
-
-    worldSignX = 0; worldSignY = 0;
+    ax = 0; ay = 0; arotation = 0; ascaleX = 0; ascaleY = 0; ashearX = 0; ashearY = 0;
+    appliedValid = false;
 
     sorted = false;
 
@@ -79,15 +78,23 @@ export class Bone implements Updatable {
 
     /** Computes the world transform using the parent bone and the specified local transform. */
     updateWorldTransformWith (x: number, y: number, rotation: number, scaleX: number, scaleY: number, shearX: number, shearY: number) {
-        this.appliedRotation = rotation;
-
-        let rotationY = rotation + 90 + shearY;
-        let la = MathUtils.cosDeg(rotation + shearX) * scaleX, lb = MathUtils.cosDeg(rotationY) * scaleY;
-        let lc = MathUtils.sinDeg(rotation + shearX) * scaleX, ld = MathUtils.sinDeg(rotationY) * scaleY;
+        this.ax = x;
+        this.ay = y;
+        this.arotation = rotation;
+        this.ascaleX = scaleX;
+        this.ascaleY = scaleY;
+        this.ashearX = shearX;
+        this.ashearY = shearY;
+        this.appliedValid = true;
 
         let parent = this.parent;
         let m = this.matrix;
         if (parent == null) { // Root bone.
+            let rotationY = rotation + 90 + shearY;
+            let la = MathUtils.cosDeg(rotation + shearX) * scaleX;
+            let lb = MathUtils.cosDeg(rotationY) * scaleY;
+            let lc = MathUtils.sinDeg(rotation + shearX) * scaleX;
+            let ld = MathUtils.sinDeg(rotationY) * scaleY;
             let skeleton = this.skeleton;
             if (skeleton.flipX) {
                 x = -x;
@@ -103,32 +110,102 @@ export class Bone implements Updatable {
             m.c = lb;
             m.b = lc;
             m.d = ld;
-            m.tx = x;
-            m.ty = y;
-            this.worldSignX = MathUtils.signum(scaleX);
-            this.worldSignY = MathUtils.signum(scaleY);
+            m.tx = x + skeleton.x;
+            m.ty = y + skeleton.y;
             return;
         }
 
         let pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
         m.tx = pa * x + pb * y + parent.matrix.tx;
         m.ty = pc * x + pd * y + parent.matrix.ty;
-        this.worldSignX = parent.worldSignX * MathUtils.signum(scaleX);
-        this.worldSignY = parent.worldSignY * MathUtils.signum(scaleY);
+        switch (this.data.transformMode) {
+            case TransformMode.Normal: {
+                let rotationY = rotation + 90 + shearY;
+                let la = MathUtils.cosDeg(rotation + shearX) * scaleX;
+                let lb = MathUtils.cosDeg(rotationY) * scaleY;
+                let lc = MathUtils.sinDeg(rotation + shearX) * scaleX;
+                let ld = MathUtils.sinDeg(rotationY) * scaleY;
+                m.a = pa * la + pb * lc;
+                m.c = pa * lb + pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+                return;
+            }
+            case TransformMode.OnlyTranslation: {
+                let rotationY = rotation + 90 + shearY;
+                m.a = MathUtils.cosDeg(rotation + shearX) * scaleX;
+                m.c = MathUtils.cosDeg(rotationY) * scaleY;
+                m.b = MathUtils.sinDeg(rotation + shearX) * scaleX;
+                m.d = MathUtils.sinDeg(rotationY) * scaleY;
+                break;
+            }
+            case TransformMode.NoRotationOrReflection: {
+                let s = pa * pa + pc * pc;
+                let prx = 0;
+                if (s > 0.0001) {
+                    s = Math.abs(pa * pd - pb * pc) / s;
+                    pb = pc * s;
+                    pd = pa * s;
+                    prx = Math.atan2(pc, pa) * MathUtils.radDeg;
+                } else {
+                    pa = 0;
+                    pc = 0;
+                    prx = 90 - Math.atan2(pd, pb) * MathUtils.radDeg;
+                }
+                let rx = rotation + shearX - prx;
+                let ry = rotation + shearY - prx + 90;
+                let la = MathUtils.cosDeg(rx) * scaleX;
+                let lb = MathUtils.cosDeg(ry) * scaleY;
+                let lc = MathUtils.sinDeg(rx) * scaleX;
+                let ld = MathUtils.sinDeg(ry) * scaleY;
+                m.a = pa * la - pb * lc;
+                m.c = pa * lb - pb * ld;
+                m.b = pc * la + pd * lc;
+                m.d = pc * lb + pd * ld;
+                break;
+            }
+            case TransformMode.NoScale:
+            case TransformMode.NoScaleOrReflection: {
+                let cos = MathUtils.cosDeg(rotation);
+                let sin = MathUtils.sinDeg(rotation);
+                let za = pa * cos + pb * sin;
+                let zc = pc * cos + pd * sin;
+                let s = Math.sqrt(za * za + zc * zc);
+                if (s > 0.00001) s = 1 / s;
+                za *= s;
+                zc *= s;
+                s = Math.sqrt(za * za + zc * zc);
+                let r = Math.PI / 2 + Math.atan2(zc, za);
+                let zb = Math.cos(r) * s;
+                let zd = Math.sin(r) * s;
+                let la = MathUtils.cosDeg(shearX) * scaleX;
+                let lb = MathUtils.cosDeg(90 + shearY) * scaleY;
+                let lc = MathUtils.sinDeg(shearX) * scaleX;
+                let ld = MathUtils.sinDeg(90 + shearY) * scaleY;
+                m.a = za * la + zb * lc;
+                m.c = za * lb + zb * ld;
+                m.b = zc * la + zd * lc;
+                m.d = zc * lb + zd * ld;
+                if (this.data.transformMode != TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : (this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown) {
+                    m.b = -m.b;
+                    m.d = -m.d;
+                }
+                return;
+            }
+            //old < 3.5 stuff
+            case TransformMode.InheritRotation: {
+                let rotationY = rotation + 90 + shearY;
+                let la = MathUtils.cosDeg(rotation + shearX) * scaleX;
+                let lb = MathUtils.cosDeg(rotationY) * scaleY;
+                let lc = MathUtils.sinDeg(rotation + shearX) * scaleX;
+                let ld = MathUtils.sinDeg(rotationY) * scaleY;
 
-        if (this.data.inheritRotation && this.data.inheritScale) {
-            m.a = pa * la + pb * lc;
-            m.c = pa * lb + pb * ld;
-            m.b = pc * la + pd * lc;
-            m.d = pc * lb + pd * ld;
-        } else {
-            if (this.data.inheritRotation) { // No scale inheritance.
                 pa = 1;
                 pb = 0;
                 pc = 0;
                 pd = 1;
                 do {
-                    let cos = MathUtils.cosDeg(parent.appliedRotation), sin = MathUtils.sinDeg(parent.appliedRotation);
+                    let cos = MathUtils.cosDeg(parent.arotation), sin = MathUtils.sinDeg(parent.arotation);
                     let temp = pa * cos + pb * sin;
                     pb = pb * cos - pa * sin;
                     pa = temp;
@@ -136,20 +213,30 @@ export class Bone implements Updatable {
                     pd = pd * cos - pc * sin;
                     pc = temp;
 
-                    if (!parent.data.inheritRotation) break;
+                    if (parent.data.transformMode === TransformMode.InheritScale ||
+                        parent.data.transformMode === TransformMode.OnlyTranslation) break;
                     parent = parent.parent;
                 } while (parent != null);
                 m.a = pa * la + pb * lc;
                 m.c = pa * lb + pb * ld;
                 m.b = pc * la + pd * lc;
                 m.d = pc * lb + pd * ld;
-            } else if (this.data.inheritScale) { // No rotation inheritance.
+                break;
+            }
+            //old < 3.5 stuff
+            case TransformMode.InheritScale: {
+                let rotationY = rotation + 90 + shearY;
+                let la = MathUtils.cosDeg(rotation + shearX) * scaleX;
+                let lb = MathUtils.cosDeg(rotationY) * scaleY;
+                let lc = MathUtils.sinDeg(rotation + shearX) * scaleX;
+                let ld = MathUtils.sinDeg(rotationY) * scaleY;
+
                 pa = 1;
                 pb = 0;
                 pc = 0;
                 pd = 1;
                 do {
-                    let cos = MathUtils.cosDeg(parent.appliedRotation), sin = MathUtils.sinDeg(parent.appliedRotation);
+                    let cos = MathUtils.cosDeg(parent.arotation), sin = MathUtils.sinDeg(parent.arotation);
                     let psx = parent.scaleX, psy = parent.scaleY;
                     let za = cos * psx, zb = sin * psy, zc = sin * psx, zd = cos * psy;
                     let temp = pa * za + pb * zc;
@@ -167,27 +254,24 @@ export class Bone implements Updatable {
                     pd = pd * cos - pc * sin;
                     pc = temp;
 
-                    if (!parent.data.inheritScale) break;
+                    if (parent.data.transformMode === TransformMode.InheritRotation ||
+                        parent.data.transformMode === TransformMode.OnlyTranslation) break;
                     parent = parent.parent;
                 } while (parent != null);
                 m.a = pa * la + pb * lc;
                 m.c = pa * lb + pb * ld;
                 m.b = pc * la + pd * lc;
                 m.d = pc * lb + pd * ld;
-            } else {
-                m.a = la;
-                m.c = lb;
-                m.b = lc;
-                m.d = ld;
+                break;
             }
-            if (this.skeleton.flipX) {
-                m.a = -m.a;
-                m.c = -m.c;
-            }
-            if (this.skeleton.flipY !== Bone.yDown) {
-                m.b = -m.b;
-                m.d = -m.d;
-            }
+        }
+        if (this.skeleton.flipX) {
+            m.a = -m.a;
+            m.c = -m.c;
+        }
+        if (this.skeleton.flipY != Bone.yDown) {
+            m.b = -m.b;
+            m.d = -m.d;
         }
     }
 
@@ -211,27 +295,27 @@ export class Bone implements Updatable {
     }
 
     getWorldScaleX () {
-        return Math.sqrt(this.matrix.a * this.matrix.a + this.matrix.b * this.matrix.b) * this.worldSignX;
+        let m = this.matrix;
+        return Math.sqrt(m.a * m.a + m.c * m.c);
     }
 
     getWorldScaleY () {
-        return Math.sqrt(this.matrix.c * this.matrix.c + this.matrix.d * this.matrix.d) * this.worldSignY;
+        let m = this.matrix;
+        return Math.sqrt(m.b * m.b + m.d * m.d);
     }
 
     worldToLocalRotationX () {
         let parent = this.parent;
-        if (parent == null) return this.rotation;
-        let pm = parent.matrix;
-        let pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d, a = this.matrix.a, c = this.matrix.b;
-        return Math.atan2(pa * c - pc * a, pd * a - pb * c) * MathUtils.radDeg;
+        if (parent == null) return this.arotation;
+        let pm = parent.matrix, m = this.matrix;
+        return Math.atan2(pm.a * m.b - pm.b * m.a, pm.d * m.a - pm.c * m.b) * MathUtils.radDeg;
     }
 
     worldToLocalRotationY () {
         let parent = this.parent;
-        if (parent == null) return this.rotation;
-        let pm = parent.matrix;
-        let pa = pm.a, pb = pm.b, pc = pm.c, pd = pm.d, b = this.matrix.c, d = this.matrix.d;
-        return Math.atan2(pa * d - pc * b, pd * b - pb * d) * MathUtils.radDeg;
+        if (parent == null) return this.arotation;
+        let pm = parent.matrix, m = this.matrix;
+        return Math.atan2(pm.a * m.d - pm.b * m.c, pm.d * m.c - pm.c * m.d) * MathUtils.radDeg;
     }
 
     rotateWorld (degrees: number) {
@@ -242,55 +326,53 @@ export class Bone implements Updatable {
         m.c = cos * b - sin * d;
         m.b = sin * a + cos * c;
         m.d = sin * b + cos * d;
+        this.appliedValid = false;
     }
 
-    /** Computes the local transform from the world transform. This can be useful to perform processing on the local transform
-     * after the world transform has been modified directly (eg, by a constraint).
+    /** Computes the individual applied transform values from the world transform. This can be useful to perform processing using
+     * the applied transform after the world transform has been modified directly (eg, by a constraint).
      * <p>
-     * Some redundant information is lost by the world transform, such as -1,-1 scale versus 180 rotation. The computed local
-     * transform values may differ from the original values but are functionally the same. */
-    updateLocalTransform () {
+     * Some information is ambiguous in the world transform, such as -1,-1 scale versus 180 rotation. */
+    updateAppliedTransform () {
+        this.appliedValid = true;
         let parent = this.parent;
         let m = this.matrix;
         if (parent == null) {
-            this.x = m.tx;
-            this.y = m.ty;
-            this.rotation = Math.atan2(m.b, m.a) * MathUtils.radDeg;
-            this.scaleX = Math.sqrt(m.a * m.a + m.b * m.b);
-            this.scaleY = Math.sqrt(m.c * m.c + m.d * m.d);
-            let det = m.a * m.d - m.b * m.c;
-            this.shearX = 0;
-            this.shearY = Math.atan2(m.a * m.c + m.b * m.d, det) * MathUtils.radDeg;
+            this.ax = m.tx;
+            this.ay = m.ty;
+            this.arotation = Math.atan2(m.b, m.a) * MathUtils.radDeg;
+            this.ascaleX = Math.sqrt(m.a * m.a + m.b * m.b);
+            this.ascaleY = Math.sqrt(m.c * m.c + m.d * m.d);
+            this.ashearX = 0;
+            this.ashearY = Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) * MathUtils.radDeg;
             return;
         }
         let pm = parent.matrix;
-        let pa = pm.a, pb = pm.c, pc = pm.b, pd = pm.d;
-        let pid = 1 / (pa * pd - pb * pc);
+        let pid = 1 / (pm.a * pm.d - pm.b * pm.c);
         let dx = m.tx - pm.tx, dy = m.ty - pm.ty;
-        this.x = (dx * pd * pid - dy * pb * pid);
-        this.y = (dy * pa * pid - dx * pc * pid);
-        let ia = pid * pd;
-        let id = pid * pa;
-        let ib = pid * pb;
-        let ic = pid * pc;
+        this.ax = (dx * pm.d * pid - dy * pm.c * pid);
+        this.ay = (dy * pm.a * pid - dx * pm.b * pid);
+        let ia = pid * pm.d;
+        let id = pid * pm.a;
+        let ib = pid * pm.c;
+        let ic = pid * pm.b;
         let ra = ia * m.a - ib * m.b;
         let rb = ia * m.c - ib * m.d;
         let rc = id * m.b - ic * m.a;
         let rd = id * m.d - ic * m.c;
-        this.shearX = 0;
-        this.scaleX = Math.sqrt(ra * ra + rc * rc);
-        if (this.scaleX > 0.0001) {
+        this.ashearX = 0;
+        this.ascaleX = Math.sqrt(ra * ra + rc * rc);
+        if (this.ascaleX > 0.0001) {
             let det = ra * rd - rb * rc;
-            this.scaleY = det / this.scaleX;
-            this.shearY = Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
-            this.rotation = Math.atan2(rc, ra) * MathUtils.radDeg;
+            this.ascaleY = det / this.ascaleX;
+            this.ashearY = Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
+            this.arotation = Math.atan2(rc, ra) * MathUtils.radDeg;
         } else {
-            this.scaleX = 0;
-            this.scaleY = Math.sqrt(rb * rb + rd * rd);
-            this.shearY = 0;
-            this.rotation = 90 - Math.atan2(rd, rb) * MathUtils.radDeg;
+            this.ascaleX = 0;
+            this.ascaleY = Math.sqrt(rb * rb + rd * rd);
+            this.ashearY = 0;
+            this.arotation = 90 - Math.atan2(rd, rb) * MathUtils.radDeg;
         }
-        this.appliedRotation = this.rotation;
     }
 
     worldToLocal (world: Vector2) {

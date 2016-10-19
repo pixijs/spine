@@ -1,5 +1,5 @@
 import {SkeletonData} from "./SkeletonData";
-import {BoneData} from "./BoneData";
+import {BoneData, TransformMode} from "./BoneData";
 import {SlotData} from "./SlotData";
 import {Event} from "./Event";
 import {IkConstraintData} from "./IkConstraintData";
@@ -8,7 +8,7 @@ import {PathConstraintData, PositionMode, SpacingMode, RotateMode} from "./PathC
 import {Skin} from "./Skin";
 import {EventData} from "./EventData";
 import {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment} from "./attachments";
-import {Utils, Color} from "./Utils";
+import {Utils, Color, ArrayLike} from "./Utils";
 import {
     Timeline, ColorTimeline, AttachmentTimeline, RotateTimeline, TranslateTimeline,
     ScaleTimeline, ShearTimeline, IkConstraintTimeline, TransformConstraintTimeline, PathConstraintPositionTimeline,
@@ -68,6 +68,7 @@ export class SkeletonJson {
             skeletonData.version = skeletonMap.spine;
             skeletonData.width = skeletonMap.width;
             skeletonData.height = skeletonMap.height;
+            skeletonData.fps = skeletonMap.fps;
             skeletonData.imagesPath = skeletonMap.images;
         }
 
@@ -91,8 +92,17 @@ export class SkeletonJson {
                 data.scaleY = this.getValue(boneMap, "scaleY", 1);
                 data.shearX = this.getValue(boneMap, "shearX", 0);
                 data.shearY = this.getValue(boneMap, "shearY", 0);
-                data.inheritRotation = this.getValue(boneMap, "inheritRotation", true);
-                data.inheritScale = this.getValue(boneMap, "inheritScale", true);
+
+                //this is legacy
+                if (boneMap.hasOwnProperty("inheritScale") || boneMap.hasOwnProperty("inheritRotation")) {
+                    //before 3.5
+                    data.transformMode = SkeletonJson.transformModeLegacy(
+                        this.getValue(boneMap, "inheritRotation", true),
+                        this.getValue(boneMap, "inheritScale", true));
+                } else {
+                    //after 3.5
+                    data.transformMode = SkeletonJson.transformModeFromString(this.getValue(boneMap, "transform", "normal"));
+                }
 
                 skeletonData.bones.push(data);
             }
@@ -122,6 +132,7 @@ export class SkeletonJson {
             for (let i = 0; i < root.ik.length; i++) {
                 let constraintMap = root.ik[i];
                 let data = new IkConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
 
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
@@ -146,6 +157,7 @@ export class SkeletonJson {
             for (let i = 0; i < root.transform.length; i++) {
                 let constraintMap = root.transform[i];
                 let data = new TransformConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
 
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
@@ -179,6 +191,7 @@ export class SkeletonJson {
             for (let i = 0; i < root.path.length; i++) {
                 let constraintMap = root.path[i];
                 let data = new PathConstraintData(constraintMap.name);
+                data.order = this.getValue(constraintMap, "order", 0);
 
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
@@ -720,6 +733,28 @@ export class SkeletonJson {
         if (str == "chain") return RotateMode.Chain;
         if (str == "chainscale") return RotateMode.ChainScale;
         throw new Error(`Unknown rotate mode: ${str}`);
+    }
+
+    static transformModeFromString(str: string) {
+        str = str.toLowerCase();
+        if (str == "normal") return TransformMode.Normal;
+        if (str == "onlytranslation") return TransformMode.OnlyTranslation;
+        if (str == "norotationorreflection") return TransformMode.NoRotationOrReflection;
+        if (str == "noscale") return TransformMode.NoScale;
+        if (str == "noscaleorreflection") return TransformMode.NoScaleOrReflection;
+        throw new Error(`Unknown transform mode: ${str}`);
+    }
+
+    static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean) {
+        if (inheritRotation && inheritScale) {
+            return TransformMode.Normal;
+        } else if (inheritRotation) {
+            return TransformMode.InheritRotation;
+        } else if (inheritScale) {
+            return TransformMode.InheritScale;
+        } else {
+            return TransformMode.OnlyTranslation;
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 import {VertexAttachment} from "./Attachment";
 import {TextureRegion} from "../Texture";
-import {Color, Utils} from "../Utils";
+import {Color, Utils, ArrayLike} from "../Utils";
 import {Slot} from "../Slot";
 /******************************************************************************
  * Spine Runtimes Software License
