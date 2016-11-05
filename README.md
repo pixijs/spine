@@ -2,20 +2,13 @@
 
 Spine implementation for pixi v3 and pixi v4.
 
-IMPORTANT! Following classes and functions were renamed in pixi-spine 1.1.0:
+## Spine version
 
-```js
-Atlas to TextureAtlas
-SkeletonJsonParser to SkeletonJson
+Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5. 
 
-setAnimation to setAnimationWith
-setAnimationByName to setAnimation
+Please enable "beta updates" and re-export everything from the spine editor.
 
-addAnimation to addAnimationWith
-addAnimationByName to addAnimation
-
-hasAnimationByName to hasAnimation
-```
+According to spine runtime license, you can use runtime only if you have bought the editor, so exporting latest versions of animations shouldn't be a problem for you.
 
 ## Usage
 
@@ -35,16 +28,7 @@ PIXI.loader
 
 ### Typescript
 
-Either you add pixi-spine as npm dependency, either as a prebuilt with definition file from "build-es5" folder
-
-```ts
-declare module PIXI {
-    declare module spine {
-        import * as sp from 'pixi-spine';
-        export = sp;
-    }
-}
-```
+There's "bin/pixi-spine.d.ts" file, you can use it.
 
 ### How to use spine events
 
@@ -215,19 +199,22 @@ PIXI.loader
 
 ## Building
 
-You will need to have [node][node] and [gulp][gulp] setup on your machine.
+You will need to have [node][node] or [typescript][typescript] setup on your machine.
 
 Then you can install dependencies and build:
 
-```js
+```bash
 npm i && npm run build
 ```
 
-That will output the built distributables to `./dist`.
+Or you can just use typescript compiler
+
+```bash
+tsc
+```
+
+That will output the built distributables to `./bin`.
 
 [node]:       http://nodejs.org/
 [gulp]:       http://gulpjs.com/
-
-## Typescript
-
-Typescript definition file for pixi-spine is available in [pixi-typescript](https://github.com/pixijs/pixi-typescript)
+[typescript]:       https://www.typescriptlang.org/

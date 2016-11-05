@@ -35,9 +35,6 @@
     "package.json",
     "README.md"
   ],
-  "dependencies": {
-    "glslify": "^5.0.2"
-  },
   "devDependencies": {
     "del": "^2.2.0",
     "jaguarjs-jsdoc": "^1.0.1",
