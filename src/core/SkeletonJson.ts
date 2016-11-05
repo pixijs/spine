@@ -240,7 +240,7 @@ module PIXI.spine.core {
                     let data = new EventData(eventName);
                     data.intValue = this.getValue(eventMap, "int", 0);
                     data.floatValue = this.getValue(eventMap, "float", 0);
-                    data.stringValue = this.getValue(eventMap, "string", null);
+                    data.stringValue = this.getValue(eventMap, "string", "");
                     skeletonData.events.push(data);
                 }
             }

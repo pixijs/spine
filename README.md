@@ -48,6 +48,28 @@ declare module PIXI {
 
 ### How to use spine events
 
+spine-ts way
+
+```js
+animation.state.addListener({
+    event: function(entry, event) { console.log('event fired '+event.data+' at track' + entry.trackIndex) },
+    complete: function(entry) { console.log('track '+trackIndex+' completed '+entry.loopsCount()+' times') },
+    start: function(entry) { console.log('animation is set at '+entry.trackIndex) },
+    end: function(entry) { console.log('animation was ended at '+entry.trackIndex) },
+    
+    
+    dispose: function(entry) { console.log('animation was disposed at '+entry.trackIndex) },
+    interrupted: function(entry) { console.log('animation was interrupted at '+entry.trackIndex) }
+})
+
+animation.state.addAnimation(0, 'walk', true);
+animation.state.tracks[0].listener = { 
+    complete: function(trackEntry, count) { console.log('my track completed '+entry.loopsCount()+' times') }
+}
+
+```
+
+DEPRECATED, OLD WAY:
 
 ```js
 animation.state.onEvent = function(trackIndex, event) { console.log('event fired '+event.data) }

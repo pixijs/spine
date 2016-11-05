@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -30,241 +29,272 @@
  *****************************************************************************/
 
 module PIXI.spine.core {
-    export interface Map<T> {
-        [key: string]: T;
-    }
+	export interface Map<T> {
+		[key: string]: T;
+	}
 
-    export interface Disposable {
-        dispose (): void;
-    }
+	export class IntSet {
+		array = new Array<number>();
 
-    export class Color {
-        public static WHITE = new Color(1, 1, 1, 1);
-        public static RED = new Color(1, 0, 0, 1);
-        public static GREEN = new Color(0, 1, 0, 1);
-        public static BLUE = new Color(0, 0, 1, 1);
-        public static MAGENTA = new Color(1, 0, 1, 1);
+		add (value: number): boolean {
+			let contains = this.contains(value);
+			this.array[value | 0] = value | 0;
+			return !contains;
+		}
 
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 0) {
-        }
+		contains (value: number) {
+			return this.array[value | 0] != undefined;
+		}
 
-        set(r: number, g: number, b: number, a: number) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-            this.clamp();
-            return this;
-        }
+		remove (value: number) {
+			this.array[value | 0] = undefined;
+		}
 
-        setFromColor(c: Color) {
-            this.r = c.r;
-            this.g = c.g;
-            this.b = c.b;
-            this.a = c.a;
-            return this;
-        }
+		clear () {
+			this.array.length = 0;
+		}
+	}
 
-        setFromString(hex: string) {
-            hex = hex.charAt(0) == '#' ? hex.substr(1) : hex;
-            this.r = parseInt(hex.substr(0, 2), 16) / 255.0;
-            this.g = parseInt(hex.substr(2, 2), 16) / 255.0;
-            this.b = parseInt(hex.substr(4, 2), 16) / 255.0;
-            this.a = (hex.length != 8 ? 255 : parseInt(hex.substr(6, 2), 16)) / 255.0;
-            return this;
-        }
+	export interface Disposable {
+		dispose (): void;
+	}
 
-        add(r: number, g: number, b: number, a: number) {
-            this.r += r;
-            this.g += g;
-            this.b += b;
-            this.a += a;
-            this.clamp();
-            return this;
-        }
+	export class Color {
+		public static WHITE = new Color(1, 1, 1, 1);
+		public static RED = new Color(1, 0, 0, 1);
+		public static GREEN = new Color(0, 1, 0, 1);
+		public static BLUE = new Color(0, 0, 1, 1);
+		public static MAGENTA = new Color(1, 0, 1, 1);
 
-        clamp() {
-            if (this.r < 0) this.r = 0;
-            else if (this.r > 1) this.r = 1;
+		constructor (public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 0) {
+		}
 
-            if (this.g < 0) this.g = 0;
-            else if (this.g > 1) this.g = 1;
+		set (r: number, g: number, b: number, a: number) {
+			this.r = r;
+			this.g = g;
+			this.b = b;
+			this.a = a;
+			this.clamp();
+			return this;
+		}
 
-            if (this.b < 0) this.b = 0;
-            else if (this.b > 1) this.b = 1;
+		setFromColor (c: Color) {
+			this.r = c.r;
+			this.g = c.g;
+			this.b = c.b;
+			this.a = c.a;
+			return this;
+		}
 
-            if (this.a < 0) this.a = 0;
-            else if (this.a > 1) this.a = 1;
-            return this;
-        }
-    }
+		setFromString (hex: string) {
+			hex = hex.charAt(0) == '#' ? hex.substr(1) : hex;
+			this.r = parseInt(hex.substr(0, 2), 16) / 255.0;
+			this.g = parseInt(hex.substr(2, 2), 16) / 255.0;
+			this.b = parseInt(hex.substr(4, 2), 16) / 255.0;
+			this.a = (hex.length != 8 ? 255 : parseInt(hex.substr(6, 2), 16)) / 255.0;
+			return this;
+		}
 
-    export class MathUtils {
-        static PI = 3.1415927;
-        static PI2 = MathUtils.PI * 2;
-        static radiansToDegrees = 180 / MathUtils.PI;
-        static radDeg = MathUtils.radiansToDegrees;
-        static degreesToRadians = MathUtils.PI / 180;
-        static degRad = MathUtils.degreesToRadians;
+		add (r: number, g: number, b: number, a: number) {
+			this.r += r;
+			this.g += g;
+			this.b += b;
+			this.a += a;
+			this.clamp();
+			return this;
+		}
 
-        static clamp(value: number, min: number, max: number) {
-            if (value < min) return min;
-            if (value > max) return max;
-            return value;
-        }
+		clamp () {
+			if (this.r < 0) this.r = 0;
+			else if (this.r > 1) this.r = 1;
 
-        static cosDeg(degrees: number) {
-            return Math.cos(degrees * MathUtils.degRad);
-        }
+			if (this.g < 0) this.g = 0;
+			else if (this.g > 1) this.g = 1;
 
-        static sinDeg(degrees: number) {
-            return Math.sin(degrees * MathUtils.degRad);
-        }
+			if (this.b < 0) this.b = 0;
+			else if (this.b > 1) this.b = 1;
 
-        static signum(value: number): number {
-            return value >= 0 ? 1 : -1;
-        }
+			if (this.a < 0) this.a = 0;
+			else if (this.a > 1) this.a = 1;
+			return this;
+		}
+	}
 
-        static toInt(x: number) {
-            return x > 0 ? Math.floor(x) : Math.ceil(x);
-        }
+	export class MathUtils {
+		static PI = 3.1415927;
+		static PI2 = MathUtils.PI * 2;
+		static radiansToDegrees = 180 / MathUtils.PI;
+		static radDeg = MathUtils.radiansToDegrees;
+		static degreesToRadians = MathUtils.PI / 180;
+		static degRad = MathUtils.degreesToRadians;
 
-        static cbrt(x: number) {
-            var y = Math.pow(Math.abs(x), 1 / 3);
-            return x < 0 ? -y : y;
-        }
-    }
+		static clamp (value: number, min: number, max: number) {
+			if (value < min) return min;
+			if (value > max) return max;
+			return value;
+		}
 
-    export class Utils {
-        static SUPPORTS_TYPED_ARRAYS = typeof(Float32Array) !== "undefined";
+		static cosDeg (degrees: number) {
+			return Math.cos(degrees * MathUtils.degRad);
+		}
 
-        static arrayCopy<T>(source: ArrayLike<T>, sourceStart: number, dest: ArrayLike<T>, destStart: number, numElements: number) {
-            for (let i = sourceStart, j = destStart; i < sourceStart + numElements; i++, j++) {
-                dest[j] = source[i];
-            }
-        }
+		static sinDeg (degrees: number) {
+			return Math.sin(degrees * MathUtils.degRad);
+		}
 
-        static setArraySize<T>(array: Array<T>, size: number, value: any = 0): Array<T> {
-            let oldSize = array.length;
-            if (oldSize == size) return array;
-            array.length = size;
-            if (oldSize < size) {
-                for (let i = oldSize; i < size; i++) array[i] = value;
-            }
-            return array;
-        }
+		static signum (value: number): number {
+			return value > 0 ? 1 : value < 0 ? -1 : 0;
+		}
 
-        static newArray<T>(size: number, defaultValue: T): Array<T> {
-            let array = new Array<T>(size);
-            for (let i = 0; i < size; i++) array[i] = defaultValue;
-            return array;
-        }
+		static toInt (x: number) {
+			return x > 0 ? Math.floor(x) : Math.ceil(x);
+		}
 
-        static newFloatArray(size: number): ArrayLike<number> {
-            if (Utils.SUPPORTS_TYPED_ARRAYS) {
-                return new Float32Array(size)
-            } else {
-                let array = new Array<number>(size);
-                for (let i = 0; i < array.length; i++) array[i] = 0;
-                return array;
-            }
-        }
+		static cbrt (x: number) {
+			var y = Math.pow(Math.abs(x), 1/3);
+			return x < 0 ? -y : y;
+		}
+	}
 
-        static toFloatArray(array: Array<number>) {
-            return Utils.SUPPORTS_TYPED_ARRAYS ? new Float32Array(array) : array;
-        }
-    }
+	export class Utils {
+		static SUPPORTS_TYPED_ARRAYS = typeof(Float32Array) !== "undefined";
 
-    export class DebugUtils {
-        static logBones(skeleton: Skeleton) {
-            for (let i = 0; i < skeleton.bones.length; i++) {
-                let bone = skeleton.bones[i];
-                let m = bone.matrix;
-                console.log(bone.data.name + ", " + m.a + ", " + m.b + ", " + m.c + ", " + m.d + ", " + m.tx + ", " + m.ty);
-            }
-        }
-    }
+		static arrayCopy<T> (source: ArrayLike<T>, sourceStart: number, dest: ArrayLike<T>, destStart: number, numElements: number) {
+			for (let i = sourceStart, j = destStart; i < sourceStart + numElements; i++, j++) {
+				dest[j] = source[i];
+			}
+		}
 
-    export class Pool<T> {
-        private items = new Array<T>();
-        private instantiator: () => T;
+		static setArraySize<T> (array: Array<T>, size: number, value: any = 0): Array<T> {
+			let oldSize = array.length;
+			if (oldSize == size) return array;
+			array.length = size;
+			if (oldSize < size) {
+				for (let i = oldSize; i < size; i++) array[i] = value;
+			}
+			return array;
+		}
 
-        constructor(instantiator: () => T) {
-            this.instantiator = instantiator;
-        }
+		static ensureArrayCapacity<T> (array: Array<T>, size: number, value: any = 0): Array<T> {
+			if (array.length >= size) return array;
+			return Utils.setArraySize(array, size, value);
+		}
 
-        obtain() {
-            return this.items.length > 0 ? this.items.pop() : this.instantiator();
-        }
+		static newArray<T> (size: number, defaultValue: T): Array<T> {
+			let array = new Array<T>(size);
+			for (let i = 0; i < size; i++) array[i] = defaultValue;
+			return array;
+		}
 
-        free(item: T) {
-            this.items.push(item);
-        }
+		static newFloatArray (size: number): ArrayLike<number> {
+			if (Utils.SUPPORTS_TYPED_ARRAYS) {
+				return new Float32Array(size)
+			} else {
+				 let array = new Array<number>(size);
+				 for (let i = 0; i < array.length; i++) array[i] = 0;
+				 return array;
+			}
+		}
 
-        freeAll(items: ArrayLike<T>) {
-            for (let i = 0; i < items.length; i++) this.items[i] = items[i];
-        }
+		static toFloatArray (array: Array<number>) {
+			return Utils.SUPPORTS_TYPED_ARRAYS ? new Float32Array(array) : array;
+		}
+	}
 
-        clear() {
-            this.items.length = 0;
-        }
-    }
+	export class DebugUtils {
+		static logBones(skeleton: Skeleton) {
+			for (let i = 0; i < skeleton.bones.length; i++) {
+				let bone = skeleton.bones[i]
+                let mat = bone.matrix
+				console.log(bone.data.name + ", " + mat.a + ", " + mat.b + ", " + mat.c + ", " + mat.d + ", " + mat.tx + ", " + mat.ty);
+			}
+		}
+	}
 
-    export class Vector2 {
-        constructor(public x = 0, public y = 0) {
-        }
+	export class Pool<T> {
+		private items = new Array<T>();
+		private instantiator: () => T;
 
-        set(x: number, y: number): Vector2 {
-            this.x = x;
-            this.y = y;
-            return this;
-        }
+		constructor (instantiator: () => T) {
+			this.instantiator = instantiator;
+		}
 
-        length() {
-            let x = this.x;
-            let y = this.y;
-            return Math.sqrt(x * x + y * y);
-        }
+		obtain () {
+			return this.items.length > 0 ? this.items.pop() : this.instantiator();
+		}
 
-        normalize() {
-            let len = this.length();
-            if (len != 0) {
-                this.x /= len;
-                this.y /= len;
-            }
-            return this;
-        }
-    }
+		free (item: T) {
+			if ((item as any).reset) (item as any).reset();
+			this.items.push(item);
+		}
 
-    export class TimeKeeper {
-        maxDelta = 0.064;
-        framesPerSecond = 0;
-        delta = 0;
-        totalTime = 0;
+		freeAll (items: ArrayLike<T>) {
+			for (let i = 0; i < items.length; i++) {
+				if ((items[i] as any).reset) (items[i] as any).reset();
+				this.items[i] = items[i];
+			}
+		}
 
-        private lastTime = Date.now() / 1000;
-        private frameCount = 0;
-        private frameTime = 0;
+		clear () {
+			this.items.length = 0;
+		}
+	}
 
-        update() {
-            var now = Date.now() / 1000;
-            this.delta = now - this.lastTime;
-            this.frameTime += this.delta;
-            this.totalTime += this.delta;
-            if (this.delta > this.maxDelta) this.delta = this.maxDelta;
-            this.lastTime = now;
+	export class Vector2 {
+		constructor (public x = 0, public y = 0) {
+		}
 
-            this.frameCount++;
-            if (this.frameTime > 1) {
-                this.framesPerSecond = this.frameCount / this.frameTime;
-                this.frameTime = 0;
-                this.frameCount = 0;
-            }
-        }
-    }
+		set (x: number, y: number): Vector2 {
+			this.x = x;
+			this.y = y;
+			return this;
+		}
 
-    export interface ArrayLike<T> {
-        length: number;
-        [n: number]: T;
-    }
+		length () {
+			let x = this.x;
+			let y = this.y;
+			return Math.sqrt(x * x + y * y);
+		}
+
+		normalize () {
+			let len = this.length();
+			if (len != 0) {
+				this.x /= len;
+				this.y /= len;
+			}
+			return this;
+		}
+	}
+
+	export class TimeKeeper {
+		maxDelta = 0.064;
+		framesPerSecond = 0;
+		delta = 0;
+		totalTime = 0;
+
+		private lastTime = Date.now() / 1000;
+		private frameCount = 0;
+		private frameTime = 0;
+
+		update () {
+			var now = Date.now() / 1000;
+			this.delta = now - this.lastTime;
+			this.frameTime += this.delta;
+			this.totalTime += this.delta;
+			if (this.delta > this.maxDelta) this.delta = this.maxDelta;
+			this.lastTime = now;
+
+			this.frameCount++;
+			if (this.frameTime > 1) {
+				this.framesPerSecond = this.frameCount / this.frameTime;
+				this.frameTime = 0;
+				this.frameCount = 0;
+			}
+		}
+	}
+
+	export interface ArrayLike<T> {
+		length: number;
+		[n: number]: T;
+	}
 }
