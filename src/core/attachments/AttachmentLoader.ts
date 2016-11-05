@@ -1,9 +1,3 @@
-import {Skin} from "../Skin";
-import {RegionAttachment} from "./RegionAttachment";
-import {MeshAttachment} from "./MeshAttachment";
-import {BoundingBoxAttachment} from "./BoundingBoxAttachment";
-import {PathAttachment} from "./PathAttachment";
-
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -35,16 +29,18 @@ import {PathAttachment} from "./PathAttachment";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export interface AttachmentLoader {
-    /** @return May be null to not load an attachment. */
-    newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
+module PIXI.spine.core {
+    export interface AttachmentLoader {
+        /** @return May be null to not load an attachment. */
+        newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
 
-    /** @return May be null to not load an attachment. */
-    newMeshAttachment (skin: Skin, name: string, path: string) : MeshAttachment;
+        /** @return May be null to not load an attachment. */
+        newMeshAttachment (skin: Skin, name: string, path: string): MeshAttachment;
 
-    /** @return May be null to not load an attachment. */
-    newBoundingBoxAttachment (skin: Skin, name: string) : BoundingBoxAttachment;
+        /** @return May be null to not load an attachment. */
+        newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment;
 
-    /** @return May be null to not load an attachment */
-    newPathAttachment(skin: Skin, name: string): PathAttachment;
+        /** @return May be null to not load an attachment */
+        newPathAttachment(skin: Skin, name: string): PathAttachment;
+    }
 }

@@ -1,8 +1,3 @@
-import {IkConstraintData} from "./IkConstraintData";
-import {Bone} from "./Bone";
-import {Skeleton} from "./Skeleton";
-import {MathUtils} from "./Utils";
-import {Constraint} from "./Constraint";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -34,203 +29,205 @@ import {Constraint} from "./Constraint";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class IkConstraint implements Constraint {
-    data: IkConstraintData;
-    bones: Array<Bone>;
-    target: Bone;
-    mix = 1;
-    bendDirection = 0;
+module PIXI.spine.core {
+    export class IkConstraint implements Constraint {
+        data: IkConstraintData;
+        bones: Array<Bone>;
+        target: Bone;
+        mix = 1;
+        bendDirection = 0;
 
-    level = 0;
+        level = 0;
 
-    constructor (data: IkConstraintData, skeleton: Skeleton) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
-        this.data = data;
-        this.mix = data.mix;
-        this.bendDirection = data.bendDirection;
+        constructor(data: IkConstraintData, skeleton: Skeleton) {
+            if (data == null) throw new Error("data cannot be null.");
+            if (skeleton == null) throw new Error("skeleton cannot be null.");
+            this.data = data;
+            this.mix = data.mix;
+            this.bendDirection = data.bendDirection;
 
-        this.bones = new Array<Bone>();
-        for (let i = 0; i < data.bones.length; i++)
-            this.bones.push(skeleton.findBone(data.bones[i].name));
-        this.target = skeleton.findBone(data.target.name);
-    }
-
-    getOrder () {
-        return this.data.order;
-    }
-
-    apply () {
-        this.update();
-    }
-
-    update () {
-        let target = this.target;
-        let bones = this.bones;
-        switch (bones.length) {
-        case 1:
-            this.apply1(bones[0], target.worldX, target.worldY, this.mix);
-            break;
-        case 2:
-            this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.mix);
-            break;
+            this.bones = new Array<Bone>();
+            for (let i = 0; i < data.bones.length; i++)
+                this.bones.push(skeleton.findBone(data.bones[i].name));
+            this.target = skeleton.findBone(data.target.name);
         }
-    }
 
-    /** Adjusts the bone rotation so the tip is as close to the target position as possible. The target is specified in the world
-     * coordinate system. */
-    apply1 (bone: Bone, targetX: number, targetY: number, alpha: number) {
-        if (!bone.appliedValid) bone.updateAppliedTransform();
-        let pp = bone.parent.matrix;
-        let id = 1 / (pp.a * pp.d - pp.b * pp.c);
-        let x = targetX - pp.tx, y = targetY - pp.ty;
-        let tx = (x * pp.d - y * pp.c) * id - bone.ax, ty = (y * pp.a - x * pp.b) * id - bone.ay;
-        let rotationIK = Math.atan2(ty, tx) * MathUtils.radDeg - bone.ashearX - bone.arotation;
-        if (bone.ascaleX < 0) rotationIK += 180;
-        if (rotationIK > 180)
-            rotationIK -= 360;
-        else if (rotationIK < -180) rotationIK += 360;
-        bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, bone.ascaleX, bone.ascaleY, bone.ashearX,
-            bone.ashearY);
-    }
+        getOrder() {
+            return this.data.order;
+        }
 
-    /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
-     * target is specified in the world coordinate system.
-     * @param child A direct descendant of the parent bone. */
-    apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number) {
-        if (alpha == 0) {
-            child.updateWorldTransform();
-            return;
+        apply() {
+            this.update();
         }
-        if (!parent.appliedValid) parent.updateAppliedTransform();
-        if (!child.appliedValid) child.updateAppliedTransform();
-        let px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
 
-        let os1 = 0, os2 = 0, s2 = 0;
-        if (psx < 0) {
-            psx = -psx;
-            os1 = 180;
-            s2 = -1;
-        } else {
-            os1 = 0;
-            s2 = 1;
+        update() {
+            let target = this.target;
+            let bones = this.bones;
+            switch (bones.length) {
+                case 1:
+                    this.apply1(bones[0], target.worldX, target.worldY, this.mix);
+                    break;
+                case 2:
+                    this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.mix);
+                    break;
+            }
         }
-        if (psy < 0) {
-            psy = -psy;
-            s2 = -s2;
+
+        /** Adjusts the bone rotation so the tip is as close to the target position as possible. The target is specified in the world
+         * coordinate system. */
+        apply1(bone: Bone, targetX: number, targetY: number, alpha: number) {
+            if (!bone.appliedValid) bone.updateAppliedTransform();
+            let pp = bone.parent.matrix;
+            let id = 1 / (pp.a * pp.d - pp.b * pp.c);
+            let x = targetX - pp.tx, y = targetY - pp.ty;
+            let tx = (x * pp.d - y * pp.c) * id - bone.ax, ty = (y * pp.a - x * pp.b) * id - bone.ay;
+            let rotationIK = Math.atan2(ty, tx) * MathUtils.radDeg - bone.ashearX - bone.arotation;
+            if (bone.ascaleX < 0) rotationIK += 180;
+            if (rotationIK > 180)
+                rotationIK -= 360;
+            else if (rotationIK < -180) rotationIK += 360;
+            bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, bone.ascaleX, bone.ascaleY, bone.ashearX,
+                bone.ashearY);
         }
-        if (csx < 0) {
-            csx = -csx;
-            os2 = 180;
-        } else
-            os2 = 0;
-        let pm = parent.matrix;
-        let cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
-        let u = Math.abs(psx - psy) <= 0.0001;
-        if (!u) {
-            cy = 0;
-            cwx = a * cx + pm.tx;
-            cwy = c * cx + pm.ty;
-        } else {
-            cy = child.ay;
-            cwx = a * cx + b * cy + pm.tx;
-            cwy = c * cx + d * cy + pm.ty;
-        }
-        let pp = parent.parent;
-        let ppm = parent.parent.matrix;
-        a = ppm.a;
-        b = ppm.c;
-        c = ppm.b;
-        d = ppm.d;
-        let id = 1 / (a * d - b * c), x = targetX - ppm.tx, y = targetY - ppm.ty;
-        let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
-        x = cwx - ppm.tx;
-        y = cwy - ppm.ty;
-        let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
-        let l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
-        outer:
-        if (u) {
-            l2 *= psx;
-            let cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
-            if (cos < -1)
-                cos = -1;
-            else if (cos > 1) cos = 1;
-            a2 = Math.acos(cos) * bendDir;
-            a = l1 + l2 * cos;
-            b = l2 * Math.sin(a2);
-            a1 = Math.atan2(ty * a - tx * b, tx * a + ty * b);
-        } else {
-            a = psx * l2;
-            b = psy * l2;
-            let aa = a * a, bb = b * b, dd = tx * tx + ty * ty, ta = Math.atan2(ty, tx);
-            c = bb * l1 * l1 + aa * dd - aa * bb;
-            let c1 = -2 * bb * l1, c2 = bb - aa;
-            d = c1 * c1 - 4 * c2 * c;
-            if (d >= 0) {
-                let q = Math.sqrt(d);
-                if (c1 < 0) q = -q;
-                q = -(c1 + q) / 2;
-                let r0 = q / c2, r1 = c / q;
-                let r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
-                if (r * r <= dd) {
-                    y = Math.sqrt(dd - r * r) * bendDir;
-                    a1 = ta - Math.atan2(y, r);
-                    a2 = Math.atan2(y / psy, (r - l1) / psx);
-                    break outer;
-                }
+
+        /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
+         * target is specified in the world coordinate system.
+         * @param child A direct descendant of the parent bone. */
+        apply2(parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number) {
+            if (alpha == 0) {
+                child.updateWorldTransform();
+                return;
             }
-            let minAngle = 0, minDist = Number.MAX_VALUE, minX = 0, minY = 0;
-            let maxAngle = 0, maxDist = 0, maxX = 0, maxY = 0;
-            x = l1 + a;
-            d = x * x;
-            if (d > maxDist) {
-                maxAngle = 0;
-                maxDist = d;
-                maxX = x;
-            }
-            x = l1 - a;
-            d = x * x;
-            if (d < minDist) {
-                minAngle = MathUtils.PI;
-                minDist = d;
-                minX = x;
-            }
-            let angle = Math.acos(-a * l1 / (aa - bb));
-            x = a * Math.cos(angle) + l1;
-            y = b * Math.sin(angle);
-            d = x * x + y * y;
-            if (d < minDist) {
-                minAngle = angle;
-                minDist = d;
-                minX = x;
-                minY = y;
-            }
-            if (d > maxDist) {
-                maxAngle = angle;
-                maxDist = d;
-                maxX = x;
-                maxY = y;
-            }
-            if (dd <= (minDist + maxDist) / 2) {
-                a1 = ta - Math.atan2(minY * bendDir, minX);
-                a2 = minAngle * bendDir;
+            if (!parent.appliedValid) parent.updateAppliedTransform();
+            if (!child.appliedValid) child.updateAppliedTransform();
+            let px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
+
+            let os1 = 0, os2 = 0, s2 = 0;
+            if (psx < 0) {
+                psx = -psx;
+                os1 = 180;
+                s2 = -1;
             } else {
-                a1 = ta - Math.atan2(maxY * bendDir, maxX);
-                a2 = maxAngle * bendDir;
+                os1 = 0;
+                s2 = 1;
             }
+            if (psy < 0) {
+                psy = -psy;
+                s2 = -s2;
+            }
+            if (csx < 0) {
+                csx = -csx;
+                os2 = 180;
+            } else
+                os2 = 0;
+            let pm = parent.matrix;
+            let cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
+            let u = Math.abs(psx - psy) <= 0.0001;
+            if (!u) {
+                cy = 0;
+                cwx = a * cx + pm.tx;
+                cwy = c * cx + pm.ty;
+            } else {
+                cy = child.ay;
+                cwx = a * cx + b * cy + pm.tx;
+                cwy = c * cx + d * cy + pm.ty;
+            }
+            let pp = parent.parent;
+            let ppm = parent.parent.matrix;
+            a = ppm.a;
+            b = ppm.c;
+            c = ppm.b;
+            d = ppm.d;
+            let id = 1 / (a * d - b * c), x = targetX - ppm.tx, y = targetY - ppm.ty;
+            let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
+            x = cwx - ppm.tx;
+            y = cwy - ppm.ty;
+            let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
+            let l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
+            outer:
+                if (u) {
+                    l2 *= psx;
+                    let cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+                    if (cos < -1)
+                        cos = -1;
+                    else if (cos > 1) cos = 1;
+                    a2 = Math.acos(cos) * bendDir;
+                    a = l1 + l2 * cos;
+                    b = l2 * Math.sin(a2);
+                    a1 = Math.atan2(ty * a - tx * b, tx * a + ty * b);
+                } else {
+                    a = psx * l2;
+                    b = psy * l2;
+                    let aa = a * a, bb = b * b, dd = tx * tx + ty * ty, ta = Math.atan2(ty, tx);
+                    c = bb * l1 * l1 + aa * dd - aa * bb;
+                    let c1 = -2 * bb * l1, c2 = bb - aa;
+                    d = c1 * c1 - 4 * c2 * c;
+                    if (d >= 0) {
+                        let q = Math.sqrt(d);
+                        if (c1 < 0) q = -q;
+                        q = -(c1 + q) / 2;
+                        let r0 = q / c2, r1 = c / q;
+                        let r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
+                        if (r * r <= dd) {
+                            y = Math.sqrt(dd - r * r) * bendDir;
+                            a1 = ta - Math.atan2(y, r);
+                            a2 = Math.atan2(y / psy, (r - l1) / psx);
+                            break outer;
+                        }
+                    }
+                    let minAngle = 0, minDist = Number.MAX_VALUE, minX = 0, minY = 0;
+                    let maxAngle = 0, maxDist = 0, maxX = 0, maxY = 0;
+                    x = l1 + a;
+                    d = x * x;
+                    if (d > maxDist) {
+                        maxAngle = 0;
+                        maxDist = d;
+                        maxX = x;
+                    }
+                    x = l1 - a;
+                    d = x * x;
+                    if (d < minDist) {
+                        minAngle = MathUtils.PI;
+                        minDist = d;
+                        minX = x;
+                    }
+                    let angle = Math.acos(-a * l1 / (aa - bb));
+                    x = a * Math.cos(angle) + l1;
+                    y = b * Math.sin(angle);
+                    d = x * x + y * y;
+                    if (d < minDist) {
+                        minAngle = angle;
+                        minDist = d;
+                        minX = x;
+                        minY = y;
+                    }
+                    if (d > maxDist) {
+                        maxAngle = angle;
+                        maxDist = d;
+                        maxX = x;
+                        maxY = y;
+                    }
+                    if (dd <= (minDist + maxDist) / 2) {
+                        a1 = ta - Math.atan2(minY * bendDir, minX);
+                        a2 = minAngle * bendDir;
+                    } else {
+                        a1 = ta - Math.atan2(maxY * bendDir, maxX);
+                        a2 = maxAngle * bendDir;
+                    }
+                }
+            let os = Math.atan2(cy, cx) * s2;
+            let rotation = parent.arotation;
+            a1 = (a1 - os) * MathUtils.radDeg + os1 - rotation;
+            if (a1 > 180)
+                a1 -= 360;
+            else if (a1 < -180) a1 += 360;
+            parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.ascaleX, parent.ascaleY, 0, 0);
+            rotation = child.arotation;
+            a2 = ((a2 + os) * MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
+            if (a2 > 180)
+                a2 -= 360;
+            else if (a2 < -180) a2 += 360;
+            child.updateWorldTransformWith(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
         }
-        let os = Math.atan2(cy, cx) * s2;
-        let rotation = parent.arotation;
-        a1 = (a1 - os) * MathUtils.radDeg + os1 - rotation;
-        if (a1 > 180)
-            a1 -= 360;
-        else if (a1 < -180) a1 += 360;
-        parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.ascaleX, parent.ascaleY, 0, 0);
-        rotation = child.arotation;
-        a2 = ((a2 + os) * MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
-        if (a2 > 180)
-            a2 -= 360;
-        else if (a2 < -180) a2 += 360;
-        child.updateWorldTransformWith(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
     }
 }

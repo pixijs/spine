@@ -1,10 +1,19 @@
 {
 	"compilerOptions": {
-        "moduleResolution": "node",
+        "module": "none",
         "target": "es5",
 		"noImplicitAny": true,
 		"removeComments": true,
-		"preserveConstEnums": true
+		"preserveConstEnums": true,
+        "outFile": "bin/pixi-spine.js",
+        "sourceMap": true,
+        "inlineSources": true,
+        "declaration": true
 	},
-    "files": ["src/index.ts", "src/pixi.js.d.ts"]
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules/**/*"
+    ]
 }

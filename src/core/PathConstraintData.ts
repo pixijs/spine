@@ -1,5 +1,3 @@
-import {BoneData} from "./BoneData";
-import {SlotData} from "./SlotData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -31,30 +29,35 @@ import {SlotData} from "./SlotData";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class PathConstraintData {
-    name: string;
-    order = 0;
-    bones = new Array<BoneData>();
-    target: SlotData;
-    positionMode: PositionMode;
-    spacingMode: SpacingMode;
-    rotateMode: RotateMode;
-    offsetRotation: number;
-    position: number; spacing: number; rotateMix: number; translateMix: number;
+module PIXI.spine.core {
+    export class PathConstraintData {
+        name: string;
+        order = 0;
+        bones = new Array<BoneData>();
+        target: SlotData;
+        positionMode: PositionMode;
+        spacingMode: SpacingMode;
+        rotateMode: RotateMode;
+        offsetRotation: number;
+        position: number;
+        spacing: number;
+        rotateMix: number;
+        translateMix: number;
 
-    constructor (name: string) {
-        this.name = name;
+        constructor(name: string) {
+            this.name = name;
+        }
     }
-}
 
-export enum PositionMode {
-    Fixed, Percent
-}
+    export enum PositionMode {
+        Fixed, Percent
+    }
 
-export enum SpacingMode {
-    Length, Fixed, Percent
-}
+    export enum SpacingMode {
+        Length, Fixed, Percent
+    }
 
-export enum RotateMode {
-    Tangent, Chain, ChainScale
+    export enum RotateMode {
+        Tangent, Chain, ChainScale
+    }
 }

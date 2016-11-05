@@ -1,7 +1,3 @@
-import {Attachment} from "./Attachment";
-import {Color, Utils} from "../Utils";
-import {TextureRegion} from "../Texture";
-import {Slot} from "../Slot";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -33,19 +29,27 @@ import {Slot} from "../Slot";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class RegionAttachment extends Attachment {
-    x = 0; y = 0; scaleX = 1; scaleY = 1; rotation = 0; width = 0; height = 0;
-    color = new Color(1, 1, 1, 1);
+module PIXI.spine.core {
+    export class RegionAttachment extends Attachment {
+        x = 0;
+        y = 0;
+        scaleX = 1;
+        scaleY = 1;
+        rotation = 0;
+        width = 0;
+        height = 0;
+        color = new Color(1, 1, 1, 1);
 
-    path: string;
-    region: TextureRegion;
+        path: string;
+        region: TextureRegion;
 
-    constructor (name:string) {
-        super(name);
-    }
+        constructor(name: string) {
+            super(name);
+        }
 
-    updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number> {
-        return [];
-        //nothing
+        updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number> {
+            return [];
+            //nothing
+        }
     }
 }

@@ -1,5 +1,3 @@
-import {Slot} from "../Slot";
-import {ArrayLike} from "../Utils";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -31,96 +29,98 @@ import {ArrayLike} from "../Utils";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export abstract class Attachment {
-    name: string;
+module PIXI.spine.core {
+    export abstract class Attachment {
+        name: string;
 
-    constructor (name: string) {
-        if (name == null) throw new Error("name cannot be null.");
-        this.name = name;
-    }
-}
-
-export abstract class VertexAttachment extends Attachment {
-    bones: Array<number>;
-    vertices: ArrayLike<number>;
-    worldVerticesLength = 0;
-
-    constructor (name: string) {
-        super(name);
-    }
-
-    computeWorldVertices (slot: Slot, worldVertices: ArrayLike<number>) {
-        this.computeWorldVerticesWith(slot, 0, this.worldVerticesLength, worldVertices, 0);
-    }
-
-    /** Transforms local vertices to world coordinates.
-     * @param start The index of the first local vertex value to transform. Each vertex has 2 values, x and y.
-     * @param count The number of world vertex values to output. Must be <= {@link #getWorldVerticesLength()} - start.
-     * @param worldVertices The output world vertices. Must have a length >= offset + count.
-     * @param offset The worldVertices index to begin writing values. */
-    computeWorldVerticesWith (slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number) {
-        count += offset;
-        let skeleton = slot.bone.skeleton;
-        let deformArray = slot.attachmentVertices;
-        let vertices = this.vertices;
-        let bones = this.bones;
-        if (bones == null) {
-            if (deformArray.length > 0) vertices = deformArray;
-            let bone = slot.bone;
-            let m = bone.matrix;
-            let x = m.tx;
-            let y = m.ty;
-            let a = m.a, b = m.c, c = m.b, d = m.d;
-            for (let v = start, w = offset; w < count; v += 2, w += 2) {
-                let vx = vertices[v], vy = vertices[v + 1];
-                worldVertices[w] = vx * a + vy * b + x;
-                worldVertices[w + 1] = vx * c + vy * d + y;
-            }
-            return;
+        constructor(name: string) {
+            if (name == null) throw new Error("name cannot be null.");
+            this.name = name;
         }
-        let v = 0, skip = 0;
-        for (let i = 0; i < start; i += 2) {
-            let n = bones[v];
-            v += n + 1;
-            skip += n;
+    }
+
+    export abstract class VertexAttachment extends Attachment {
+        bones: Array<number>;
+        vertices: ArrayLike<number>;
+        worldVerticesLength = 0;
+
+        constructor(name: string) {
+            super(name);
         }
-        let skeletonBones = skeleton.bones;
-        if (deformArray.length == 0) {
-            for (let w = offset, b = skip * 3; w < count; w += 2) {
-                let wx = 0, wy = 0;
-                let n = bones[v++];
-                n += v;
-                for (; v < n; v++, b += 3) {
-                    let bone = skeletonBones[bones[v]];
-                    let m = bone.matrix;
-                    let vx = vertices[b], vy = vertices[b + 1], weight = vertices[b + 2];
-                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
-                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
+
+        computeWorldVertices(slot: Slot, worldVertices: ArrayLike<number>) {
+            this.computeWorldVerticesWith(slot, 0, this.worldVerticesLength, worldVertices, 0);
+        }
+
+        /** Transforms local vertices to world coordinates.
+         * @param start The index of the first local vertex value to transform. Each vertex has 2 values, x and y.
+         * @param count The number of world vertex values to output. Must be <= {@link #getWorldVerticesLength()} - start.
+         * @param worldVertices The output world vertices. Must have a length >= offset + count.
+         * @param offset The worldVertices index to begin writing values. */
+        computeWorldVerticesWith(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number) {
+            count += offset;
+            let skeleton = slot.bone.skeleton;
+            let deformArray = slot.attachmentVertices;
+            let vertices = this.vertices;
+            let bones = this.bones;
+            if (bones == null) {
+                if (deformArray.length > 0) vertices = deformArray;
+                let bone = slot.bone;
+                let m = bone.matrix;
+                let x = m.tx;
+                let y = m.ty;
+                let a = m.a, b = m.c, c = m.b, d = m.d;
+                for (let v = start, w = offset; w < count; v += 2, w += 2) {
+                    let vx = vertices[v], vy = vertices[v + 1];
+                    worldVertices[w] = vx * a + vy * b + x;
+                    worldVertices[w + 1] = vx * c + vy * d + y;
                 }
-                worldVertices[w] = wx;
-                worldVertices[w + 1] = wy;
+                return;
             }
-        } else {
-            let deform = deformArray;
-            for (let w = offset, b = skip * 3, f = skip << 1; w < count; w += 2) {
-                let wx = 0, wy = 0;
-                let n = bones[v++];
-                n += v;
-                for (; v < n; v++, b += 3, f += 2) {
-                    let bone = skeletonBones[bones[v]];
-                    let m = bone.matrix;
-                    let vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1], weight = vertices[b + 2];
-                    wx += (vx * m.a + vy * m.c + m.tx) * weight;
-                    wy += (vx * m.b + vy * m.d + m.ty) * weight;
+            let v = 0, skip = 0;
+            for (let i = 0; i < start; i += 2) {
+                let n = bones[v];
+                v += n + 1;
+                skip += n;
+            }
+            let skeletonBones = skeleton.bones;
+            if (deformArray.length == 0) {
+                for (let w = offset, b = skip * 3; w < count; w += 2) {
+                    let wx = 0, wy = 0;
+                    let n = bones[v++];
+                    n += v;
+                    for (; v < n; v++, b += 3) {
+                        let bone = skeletonBones[bones[v]];
+                        let m = bone.matrix;
+                        let vx = vertices[b], vy = vertices[b + 1], weight = vertices[b + 2];
+                        wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                        wy += (vx * m.b + vy * m.d + m.ty) * weight;
+                    }
+                    worldVertices[w] = wx;
+                    worldVertices[w + 1] = wy;
                 }
-                worldVertices[w] = wx;
-                worldVertices[w + 1] = wy;
+            } else {
+                let deform = deformArray;
+                for (let w = offset, b = skip * 3, f = skip << 1; w < count; w += 2) {
+                    let wx = 0, wy = 0;
+                    let n = bones[v++];
+                    n += v;
+                    for (; v < n; v++, b += 3, f += 2) {
+                        let bone = skeletonBones[bones[v]];
+                        let m = bone.matrix;
+                        let vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1], weight = vertices[b + 2];
+                        wx += (vx * m.a + vy * m.c + m.tx) * weight;
+                        wy += (vx * m.b + vy * m.d + m.ty) * weight;
+                    }
+                    worldVertices[w] = wx;
+                    worldVertices[w + 1] = wy;
+                }
             }
         }
-    }
 
-    /** Returns true if a deform originally applied to the specified attachment should be applied to this attachment. */
-    applyDeform (sourceAttachment: VertexAttachment) {
-        return this == sourceAttachment;
+        /** Returns true if a deform originally applied to the specified attachment should be applied to this attachment. */
+        applyDeform(sourceAttachment: VertexAttachment) {
+            return this == sourceAttachment;
+        }
     }
 }

@@ -1,4 +1,3 @@
-import {Updatable} from "./Updatable";
 /******************************************************************************
  * Spine Runtimes Software License v2.5
  *
@@ -29,6 +28,8 @@ import {Updatable} from "./Updatable";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export interface Constraint extends Updatable {
-    getOrder(): number;
+module PIXI.spine.core {
+    export interface Constraint extends Updatable {
+        getOrder(): number;
+    }
 }

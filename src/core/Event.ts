@@ -1,4 +1,3 @@
-import {EventData} from "./EventData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -30,16 +29,18 @@ import {EventData} from "./EventData";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class Event {
-    data: EventData;
-    intValue: number;
-    floatValue: number;
-    stringValue: string;
-    time: number;
+module PIXI.spine.core {
+    export class Event {
+        data: EventData;
+        intValue: number;
+        floatValue: number;
+        stringValue: string;
+        time: number;
 
-    constructor (time: number, data: EventData) {
-        if (data == null) throw new Error("data cannot be null.");
-        this.time = time;
-        this.data = data;
+        constructor(time: number, data: EventData) {
+            if (data == null) throw new Error("data cannot be null.");
+            this.time = time;
+            this.data = data;
+        }
     }
 }

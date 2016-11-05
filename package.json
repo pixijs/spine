@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Spine implementation for pixi v^3 and v^4",
   "author": "Mat Groves",
   "contributors": [
@@ -22,16 +22,13 @@
     "clean": "rimraf bin && mkdirp bin",
     "prestart": "npm run clean",
     "start": "parallelshell \"npm run watch\"",
-    "watch": "pixify-ts -n PIXI.spine -o pixi-spine -w",
-    "watch:lint": "watch \"jshint --reporter=scripts/reporter.js scripts src test || exit 0\" src",
-    "lint": "jshint --reporter=scripts/reporter.js scripts src",
+    "watch": "tsc -w",
     "prebuild": "npm run clean",
-    "build": "pixify-ts -n PIXI.spine -o pixi-spine",
+    "build": "tsc",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md"
   },
   "files": [
     "bin/",
-    "build-es6/",
     "src/",
     "CONTRIBUTING.md",
     "LICENSE",
@@ -42,24 +39,12 @@
     "glslify": "^5.0.2"
   },
   "devDependencies": {
-    "browserify-versionify": "^1.0.6",
     "del": "^2.2.0",
     "jaguarjs-jsdoc": "^1.0.1",
     "jsdoc": "^3.4.0",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
-    "jshint-stylish-summary": "^0.1.2",
-    "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "parallelshell": "^2.0.0",
-    "pixify-ts": "^1.4.0",
     "rimraf": "^2.5.3",
-    "watch": "^0.19.1"
-  },
-  "browserify": {
-    "transform": [
-      "glslify",
-      "browserify-versionify"
-    ]
+    "typescript": "^2.0.3"
   }
 }

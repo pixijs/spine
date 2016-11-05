@@ -1,8 +1,3 @@
-import {Attachment} from "./attachments";
-import {SlotData} from "./SlotData";
-import {Bone} from "./Bone";
-import {Color} from "./Utils";
-import {TextureRegion} from "./Texture";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -34,67 +29,69 @@ import {TextureRegion} from "./Texture";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class Slot {
-    //this is for PIXI
-    currentMesh: any;
-    currentSprite: any;
-    meshes: any;
-    currentMeshName: String;
-    sprites: any;
-    currentSpriteName: String;
-    blendMode: number;
-    //assign hack region a bit later
-    tempRegion: TextureRegion;
-    tempAttachment: Attachment;
+module PIXI.spine.core {
+    export class Slot {
+        //this is for PIXI
+        currentMesh: any;
+        currentSprite: any;
+        meshes: any;
+        currentMeshName: String;
+        sprites: any;
+        currentSpriteName: String;
+        blendMode: number;
+        //assign hack region a bit later
+        tempRegion: TextureRegion;
+        tempAttachment: Attachment;
 
-    //canon
-    data: SlotData;
-    bone: Bone;
-    color: Color;
-    attachment: Attachment;
-    private attachmentTime: number;
-    attachmentVertices = new Array<number>();
+        //canon
+        data: SlotData;
+        bone: Bone;
+        color: Color;
+        attachment: Attachment;
+        private attachmentTime: number;
+        attachmentVertices = new Array<number>();
 
-    constructor (data: SlotData, bone: Bone) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (bone == null) throw new Error("bone cannot be null.");
-        this.data = data;
-        this.bone = bone;
-        this.color = new Color();
-        this.blendMode = data.blendMode;
-        this.setToSetupPose();
-    }
+        constructor(data: SlotData, bone: Bone) {
+            if (data == null) throw new Error("data cannot be null.");
+            if (bone == null) throw new Error("bone cannot be null.");
+            this.data = data;
+            this.bone = bone;
+            this.color = new Color();
+            this.blendMode = data.blendMode;
+            this.setToSetupPose();
+        }
 
-    /** @return May be null. */
-    getAttachment (): Attachment {
-        return this.attachment;
-    }
+        /** @return May be null. */
+        getAttachment(): Attachment {
+            return this.attachment;
+        }
 
-    /** Sets the attachment and if it changed, resets {@link #getAttachmentTime()} and clears {@link #getAttachmentVertices()}.
-     * @param attachment May be null. */
-    setAttachment (attachment: Attachment) {
-        if (this.attachment == attachment) return;
-        this.attachment = attachment;
-        this.attachmentTime = this.bone.skeleton.time;
-        this.attachmentVertices.length = 0;
-    }
+        /** Sets the attachment and if it changed, resets {@link #getAttachmentTime()} and clears {@link #getAttachmentVertices()}.
+         * @param attachment May be null. */
+        setAttachment(attachment: Attachment) {
+            if (this.attachment == attachment) return;
+            this.attachment = attachment;
+            this.attachmentTime = this.bone.skeleton.time;
+            this.attachmentVertices.length = 0;
+        }
 
-    setAttachmentTime (time: number) {
-        this.attachmentTime = this.bone.skeleton.time - time;
-    }
+        setAttachmentTime(time: number) {
+            this.attachmentTime = this.bone.skeleton.time - time;
+        }
 
-    /** Returns the time since the attachment was set. */
-    getAttachmentTime (): number {
-        return this.bone.skeleton.time - this.attachmentTime;
-    }
+        /** Returns the time since the attachment was set. */
+        getAttachmentTime(): number {
+            return this.bone.skeleton.time - this.attachmentTime;
+        }
 
-    setToSetupPose () {
-        this.color.setFromColor(this.data.color);
-        if (this.data.attachmentName == null)
-            this.attachment = null;
-        else {
-            this.attachment = null;
-            this.setAttachment(this.bone.skeleton.getAttachment(this.data.index, this.data.attachmentName));
+        setToSetupPose() {
+            this.color.setFromColor(this.data.color);
+            if (this.data.attachmentName == null)
+                this.attachment = null;
+            else {
+                this.attachment = null;
+                this.setAttachment(this.bone.skeleton.getAttachment(this.data.index, this.data.attachmentName));
+            }
         }
     }
 }

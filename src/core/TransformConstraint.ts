@@ -1,8 +1,3 @@
-import {TransformConstraintData} from "./TransformConstraintData";
-import {Bone} from "./Bone";
-import {Vector2, MathUtils} from "./Utils";
-import {Skeleton} from "./Skeleton";
-import {Constraint} from "./Constraint";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -34,99 +29,104 @@ import {Constraint} from "./Constraint";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class TransformConstraint implements Constraint {
-    data: TransformConstraintData;
-    bones: Array<Bone>;
-    target: Bone;
-    rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
-    temp = new Vector2();
+module PIXI.spine.core {
+    export class TransformConstraint implements Constraint {
+        data: TransformConstraintData;
+        bones: Array<Bone>;
+        target: Bone;
+        rotateMix = 0;
+        translateMix = 0;
+        scaleMix = 0;
+        shearMix = 0;
+        temp = new Vector2();
 
-    constructor (data: TransformConstraintData, skeleton: Skeleton) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
-        this.data = data;
-        this.rotateMix = data.rotateMix;
-        this.translateMix = data.translateMix;
-        this.scaleMix = data.scaleMix;
-        this.shearMix = data.shearMix;
-        this.bones = new Array<Bone>();
-        for (let i = 0; i < data.bones.length; i++)
-            this.bones.push(skeleton.findBone(data.bones[i].name));
-        this.target = skeleton.findBone(data.target.name);
-    }
-
-    apply () {
-        this.update();
-    }
-
-    update () {
-        let rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
-        let target = this.target;
-        let ta = target.matrix.a, tb = target.matrix.c, tc = target.matrix.b, td = target.matrix.d;
-        let bones = this.bones;
-        for (let i = 0, n = bones.length; i < n; i++) {
-            let bone = bones[i];
-            let m = bone.matrix;
-            let modified = false;
-
-            if (rotateMix != 0) {
-                let a = m.a, b = m.c, c = m.b, d = m.d;
-                let r = Math.atan2(tc, ta) - Math.atan2(c, a) + this.data.offsetRotation * MathUtils.degRad;
-                if (r > MathUtils.PI)
-                    r -= MathUtils.PI2;
-                else if (r < -MathUtils.PI)
-                    r += MathUtils.PI2;
-                r *= rotateMix;
-                let cos = Math.cos(r), sin = Math.sin(r);
-                m.a = cos * a - sin * c;
-                m.c = cos * b - sin * d;
-                m.b = sin * a + cos * c;
-                m.d = sin * b + cos * d;
-                modified = true;
-            }
-
-            if (translateMix != 0) {
-                let temp = this.temp;
-                target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
-                m.tx += (temp.x - m.tx) * translateMix;
-                m.ty += (temp.y - m.ty) * translateMix;
-                modified = true;
-            }
-
-            if (scaleMix > 0) {
-                let s = Math.sqrt(m.a * m.a + m.b * m.b);
-                let ts = Math.sqrt(ta * ta + tc * tc);
-                if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleX) * scaleMix) / s;
-                m.a *= s;
-                m.b *= s;
-                s = Math.sqrt(m.c * m.c + m.d * m.d);
-                ts = Math.sqrt(tb * tb + td * td);
-                if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleY) * scaleMix) / s;
-                m.c *= s;
-                m.d *= s;
-                modified = true;
-            }
-
-            if (shearMix > 0) {
-                let b = m.c, d = m.d;
-                let by = Math.atan2(d, b);
-                let r = Math.atan2(td, tb) - Math.atan2(tc, ta) - (by - Math.atan2(m.b, m.a));
-                if (r > MathUtils.PI)
-                    r -= MathUtils.PI2;
-                else if (r < -MathUtils.PI)
-                    r += MathUtils.PI2;
-                r = by + (r + this.data.offsetShearY * MathUtils.degRad) * shearMix;
-                let s = Math.sqrt(b * b + d * d);
-                m.c = Math.cos(r) * s;
-                m.d = Math.sin(r) * s;
-                modified = true;
-            }
-
-            if (modified) bone.appliedValid = false;
+        constructor(data: TransformConstraintData, skeleton: Skeleton) {
+            if (data == null) throw new Error("data cannot be null.");
+            if (skeleton == null) throw new Error("skeleton cannot be null.");
+            this.data = data;
+            this.rotateMix = data.rotateMix;
+            this.translateMix = data.translateMix;
+            this.scaleMix = data.scaleMix;
+            this.shearMix = data.shearMix;
+            this.bones = new Array<Bone>();
+            for (let i = 0; i < data.bones.length; i++)
+                this.bones.push(skeleton.findBone(data.bones[i].name));
+            this.target = skeleton.findBone(data.target.name);
         }
-    }
 
-    getOrder () {
-        return this.data.order;
+        apply() {
+            this.update();
+        }
+
+        update() {
+            let rotateMix = this.rotateMix, translateMix = this.translateMix, scaleMix = this.scaleMix, shearMix = this.shearMix;
+            let target = this.target;
+            let ta = target.matrix.a, tb = target.matrix.c, tc = target.matrix.b, td = target.matrix.d;
+            let bones = this.bones;
+            for (let i = 0, n = bones.length; i < n; i++) {
+                let bone = bones[i];
+                let m = bone.matrix;
+                let modified = false;
+
+                if (rotateMix != 0) {
+                    let a = m.a, b = m.c, c = m.b, d = m.d;
+                    let r = Math.atan2(tc, ta) - Math.atan2(c, a) + this.data.offsetRotation * MathUtils.degRad;
+                    if (r > MathUtils.PI)
+                        r -= MathUtils.PI2;
+                    else if (r < -MathUtils.PI)
+                        r += MathUtils.PI2;
+                    r *= rotateMix;
+                    let cos = Math.cos(r), sin = Math.sin(r);
+                    m.a = cos * a - sin * c;
+                    m.c = cos * b - sin * d;
+                    m.b = sin * a + cos * c;
+                    m.d = sin * b + cos * d;
+                    modified = true;
+                }
+
+                if (translateMix != 0) {
+                    let temp = this.temp;
+                    target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
+                    m.tx += (temp.x - m.tx) * translateMix;
+                    m.ty += (temp.y - m.ty) * translateMix;
+                    modified = true;
+                }
+
+                if (scaleMix > 0) {
+                    let s = Math.sqrt(m.a * m.a + m.b * m.b);
+                    let ts = Math.sqrt(ta * ta + tc * tc);
+                    if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleX) * scaleMix) / s;
+                    m.a *= s;
+                    m.b *= s;
+                    s = Math.sqrt(m.c * m.c + m.d * m.d);
+                    ts = Math.sqrt(tb * tb + td * td);
+                    if (s > 0.00001) s = (s + (ts - s + this.data.offsetScaleY) * scaleMix) / s;
+                    m.c *= s;
+                    m.d *= s;
+                    modified = true;
+                }
+
+                if (shearMix > 0) {
+                    let b = m.c, d = m.d;
+                    let by = Math.atan2(d, b);
+                    let r = Math.atan2(td, tb) - Math.atan2(tc, ta) - (by - Math.atan2(m.b, m.a));
+                    if (r > MathUtils.PI)
+                        r -= MathUtils.PI2;
+                    else if (r < -MathUtils.PI)
+                        r += MathUtils.PI2;
+                    r = by + (r + this.data.offsetShearY * MathUtils.degRad) * shearMix;
+                    let s = Math.sqrt(b * b + d * d);
+                    m.c = Math.cos(r) * s;
+                    m.d = Math.sin(r) * s;
+                    modified = true;
+                }
+
+                if (modified) bone.appliedValid = false;
+            }
+        }
+
+        getOrder() {
+            return this.data.order;
+        }
     }
 }

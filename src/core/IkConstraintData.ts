@@ -1,4 +1,3 @@
-import {BoneData} from "./BoneData";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -30,15 +29,17 @@ import {BoneData} from "./BoneData";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class IkConstraintData {
-    name: string;
-    order = 0;
-    bones = new Array<BoneData>();
-    target: BoneData;
-    bendDirection = 1;
-    mix = 1;
+module PIXI.spine.core {
+    export class IkConstraintData {
+        name: string;
+        order = 0;
+        bones = new Array<BoneData>();
+        target: BoneData;
+        bendDirection = 1;
+        mix = 1;
 
-    constructor (name: string) {
-        this.name = name;
+        constructor(name: string) {
+            this.name = name;
+        }
     }
 }

@@ -29,6 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export enum AttachmentType {
-    Region, BoundingBox, Mesh, LinkedMesh, Path
+module PIXI.spine.core {
+    export enum AttachmentType {
+        Region, BoundingBox, Mesh, LinkedMesh, Path
+    }
 }

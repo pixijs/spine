@@ -1,7 +1,3 @@
-import {VertexAttachment} from "./Attachment";
-import {TextureRegion} from "../Texture";
-import {Color, Utils, ArrayLike} from "../Utils";
-import {Slot} from "../Slot";
 /******************************************************************************
  * Spine Runtimes Software License
  * Version 2.5
@@ -33,70 +29,72 @@ import {Slot} from "../Slot";
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class MeshAttachment extends VertexAttachment {
-    region: TextureRegion;
-    path: string;
-    regionUVs: ArrayLike<number>;
-    triangles: Array<number>;
-    color = new Color(1, 1, 1, 1);
-    hullLength: number;
-    private parentMesh: MeshAttachment;
-    inheritDeform = false;
-    tempColor = new Color(0, 0, 0, 0);
+module PIXI.spine.core {
+    export class MeshAttachment extends VertexAttachment {
+        region: TextureRegion;
+        path: string;
+        regionUVs: ArrayLike<number>;
+        triangles: Array<number>;
+        color = new Color(1, 1, 1, 1);
+        hullLength: number;
+        private parentMesh: MeshAttachment;
+        inheritDeform = false;
+        tempColor = new Color(0, 0, 0, 0);
 
-    constructor(name: string) {
-        super(name);
-    }
-
-    updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number> {
-        return [];
-        //nothing
-    }
-
-    updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number> {
-        let regionUVs = this.regionUVs;
-        let n = regionUVs.length;
-        if (!uvs || uvs.length != n) {
-            uvs = Utils.newFloatArray(n);
+        constructor(name: string) {
+            super(name);
         }
 
-        if (region == null) {
-            return;
+        updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number> {
+            return [];
+            //nothing
         }
 
-        let texture = region.texture;
-        let r = texture._uvs;
-        let w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-        let x = region.offsetX, y = region.pixiOffsetY;
+        updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number> {
+            let regionUVs = this.regionUVs;
+            let n = regionUVs.length;
+            if (!uvs || uvs.length != n) {
+                uvs = Utils.newFloatArray(n);
+            }
 
-        for (let i = 0; i < n; i += 2) {
-            let u = this.regionUVs[i], v = this.regionUVs[i + 1];
-            u = (u * w2 - x) / w1;
-            v = (v * h2 - y) / h1;
-            uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1 - v) + (r.x3 * (1 - u) + r.x2 * u) * v;
-            uvs[i + 1] = (r.y0 * (1 - u) + r.y1 * u) * (1 - v) + (r.y3 * (1 - u) + r.y2 * u) * v;
+            if (region == null) {
+                return;
+            }
+
+            let texture = region.texture;
+            let r = texture._uvs;
+            let w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
+            let x = region.offsetX, y = region.pixiOffsetY;
+
+            for (let i = 0; i < n; i += 2) {
+                let u = this.regionUVs[i], v = this.regionUVs[i + 1];
+                u = (u * w2 - x) / w1;
+                v = (v * h2 - y) / h1;
+                uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1 - v) + (r.x3 * (1 - u) + r.x2 * u) * v;
+                uvs[i + 1] = (r.y0 * (1 - u) + r.y1 * u) * (1 - v) + (r.y3 * (1 - u) + r.y2 * u) * v;
+            }
+
+            return uvs;
         }
 
-        return uvs;
-    }
+        applyDeform(sourceAttachment: VertexAttachment): boolean {
+            return this == sourceAttachment || (this.inheritDeform && this.parentMesh == sourceAttachment);
+        }
 
-    applyDeform(sourceAttachment: VertexAttachment): boolean {
-        return this == sourceAttachment || (this.inheritDeform && this.parentMesh == sourceAttachment);
-    }
+        getParentMesh() {
+            return this.parentMesh;
+        }
 
-    getParentMesh() {
-        return this.parentMesh;
-    }
-
-    /** @param parentMesh May be null. */
-    setParentMesh(parentMesh: MeshAttachment) {
-        this.parentMesh = parentMesh;
-        if (parentMesh != null) {
-            this.bones = parentMesh.bones;
-            this.vertices = parentMesh.vertices;
-            this.regionUVs = parentMesh.regionUVs;
-            this.triangles = parentMesh.triangles;
-            this.hullLength = parentMesh.hullLength;
+        /** @param parentMesh May be null. */
+        setParentMesh(parentMesh: MeshAttachment) {
+            this.parentMesh = parentMesh;
+            if (parentMesh != null) {
+                this.bones = parentMesh.bones;
+                this.vertices = parentMesh.vertices;
+                this.regionUVs = parentMesh.regionUVs;
+                this.triangles = parentMesh.triangles;
+                this.hullLength = parentMesh.hullLength;
+            }
         }
     }
 }

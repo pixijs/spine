@@ -29,13 +29,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export class EventData {
-    name: string;
-    intValue: number;
-    floatValue: number;
-    stringValue: string;
+module PIXI.spine.core {
+    export class EventData {
+        name: string;
+        intValue: number;
+        floatValue: number;
+        stringValue: string;
 
-    constructor (name: string) {
-        this.name = name;
+        constructor (name: string) {
+            this.name = name;
+        }
     }
 }

@@ -29,6 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-export interface Updatable {
-    update(): void;
+module PIXI.spine.core {
+    export interface Updatable {
+        update(): void;
+    }
 }
