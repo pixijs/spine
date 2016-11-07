@@ -1,8 +1,6 @@
 /// <reference path="pixi.js.d.ts" />
 
 module PIXI.spine {
-    var TransformBase = PIXI.TransformBase;
-
     /* Esoteric Software SPINE wrapper for pixi.js */
     core.Bone.yDown = true;
 
@@ -19,7 +17,7 @@ module PIXI.spine {
     export class SpineMesh extends PIXI.mesh.Mesh {
         region: core.TextureRegion;
 
-        constructor(texture: PIXI.Texture, vertices?: ArrayLike<number>, uvs?: ArrayLike<number>, indices?: ArrayLike<number>, drawMode?: number) {
+        constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
             super(texture, vertices, uvs, indices, drawMode);
         }
     }
@@ -164,11 +162,11 @@ module PIXI.spine {
          * @default 0xFFFFFF
          */
         get tint(): number {
-            return PIXI.utils.rgb2hex(this.tintRgb);
+            return PIXI.utils.rgb2hex(this.tintRgb as any);
         }
 
         set tint(value: number) {
-            this.tintRgb = PIXI.utils.hex2rgb(value, this.tintRgb);
+            this.tintRgb = PIXI.utils.hex2rgb(value, this.tintRgb as any);
         }
 
         /**
@@ -226,34 +224,22 @@ module PIXI.spine {
                     }
 
                     if (slotContainer.transform) {
-                        var transform = slotContainer.transform;
+                        let transform = slotContainer.transform;
+                        let transAny : any  = transform;
                         let lt: PIXI.Matrix;
-                        if (slotContainer.transform.matrix2d) {
-                            //gameofbombs pixi fork
-                            lt = transform.matrix2d;
-                            transform._dirtyVersion++;
-                            transform.version = transform._dirtyVersion;
-                            transform.isStatic = true;
-                            transform.operMode = 0;
+                        if (transAny.matrix2d) {
+                            //gameofbombs pixi fork, sorry for that, we really use it :)
+                            lt = transAny.matrix2d;
+                            transAny._dirtyVersion++;
+                            transAny.version = transAny._dirtyVersion;
+                            transAny.isStatic = true;
+                            transAny.operMode = 0;
                         } else {
-                            if (TransformBase) {
-                                //PIXI v4.0
-                                if (transform.position) {
-                                    transform = new PIXI.TransformBase();
-                                    slotContainer.transform = transform;
-                                }
-                                lt = transform.localTransform;
-                            } else {
-                                //PIXI v4.0rc
-                                if (!transform._dirtyLocal) {
-                                    transform = new PIXI.TransformStatic();
-                                    slotContainer.transform = transform;
-                                }
-                                lt = transform.localTransform;
-                                transform._dirtyParentVersion = -1;
-                                transform._dirtyLocal = 1;
-                                transform._versionLocal = 1;
+                            if (transAny.position) {
+                                transform = new PIXI.TransformBase();
+                                slotContainer.transform = transform;
                             }
+                            lt = transform.localTransform;
                         }
                         slot.bone.matrix.copy(lt);
                     } else {
@@ -261,7 +247,7 @@ module PIXI.spine {
                         var lt = slotContainer.localTransform || new PIXI.Matrix();
                         slot.bone.matrix.copy(lt);
                         slotContainer.localTransform = lt;
-                        slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
+                        (slotContainer as any).displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                     }
                     tempRgb[0] = r0 * slot.color.r * attColor.r;
                     tempRgb[1] = g0 * slot.color.g * attColor.g;

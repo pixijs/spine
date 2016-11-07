@@ -202,7 +202,7 @@ module PIXI.spine.core {
                         }
 
                         region.index = parseInt(reader.readValue());
-                        region.texture._updateUvs();
+                        (region.texture as any)._updateUvs();
 
                         this.regions.push(region);
                     }

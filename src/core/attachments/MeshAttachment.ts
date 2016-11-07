@@ -62,7 +62,7 @@ module PIXI.spine.core {
             }
 
             let texture = region.texture;
-            let r = texture._uvs;
+            let r = (texture as any)._uvs;
             let w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
             let x = region.offsetX, y = region.pixiOffsetY;
 

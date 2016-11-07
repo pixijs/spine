@@ -94,7 +94,7 @@ module PIXI.spine.core {
         get width(): number {
             const tex = this.texture;
             if (PIXI.VERSION[0] == '3') {
-                return tex.crop.width;
+                return (tex as any).crop.width;
             }
             if (tex.trim) {
                 return tex.trim.width;
@@ -105,7 +105,7 @@ module PIXI.spine.core {
         get height(): number {
             const tex = this.texture;
             if (PIXI.VERSION[0] == '3') {
-                return tex.crop.height;
+                return (tex as any).crop.height;
             }
             if (tex.trim) {
                 return tex.trim.height;
@@ -114,19 +114,19 @@ module PIXI.spine.core {
         }
 
         get u(): number {
-            return this.texture._uvs.x0;
+            return (this.texture as any)._uvs.x0;
         }
 
         get v(): number {
-            return this.texture._uvs.y0;
+            return (this.texture as any)._uvs.y0;
         }
 
         get u2(): number {
-            return this.texture._uvs.x2;
+            return (this.texture as any)._uvs.x2;
         }
 
         get v2(): number {
-            return this.texture._uvs.y2;
+            return (this.texture as any)._uvs.y2;
         }
 
         get offsetX(): number {
@@ -155,7 +155,7 @@ module PIXI.spine.core {
                 if (tex.trim) {
                     return tex.trim.width;
                 }
-                return tex.crop.width;
+                return (tex as any).crop.width;
             }
             return tex.orig.width;
         }
@@ -166,7 +166,7 @@ module PIXI.spine.core {
                 if (tex.trim) {
                     return tex.trim.height;
                 }
-                return tex.crop.height;
+                return (tex as any).crop.height;
             }
             return tex.orig.height;
         }

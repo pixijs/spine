@@ -103,7 +103,14 @@ module PIXI.spine.core {
             let positions = this.computeWorldPositions(<PathAttachment>attachment, spacesCount, tangents,
                 data.positionMode == PositionMode.Percent, spacingMode == SpacingMode.Percent);
             let boneX = positions[0], boneY = positions[1], offsetRotation = data.offsetRotation;
-            let tip = rotateMode == RotateMode.Chain && offsetRotation == 0;
+            let tip = false;
+            if (offsetRotation == 0)
+                tip = rotateMode == RotateMode.Chain;
+            else {
+                tip = false;
+                let pm = this.target.bone.matrix;
+                offsetRotation *= pm.a * pm.d - pm.b * pm.c > 0 ? MathUtils.degRad : -MathUtils.degRad;
+            }
             for (let i = 0, p = 3; i < boneCount; i++, p += 3) {
                 let bone = bones[i];
                 let m = bone.matrix;
@@ -128,17 +135,19 @@ module PIXI.spine.core {
                         r = positions[p + 2];
                     else
                         r = Math.atan2(dy, dx);
-                    r -= Math.atan2(c, a) - offsetRotation * MathUtils.degRad;
+                    r -= Math.atan2(c, a);
                     if (tip) {
                         cos = Math.cos(r);
                         sin = Math.sin(r);
                         let length = bone.data.length;
                         boneX += (length * (cos * a - sin * c) - dx) * rotateMix;
                         boneY += (length * (sin * a + cos * c) - dy) * rotateMix;
+                    } else {
+                        r += offsetRotation;
                     }
                     if (r > MathUtils.PI)
                         r -= MathUtils.PI2;
-                    else if (r < -MathUtils.PI) //
+                    else if (r < -MathUtils.PI)
                         r += MathUtils.PI2;
                     r *= rotateMix;
                     cos = Math.cos(r);
