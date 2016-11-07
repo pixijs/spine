@@ -2187,7 +2187,7 @@ var PIXI;
                             m.c = za * lb + zb * ld;
                             m.b = zc * la + zd * lc;
                             m.d = zc * lb + zd * ld;
-                            if (this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : (this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown) {
+                            if ((this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : (this.skeleton.flipX != this.skeleton.flipY)) != Bone.yDown) {
                                 m.b = -m.b;
                                 m.d = -m.d;
                             }
@@ -2688,7 +2688,14 @@ var PIXI;
                     }
                     var positions = this.computeWorldPositions(attachment, spacesCount, tangents, data.positionMode == core.PositionMode.Percent, spacingMode == core.SpacingMode.Percent);
                     var boneX = positions[0], boneY = positions[1], offsetRotation = data.offsetRotation;
-                    var tip = rotateMode == core.RotateMode.Chain && offsetRotation == 0;
+                    var tip = false;
+                    if (offsetRotation == 0)
+                        tip = rotateMode == core.RotateMode.Chain;
+                    else {
+                        tip = false;
+                        var pm = this.target.bone.matrix;
+                        offsetRotation *= pm.a * pm.d - pm.b * pm.c > 0 ? core.MathUtils.degRad : -core.MathUtils.degRad;
+                    }
                     for (var i = 0, p = 3; i < boneCount; i++, p += 3) {
                         var bone = bones[i];
                         var m = bone.matrix;
@@ -2713,13 +2720,16 @@ var PIXI;
                                 r = positions[p + 2];
                             else
                                 r = Math.atan2(dy, dx);
-                            r -= Math.atan2(c, a) - offsetRotation * core.MathUtils.degRad;
+                            r -= Math.atan2(c, a);
                             if (tip) {
                                 cos = Math.cos(r);
                                 sin = Math.sin(r);
                                 var length_3 = bone.data.length;
                                 boneX += (length_3 * (cos * a - sin * c) - dx) * rotateMix;
                                 boneY += (length_3 * (sin * a + cos * c) - dy) * rotateMix;
+                            }
+                            else {
+                                r += offsetRotation;
                             }
                             if (r > core.MathUtils.PI)
                                 r -= core.MathUtils.PI2;
@@ -5486,7 +5496,6 @@ var PIXI;
 (function (PIXI) {
     var spine;
     (function (spine) {
-        var TransformBase = PIXI.TransformBase;
         spine.core.Bone.yDown = true;
         var tempRgb = [0, 0, 0];
         var SpineSprite = (function (_super) {
@@ -5620,32 +5629,21 @@ var PIXI;
                         }
                         if (slotContainer.transform) {
                             var transform = slotContainer.transform;
+                            var transAny = transform;
                             var lt_1 = void 0;
-                            if (slotContainer.transform.matrix2d) {
-                                lt_1 = transform.matrix2d;
-                                transform._dirtyVersion++;
-                                transform.version = transform._dirtyVersion;
-                                transform.isStatic = true;
-                                transform.operMode = 0;
+                            if (transAny.matrix2d) {
+                                lt_1 = transAny.matrix2d;
+                                transAny._dirtyVersion++;
+                                transAny.version = transAny._dirtyVersion;
+                                transAny.isStatic = true;
+                                transAny.operMode = 0;
                             }
                             else {
-                                if (TransformBase) {
-                                    if (transform.position) {
-                                        transform = new PIXI.TransformBase();
-                                        slotContainer.transform = transform;
-                                    }
-                                    lt_1 = transform.localTransform;
+                                if (transAny.position) {
+                                    transform = new PIXI.TransformBase();
+                                    slotContainer.transform = transform;
                                 }
-                                else {
-                                    if (!transform._dirtyLocal) {
-                                        transform = new PIXI.TransformStatic();
-                                        slotContainer.transform = transform;
-                                    }
-                                    lt_1 = transform.localTransform;
-                                    transform._dirtyParentVersion = -1;
-                                    transform._dirtyLocal = 1;
-                                    transform._versionLocal = 1;
-                                }
+                                lt_1 = transform.localTransform;
                             }
                             slot.bone.matrix.copy(lt_1);
                         }

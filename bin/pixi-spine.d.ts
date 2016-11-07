@@ -1008,7 +1008,7 @@ declare module PIXI.spine {
     }
     class SpineMesh extends PIXI.mesh.Mesh {
         region: core.TextureRegion;
-        constructor(texture: PIXI.Texture, vertices?: ArrayLike<number>, uvs?: ArrayLike<number>, indices?: ArrayLike<number>, drawMode?: number);
+        constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number);
     }
     class Spine extends PIXI.Container {
         static globalAutoUpdate: boolean;

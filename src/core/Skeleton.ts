@@ -470,7 +470,7 @@ module PIXI.spine.core {
                 let attachment = slot.getAttachment();
                 if (attachment instanceof RegionAttachment)
                     vertices = (<RegionAttachment>attachment).updateWorldVertices(slot, false);
-                else if (attachment instanceof MeshAttachment) //
+                else if (attachment instanceof MeshAttachment)
                     vertices = (<MeshAttachment>attachment).updateWorldVertices(slot, true);
                 if (vertices != null) {
                     for (let ii = 0, nn = vertices.length; ii < nn; ii += 8) {
