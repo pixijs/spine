@@ -195,8 +195,8 @@ module PIXI.spine.core {
                     m.c = za * lb + zb * ld;
                     m.b = zc * la + zd * lc;
                     m.d = zc * lb + zd * ld;
-                    if ((this.data.transformMode != TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : (this.skeleton.flipX != this.skeleton.flipY)) != Bone.yDown) {
-                        m.b = -m.b;
+                    if (this.data.transformMode != TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : ((this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown)) {
+                        m.c = -m.c;
                         m.d = -m.d;
                     }
                     return;
