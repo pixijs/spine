@@ -5609,6 +5609,11 @@ var PIXI;
                     if (attachment instanceof spine.core.RegionAttachment) {
                         var region = attachment.region;
                         if (region) {
+                            if (slot.currentMesh) {
+                                slot.currentMesh.visible = false;
+                                slot.currentMesh = null;
+                                slot.currentMeshName = undefined;
+                            }
                             var ar = region;
                             if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
                                 var spriteName = ar.name;
@@ -5660,6 +5665,18 @@ var PIXI;
                         slot.currentSprite.blendMode = slot.blendMode;
                     }
                     else if (attachment instanceof spine.core.MeshAttachment) {
+                        if (slot.currentSprite) {
+                            slot.currentSprite.visible = false;
+                            slot.currentSprite = null;
+                            slot.currentSpriteName = undefined;
+                            if (slotContainer.transform) {
+                                slotContainer.transform = new PIXI.TransformStatic();
+                            }
+                            else {
+                                slotContainer.localTransform = new PIXI.Matrix();
+                                slotContainer.displayObjectUpdateTransform = PIXI.DisplayObject.prototype.updateTransform;
+                            }
+                        }
                         if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                             var meshName = attachment.name;
                             if (slot.currentMesh) {

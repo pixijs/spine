@@ -1,4 +1,4 @@
-/// <reference path="../src/pixi.js.d.ts" />
+/// <reference types="pixi.js" />
 declare module PIXI.spine.core {
     class Animation {
         name: string;

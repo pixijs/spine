@@ -8,7 +8,10 @@
         "outFile": "bin/pixi-spine.js",
         "sourceMap": true,
         "inlineSources": true,
-        "declaration": true
+        "declaration": true,
+        "typeRoots": [
+            "lib/"
+        ]
 	},
     "include": [
         "src/**/*"
