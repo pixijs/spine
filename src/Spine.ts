@@ -1,4 +1,4 @@
-/// <reference path="pixi.js.d.ts" />
+/// <reference types="pixi.js" />
 
 module PIXI.spine {
     /* Esoteric Software SPINE wrapper for pixi.js */
@@ -204,6 +204,11 @@ module PIXI.spine {
                 if (attachment instanceof core.RegionAttachment) {
                     let region = (attachment as core.RegionAttachment).region;
                     if (region) {
+                        if (slot.currentMesh) {
+                            slot.currentMesh.visible = false;
+                            slot.currentMesh = null;
+                            slot.currentMeshName = undefined;
+                        }
                         let ar = region as core.TextureAtlasRegion;
                         if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
                             var spriteName = ar.name;
@@ -224,6 +229,7 @@ module PIXI.spine {
                     }
 
                     if (slotContainer.transform) {
+                        //TODO: refactor this thing, switch it on and off for container
                         let transform = slotContainer.transform;
                         let transAny : any  = transform;
                         let lt: PIXI.Matrix;
@@ -256,6 +262,20 @@ module PIXI.spine {
                     slot.currentSprite.blendMode = slot.blendMode;
                 }
                 else if (attachment instanceof core.MeshAttachment) {
+                    if (slot.currentSprite) {
+                        //TODO: refactor this thing, switch it on and off for container
+                        slot.currentSprite.visible = false;
+                        slot.currentSprite = null;
+                        slot.currentSpriteName = undefined;
+
+                        if (slotContainer.transform) {
+                            slotContainer.transform = new PIXI.TransformStatic();
+                        }
+                        else {
+                            slotContainer.localTransform = new PIXI.Matrix();
+                            (slotContainer as any).displayObjectUpdateTransform = PIXI.DisplayObject.prototype.updateTransform;
+                        }
+                    }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         var meshName = attachment.name;
                         if (slot.currentMesh) {
