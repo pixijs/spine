@@ -42,7 +42,7 @@
     "mkdirp": "^0.5.1",
     "parallelshell": "^2.0.0",
     "rimraf": "^2.5.3",
-    "typescript": "^2.0.3"
+    "typescript": "^2.0.10"
   },
   "dependencies": {
     "@types/pixi.js": "^4.1.0"

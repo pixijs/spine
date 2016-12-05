@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export class SkeletonJson {
         attachmentLoader: AttachmentLoader;
         scale = 1;

@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export class SkeletonBounds {
         minX = 0;
         minY = 0;

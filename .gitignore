@@ -19,3 +19,5 @@ node_modules
 dist
 gh-pages
 build-es6
+.idea
+bower_components

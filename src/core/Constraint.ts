@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export interface Constraint extends Updatable {
         getOrder(): number;
     }
