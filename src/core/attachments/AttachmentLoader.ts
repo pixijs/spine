@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export interface AttachmentLoader {
         /** @return May be null to not load an attachment. */
         newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;

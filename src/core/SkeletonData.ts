@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export class SkeletonData {
         name: string;
         bones = new Array<BoneData>(); // Ordered parents first.

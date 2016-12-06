@@ -1,6 +1,6 @@
 /// <reference types="pixi.js" />
 
-module PIXI.spine {
+module Spine {
     /* Esoteric Software SPINE wrapper for pixi.js */
     core.Bone.yDown = true;
 
@@ -493,3 +493,5 @@ module PIXI.spine {
         this._currentBounds = null;
     }
 }
+
+(PIXI as any).spine = Spine;

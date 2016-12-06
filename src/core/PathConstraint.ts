@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export class PathConstraint implements Constraint {
         static NONE = -1;
         static BEFORE = -2;

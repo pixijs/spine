@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+module Spine.core {
     export class Bone implements Updatable {
         static yDown: boolean = false;
         //be careful! Spine b,c is c,b in pixi matrix
