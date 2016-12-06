@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+namespace pixi_spine.core {
     export class BoneData {
         index: number;
         name: string;

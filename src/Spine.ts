@@ -1,6 +1,6 @@
 /// <reference types="pixi.js" />
 
-module PIXI.spine {
+namespace pixi_spine {
     /* Esoteric Software SPINE wrapper for pixi.js */
     core.Bone.yDown = true;
 
@@ -28,12 +28,12 @@ module PIXI.spine {
      * See example 12 (http://www.goodboydigital.com/pixijs/examples/12/) to see a working example and check out the source
      *
      * ```js
-     * var spineAnimation = new PIXI.Spine(spineData);
+     * var spineAnimation = new spine(spineData);
      * ```
      *
      * @class
      * @extends Container
-     * @memberof PIXI.spine
+     * @memberof spine
      * @param spineData {object} The spine data loaded from a spine atlas.
      */
     export class Spine extends PIXI.Container {
@@ -54,7 +54,7 @@ module PIXI.spine {
             }
 
             if ((typeof spineData) === "string") {
-                throw new Error('spineData param cant be string. Please use PIXI.spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
+                throw new Error('spineData param cant be string. Please use spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
             }
 
             /**
@@ -130,7 +130,7 @@ module PIXI.spine {
              * The tint applied to all spine slots. This is a [r,g,b] value. A value of [1,1,1] will remove any tint effect.
              *
              * @member {number}
-             * @memberof PIXI.spine.Spine#
+             * @memberof spine.Spine#
              */
             this.tintRgb = new Float32Array([1, 1, 1]);
         }
@@ -143,7 +143,7 @@ module PIXI.spine {
          * autoupdate enabled but are harder to achieve.
          *
          * @member {boolean}
-         * @memberof PIXI.spine.Spine#
+         * @memberof spine.Spine#
          * @default true
          */
         get autoUpdate(): boolean {
@@ -158,7 +158,7 @@ module PIXI.spine {
          * The tint applied to the spine object. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
          *
          * @member {number}
-         * @memberof PIXI.spine.Spine#
+         * @memberof spine.Spine#
          * @default 0xFFFFFF
          */
         get tint(): number {

@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+namespace pixi_spine.core {
 	export class AnimationState {
 		static emptyAnimation = new Animation("<empty>", [], 0);
 

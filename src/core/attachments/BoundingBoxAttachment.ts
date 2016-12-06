@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module PIXI.spine.core {
+namespace pixi_spine.core {
     export class BoundingBoxAttachment extends VertexAttachment {
         color = new Color(1, 1, 1, 1);
 

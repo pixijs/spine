@@ -1,4 +1,4 @@
-module PIXI.spine {
+namespace pixi_spine {
     export function atlasParser() {
         return function (resource: PIXI.loaders.Resource, next: () => any) {
             // skip if no data, its not json, or it isn't atlas data
