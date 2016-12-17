@@ -101,6 +101,7 @@ namespace pixi_spine.core {
         updateCache() {
             let updateCache = this._updateCache;
             updateCache.length = 0;
+            this.updateCacheReset.length = 0;
 
             let bones = this.bones;
             for (let i = 0, n = bones.length; i < n; i++)
