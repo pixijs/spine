@@ -90,7 +90,7 @@ namespace pixi_spine.core {
 						continue;
 					}
 				}
-                this.updateMixingFrom(current, delta, true);
+                this.updateMixingFrom(current, delta);
 
 				current.trackTime += currentDelta;
 			}
