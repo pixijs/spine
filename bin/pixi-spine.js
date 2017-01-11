@@ -5326,9 +5326,18 @@ var pixi_spine;
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
 (function (pixi_spine) {
+    function isJson(resource) {
+        var TYPE = PIXI.loaders.Resource.TYPE;
+        if (TYPE) {
+            return resource.type === TYPE.JSON;
+        }
+        return resource.isJson;
+    }
     function atlasParser() {
         return function (resource, next) {
-            if (!resource.data || !resource.isJson || !resource.data.bones) {
+            if (!resource.data ||
+                !isJson(resource) ||
+                !resource.data.bones) {
                 return next();
             }
             var metadataAtlas = resource.metadata ? resource.metadata.spineAtlas : null;
@@ -5351,17 +5360,19 @@ var pixi_spine;
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
                 xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
-                metadata: resource.metadata ? resource.metadata.spineMetadata : null
+                metadata: resource.metadata ? resource.metadata.spineMetadata : null,
+                parentResource: resource
             };
             var imageOptions = {
                 crossOrigin: resource.crossOrigin,
-                metadata: resource.metadata ? resource.metadata.imageMetadata : null
+                metadata: resource.metadata ? resource.metadata.imageMetadata : null,
+                parentResource: resource
             };
             var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
             baseUrl = baseUrl.replace(this.baseUrl, '');
             var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
-            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function () {
-                new pixi_spine.core.TextureAtlas(this.xhr.responseText, adapter, function (spineAtlas) {
+            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
+                new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
                     var skeletonData = spineJsonParser.readSkeletonData(resource.data);
                     resource.spineData = skeletonData;
