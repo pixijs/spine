@@ -38,11 +38,13 @@ namespace pixi_spine {
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
                 xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
-                metadata: resource.metadata ? resource.metadata.spineMetadata : null
+                metadata: resource.metadata ? resource.metadata.spineMetadata : null,
+                parentResource: resource
             };
             var imageOptions = {
                 crossOrigin: resource.crossOrigin,
-                metadata: resource.metadata ? resource.metadata.imageMetadata : null
+                metadata: resource.metadata ? resource.metadata.imageMetadata : null,
+                parentResource: resource
             };
             var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
             //remove the baseUrl
@@ -50,8 +52,8 @@ namespace pixi_spine {
 
             var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
 
-            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function () {
-                new core.TextureAtlas(this.xhr.responseText, adapter, function (spineAtlas) {
+            this.add(resource.name + '_atlas', atlasPath, atlasOptions, (r: PIXI.loaders.Resource) => {
+                new core.TextureAtlas(r.data, adapter, function (spineAtlas) {
                     var spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
                     var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
