@@ -744,7 +744,7 @@ declare namespace pixi_spine.core {
         static spacingModeFromString(str: string): SpacingMode;
         static rotateModeFromString(str: string): RotateMode;
         static transformModeFromString(str: string): TransformMode;
-        static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean): TransformMode;
+        static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean): TransformMode.Normal | TransformMode.OnlyTranslation | TransformMode.NoRotationOrReflection | TransformMode.NoScaleOrReflection;
     }
 }
 declare namespace pixi_spine.core {

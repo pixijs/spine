@@ -55,6 +55,7 @@ var pixi_spine;
             return Animation;
         }());
         core.Animation = Animation;
+        var TimelineType;
         (function (TimelineType) {
             TimelineType[TimelineType["rotate"] = 0] = "rotate";
             TimelineType[TimelineType["translate"] = 1] = "translate";
@@ -70,8 +71,7 @@ var pixi_spine;
             TimelineType[TimelineType["pathConstraintPosition"] = 11] = "pathConstraintPosition";
             TimelineType[TimelineType["pathConstraintSpacing"] = 12] = "pathConstraintSpacing";
             TimelineType[TimelineType["pathConstraintMix"] = 13] = "pathConstraintMix";
-        })(core.TimelineType || (core.TimelineType = {}));
-        var TimelineType = core.TimelineType;
+        })(TimelineType = core.TimelineType || (core.TimelineType = {}));
         var CurveTimeline = (function () {
             function CurveTimeline(frameCount) {
                 if (frameCount <= 0)
@@ -147,18 +147,19 @@ var pixi_spine;
                 var y = curves[i - 1];
                 return y + (1 - y) * (percent - x) / (1 - x);
             };
-            CurveTimeline.LINEAR = 0;
-            CurveTimeline.STEPPED = 1;
-            CurveTimeline.BEZIER = 2;
-            CurveTimeline.BEZIER_SIZE = 10 * 2 - 1;
             return CurveTimeline;
         }());
+        CurveTimeline.LINEAR = 0;
+        CurveTimeline.STEPPED = 1;
+        CurveTimeline.BEZIER = 2;
+        CurveTimeline.BEZIER_SIZE = 10 * 2 - 1;
         core.CurveTimeline = CurveTimeline;
         var RotateTimeline = (function (_super) {
             __extends(RotateTimeline, _super);
             function RotateTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount << 1);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount << 1);
+                return _this;
             }
             RotateTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.rotate << 24) + this.boneIndex;
@@ -203,18 +204,19 @@ var pixi_spine;
                     bone.rotation += r * alpha;
                 }
             };
-            RotateTimeline.ENTRIES = 2;
-            RotateTimeline.PREV_TIME = -2;
-            RotateTimeline.PREV_ROTATION = -1;
-            RotateTimeline.ROTATION = 1;
             return RotateTimeline;
         }(CurveTimeline));
+        RotateTimeline.ENTRIES = 2;
+        RotateTimeline.PREV_TIME = -2;
+        RotateTimeline.PREV_ROTATION = -1;
+        RotateTimeline.ROTATION = 1;
         core.RotateTimeline = RotateTimeline;
         var TranslateTimeline = (function (_super) {
             __extends(TranslateTimeline, _super);
             function TranslateTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * TranslateTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * TranslateTimeline.ENTRIES);
+                return _this;
             }
             TranslateTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.translate << 24) + this.boneIndex;
@@ -258,19 +260,19 @@ var pixi_spine;
                     bone.y += (bone.data.y + y - bone.y) * alpha;
                 }
             };
-            TranslateTimeline.ENTRIES = 3;
-            TranslateTimeline.PREV_TIME = -3;
-            TranslateTimeline.PREV_X = -2;
-            TranslateTimeline.PREV_Y = -1;
-            TranslateTimeline.X = 1;
-            TranslateTimeline.Y = 2;
             return TranslateTimeline;
         }(CurveTimeline));
+        TranslateTimeline.ENTRIES = 3;
+        TranslateTimeline.PREV_TIME = -3;
+        TranslateTimeline.PREV_X = -2;
+        TranslateTimeline.PREV_Y = -1;
+        TranslateTimeline.X = 1;
+        TranslateTimeline.Y = 2;
         core.TranslateTimeline = TranslateTimeline;
         var ScaleTimeline = (function (_super) {
             __extends(ScaleTimeline, _super);
             function ScaleTimeline(frameCount) {
-                _super.call(this, frameCount);
+                return _super.call(this, frameCount) || this;
             }
             ScaleTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.scale << 24) + this.boneIndex;
@@ -331,7 +333,7 @@ var pixi_spine;
         var ShearTimeline = (function (_super) {
             __extends(ShearTimeline, _super);
             function ShearTimeline(frameCount) {
-                _super.call(this, frameCount);
+                return _super.call(this, frameCount) || this;
             }
             ShearTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.shear << 24) + this.boneIndex;
@@ -375,8 +377,9 @@ var pixi_spine;
         var ColorTimeline = (function (_super) {
             __extends(ColorTimeline, _super);
             function ColorTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * ColorTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * ColorTimeline.ENTRIES);
+                return _this;
             }
             ColorTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.color << 24) + this.slotIndex;
@@ -427,18 +430,18 @@ var pixi_spine;
                     color.add((r - color.r) * alpha, (g - color.g) * alpha, (b - color.b) * alpha, (a - color.a) * alpha);
                 }
             };
-            ColorTimeline.ENTRIES = 5;
-            ColorTimeline.PREV_TIME = -5;
-            ColorTimeline.PREV_R = -4;
-            ColorTimeline.PREV_G = -3;
-            ColorTimeline.PREV_B = -2;
-            ColorTimeline.PREV_A = -1;
-            ColorTimeline.R = 1;
-            ColorTimeline.G = 2;
-            ColorTimeline.B = 3;
-            ColorTimeline.A = 4;
             return ColorTimeline;
         }(CurveTimeline));
+        ColorTimeline.ENTRIES = 5;
+        ColorTimeline.PREV_TIME = -5;
+        ColorTimeline.PREV_R = -4;
+        ColorTimeline.PREV_G = -3;
+        ColorTimeline.PREV_B = -2;
+        ColorTimeline.PREV_A = -1;
+        ColorTimeline.R = 1;
+        ColorTimeline.G = 2;
+        ColorTimeline.B = 3;
+        ColorTimeline.A = 4;
         core.ColorTimeline = ColorTimeline;
         var AttachmentTimeline = (function () {
             function AttachmentTimeline(frameCount) {
@@ -485,9 +488,10 @@ var pixi_spine;
         var DeformTimeline = (function (_super) {
             __extends(DeformTimeline, _super);
             function DeformTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount);
-                this.frameVertices = new Array(frameCount);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount);
+                _this.frameVertices = new Array(frameCount);
+                return _this;
             }
             DeformTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.deform << 24) + this.slotIndex;
@@ -668,8 +672,9 @@ var pixi_spine;
         var IkConstraintTimeline = (function (_super) {
             __extends(IkConstraintTimeline, _super);
             function IkConstraintTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * IkConstraintTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * IkConstraintTimeline.ENTRIES);
+                return _this;
             }
             IkConstraintTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.ikConstraint << 24) + this.ikConstraintIndex;
@@ -717,20 +722,21 @@ var pixi_spine;
                         constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
                 }
             };
-            IkConstraintTimeline.ENTRIES = 3;
-            IkConstraintTimeline.PREV_TIME = -3;
-            IkConstraintTimeline.PREV_MIX = -2;
-            IkConstraintTimeline.PREV_BEND_DIRECTION = -1;
-            IkConstraintTimeline.MIX = 1;
-            IkConstraintTimeline.BEND_DIRECTION = 2;
             return IkConstraintTimeline;
         }(CurveTimeline));
+        IkConstraintTimeline.ENTRIES = 3;
+        IkConstraintTimeline.PREV_TIME = -3;
+        IkConstraintTimeline.PREV_MIX = -2;
+        IkConstraintTimeline.PREV_BEND_DIRECTION = -1;
+        IkConstraintTimeline.MIX = 1;
+        IkConstraintTimeline.BEND_DIRECTION = 2;
         core.IkConstraintTimeline = IkConstraintTimeline;
         var TransformConstraintTimeline = (function (_super) {
             __extends(TransformConstraintTimeline, _super);
             function TransformConstraintTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * TransformConstraintTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * TransformConstraintTimeline.ENTRIES);
+                return _this;
             }
             TransformConstraintTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.transformConstraint << 24) + this.transformConstraintIndex;
@@ -791,24 +797,25 @@ var pixi_spine;
                     constraint.shearMix += (shear - constraint.shearMix) * alpha;
                 }
             };
-            TransformConstraintTimeline.ENTRIES = 5;
-            TransformConstraintTimeline.PREV_TIME = -5;
-            TransformConstraintTimeline.PREV_ROTATE = -4;
-            TransformConstraintTimeline.PREV_TRANSLATE = -3;
-            TransformConstraintTimeline.PREV_SCALE = -2;
-            TransformConstraintTimeline.PREV_SHEAR = -1;
-            TransformConstraintTimeline.ROTATE = 1;
-            TransformConstraintTimeline.TRANSLATE = 2;
-            TransformConstraintTimeline.SCALE = 3;
-            TransformConstraintTimeline.SHEAR = 4;
             return TransformConstraintTimeline;
         }(CurveTimeline));
+        TransformConstraintTimeline.ENTRIES = 5;
+        TransformConstraintTimeline.PREV_TIME = -5;
+        TransformConstraintTimeline.PREV_ROTATE = -4;
+        TransformConstraintTimeline.PREV_TRANSLATE = -3;
+        TransformConstraintTimeline.PREV_SCALE = -2;
+        TransformConstraintTimeline.PREV_SHEAR = -1;
+        TransformConstraintTimeline.ROTATE = 1;
+        TransformConstraintTimeline.TRANSLATE = 2;
+        TransformConstraintTimeline.SCALE = 3;
+        TransformConstraintTimeline.SHEAR = 4;
         core.TransformConstraintTimeline = TransformConstraintTimeline;
         var PathConstraintPositionTimeline = (function (_super) {
             __extends(PathConstraintPositionTimeline, _super);
             function PathConstraintPositionTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * PathConstraintPositionTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * PathConstraintPositionTimeline.ENTRIES);
+                return _this;
             }
             PathConstraintPositionTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.pathConstraintPosition << 24) + this.pathConstraintIndex;
@@ -841,17 +848,17 @@ var pixi_spine;
                 else
                     constraint.position += (position - constraint.position) * alpha;
             };
-            PathConstraintPositionTimeline.ENTRIES = 2;
-            PathConstraintPositionTimeline.PREV_TIME = -2;
-            PathConstraintPositionTimeline.PREV_VALUE = -1;
-            PathConstraintPositionTimeline.VALUE = 1;
             return PathConstraintPositionTimeline;
         }(CurveTimeline));
+        PathConstraintPositionTimeline.ENTRIES = 2;
+        PathConstraintPositionTimeline.PREV_TIME = -2;
+        PathConstraintPositionTimeline.PREV_VALUE = -1;
+        PathConstraintPositionTimeline.VALUE = 1;
         core.PathConstraintPositionTimeline = PathConstraintPositionTimeline;
         var PathConstraintSpacingTimeline = (function (_super) {
             __extends(PathConstraintSpacingTimeline, _super);
             function PathConstraintSpacingTimeline(frameCount) {
-                _super.call(this, frameCount);
+                return _super.call(this, frameCount) || this;
             }
             PathConstraintSpacingTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.pathConstraintSpacing << 24) + this.pathConstraintIndex;
@@ -885,8 +892,9 @@ var pixi_spine;
         var PathConstraintMixTimeline = (function (_super) {
             __extends(PathConstraintMixTimeline, _super);
             function PathConstraintMixTimeline(frameCount) {
-                _super.call(this, frameCount);
-                this.frames = core.Utils.newFloatArray(frameCount * PathConstraintMixTimeline.ENTRIES);
+                var _this = _super.call(this, frameCount) || this;
+                _this.frames = core.Utils.newFloatArray(frameCount * PathConstraintMixTimeline.ENTRIES);
+                return _this;
             }
             PathConstraintMixTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.pathConstraintMix << 24) + this.pathConstraintIndex;
@@ -930,14 +938,14 @@ var pixi_spine;
                     constraint.translateMix += (translate - constraint.translateMix) * alpha;
                 }
             };
-            PathConstraintMixTimeline.ENTRIES = 3;
-            PathConstraintMixTimeline.PREV_TIME = -3;
-            PathConstraintMixTimeline.PREV_ROTATE = -2;
-            PathConstraintMixTimeline.PREV_TRANSLATE = -1;
-            PathConstraintMixTimeline.ROTATE = 1;
-            PathConstraintMixTimeline.TRANSLATE = 2;
             return PathConstraintMixTimeline;
         }(CurveTimeline));
+        PathConstraintMixTimeline.ENTRIES = 3;
+        PathConstraintMixTimeline.PREV_TIME = -3;
+        PathConstraintMixTimeline.PREV_ROTATE = -2;
+        PathConstraintMixTimeline.PREV_TRANSLATE = -1;
+        PathConstraintMixTimeline.ROTATE = 1;
+        PathConstraintMixTimeline.TRANSLATE = 2;
         core.PathConstraintMixTimeline = PathConstraintMixTimeline;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
@@ -1448,12 +1456,12 @@ var pixi_spine;
                 var animation = this.data.skeletonData.findAnimation(animationName);
                 return animation !== null;
             };
-            AnimationState.emptyAnimation = new core.Animation("<empty>", [], 0);
-            AnimationState.deprecatedWarning1 = false;
-            AnimationState.deprecatedWarning2 = false;
-            AnimationState.deprecatedWarning3 = false;
             return AnimationState;
         }());
+        AnimationState.emptyAnimation = new core.Animation("<empty>", [], 0);
+        AnimationState.deprecatedWarning1 = false;
+        AnimationState.deprecatedWarning2 = false;
+        AnimationState.deprecatedWarning3 = false;
         core.AnimationState = AnimationState;
         var TrackEntry = (function () {
             function TrackEntry() {
@@ -1526,10 +1534,10 @@ var pixi_spine;
             TrackEntry.prototype.loopsCount = function () {
                 return Math.floor(this.trackTime / this.trackEnd);
             };
-            TrackEntry.deprecatedWarning1 = false;
-            TrackEntry.deprecatedWarning2 = false;
             return TrackEntry;
         }());
+        TrackEntry.deprecatedWarning1 = false;
+        TrackEntry.deprecatedWarning2 = false;
         core.TrackEntry = TrackEntry;
         var EventQueue = (function () {
             function EventQueue(animState) {
@@ -1641,10 +1649,11 @@ var pixi_spine;
             EventQueue.prototype.clear = function () {
                 this.objects.length = 0;
             };
-            EventQueue.deprecatedWarning1 = false;
             return EventQueue;
         }());
+        EventQueue.deprecatedWarning1 = false;
         core.EventQueue = EventQueue;
+        var EventType;
         (function (EventType) {
             EventType[EventType["start"] = 0] = "start";
             EventType[EventType["interrupt"] = 1] = "interrupt";
@@ -1652,8 +1661,7 @@ var pixi_spine;
             EventType[EventType["dispose"] = 3] = "dispose";
             EventType[EventType["complete"] = 4] = "complete";
             EventType[EventType["event"] = 5] = "event";
-        })(core.EventType || (core.EventType = {}));
-        var EventType = core.EventType;
+        })(EventType = core.EventType || (core.EventType = {}));
         var AnimationStateAdapter2 = (function () {
             function AnimationStateAdapter2() {
             }
@@ -1715,9 +1723,9 @@ var pixi_spine;
                 var value = this.animationToMixTime[key];
                 return value === undefined ? this.defaultMix : value;
             };
-            AnimationStateData.deprecatedWarning1 = false;
             return AnimationStateData;
         }());
+        AnimationStateData.deprecatedWarning1 = false;
         core.AnimationStateData = AnimationStateData;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
@@ -1772,8 +1780,9 @@ var pixi_spine;
         var VertexAttachment = (function (_super) {
             __extends(VertexAttachment, _super);
             function VertexAttachment(name) {
-                _super.call(this, name);
-                this.worldVerticesLength = 0;
+                var _this = _super.call(this, name) || this;
+                _this.worldVerticesLength = 0;
+                return _this;
             }
             VertexAttachment.prototype.computeWorldVertices = function (slot, worldVertices) {
                 this.computeWorldVerticesWith(slot, 0, this.worldVerticesLength, worldVertices, 0);
@@ -1852,14 +1861,14 @@ var pixi_spine;
 (function (pixi_spine) {
     var core;
     (function (core) {
+        var AttachmentType;
         (function (AttachmentType) {
             AttachmentType[AttachmentType["Region"] = 0] = "Region";
             AttachmentType[AttachmentType["BoundingBox"] = 1] = "BoundingBox";
             AttachmentType[AttachmentType["Mesh"] = 2] = "Mesh";
             AttachmentType[AttachmentType["LinkedMesh"] = 3] = "LinkedMesh";
             AttachmentType[AttachmentType["Path"] = 4] = "Path";
-        })(core.AttachmentType || (core.AttachmentType = {}));
-        var AttachmentType = core.AttachmentType;
+        })(AttachmentType = core.AttachmentType || (core.AttachmentType = {}));
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -1869,8 +1878,9 @@ var pixi_spine;
         var BoundingBoxAttachment = (function (_super) {
             __extends(BoundingBoxAttachment, _super);
             function BoundingBoxAttachment(name) {
-                _super.call(this, name);
-                this.color = new core.Color(1, 1, 1, 1);
+                var _this = _super.call(this, name) || this;
+                _this.color = new core.Color(1, 1, 1, 1);
+                return _this;
             }
             return BoundingBoxAttachment;
         }(core.VertexAttachment));
@@ -1884,10 +1894,11 @@ var pixi_spine;
         var MeshAttachment = (function (_super) {
             __extends(MeshAttachment, _super);
             function MeshAttachment(name) {
-                _super.call(this, name);
-                this.color = new core.Color(1, 1, 1, 1);
-                this.inheritDeform = false;
-                this.tempColor = new core.Color(0, 0, 0, 0);
+                var _this = _super.call(this, name) || this;
+                _this.color = new core.Color(1, 1, 1, 1);
+                _this.inheritDeform = false;
+                _this.tempColor = new core.Color(0, 0, 0, 0);
+                return _this;
             }
             MeshAttachment.prototype.updateWorldVertices = function (slot, premultipliedAlpha) {
                 return [];
@@ -1942,10 +1953,11 @@ var pixi_spine;
         var PathAttachment = (function (_super) {
             __extends(PathAttachment, _super);
             function PathAttachment(name) {
-                _super.call(this, name);
-                this.closed = false;
-                this.constantSpeed = false;
-                this.color = new core.Color(1, 1, 1, 1);
+                var _this = _super.call(this, name) || this;
+                _this.closed = false;
+                _this.constantSpeed = false;
+                _this.color = new core.Color(1, 1, 1, 1);
+                return _this;
             }
             return PathAttachment;
         }(core.VertexAttachment));
@@ -1959,15 +1971,16 @@ var pixi_spine;
         var RegionAttachment = (function (_super) {
             __extends(RegionAttachment, _super);
             function RegionAttachment(name) {
-                _super.call(this, name);
-                this.x = 0;
-                this.y = 0;
-                this.scaleX = 1;
-                this.scaleY = 1;
-                this.rotation = 0;
-                this.width = 0;
-                this.height = 0;
-                this.color = new core.Color(1, 1, 1, 1);
+                var _this = _super.call(this, name) || this;
+                _this.x = 0;
+                _this.y = 0;
+                _this.scaleX = 1;
+                _this.scaleY = 1;
+                _this.rotation = 0;
+                _this.width = 0;
+                _this.height = 0;
+                _this.color = new core.Color(1, 1, 1, 1);
+                return _this;
             }
             RegionAttachment.prototype.updateWorldVertices = function (slot, premultipliedAlpha) {
                 return [];
@@ -1981,13 +1994,13 @@ var pixi_spine;
 (function (pixi_spine) {
     var core;
     (function (core) {
+        var BlendMode;
         (function (BlendMode) {
             BlendMode[BlendMode["Normal"] = 0] = "Normal";
             BlendMode[BlendMode["Additive"] = 1] = "Additive";
             BlendMode[BlendMode["Multiply"] = 2] = "Multiply";
             BlendMode[BlendMode["Screen"] = 3] = "Screen";
-        })(core.BlendMode || (core.BlendMode = {}));
-        var BlendMode = core.BlendMode;
+        })(BlendMode = core.BlendMode || (core.BlendMode = {}));
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -2274,9 +2287,9 @@ var pixi_spine;
                 local.y = x * m.b + y * m.d + m.ty;
                 return local;
             };
-            Bone.yDown = false;
             return Bone;
         }());
+        Bone.yDown = false;
         core.Bone = Bone;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
@@ -2305,14 +2318,14 @@ var pixi_spine;
             return BoneData;
         }());
         core.BoneData = BoneData;
+        var TransformMode;
         (function (TransformMode) {
             TransformMode[TransformMode["Normal"] = 0] = "Normal";
             TransformMode[TransformMode["OnlyTranslation"] = 1] = "OnlyTranslation";
             TransformMode[TransformMode["NoRotationOrReflection"] = 2] = "NoRotationOrReflection";
             TransformMode[TransformMode["NoScale"] = 3] = "NoScale";
             TransformMode[TransformMode["NoScaleOrReflection"] = 4] = "NoScaleOrReflection";
-        })(core.TransformMode || (core.TransformMode = {}));
-        var TransformMode = core.TransformMode;
+        })(TransformMode = core.TransformMode || (core.TransformMode = {}));
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -2930,11 +2943,11 @@ var pixi_spine;
             PathConstraint.prototype.getOrder = function () {
                 return this.data.order;
             };
-            PathConstraint.NONE = -1;
-            PathConstraint.BEFORE = -2;
-            PathConstraint.AFTER = -3;
             return PathConstraint;
         }());
+        PathConstraint.NONE = -1;
+        PathConstraint.BEFORE = -2;
+        PathConstraint.AFTER = -3;
         core.PathConstraint = PathConstraint;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
@@ -2951,23 +2964,23 @@ var pixi_spine;
             return PathConstraintData;
         }());
         core.PathConstraintData = PathConstraintData;
+        var PositionMode;
         (function (PositionMode) {
             PositionMode[PositionMode["Fixed"] = 0] = "Fixed";
             PositionMode[PositionMode["Percent"] = 1] = "Percent";
-        })(core.PositionMode || (core.PositionMode = {}));
-        var PositionMode = core.PositionMode;
+        })(PositionMode = core.PositionMode || (core.PositionMode = {}));
+        var SpacingMode;
         (function (SpacingMode) {
             SpacingMode[SpacingMode["Length"] = 0] = "Length";
             SpacingMode[SpacingMode["Fixed"] = 1] = "Fixed";
             SpacingMode[SpacingMode["Percent"] = 2] = "Percent";
-        })(core.SpacingMode || (core.SpacingMode = {}));
-        var SpacingMode = core.SpacingMode;
+        })(SpacingMode = core.SpacingMode || (core.SpacingMode = {}));
+        var RotateMode;
         (function (RotateMode) {
             RotateMode[RotateMode["Tangent"] = 0] = "Tangent";
             RotateMode[RotateMode["Chain"] = 1] = "Chain";
             RotateMode[RotateMode["ChainScale"] = 2] = "ChainScale";
-        })(core.RotateMode || (core.RotateMode = {}));
-        var RotateMode = core.RotateMode;
+        })(RotateMode = core.RotateMode || (core.RotateMode = {}));
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -4518,6 +4531,7 @@ var pixi_spine;
             return Texture;
         }());
         core.Texture = Texture;
+        var TextureFilter;
         (function (TextureFilter) {
             TextureFilter[TextureFilter["Nearest"] = 9728] = "Nearest";
             TextureFilter[TextureFilter["Linear"] = 9729] = "Linear";
@@ -4526,14 +4540,13 @@ var pixi_spine;
             TextureFilter[TextureFilter["MipMapLinearNearest"] = 9985] = "MipMapLinearNearest";
             TextureFilter[TextureFilter["MipMapNearestLinear"] = 9986] = "MipMapNearestLinear";
             TextureFilter[TextureFilter["MipMapLinearLinear"] = 9987] = "MipMapLinearLinear";
-        })(core.TextureFilter || (core.TextureFilter = {}));
-        var TextureFilter = core.TextureFilter;
+        })(TextureFilter = core.TextureFilter || (core.TextureFilter = {}));
+        var TextureWrap;
         (function (TextureWrap) {
             TextureWrap[TextureWrap["MirroredRepeat"] = 33648] = "MirroredRepeat";
             TextureWrap[TextureWrap["ClampToEdge"] = 33071] = "ClampToEdge";
             TextureWrap[TextureWrap["Repeat"] = 10497] = "Repeat";
-        })(core.TextureWrap || (core.TextureWrap = {}));
-        var TextureWrap = core.TextureWrap;
+        })(TextureWrap = core.TextureWrap || (core.TextureWrap = {}));
         var TextureRegion = (function () {
             function TextureRegion() {
                 this.size = null;
@@ -4913,7 +4926,7 @@ var pixi_spine;
         var TextureAtlasRegion = (function (_super) {
             __extends(TextureAtlasRegion, _super);
             function TextureAtlasRegion() {
-                _super.apply(this, arguments);
+                return _super.apply(this, arguments) || this;
             }
             return TextureAtlasRegion;
         }(core.TextureRegion));
@@ -5133,13 +5146,13 @@ var pixi_spine;
                     this.a = 1;
                 return this;
             };
-            Color.WHITE = new Color(1, 1, 1, 1);
-            Color.RED = new Color(1, 0, 0, 1);
-            Color.GREEN = new Color(0, 1, 0, 1);
-            Color.BLUE = new Color(0, 0, 1, 1);
-            Color.MAGENTA = new Color(1, 0, 1, 1);
             return Color;
         }());
+        Color.WHITE = new Color(1, 1, 1, 1);
+        Color.RED = new Color(1, 0, 0, 1);
+        Color.GREEN = new Color(0, 1, 0, 1);
+        Color.BLUE = new Color(0, 0, 1, 1);
+        Color.MAGENTA = new Color(1, 0, 1, 1);
         core.Color = Color;
         var MathUtils = (function () {
             function MathUtils() {
@@ -5167,14 +5180,14 @@ var pixi_spine;
                 var y = Math.pow(Math.abs(x), 1 / 3);
                 return x < 0 ? -y : y;
             };
-            MathUtils.PI = 3.1415927;
-            MathUtils.PI2 = MathUtils.PI * 2;
-            MathUtils.radiansToDegrees = 180 / MathUtils.PI;
-            MathUtils.radDeg = MathUtils.radiansToDegrees;
-            MathUtils.degreesToRadians = MathUtils.PI / 180;
-            MathUtils.degRad = MathUtils.degreesToRadians;
             return MathUtils;
         }());
+        MathUtils.PI = 3.1415927;
+        MathUtils.PI2 = MathUtils.PI * 2;
+        MathUtils.radiansToDegrees = 180 / MathUtils.PI;
+        MathUtils.radDeg = MathUtils.radiansToDegrees;
+        MathUtils.degreesToRadians = MathUtils.PI / 180;
+        MathUtils.degRad = MathUtils.degreesToRadians;
         core.MathUtils = MathUtils;
         var Utils = (function () {
             function Utils() {
@@ -5222,9 +5235,9 @@ var pixi_spine;
             Utils.toFloatArray = function (array) {
                 return Utils.SUPPORTS_TYPED_ARRAYS ? new Float32Array(array) : array;
             };
-            Utils.SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
             return Utils;
         }());
+        Utils.SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
         core.Utils = Utils;
         var DebugUtils = (function () {
             function DebugUtils() {
@@ -5350,17 +5363,19 @@ var pixi_spine;
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
                 xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
-                metadata: resource.metadata ? resource.metadata.spineMetadata : null
+                metadata: resource.metadata ? resource.metadata.spineMetadata : null,
+                parentResource: resource
             };
             var imageOptions = {
                 crossOrigin: resource.crossOrigin,
-                metadata: resource.metadata ? resource.metadata.imageMetadata : null
+                metadata: resource.metadata ? resource.metadata.imageMetadata : null,
+                parentResource: resource
             };
             var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
             baseUrl = baseUrl.replace(this.baseUrl, '');
             var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
-            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function () {
-                new pixi_spine.core.TextureAtlas(this.xhr.responseText, adapter, function (spineAtlas) {
+            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (r) {
+                new pixi_spine.core.TextureAtlas(r.data, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
                     var skeletonData = spineJsonParser.readSkeletonData(resource.data);
                     resource.spineData = skeletonData;
@@ -5403,7 +5418,7 @@ var pixi_spine;
     var SpineSprite = (function (_super) {
         __extends(SpineSprite, _super);
         function SpineSprite(tex) {
-            _super.call(this, tex);
+            return _super.call(this, tex) || this;
         }
         return SpineSprite;
     }(PIXI.Sprite));
@@ -5411,7 +5426,7 @@ var pixi_spine;
     var SpineMesh = (function (_super) {
         __extends(SpineMesh, _super);
         function SpineMesh(texture, vertices, uvs, indices, drawMode) {
-            _super.call(this, texture, vertices, uvs, indices, drawMode);
+            return _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
         }
         return SpineMesh;
     }(PIXI.mesh.Mesh));
@@ -5419,8 +5434,8 @@ var pixi_spine;
     var Spine = (function (_super) {
         __extends(Spine, _super);
         function Spine(spineData) {
-            _super.call(this);
-            this.hackTextureBySlotName = function (slotName, texture, size) {
+            var _this = _super.call(this) || this;
+            _this.hackTextureBySlotName = function (slotName, texture, size) {
                 if (texture === void 0) { texture = null; }
                 if (size === void 0) { size = null; }
                 var index = this.skeleton.findSlotIndex(slotName);
@@ -5435,27 +5450,27 @@ var pixi_spine;
             if ((typeof spineData) === "string") {
                 throw new Error('spineData param cant be string. Please use spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
             }
-            this.spineData = spineData;
-            this.skeleton = new pixi_spine.core.Skeleton(spineData);
-            this.skeleton.updateWorldTransform();
-            this.stateData = new pixi_spine.core.AnimationStateData(spineData);
-            this.state = new pixi_spine.core.AnimationState(this.stateData);
-            this.slotContainers = [];
-            for (var i = 0, n = this.skeleton.slots.length; i < n; i++) {
-                var slot = this.skeleton.slots[i];
+            _this.spineData = spineData;
+            _this.skeleton = new pixi_spine.core.Skeleton(spineData);
+            _this.skeleton.updateWorldTransform();
+            _this.stateData = new pixi_spine.core.AnimationStateData(spineData);
+            _this.state = new pixi_spine.core.AnimationState(_this.stateData);
+            _this.slotContainers = [];
+            for (var i = 0, n = _this.skeleton.slots.length; i < n; i++) {
+                var slot = _this.skeleton.slots[i];
                 var attachment = slot.attachment;
                 var slotContainer = new PIXI.Container();
-                this.slotContainers.push(slotContainer);
-                this.addChild(slotContainer);
+                _this.slotContainers.push(slotContainer);
+                _this.addChild(slotContainer);
                 if (attachment instanceof pixi_spine.core.RegionAttachment) {
                     var spriteName = attachment.region.name;
-                    var sprite = this.createSprite(slot, attachment, spriteName);
+                    var sprite = _this.createSprite(slot, attachment, spriteName);
                     slot.currentSprite = sprite;
                     slot.currentSpriteName = spriteName;
                     slotContainer.addChild(sprite);
                 }
                 else if (attachment instanceof pixi_spine.core.MeshAttachment) {
-                    var mesh = this.createMesh(slot, attachment);
+                    var mesh = _this.createMesh(slot, attachment);
                     slot.currentMesh = mesh;
                     slot.currentMeshName = attachment.name;
                     slotContainer.addChild(mesh);
@@ -5464,8 +5479,9 @@ var pixi_spine;
                     continue;
                 }
             }
-            this.autoUpdate = true;
-            this.tintRgb = new Float32Array([1, 1, 1]);
+            _this.autoUpdate = true;
+            _this.tintRgb = new Float32Array([1, 1, 1]);
+            return _this;
         }
         Object.defineProperty(Spine.prototype, "autoUpdate", {
             get: function () {
@@ -5710,9 +5726,9 @@ var pixi_spine;
             }
             return true;
         };
-        Spine.globalAutoUpdate = true;
         return Spine;
     }(PIXI.Container));
+    Spine.globalAutoUpdate = true;
     pixi_spine.Spine = Spine;
     function SlotContainerUpdateTransformV3() {
         var pt = this.parent.worldTransform;
