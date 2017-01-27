@@ -88,19 +88,23 @@ PIXI.loader
 var rawSkeletonData = JSON.parse("$jsondata"); //your skeleton.json file here
 var rawAtlasData = "$atlasdata"; //your atlas file 
 
-var spineAtlas = new spine.Atlas(rawAtlasData, function(line, callback) {
-        //pass the image here.
-        callback(PIXI.BaseTexture.fromImage(line));
-    }); //specify path, image.png will be added automatically
+var spineAtlas = new PIXI.spine.core.TextureAtlas(rawAtlasData, function(line, callback) {
+    //pass the image here.
+    callback(PIXI.BaseTexture.fromImage(line));
+}); //specify path, image.png will be added automatically
 
-var spineJsonParser = new PIXI.spine.SkeletonJsonParser(new PIXI.spine.AtlasAttachmentParser(spineAtlas));
-var skeletonData = spineJsonParser.readSkeletonData(rawSkeletonData);
+var spineAtlasLoader = new PIXI.spine.core.AtlasAttachmentLoader(spineAtlas)
+var spineJsonParser = new PIXI.spine.core.SkeletonJson(spineAtlasLoader);
+var spineData = spineJsonParser.readSkeletonData(rawSkeletonData);
 
 //now we can create spine instance
-var spine = new PIXI.spine(skeletonData);
+var spine = new PIXI.spine(spineData);
 ```
 
 ### How to use pixi spritesheet with it
+
+TODO: EDIT IT ACCORDING TO LATEST CHANGES
+
 It's possible to load each image separately as opposed to loading in just one spritesheet. This can be useful if SVGs are needed instead of providing many PNG files. Simply create an Atlas object and pass in an object of image names and PIXI textures, like so:
 ```js
 var spine = PIXI.spine;
