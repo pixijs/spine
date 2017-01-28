@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Spine implementation for pixi v^3 and v^4",
   "author": "Mat Groves",
   "contributors": [
@@ -9,6 +9,7 @@
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>"
   ],
   "main": "./bin/pixi-spine.js",
+  "types": "./bin/pixi-spine.d.ts",
   "homepage": "https://github.com/pixijs/pixi-spine",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"

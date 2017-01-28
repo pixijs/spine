@@ -88,12 +88,15 @@ PIXI.loader
 var rawSkeletonData = JSON.parse("$jsondata"); //your skeleton.json file here
 var rawAtlasData = "$atlasdata"; //your atlas file 
 
-var spineAtlas = new spine.Atlas(rawAtlasData, function(line, callback) {
+var spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
+var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+
+var spineAtlas = new spine.TextureAtlas(rawAtlasData, function(line, callback) {
         //pass the image here.
         callback(PIXI.BaseTexture.fromImage(line));
     }); //specify path, image.png will be added automatically
 
-var spineJsonParser = new PIXI.spine.SkeletonJsonParser(new PIXI.spine.AtlasAttachmentParser(spineAtlas));
+var spineJsonParser = new PIXI.spine.core.SkeletonJson(new PIXI.spine.AtlasAttachmentParser(spineAtlas));
 var skeletonData = spineJsonParser.readSkeletonData(rawSkeletonData);
 
 //now we can create spine instance
