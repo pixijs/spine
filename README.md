@@ -103,32 +103,7 @@ var spine = new PIXI.spine(spineData);
 
 ### How to use pixi spritesheet with it
 
-TODO: EDIT IT ACCORDING TO LATEST CHANGES
-
-It's possible to load each image separately as opposed to loading in just one spritesheet. This can be useful if SVGs are needed instead of providing many PNG files. Simply create an Atlas object and pass in an object of image names and PIXI textures, like so:
-```js
-var spine = PIXI.spine;
-var loader = new PIXI.loaders.Loader();
-var atlas = new spine.SpineRuntime.Atlas();
-/**
- * Example below shows the textures hardcoded below, but it's also possible to load in a JSON 
- * file with these values using:
- * loader.add('spritesheet', 'myspritesheet.json', callback);
- */
-var allTextures = {
-  'head': PIXI.Texture.fromImage('head.svg'),
-  'left-eye': PIXI.Texture.fromImage('left-eye.svg')
-};
-//second parameter is stripExtension=true because we dont need '.png' inside region names 
-atlas.addTextureHash(allTextures, true);
-
-PIXI.loader
-    .add('spineboy', 'spineboy.json', {metadata: {spineAtlas: atlas}})
-    .load(function(response) {
-      var mySpineBoy = new PIXI.spine.Spine(response.resources.boy.spineData);
-      stage.addChild(mySpineBoy);
-    });
-```
+See [docs](examples/dynamic_texture_atlas.md).
  
 ### How to change atlas file extension (I hate IIS webserver)
 
