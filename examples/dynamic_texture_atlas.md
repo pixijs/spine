@@ -27,7 +27,7 @@ If for some reason you don't want to use Spine's `*.atlas` here's how you might 
     // second parameter is stripExtension=true because we dont need '.png' inside region names
     atlas.addTextureHash(allTextures, true);
 
-    // load the texture we need
+    // now load json skeleton
     loader.add('spineCharacter', 'spine_character.json', {metadata: {spineAtlas: atlas}});
 
     loader.once('complete', function(that, resources) {
