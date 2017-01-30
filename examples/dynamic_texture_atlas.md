@@ -39,10 +39,10 @@ If for some reason you don't want to use Spine's `*.atlas` here's how you might 
 
       app.stage.addChild(animation);
 
-      if (animation.state.hasAnimationByName('default')) {
-        //run forever, little boy!
-        animation.state.setAnimation(0, 'default', true);
-        //dont run too fast
+      if (animation.state.hasAnimation('animation')) {
+        // run forever, little boy!
+        animation.state.setAnimation(0, 'animation', true);
+        // dont run too fast
         animation.state.timeScale = 1;
       }
     });
