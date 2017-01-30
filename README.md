@@ -103,7 +103,7 @@ var spine = new PIXI.spine(spineData);
 
 ### How to use pixi spritesheet with it
 
-See [docs](examples/dynamic_texture_atlas.md).
+See [examples/](examples/dynamic_texture_atlas.md).
  
 ### How to change atlas file extension (I hate IIS webserver)
 
