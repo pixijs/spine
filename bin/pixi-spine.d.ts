@@ -318,13 +318,15 @@ declare namespace pixi_spine.core {
         complete = 4,
         event = 5,
     }
+    type AnimationStateListenerCallback = (entry:TrackEntry)=>void;
+    type AnimationStateListenerEventCallback = (entry:TrackEntry,event:Event)=>void;
     interface AnimationStateListener2 {
-        start(entry: TrackEntry): void;
-        interrupt(entry: TrackEntry): void;
-        end(entry: TrackEntry): void;
-        dispose(entry: TrackEntry): void;
-        complete(entry: TrackEntry): void;
-        event(entry: TrackEntry, event: Event): void;
+        start?:AnimationStateListenerCallback,
+        interrupt?:AnimationStateListenerCallback;
+        end?:AnimationStateListenerCallback;
+        dispose?:AnimationStateListenerCallback;
+        complete?:AnimationStateListenerCallback;
+        event?:AnimationStateListenerEventCallback;
     }
     abstract class AnimationStateAdapter2 implements AnimationStateListener2 {
         start(entry: TrackEntry): void;
