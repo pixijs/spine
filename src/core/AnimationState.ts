@@ -594,13 +594,17 @@ namespace pixi_spine.core {
 
         private static deprecatedWarning3: boolean = false;
 
+        hasAnimation(animationName: string): boolean {
+            let animation = this.data.skeletonData.findAnimation(animationName);
+            return animation !== null;
+        }
+
         hasAnimationByName(animationName: string): boolean {
             if (!AnimationState.deprecatedWarning3) {
                 AnimationState.deprecatedWarning3 = true;
                 console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
             }
-            let animation = this.data.skeletonData.findAnimation(animationName);
-            return animation !== null;
+            return this.hasAnimation(animationName);
         }
 	}
 
