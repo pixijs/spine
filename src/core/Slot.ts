@@ -35,9 +35,9 @@ namespace pixi_spine.core {
         currentMesh: any;
         currentSprite: any;
         meshes: any;
-        currentMeshName: String;
+        currentMeshName: string;
         sprites: any;
-        currentSpriteName: String;
+        currentSpriteName: string;
         blendMode: number;
         //assign hack region a bit later
         tempRegion: TextureRegion;

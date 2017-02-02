@@ -470,7 +470,7 @@ namespace pixi_spine {
          * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
          * @returns {boolean} Success flag
          */
-        hackTextureBySlotName = function (slotName: String, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
+        hackTextureBySlotName = function (slotName: string, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
             var index = this.skeleton.findSlotIndex(slotName);
             if (index == -1) {
                 return false;
