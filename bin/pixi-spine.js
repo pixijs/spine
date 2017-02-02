@@ -1440,13 +1440,16 @@ var pixi_spine;
                 }
                 this.addAnimation(trackIndex, animationName, loop, delay);
             };
+            AnimationState.prototype.hasAnimation = function (animationName) {
+                var animation = this.data.skeletonData.findAnimation(animationName);
+                return animation !== null;
+            };
             AnimationState.prototype.hasAnimationByName = function (animationName) {
                 if (!AnimationState.deprecatedWarning3) {
                     AnimationState.deprecatedWarning3 = true;
                     console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
                 }
-                var animation = this.data.skeletonData.findAnimation(animationName);
-                return animation !== null;
+                return this.hasAnimation(animationName);
             };
             AnimationState.emptyAnimation = new core.Animation("<empty>", [], 0);
             AnimationState.deprecatedWarning1 = false;

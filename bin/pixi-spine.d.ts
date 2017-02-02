@@ -251,6 +251,7 @@ declare namespace pixi_spine.core {
         private static deprecatedWarning2;
         addAnimationByName(trackIndex: number, animationName: string, loop: boolean, delay: number): void;
         private static deprecatedWarning3;
+        hasAnimation(animationName: string): boolean;
         hasAnimationByName(animationName: string): boolean;
     }
     class TrackEntry {
@@ -319,12 +320,12 @@ declare namespace pixi_spine.core {
         event = 5,
     }
     interface AnimationStateListener2 {
-        start(entry: TrackEntry): void;
-        interrupt(entry: TrackEntry): void;
-        end(entry: TrackEntry): void;
-        dispose(entry: TrackEntry): void;
-        complete(entry: TrackEntry): void;
-        event(entry: TrackEntry, event: Event): void;
+        start?(entry: TrackEntry): void;
+        interrupt?(entry: TrackEntry): void;
+        end?(entry: TrackEntry): void;
+        dispose?(entry: TrackEntry): void;
+        complete?(entry: TrackEntry): void;
+        event?(entry: TrackEntry, event: Event): void;
     }
     abstract class AnimationStateAdapter2 implements AnimationStateListener2 {
         start(entry: TrackEntry): void;
@@ -842,7 +843,7 @@ declare namespace pixi_spine.core {
     class TextureAtlas implements Disposable {
         pages: TextureAtlasPage[];
         regions: TextureAtlasRegion[];
-        constructor(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any);
+        constructor(atlasText?: string, textureLoader?: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback?: (obj: TextureAtlas) => any);
         addTexture(name: string, texture: PIXI.Texture): TextureAtlasRegion;
         addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean): void;
         addSpineAtlas(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any): void;
