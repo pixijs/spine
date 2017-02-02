@@ -34,7 +34,7 @@ namespace pixi_spine.core {
         pages = new Array<TextureAtlasPage>();
         regions = new Array<TextureAtlasRegion>();
 
-        constructor(atlasText?: string, textureLoader?: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any) {
+        constructor(atlasText?: string, textureLoader?: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback?: (obj: TextureAtlas) => any) {
             if (atlasText) {
                 this.addSpineAtlas(atlasText, textureLoader, callback);
             }
