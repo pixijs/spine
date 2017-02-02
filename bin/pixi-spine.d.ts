@@ -763,9 +763,9 @@ declare namespace pixi_spine.core {
         currentMesh: any;
         currentSprite: any;
         meshes: any;
-        currentMeshName: String;
+        currentMeshName: string;
         sprites: any;
-        currentSpriteName: String;
+        currentSpriteName: string;
         blendMode: number;
         tempRegion: TextureRegion;
         tempAttachment: Attachment;
@@ -999,7 +999,7 @@ declare namespace pixi_spine.core {
 }
 declare namespace pixi_spine {
     function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
-    function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: String, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
+    function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
     function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
 }
 declare namespace pixi_spine {
@@ -1030,7 +1030,7 @@ declare namespace pixi_spine {
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string): SpineSprite;
         createMesh(slot: core.Slot, attachment: core.MeshAttachment): SpineMesh;
         hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
-        hackTextureBySlotName: (slotName: String, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
+        hackTextureBySlotName: (slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
     }
 }
 declare module PIXI {
