@@ -80,7 +80,7 @@ namespace pixi_spine {
         if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
             baseUrl += '/';
         }
-        return function (line: String, callback: (baseTexture: PIXI.BaseTexture) => any) {
+        return function (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) {
             var name = namePrefix + line;
             var url = baseUrl + line;
             loader.add(name, url, imageOptions, (resource: PIXI.loaders.Resource) => {
