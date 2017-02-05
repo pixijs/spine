@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "none",
-    "outFile": "bin/pixi-spine.js",
+    "module": "commonjs",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "preserveConstEnums": true,
-    "removeComments": true,
-    "inlineSources": true,
-    "declaration": true
+    "inlineSources": false,
+    "declaration": false
   },
-  "include": [
-    "compilation.ts"
-  ],
   "exclude": [
-    "node_modules/**/*",
-    "src/**/*"
-  ]
+    "node_modules",
+    "bin",
+    "src"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "forkChecker": true
+  },
+  "compileOnSave": false,
+  "buildOnSave": false
 }
