@@ -20,3 +20,6 @@ dist
 gh-pages
 build-es6
 .idea
+
+# build temp
+compilation.ts
