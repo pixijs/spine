@@ -30,9 +30,9 @@
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
     "patch-dts": "node scripts/patch-dts.js",
     "concat": "node scripts/concat.js",
-    "sandbox:browserify": "yarn copy -- bin/pixi-spine.js sandbox/build/browserify/ && yarn browserify -- sandbox/src/app.ts -p [ tsify --noImplicitAny ] -o sandbox/build/browserify/pixi-spine.bundle.js",
+    "sandbox:browserify": "yarn copy -- bin/pixi-spine.js sandbox/build/browserify/pixi-spine.js && yarn browserify -- sandbox/src/app.ts -p [ tsify --noImplicitAny ] -o sandbox/build/browserify/pixi-spine.bundle.js",
     "sandbox:webpack": "yarn webpack -- --config sandbox/webpack.config.js --progress --profile --colors --display-error-details --display-cached",
-    "sandbox:vanillajs": "yarn copy -- bin/pixi-spine.js sandbox/build/vanillajs/ && tsc -p sandbox/tsconfig.vanilla.json",
+    "sandbox:vanillajs": "yarn copy -- bin/pixi-spine.js sandbox/build/vanillajs/pixi-spine.js && tsc -p sandbox/tsconfig.vanilla.json",
     "sandbox:all": "yarn build && yarn sandbox:browserify && yarn sandbox:webpack && yarn sandbox:vanillajs",
     "sandbox:www": "yarn static-html-server -- -p 9995 -r sandbox/build"
   },

@@ -9,7 +9,7 @@ module.exports = {
     'pixi.js': 'PIXI'
   },
   output: {
-    path: 'build/webpack',
+    path: 'sandbox/build/webpack',
     filename: '[name].bundle.js',
     sourceMapFilename: '[name].bundle.map'
   },
