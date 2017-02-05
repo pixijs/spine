@@ -25,8 +25,9 @@
     "start": "parallelshell \"npm run watch\"",
     "watch": "tsc -w",
     "prebuild": "npm run clean",
-    "build": "tsc",
-    "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md"
+    "build": "tsc && npm run patch-dts",
+    "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
+    "patch-dts": "node scripts/patch-dts.js"
   },
   "files": [
     "bin/",
