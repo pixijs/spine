@@ -11,6 +11,7 @@ Run
 
 ```
 yarn
-yarn all
+yarn sandbox:all
+yarn sandbox:www
 open localhost:9995
 ```
