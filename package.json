@@ -29,7 +29,12 @@
     "build": "tsc",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
     "patch-dts": "node scripts/patch-dts.js",
-    "concat": "node scripts/concat.js"
+    "concat": "node scripts/concat.js",
+    "sandbox:browserify": "yarn copy -- bin/pixi-spine.js sandbox/build/browserify/ && yarn browserify -- sandbox/src/app.ts -p [ tsify --noImplicitAny ] -o sandbox/build/browserify/pixi-spine.bundle.js",
+    "sandbox:webpack": "yarn webpack -- --config sandbox/webpack.config.js --progress --profile --colors --display-error-details --display-cached",
+    "sandbox:vanillajs": "yarn copy -- bin/pixi-spine.js sandbox/build/vanillajs/ && tsc -p sandbox/tsconfig.vanilla.json",
+    "sandbox:all": "yarn build && yarn sandbox:browserify && yarn sandbox:webpack && yarn sandbox:vanillajs",
+    "sandbox:www": "yarn static-html-server -- -p 9995 -r sandbox/build"
   },
   "files": [
     "bin/",
@@ -40,15 +45,25 @@
     "README.md"
   ],
   "devDependencies": {
-    "concat-files": "^0.1.1",
-    "del": "^2.2.0",
-    "glob": "^7.1.1",
-    "jaguarjs-jsdoc": "^1.0.1",
-    "jsdoc": "^3.4.0",
-    "mkdirp": "^0.5.1",
-    "parallelshell": "^2.0.0",
-    "rimraf": "^2.5.3",
-    "typescript": "~2.2"
+    "awesome-typescript-loader": "~3.0.0-beta.18",
+    "browserify": "~14.0.0",
+    "concat-files": "~0.1.1",
+    "copy": "^0.3.0",
+    "del": "~2.2.0",
+    "glob": "~7.1.1",
+    "jaguarjs-jsdoc": "~1.0.1",
+    "jsdoc": "~3.4.0",
+    "mkdirp": "~0.5.1",
+    "parallelshell": "~2.0.0",
+    "pixi.js": "~4.3.4",
+    "rimraf": "~2.5.3",
+    "script-loader": "~0.7.0",
+    "source-map-loader": "~0.1.6",
+    "static-html-server": "~0.1.2",
+    "ts-helpers": "~1.1.2",
+    "tsify": "~3.0.1",
+    "typescript": "~2.2",
+    "webpack": "~1.14"
   },
   "dependencies": {
     "@types/pixi.js": "^4.1.0"

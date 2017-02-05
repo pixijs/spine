@@ -3,7 +3,7 @@ const ForkCheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 
 module.exports = {
   entry: {
-    'pixi-spine': ['../bin/pixi-spine.js', './src/app.ts']
+    'pixi-spine': ['./bin/pixi-spine.js', './sandbox/src/app.ts']
   },
   externals: {
     'pixi.js': 'PIXI'

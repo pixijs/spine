@@ -12,6 +12,7 @@ npm-debug.log
 *.sw*
 *~
 \#*#
+yarn.lock
 
 # project ignores
 !.gitkeep
