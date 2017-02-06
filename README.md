@@ -2,19 +2,6 @@
 
 Spine implementation for pixi v3 and pixi v4.
 
-## Spine version
-
-Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5. 
-
-Please enable "beta updates" and re-export everything from the spine editor.
-
-According to spine runtime license, you can use runtime only if you have bought the editor, so exporting latest versions of animations shouldn't be a problem for you.
-
-
-## Using webpack or browserify?
-
-Check out examples at our [sandbox](sandbox/README.md).
-
 ## Usage
 
 ### Prebuilt Files
@@ -25,7 +12,7 @@ If you are just including the built files, pixi spine adds itself to a pixi name
 new PIXI.spine.Spine();
 ```
 
-### Full example
+### Basic example
 
 ```js
 var app = new PIXI.Application();
@@ -53,9 +40,21 @@ PIXI.loader
     });
 ```
 
-### Typescript
+## Using webpack or browserify?
+
+Check out examples at our [sandbox](sandbox/README.md).
+
+## Typescript
 
 There's "bin/pixi-spine.d.ts" file, you can use it.
+
+## Spine version
+
+Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5. 
+
+Please enable "beta updates" and re-export everything from the spine editor.
+
+According to spine runtime license, you can use runtime only if you have bought the editor, so exporting latest versions of animations shouldn't be a problem for you.
 
 ## Building
 
