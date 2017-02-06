@@ -7,7 +7,7 @@ declare module PIXI
     {
         view: Node;
         stage: PIXI.Container;
-        ticker: {add: (cb: Function) => {}}
+        start: Function;
     }
 }
 
@@ -28,7 +28,5 @@ PIXI.loader
         }
 
         app.stage.addChild(animation);
-
-        app.ticker.add(function() {
-        });
+        app.start();
     });
