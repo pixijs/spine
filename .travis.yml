@@ -10,6 +10,10 @@ cache:
   directories:
     - node_modules
 
+install:
+  - npm install -g yarn
+  - yarn
+
 script:
   - yarn build
   - yarn sandbox:vanillajs
