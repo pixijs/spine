@@ -39,7 +39,6 @@
   "files": [
     "bin/",
     "src/",
-    "LICENSE",
     "SPINE-LICENSE",
     "package.json",
     "README.md"
