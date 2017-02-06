@@ -10,6 +10,11 @@ Please enable "beta updates" and re-export everything from the spine editor.
 
 According to spine runtime license, you can use runtime only if you have bought the editor, so exporting latest versions of animations shouldn't be a problem for you.
 
+
+## Using webpack or browserify?
+
+Check out examples at our [sandbox](sandbox/README.md).
+
 ## Usage
 
 ### Prebuilt Files
