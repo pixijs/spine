@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - "6"
+  - "6.1"
+  - "5.11"
+
+cache:
+  yarn: true
+  directories:
+    - node_modules
+
+install:
+  - yarn
+
+script:
+  - yarn build
+  - yarn sandbox:vanillajs
+  - yarn sandbox:browserify
+  - yarn sandbox:webpack -- --bail
