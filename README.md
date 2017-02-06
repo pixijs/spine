@@ -42,6 +42,10 @@ PIXI.loader
     });
 ```
 
+## Want to go advanced?
+
+Read our [docs](examples/index.md).
+
 ## Using webpack or browserify?
 
 Check out examples at our [sandbox](sandbox/README.md).
