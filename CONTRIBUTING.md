@@ -29,10 +29,10 @@ steps to reproduce, etc. "X isn't working!!!1!" will probably just be closed.
 ## Making Changes
 
 To build the library you will need to download node.js from [nodejs.org][20]. After it has been installed open a
-console and run `npm install -g gulp` to install the global `gulp` executable.
+console and run `npm install -g yarn` to install the global `yarn` executable.
 
 After that you can clone the repository and run `npm install` inside the cloned folder. This will install
-dependencies necessary for building the project. You can rebuild the project by running `gulp` in the cloned
+dependencies necessary for building the project. You can rebuild the project by running `yarn build` in the cloned
 folder.
 
 Once that is ready, you can make your changes and submit a Pull Request:
@@ -40,10 +40,7 @@ Once that is ready, you can make your changes and submit a Pull Request:
 - **Send Pull Requests to the `master` branch.** All Pull Requests must be sent to the `master` branch, which is where
 all "bleeding-edge" development takes place.
 
-- **Ensure changes are jshint validated.** Our JSHint configuration file is provided in the repository and you
-should check against it before submitting. This should happen automatically when running `gulp` in the repo directory.
-
-- **Never commit new builds.** When making a code change you should always run `gulp` which will rebuild the project
+- **Never commit new builds.** When making a code change you should always run `yarn build` which will rebuild the project
 so you can test, *however* please do not commit the new builds placed in `dist/` or your PR will be closed. By default
 the build process will output to an ignored folder (`build/`) you should be fine.
 
@@ -52,16 +49,3 @@ The more focused a PR is, the faster it will get attention and be merged. Extra 
 trash files will likely get your PR closed.
 
 [20]: http://nodejs.org
-
-
-## Quickie Code Style Guide
-
-Use EditorConfig and JSHint! Both tools will ensure your code is in the required styles! Either way, here are some tips:
-
-- Use 4 spaces for tabs, never tab characters.
-
-- No trailing whitespace, blank lines should have no whitespace.
-
-- Always favor strict equals `===` unless you *need* to use type coercion.
-
-- Follow conventions already in the code, and listen to jshint. Our config is set-up for a reason.

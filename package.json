@@ -20,12 +20,12 @@
     "url": "https://github.com/pixijs/pixi-spine.git"
   },
   "scripts": {
-    "clean": "rimraf bin && mkdirp bin",
-    "prestart": "npm run clean",
-    "start": "parallelshell \"npm run watch\"",
+    "cleanup": "rimraf bin && mkdirp bin",
+    "prestart": "yarn cleanup",
+    "start": "parallelshell \"yarn watch\"",
     "watch": "tsc -w",
-    "prebuild": "npm run clean && npm run concat",
-    "postbuild": "npm run patch-dts",
+    "prebuild": "yarn cleanup && yarn concat",
+    "postbuild": "yarn patch-dts && yarn shx -- rm compilation.ts",
     "build": "tsc -p tsconfig.compilation.json",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
     "patch-dts": "node scripts/patch-dts.js",
@@ -66,6 +66,6 @@
     "webpack": "~1.14"
   },
   "dependencies": {
-    "@types/pixi.js": "^4.1.0"
+    "@types/pixi.js": "~4.3.0"
   }
 }
