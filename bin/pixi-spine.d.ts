@@ -1,5 +1,5 @@
 /// <reference types="pixi.js" />
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Animation {
         name: string;
         timelines: Array<Timeline>;
@@ -201,7 +201,7 @@ declare namespace pixi_spine.core {
         apply(skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, setupPose: boolean, mixingOut: boolean): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class AnimationState {
         static emptyAnimation: Animation;
         data: AnimationStateData;
@@ -336,7 +336,7 @@ declare namespace pixi_spine.core {
         event(entry: TrackEntry, event: Event): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class AnimationStateData {
         skeletonData: SkeletonData;
         animationToMixTime: Map<number>;
@@ -349,7 +349,7 @@ declare namespace pixi_spine.core {
         getMix(from: Animation, to: Animation): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class AtlasAttachmentLoader implements AttachmentLoader {
         atlas: TextureAtlas;
         constructor(atlas: TextureAtlas);
@@ -359,7 +359,7 @@ declare namespace pixi_spine.core {
         newPathAttachment(skin: Skin, name: string): PathAttachment;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     abstract class Attachment {
         name: string;
         constructor(name: string);
@@ -374,7 +374,7 @@ declare namespace pixi_spine.core {
         applyDeform(sourceAttachment: VertexAttachment): boolean;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     interface AttachmentLoader {
         newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment;
         newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment;
@@ -382,7 +382,7 @@ declare namespace pixi_spine.core {
         newPathAttachment(skin: Skin, name: string): PathAttachment;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     enum AttachmentType {
         Region = 0,
         BoundingBox = 1,
@@ -391,13 +391,13 @@ declare namespace pixi_spine.core {
         Path = 4,
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class BoundingBoxAttachment extends VertexAttachment {
         color: Color;
         constructor(name: string);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
@@ -416,7 +416,7 @@ declare namespace pixi_spine.core {
         setParentMesh(parentMesh: MeshAttachment): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class PathAttachment extends VertexAttachment {
         lengths: Array<number>;
         closed: boolean;
@@ -425,7 +425,7 @@ declare namespace pixi_spine.core {
         constructor(name: string);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class RegionAttachment extends Attachment {
         x: number;
         y: number;
@@ -441,7 +441,7 @@ declare namespace pixi_spine.core {
         updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number>;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     enum BlendMode {
         Normal = 0,
         Additive = 1,
@@ -449,7 +449,7 @@ declare namespace pixi_spine.core {
         Screen = 3,
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Bone implements Updatable {
         static yDown: boolean;
         matrix: PIXI.Matrix;
@@ -492,7 +492,7 @@ declare namespace pixi_spine.core {
         localToWorld(local: Vector2): Vector2;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class BoneData {
         index: number;
         name: string;
@@ -516,12 +516,12 @@ declare namespace pixi_spine.core {
         NoScaleOrReflection = 4,
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     interface Constraint extends Updatable {
         getOrder(): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Event {
         data: EventData;
         intValue: number;
@@ -531,7 +531,7 @@ declare namespace pixi_spine.core {
         constructor(time: number, data: EventData);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class EventData {
         name: string;
         intValue: number;
@@ -540,7 +540,7 @@ declare namespace pixi_spine.core {
         constructor(name: string);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class IkConstraint implements Constraint {
         data: IkConstraintData;
         bones: Array<Bone>;
@@ -556,7 +556,7 @@ declare namespace pixi_spine.core {
         apply2(parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class IkConstraintData {
         name: string;
         order: number;
@@ -567,7 +567,7 @@ declare namespace pixi_spine.core {
         constructor(name: string);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class PathConstraint implements Constraint {
         static NONE: number;
         static BEFORE: number;
@@ -595,7 +595,7 @@ declare namespace pixi_spine.core {
         getOrder(): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class PathConstraintData {
         name: string;
         order: number;
@@ -626,7 +626,7 @@ declare namespace pixi_spine.core {
         ChainScale = 2,
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Skeleton {
         data: SkeletonData;
         bones: Array<Bone>;
@@ -674,7 +674,7 @@ declare namespace pixi_spine.core {
         update(delta: number): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class SkeletonBounds {
         minX: number;
         minY: number;
@@ -697,7 +697,7 @@ declare namespace pixi_spine.core {
         getHeight(): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class SkeletonData {
         name: string;
         bones: BoneData[];
@@ -728,7 +728,7 @@ declare namespace pixi_spine.core {
         findPathConstraintIndex(pathConstraintName: string): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class SkeletonJson {
         attachmentLoader: AttachmentLoader;
         scale: number;
@@ -745,10 +745,10 @@ declare namespace pixi_spine.core {
         static spacingModeFromString(str: string): SpacingMode;
         static rotateModeFromString(str: string): RotateMode;
         static transformModeFromString(str: string): TransformMode;
-        static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean): TransformMode;
+        static transformModeLegacy(inheritRotation: boolean, inheritScale: boolean): TransformMode.Normal | TransformMode.OnlyTranslation | TransformMode.NoRotationOrReflection | TransformMode.NoScaleOrReflection;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Skin {
         name: string;
         attachments: Map<Attachment>[];
@@ -758,7 +758,7 @@ declare namespace pixi_spine.core {
         attachAll(skeleton: Skeleton, oldSkin: Skin): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class Slot {
         currentMesh: any;
         currentSprite: any;
@@ -783,7 +783,7 @@ declare namespace pixi_spine.core {
         setToSetupPose(): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class SlotData {
         index: number;
         name: string;
@@ -794,7 +794,7 @@ declare namespace pixi_spine.core {
         constructor(index: number, name: string, boneData: BoneData);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     abstract class Texture {
         protected _image: HTMLImageElement;
         constructor(image: HTMLImageElement);
@@ -839,7 +839,7 @@ declare namespace pixi_spine.core {
         readonly rotate: boolean;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class TextureAtlas implements Disposable {
         pages: TextureAtlasPage[];
         regions: TextureAtlasRegion[];
@@ -868,7 +868,7 @@ declare namespace pixi_spine.core {
         index: number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class TransformConstraint implements Constraint {
         data: TransformConstraintData;
         bones: Array<Bone>;
@@ -884,7 +884,7 @@ declare namespace pixi_spine.core {
         getOrder(): number;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     class TransformConstraintData {
         name: string;
         order: number;
@@ -903,12 +903,12 @@ declare namespace pixi_spine.core {
         constructor(name: string);
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     interface Updatable {
         update(): void;
     }
 }
-declare namespace pixi_spine.core {
+declare module PIXI.spine.core {
     interface Map<T> {
         [key: string]: T;
     }
@@ -997,12 +997,12 @@ declare namespace pixi_spine.core {
         [n: number]: T;
     }
 }
-declare namespace pixi_spine {
+declare module PIXI.spine {
     function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
     function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
     function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
 }
-declare namespace pixi_spine {
+declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion;
         constructor(tex: PIXI.Texture);
@@ -1032,7 +1032,4 @@ declare namespace pixi_spine {
         hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
         hackTextureBySlotName: (slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
     }
-}
-declare module PIXI {
-    var spine: typeof pixi_spine;
 }
