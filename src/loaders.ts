@@ -16,7 +16,7 @@ namespace pixi_spine {
                 return next();
             }
 
-            var metadataSkeletonScale = resource.metadata ? resource.metadata.spineSkeletonScale : 1.0;
+            var metadataSkeletonScale = resource.metadata ? resource.metadata.spineSkeletonScale : null;
 
             var metadataAtlas = resource.metadata ? resource.metadata.spineAtlas : null;
             if (metadataAtlas === false) {
@@ -67,7 +67,9 @@ namespace pixi_spine {
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: PIXI.loaders.Resource) {
                 new core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
                     var spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
-                    spineJsonParser.scale = metadataSkeletonScale;
+                    if (metadataSkeletonScale) {
+                        spineJsonParser.scale = metadataSkeletonScale;
+                    }
                     var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
                     resource.spineData = skeletonData;
