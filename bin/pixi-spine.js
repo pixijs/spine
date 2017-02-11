@@ -5331,6 +5331,7 @@ var pixi_spine;
                 !resource.data.bones) {
                 return next();
             }
+            var metadataSkeletonScale = resource.metadata ? resource.metadata.spineSkeletonScale : 1.0;
             var metadataAtlas = resource.metadata ? resource.metadata.spineAtlas : null;
             if (metadataAtlas === false) {
                 return next();
@@ -5365,6 +5366,7 @@ var pixi_spine;
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
                 new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+                    spineJsonParser.scale = metadataSkeletonScale;
                     var skeletonData = spineJsonParser.readSkeletonData(resource.data);
                     resource.spineData = skeletonData;
                     resource.spineAtlas = spineAtlas;

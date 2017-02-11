@@ -11,6 +11,10 @@ var spineAtlas = new PIXI.spine.core.TextureAtlas(rawAtlasData, function(line, c
 
 var spineAtlasLoader = new PIXI.spine.core.AtlasAttachmentLoader(spineAtlas)
 var spineJsonParser = new PIXI.spine.core.SkeletonJson(spineAtlasLoader);
+
+// in case if you want everything scaled up two times
+spineJsonParser.scale = 2.0; 
+
 var spineData = spineJsonParser.readSkeletonData(rawSkeletonData);
 
 // now we can create spine instance
