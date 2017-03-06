@@ -65,6 +65,6 @@
     "webpack": "~1.14"
   },
   "dependencies": {
-    "@types/pixi.js": "~4.3.0"
+    "@types/pixi.js": "~4.4.0"
   }
 }
