@@ -1,4 +1,3 @@
-/// <reference types="pixi.js" />
 declare module PIXI.spine.core {
     class Animation {
         name: string;

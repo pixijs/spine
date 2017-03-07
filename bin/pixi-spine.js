@@ -5364,16 +5364,21 @@ var pixi_spine;
             baseUrl = baseUrl.replace(this.baseUrl, '');
             var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
-                new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
-                    var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
-                    }
-                    var skeletonData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineData = skeletonData;
-                    resource.spineAtlas = spineAtlas;
+                if (!atlasResource.error) {
+                    new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
+                        var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+                        if (metadataSkeletonScale) {
+                            spineJsonParser.scale = metadataSkeletonScale;
+                        }
+                        var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+                        resource.spineData = skeletonData;
+                        resource.spineAtlas = spineAtlas;
+                        next();
+                    });
+                }
+                else {
                     next();
-                });
+                }
             });
         };
     }
