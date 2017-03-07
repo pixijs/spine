@@ -65,18 +65,22 @@ namespace pixi_spine {
             var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
 
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: PIXI.loaders.Resource) {
-                new core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
-                    var spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
-                    }
-                    var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+                if (!atlasResource.error) {
+                    new core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
+                        var spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
+                        if (metadataSkeletonScale) {
+                            spineJsonParser.scale = metadataSkeletonScale;
+                        }
+                        var skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
-                    resource.spineData = skeletonData;
-                    resource.spineAtlas = spineAtlas;
+                        resource.spineData = skeletonData;
+                        resource.spineAtlas = spineAtlas;
 
+                        next();
+                    });
+                } else {
                     next();
-                });
+                }
             });
         };
     }
