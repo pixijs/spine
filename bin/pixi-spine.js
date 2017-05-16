@@ -5362,7 +5362,8 @@ var pixi_spine;
             baseUrl = baseUrl.replace(this.baseUrl, '');
             var adapter = metadata.images ? staticImageLoader(metadata.images)
                 : metadata.image ? staticImageLoader({ 'default': metadata.image })
-                    : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
+                    : metadata.imageLoader ? metadata.imageLoader(this, resource.name + '_atlas_page_', baseUrl, imageOptions)
+                        : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
                 new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));

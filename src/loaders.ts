@@ -61,6 +61,7 @@ namespace pixi_spine {
 
             const adapter = metadata.images ? staticImageLoader(metadata.images)
                 : metadata.image ? staticImageLoader({'default': metadata.image})
+                : metadata.imageLoader ? metadata.imageLoader(this, resource.name + '_atlas_page_', baseUrl, imageOptions)
                     : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
 
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: PIXI.loaders.Resource) {

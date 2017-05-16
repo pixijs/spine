@@ -28,3 +28,28 @@ PIXI.loader
     .add('pixie', '_assets/spine/Pixie.json', spineLoaderOptions)
     .load(onAssetsLoaded);
 ```
+
+In case you want to change something serious, like jpg instead of png, or change texture folder:
+
+```js
+function advancedImageLoader(loader, namePrefix, baseUrl, imageOptions) {
+    if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
+        baseUrl += '/';
+    }
+    return function (line, callback) {
+        line = line.replace('.png', '.jpg');
+        var name = namePrefix + line;
+        var url = baseUrl + line;
+        loader.add(name, url, imageOptions, function(resource) {
+            //you can load second texture here and do some manipulations if you want ;)
+            callback(resource.texture.baseTexture);
+        });
+    }
+}
+var spineLoaderOptions = { metadata: { 
+    imageLoader: advancedImageLoader
+} };
+PIXI.loader
+    .add('pixie', '_assets/spine/Pixie.json', spineLoaderOptions)
+    .load(onAssetsLoaded);
+```
