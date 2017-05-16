@@ -1001,6 +1001,9 @@ declare module PIXI.spine {
     function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
     function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
     function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
+    function staticImageLoader(pages: {
+        [key: string]: (PIXI.BaseTexture | PIXI.Texture);
+    }): (line: any, callback: any) => void;
 }
 declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {

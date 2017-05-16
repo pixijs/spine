@@ -5331,8 +5331,9 @@ var pixi_spine;
                 !resource.data.bones) {
                 return next();
             }
-            var metadataSkeletonScale = resource.metadata ? resource.metadata.spineSkeletonScale : null;
-            var metadataAtlas = resource.metadata ? resource.metadata.spineAtlas : null;
+            var metadata = resource.metadata || {};
+            var metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
+            var metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
             if (metadataAtlas === false) {
                 return next();
             }
@@ -5343,34 +5344,32 @@ var pixi_spine;
                 resource.spineAtlas = metadataAtlas;
                 return next();
             }
-            var metadataAtlasSuffix = '.atlas';
-            if (resource.metadata && resource.metadata.spineAtlasSuffix) {
-                metadataAtlasSuffix = resource.metadata.spineAtlasSuffix;
-            }
+            var metadataAtlasSuffix = metadata.spineAtlasSuffix || '.atlas';
             var atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + metadataAtlasSuffix;
             atlasPath = atlasPath.replace(this.baseUrl, '');
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
                 xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
-                metadata: resource.metadata ? resource.metadata.spineMetadata : null,
+                metadata: metadata.spineMetadata || null,
                 parentResource: resource
             };
             var imageOptions = {
                 crossOrigin: resource.crossOrigin,
-                metadata: resource.metadata ? resource.metadata.imageMetadata : null,
+                metadata: metadata.imageMetadata || null,
                 parentResource: resource
             };
             var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
             baseUrl = baseUrl.replace(this.baseUrl, '');
-            var adapter = imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
+            var adapter = metadata.images ? staticImageLoader(metadata.images)
+                : metadata.image ? staticImageLoader({ 'default': metadata.image })
+                    : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
             this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
                 new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
                     if (metadataSkeletonScale) {
                         spineJsonParser.scale = metadataSkeletonScale;
                     }
-                    var skeletonData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineData = skeletonData;
+                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
                     resource.spineAtlas = spineAtlas;
                     next();
                 });
@@ -5400,6 +5399,16 @@ var pixi_spine;
         };
     }
     pixi_spine.syncImageLoaderAdapter = syncImageLoaderAdapter;
+    function staticImageLoader(pages) {
+        return function (line, callback) {
+            var page = pages[line] || pages['default'];
+            if (page && page.baseTexture)
+                callback(page.baseTexture);
+            else
+                callback(page);
+        };
+    }
+    pixi_spine.staticImageLoader = staticImageLoader;
     PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
     PIXI.loader.use(atlasParser());
 })(pixi_spine || (pixi_spine = {}));
