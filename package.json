@@ -26,7 +26,7 @@
     "watch": "tsc -w",
     "prebuild": "yarn cleanup && yarn concat",
     "postbuild": "yarn patch-dts && yarn shx -- rm compilation.ts",
-    "build": "tsc -p tsconfig.compilation.json",
+    "build": "tsc",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
     "patch-dts": "node scripts/patch-dts.js",
     "concat": "node scripts/concat.js",
