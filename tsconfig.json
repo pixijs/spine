@@ -1,21 +1,21 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "module": "none",
-    "outFile": "bin/pixi-spine.js",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "preserveConstEnums": true,
-    "removeComments": true,
-    "inlineSources": true,
-    "declaration": true
-  },
-  "include": [
-    "compilation.ts"
-  ],
-  "exclude": [
-    "node_modules/**/*",
-    "src/**/*"
-  ]
+    "compilerOptions": {
+        "target": "es5",
+        "module": "none",
+        "outFile": "bin/pixi-spine-with-namespace.js",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "preserveConstEnums": true,
+        "removeComments": true,
+        "inlineSources": true,
+        "declaration": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules/**/*",
+        "compilation.ts"
+    ]
 }
