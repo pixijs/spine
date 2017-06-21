@@ -43,12 +43,10 @@ namespace pixi_spine.core {
         skin: Skin;
         color: Color;
         time = 0;
-        flipX = false;
-        flipY = false;
-        x = 0;
-        y = 0;
+        flipX = false; flipY = false;
+        x = 0; y = 0;
 
-        constructor(data: SkeletonData) {
+        constructor (data: SkeletonData) {
             if (data == null) throw new Error("data cannot be null.");
             this.data = data;
 
@@ -98,7 +96,7 @@ namespace pixi_spine.core {
             this.updateCache();
         }
 
-        updateCache() {
+        updateCache () {
             let updateCache = this._updateCache;
             updateCache.length = 0;
             this.updateCacheReset.length = 0;
@@ -107,6 +105,7 @@ namespace pixi_spine.core {
             for (let i = 0, n = bones.length; i < n; i++)
                 bones[i].sorted = false;
 
+            // IK first, lowest hierarchy depth first.
             let ikConstraints = this.ikConstraints;
             let transformConstraints = this.transformConstraints;
             let pathConstraints = this.pathConstraints;
@@ -142,7 +141,7 @@ namespace pixi_spine.core {
                 this.sortBone(bones[i]);
         }
 
-        sortIkConstraint(constraint: IkConstraint) {
+        sortIkConstraint (constraint: IkConstraint) {
             let target = constraint.target;
             this.sortBone(target);
 
@@ -161,39 +160,48 @@ namespace pixi_spine.core {
             constrained[constrained.length - 1].sorted = true;
         }
 
-        sortPathConstraint(constraint: PathConstraint) {
+        sortPathConstraint (constraint: PathConstraint) {
             let slot = constraint.target;
             let slotIndex = slot.data.index;
             let slotBone = slot.bone;
             if (this.skin != null) this.sortPathConstraintAttachment(this.skin, slotIndex, slotBone);
             if (this.data.defaultSkin != null && this.data.defaultSkin != this.skin)
                 this.sortPathConstraintAttachment(this.data.defaultSkin, slotIndex, slotBone);
-            for (let ii = 0, nn = this.data.skins.length; ii < nn; ii++)
-                this.sortPathConstraintAttachment(this.data.skins[ii], slotIndex, slotBone);
+            for (let i = 0, n = this.data.skins.length; i < n; i++)
+                this.sortPathConstraintAttachment(this.data.skins[i], slotIndex, slotBone);
 
             let attachment = slot.getAttachment();
             if (attachment instanceof PathAttachment) this.sortPathConstraintAttachmentWith(attachment, slotBone);
 
             let constrained = constraint.bones;
             let boneCount = constrained.length;
-            for (let ii = 0; ii < boneCount; ii++)
-                this.sortBone(constrained[ii]);
+            for (let i = 0; i < boneCount; i++)
+                this.sortBone(constrained[i]);
 
             this._updateCache.push(constraint);
 
-            for (let ii = 0; ii < boneCount; ii++)
-                this.sortReset(constrained[ii].children);
-            for (let ii = 0; ii < boneCount; ii++)
-                constrained[ii].sorted = true;
+            for (let i = 0; i < boneCount; i++)
+                this.sortReset(constrained[i].children);
+            for (let i = 0; i < boneCount; i++)
+                constrained[i].sorted = true;
         }
 
-        sortTransformConstraint(constraint: TransformConstraint) {
+        sortTransformConstraint (constraint: TransformConstraint) {
             this.sortBone(constraint.target);
 
             let constrained = constraint.bones;
             let boneCount = constrained.length;
-            for (let ii = 0; ii < boneCount; ii++)
-                this.sortBone(constrained[ii]);
+            if (constraint.data.local) {
+                for (let i = 0; i < boneCount; i++) {
+                    let child = constrained[i];
+                    this.sortBone(child.parent);
+                    if (!(this._updateCache.indexOf(child) > -1)) this.updateCacheReset.push(child);
+                }
+            } else {
+                for (let i = 0; i < boneCount; i++) {
+                    this.sortBone(constrained[i]);
+                }
+            }
 
             this._updateCache.push(constraint);
 
@@ -203,7 +211,7 @@ namespace pixi_spine.core {
                 constrained[ii].sorted = true;
         }
 
-        sortPathConstraintAttachment(skin: Skin, slotIndex: number, slotBone: Bone) {
+        sortPathConstraintAttachment (skin: Skin, slotIndex: number, slotBone: Bone) {
             let attachments = skin.attachments[slotIndex];
             if (!attachments) return;
             for (let key in attachments) {
@@ -211,7 +219,7 @@ namespace pixi_spine.core {
             }
         }
 
-        sortPathConstraintAttachmentWith(attachment: Attachment, slotBone: Bone) {
+        sortPathConstraintAttachmentWith (attachment: Attachment, slotBone: Bone) {
             if (!(attachment instanceof PathAttachment)) return;
             let pathBones = (<PathAttachment>attachment).bones;
             if (pathBones == null)
@@ -229,7 +237,7 @@ namespace pixi_spine.core {
             }
         }
 
-        sortBone(bone: Bone) {
+        sortBone (bone: Bone) {
             if (bone.sorted) return;
             let parent = bone.parent;
             if (parent != null) this.sortBone(parent);
@@ -237,7 +245,7 @@ namespace pixi_spine.core {
             this._updateCache.push(bone);
         }
 
-        sortReset(bones: Array<Bone>) {
+        sortReset (bones: Array<Bone>) {
             for (let i = 0, n = bones.length; i < n; i++) {
                 let bone = bones[i];
                 if (bone.sorted) this.sortReset(bone.children);
@@ -246,7 +254,7 @@ namespace pixi_spine.core {
         }
 
         /** Updates the world transform for each bone and applies constraints. */
-        updateWorldTransform() {
+        updateWorldTransform () {
             let updateCacheReset = this.updateCacheReset;
             for (let i = 0, n = updateCacheReset.length; i < n; i++) {
                 let bone = updateCacheReset[i] as Bone;
@@ -265,13 +273,13 @@ namespace pixi_spine.core {
         }
 
         /** Sets the bones, constraints, and slots to their setup pose values. */
-        setToSetupPose() {
+        setToSetupPose () {
             this.setBonesToSetupPose();
             this.setSlotsToSetupPose();
         }
 
         /** Sets the bones and constraints to their setup pose values. */
-        setBonesToSetupPose() {
+        setBonesToSetupPose () {
             let bones = this.bones;
             for (let i = 0, n = bones.length; i < n; i++)
                 bones[i].setToSetupPose();
@@ -304,7 +312,7 @@ namespace pixi_spine.core {
             }
         }
 
-        setSlotsToSetupPose() {
+        setSlotsToSetupPose () {
             let slots = this.slots;
             Utils.arrayCopy(slots, 0, this.drawOrder, 0, slots.length);
             for (let i = 0, n = slots.length; i < n; i++)
@@ -312,13 +320,13 @@ namespace pixi_spine.core {
         }
 
         /** @return May return null. */
-        getRootBone() {
+        getRootBone () {
             if (this.bones.length == 0) return null;
             return this.bones[0];
         }
 
         /** @return May be null. */
-        findBone(boneName: string) {
+        findBone (boneName: string) {
             if (boneName == null) throw new Error("boneName cannot be null.");
             let bones = this.bones;
             for (let i = 0, n = bones.length; i < n; i++) {
@@ -329,7 +337,7 @@ namespace pixi_spine.core {
         }
 
         /** @return -1 if the bone was not found. */
-        findBoneIndex(boneName: string) {
+        findBoneIndex (boneName: string) {
             if (boneName == null) throw new Error("boneName cannot be null.");
             let bones = this.bones;
             for (let i = 0, n = bones.length; i < n; i++)
@@ -338,7 +346,7 @@ namespace pixi_spine.core {
         }
 
         /** @return May be null. */
-        findSlot(slotName: string) {
+        findSlot (slotName: string) {
             if (slotName == null) throw new Error("slotName cannot be null.");
             let slots = this.slots;
             for (let i = 0, n = slots.length; i < n; i++) {
@@ -349,7 +357,7 @@ namespace pixi_spine.core {
         }
 
         /** @return -1 if the bone was not found. */
-        findSlotIndex(slotName: string) {
+        findSlotIndex (slotName: string) {
             if (slotName == null) throw new Error("slotName cannot be null.");
             let slots = this.slots;
             for (let i = 0, n = slots.length; i < n; i++)
@@ -359,7 +367,7 @@ namespace pixi_spine.core {
 
         /** Sets a skin by name.
          * @see #setSkin(Skin) */
-        setSkinByName(skinName: string) {
+        setSkinByName (skinName: string) {
             let skin = this.data.findSkin(skinName);
             if (skin == null) throw new Error("Skin not found: " + skinName);
             this.setSkin(skin);
@@ -369,7 +377,7 @@ namespace pixi_spine.core {
          * Attachments from the new skin are attached if the corresponding attachment from the old skin was attached. If there was no
          * old skin, each slot's setup mode attachment is attached from the new skin.
          * @param newSkin May be null. */
-        setSkin(newSkin: Skin) {
+        setSkin (newSkin: Skin) {
             if (newSkin != null) {
                 if (this.skin != null)
                     newSkin.attachAll(this, this.skin);
@@ -389,12 +397,12 @@ namespace pixi_spine.core {
         }
 
         /** @return May be null. */
-        getAttachmentByName(slotName: string, attachmentName: string): Attachment {
+        getAttachmentByName (slotName: string, attachmentName: string): Attachment {
             return this.getAttachment(this.data.findSlotIndex(slotName), attachmentName);
         }
 
         /** @return May be null. */
-        getAttachment(slotIndex: number, attachmentName: string): Attachment {
+        getAttachment (slotIndex: number, attachmentName: string): Attachment {
             if (attachmentName == null) throw new Error("attachmentName cannot be null.");
             if (this.skin != null) {
                 let attachment: Attachment = this.skin.getAttachment(slotIndex, attachmentName);
@@ -405,7 +413,7 @@ namespace pixi_spine.core {
         }
 
         /** @param attachmentName May be null. */
-        setAttachment(slotName: string, attachmentName: string) {
+        setAttachment (slotName: string, attachmentName: string) {
             if (slotName == null) throw new Error("slotName cannot be null.");
             let slots = this.slots;
             for (let i = 0, n = slots.length; i < n; i++) {
@@ -425,7 +433,7 @@ namespace pixi_spine.core {
         }
 
         /** @return May be null. */
-        findIkConstraint(constraintName: string) {
+        findIkConstraint (constraintName: string) {
             if (constraintName == null) throw new Error("constraintName cannot be null.");
             let ikConstraints = this.ikConstraints;
             for (let i = 0, n = ikConstraints.length; i < n; i++) {
@@ -436,7 +444,7 @@ namespace pixi_spine.core {
         }
 
         /** @return May be null. */
-        findTransformConstraint(constraintName: string) {
+        findTransformConstraint (constraintName: string) {
             if (constraintName == null) throw new Error("constraintName cannot be null.");
             let transformConstraints = this.transformConstraints;
             for (let i = 0, n = transformConstraints.length; i < n; i++) {
@@ -447,7 +455,7 @@ namespace pixi_spine.core {
         }
 
         /** @return May be null. */
-        findPathConstraint(constraintName: string) {
+        findPathConstraint (constraintName: string) {
             if (constraintName == null) throw new Error("constraintName cannot be null.");
             let pathConstraints = this.pathConstraints;
             for (let i = 0, n = pathConstraints.length; i < n; i++) {
@@ -459,22 +467,30 @@ namespace pixi_spine.core {
 
         /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose.
          * @param offset The distance from the skeleton origin to the bottom left corner of the AABB.
-         * @param size The width and height of the AABB. */
-        getBounds(offset: Vector2, size: Vector2) {
+         * @param size The width and height of the AABB.
+         * @param temp Working memory */
+        getBounds (offset: Vector2, size: Vector2, temp: Array<number>) {
             if (offset == null) throw new Error("offset cannot be null.");
             if (size == null) throw new Error("size cannot be null.");
             let drawOrder = this.drawOrder;
             let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY, maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY;
             for (let i = 0, n = drawOrder.length; i < n; i++) {
                 let slot = drawOrder[i];
+                let verticesLength = 0;
                 let vertices: ArrayLike<number> = null;
                 let attachment = slot.getAttachment();
-                if (attachment instanceof RegionAttachment)
-                    vertices = (<RegionAttachment>attachment).updateWorldVertices(slot, false);
-                else if (attachment instanceof MeshAttachment)
-                    vertices = (<MeshAttachment>attachment).updateWorldVertices(slot, true);
+                if (attachment instanceof RegionAttachment) {
+                    verticesLength = 8;
+                    vertices = Utils.setArraySize(temp, verticesLength, 0);
+                    (<RegionAttachment>attachment).computeWorldVertices(slot.bone, vertices, 0, 2);
+                } else if (attachment instanceof MeshAttachment) {
+                    let mesh = (<MeshAttachment>attachment);
+                    verticesLength = mesh.worldVerticesLength;
+                    vertices = Utils.setArraySize(temp, verticesLength, 0);
+                    mesh.computeWorldVertices(slot, 0, verticesLength, vertices, 0, 2);
+                }
                 if (vertices != null) {
-                    for (let ii = 0, nn = vertices.length; ii < nn; ii += 8) {
+                    for (let ii = 0, nn = vertices.length; ii < nn; ii += 2) {
                         let x = vertices[ii], y = vertices[ii + 1];
                         minX = Math.min(minX, x);
                         minY = Math.min(minY, y);
@@ -487,7 +503,7 @@ namespace pixi_spine.core {
             size.set(maxX - minX, maxY - minY);
         }
 
-        update(delta: number) {
+        update (delta: number) {
             this.time += delta;
         }
     }

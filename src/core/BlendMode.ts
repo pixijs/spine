@@ -31,9 +31,9 @@
 
 namespace pixi_spine.core {
     export enum BlendMode {
-        Normal,
-        Additive,
-        Multiply,
-        Screen
+        Normal = 0,
+        Additive = 1,
+        Multiply = 2,
+        Screen = 3
     }
 }

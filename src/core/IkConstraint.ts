@@ -37,9 +37,7 @@ namespace pixi_spine.core {
         mix = 1;
         bendDirection = 0;
 
-        level = 0;
-
-        constructor(data: IkConstraintData, skeleton: Skeleton) {
+        constructor (data: IkConstraintData, skeleton: Skeleton) {
             if (data == null) throw new Error("data cannot be null.");
             if (skeleton == null) throw new Error("skeleton cannot be null.");
             this.data = data;
@@ -52,15 +50,15 @@ namespace pixi_spine.core {
             this.target = skeleton.findBone(data.target.name);
         }
 
-        getOrder() {
+        getOrder () {
             return this.data.order;
         }
 
-        apply() {
+        apply () {
             this.update();
         }
 
-        update() {
+        update () {
             let target = this.target;
             let bones = this.bones;
             switch (bones.length) {
@@ -75,12 +73,12 @@ namespace pixi_spine.core {
 
         /** Adjusts the bone rotation so the tip is as close to the target position as possible. The target is specified in the world
          * coordinate system. */
-        apply1(bone: Bone, targetX: number, targetY: number, alpha: number) {
+        apply1 (bone: Bone, targetX: number, targetY: number, alpha: number) {
             if (!bone.appliedValid) bone.updateAppliedTransform();
-            let pp = bone.parent.matrix;
-            let id = 1 / (pp.a * pp.d - pp.b * pp.c);
-            let x = targetX - pp.tx, y = targetY - pp.ty;
-            let tx = (x * pp.d - y * pp.c) * id - bone.ax, ty = (y * pp.a - x * pp.b) * id - bone.ay;
+            let p = bone.parent.matrix;
+            let id = 1 / (p.a * p.d - p.b * p.c);
+            let x = targetX - p.tx, y = targetY - p.ty;
+            let tx = (x * p.d - y * p.c) * id - bone.ax, ty = (y * p.a - x * p.b) * id - bone.ay;
             let rotationIK = Math.atan2(ty, tx) * MathUtils.radDeg - bone.ashearX - bone.arotation;
             if (bone.ascaleX < 0) rotationIK += 180;
             if (rotationIK > 180)
@@ -93,7 +91,7 @@ namespace pixi_spine.core {
         /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
          * target is specified in the world coordinate system.
          * @param child A direct descendant of the parent bone. */
-        apply2(parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number) {
+        apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number) {
             if (alpha == 0) {
                 child.updateWorldTransform();
                 return;
@@ -101,7 +99,7 @@ namespace pixi_spine.core {
             if (!parent.appliedValid) parent.updateAppliedTransform();
             if (!child.appliedValid) child.updateAppliedTransform();
             let px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
-
+            let pmat = parent.matrix;
             let os1 = 0, os2 = 0, s2 = 0;
             if (psx < 0) {
                 psx = -psx;
@@ -120,28 +118,26 @@ namespace pixi_spine.core {
                 os2 = 180;
             } else
                 os2 = 0;
-            let pm = parent.matrix;
-            let cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pm.a, b = pm.c, c = pm.b, d = pm.d;
+            let cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pmat.a, b = pmat.c, c = pmat.b, d = pmat.d;
             let u = Math.abs(psx - psy) <= 0.0001;
             if (!u) {
                 cy = 0;
-                cwx = a * cx + pm.tx;
-                cwy = c * cx + pm.ty;
+                cwx = a * cx + pmat.tx;
+                cwy = c * cx + pmat.ty;
             } else {
                 cy = child.ay;
-                cwx = a * cx + b * cy + pm.tx;
-                cwy = c * cx + d * cy + pm.ty;
+                cwx = a * cx + b * cy + pmat.tx;
+                cwy = c * cx + d * cy + pmat.ty;
             }
-            let pp = parent.parent;
-            let ppm = parent.parent.matrix;
-            a = ppm.a;
-            b = ppm.c;
-            c = ppm.b;
-            d = ppm.d;
-            let id = 1 / (a * d - b * c), x = targetX - ppm.tx, y = targetY - ppm.ty;
+            let pp = parent.parent.matrix;
+            a = pp.a;
+            b = pp.c;
+            c = pp.b;
+            d = pp.d;
+            let id = 1 / (a * d - b * c), x = targetX - pp.tx, y = targetY - pp.ty;
             let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
-            x = cwx - ppm.tx;
-            y = cwy - ppm.ty;
+            x = cwx - pp.tx;
+            y = cwy - pp.ty;
             let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
             let l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
             outer:
@@ -175,37 +171,26 @@ namespace pixi_spine.core {
                             break outer;
                         }
                     }
-                    let minAngle = 0, minDist = Number.MAX_VALUE, minX = 0, minY = 0;
-                    let maxAngle = 0, maxDist = 0, maxX = 0, maxY = 0;
-                    x = l1 + a;
-                    d = x * x;
-                    if (d > maxDist) {
-                        maxAngle = 0;
-                        maxDist = d;
-                        maxX = x;
-                    }
-                    x = l1 - a;
-                    d = x * x;
-                    if (d < minDist) {
-                        minAngle = MathUtils.PI;
-                        minDist = d;
-                        minX = x;
-                    }
-                    let angle = Math.acos(-a * l1 / (aa - bb));
-                    x = a * Math.cos(angle) + l1;
-                    y = b * Math.sin(angle);
-                    d = x * x + y * y;
-                    if (d < minDist) {
-                        minAngle = angle;
-                        minDist = d;
-                        minX = x;
-                        minY = y;
-                    }
-                    if (d > maxDist) {
-                        maxAngle = angle;
-                        maxDist = d;
-                        maxX = x;
-                        maxY = y;
+                    let minAngle = MathUtils.PI, minX = l1 - a, minDist = minX * minX, minY = 0;
+                    let maxAngle = 0, maxX = l1 + a, maxDist = maxX * maxX, maxY = 0;
+                    c = -a * l1 / (aa - bb);
+                    if (c >= -1 && c <= 1) {
+                        c = Math.acos(c);
+                        x = a * Math.cos(c) + l1;
+                        y = b * Math.sin(c);
+                        d = x * x + y * y;
+                        if (d < minDist) {
+                            minAngle = c;
+                            minDist = d;
+                            minX = x;
+                            minY = y;
+                        }
+                        if (d > maxDist) {
+                            maxAngle = c;
+                            maxDist = d;
+                            maxX = x;
+                            maxY = y;
+                        }
                     }
                     if (dd <= (minDist + maxDist) / 2) {
                         a1 = ta - Math.atan2(minY * bendDir, minX);

@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -29,24 +28,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export interface AttachmentLoader {
-        /** @return May be null to not load an attachment. */
-        newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
+module pixi_spine.core {
+	export class ClippingAttachment extends VertexAttachment {
+		endSlot: SlotData;
 
-        /** @return May be null to not load an attachment. */
-        newMeshAttachment (skin: Skin, name: string, path: string): MeshAttachment;
+		// Nonessential.
+		color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
 
-        /** @return May be null to not load an attachment. */
-        newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment;
-
-        /** @return May be null to not load an attachment */
-        newPathAttachment(skin: Skin, name: string): PathAttachment;
-
-        /** @return May be null to not load an attachment */
-        newPointAttachment(skin: Skin, name: string): PointAttachment;
-
-        /** @return May be null to not load an attachment */
-        newClippingAttachment(skin: Skin, name: string): ClippingAttachment;
-    }
+		constructor (name: string) {
+			super(name);
+		}
+	}
 }

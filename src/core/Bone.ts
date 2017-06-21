@@ -241,31 +241,6 @@ namespace pixi_spine.core {
             return Math.sqrt(m.b * m.b + m.d * m.d);
         }
 
-        worldToLocalRotationX() {
-            let parent = this.parent;
-            if (parent == null) return this.arotation;
-            let pm = parent.matrix, m = this.matrix;
-            return Math.atan2(pm.a * m.b - pm.b * m.a, pm.d * m.a - pm.c * m.b) * MathUtils.radDeg;
-        }
-
-        worldToLocalRotationY() {
-            let parent = this.parent;
-            if (parent == null) return this.arotation;
-            let pm = parent.matrix, m = this.matrix;
-            return Math.atan2(pm.a * m.d - pm.b * m.c, pm.d * m.c - pm.c * m.d) * MathUtils.radDeg;
-        }
-
-        rotateWorld(degrees: number) {
-            let m = this.matrix;
-            let a = this.matrix.a, b = m.c, c = m.b, d = m.d;
-            let cos = MathUtils.cosDeg(degrees), sin = MathUtils.sinDeg(degrees);
-            m.a = cos * a - sin * c;
-            m.c = cos * b - sin * d;
-            m.b = sin * a + cos * c;
-            m.d = sin * b + cos * d;
-            this.appliedValid = false;
-        }
-
         /** Computes the individual applied transform values from the world transform. This can be useful to perform processing using
          * the applied transform after the world transform has been modified directly (eg, by a constraint).
          * <p>
@@ -328,6 +303,29 @@ namespace pixi_spine.core {
             local.x = x * m.a + y * m.c + m.tx;
             local.y = x * m.b + y * m.d + m.ty;
             return local;
+        }
+
+        worldToLocalRotation (worldRotation: number) {
+            let sin = MathUtils.sinDeg(worldRotation), cos = MathUtils.cosDeg(worldRotation);
+            let mat = this.matrix;
+            return Math.atan2(mat.a * sin - mat.b * cos, mat.d * cos - mat.c * sin) * MathUtils.radDeg;
+        }
+
+        localToWorldRotation (localRotation: number) {
+            let sin = MathUtils.sinDeg(localRotation), cos = MathUtils.cosDeg(localRotation);
+            let mat = this.matrix;
+            return Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) * MathUtils.radDeg;
+        }
+
+        rotateWorld (degrees: number) {
+            let mat = this.matrix;
+            let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
+            let cos = MathUtils.cosDeg(degrees), sin = MathUtils.sinDeg(degrees);
+            mat.a = cos * a - sin * c;
+            mat.c = cos * b - sin * d;
+            mat.b = sin * a + cos * c;
+            mat.d = sin * b + cos * d;
+            this.appliedValid = false;
         }
     }
 }

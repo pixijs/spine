@@ -31,17 +31,14 @@
 
 namespace pixi_spine.core {
     export class SkeletonBounds {
-        minX = 0;
-        minY = 0;
-        maxX = 0;
-        maxY = 0;
+        minX = 0; minY = 0; maxX = 0; maxY = 0;
         boundingBoxes = new Array<BoundingBoxAttachment>();
         polygons = new Array<ArrayLike<number>>();
         private polygonPool = new Pool<ArrayLike<number>>(() => {
             return Utils.newFloatArray(16);
         });
 
-        update(skeleton: Skeleton, updateAabb: boolean) {
+        update (skeleton: Skeleton, updateAabb: boolean) {
             if (skeleton == null) throw new Error("skeleton cannot be null.");
             let boundingBoxes = this.boundingBoxes;
             let polygons = this.polygons;
@@ -65,14 +62,21 @@ namespace pixi_spine.core {
                         polygon = Utils.newFloatArray(boundingBox.worldVerticesLength);
                     }
                     polygons.push(polygon);
-                    boundingBox.computeWorldVertices(slot, polygon);
+                    boundingBox.computeWorldVertices(slot, 0, boundingBox.worldVerticesLength, polygon, 0, 2);
                 }
             }
 
-            if (updateAabb) this.aabbCompute();
+            if (updateAabb) {
+                this.aabbCompute();
+            } else {
+                this.minX = Number.POSITIVE_INFINITY;
+                this.minY = Number.POSITIVE_INFINITY;
+                this.maxX = Number.NEGATIVE_INFINITY;
+                this.maxY = Number.NEGATIVE_INFINITY;
+            }
         }
 
-        aabbCompute() {
+        aabbCompute () {
             let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY, maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY;
             let polygons = this.polygons;
             for (let i = 0, n = polygons.length; i < n; i++) {
@@ -94,12 +98,12 @@ namespace pixi_spine.core {
         }
 
         /** Returns true if the axis aligned bounding box contains the point. */
-        aabbContainsPoint(x: number, y: number) {
+        aabbContainsPoint (x: number, y: number) {
             return x >= this.minX && x <= this.maxX && y >= this.minY && y <= this.maxY;
         }
 
         /** Returns true if the axis aligned bounding box intersects the line segment. */
-        aabbIntersectsSegment(x1: number, y1: number, x2: number, y2: number) {
+        aabbIntersectsSegment (x1: number, y1: number, x2: number, y2: number) {
             let minX = this.minX;
             let minY = this.minY;
             let maxX = this.maxX;
@@ -119,13 +123,13 @@ namespace pixi_spine.core {
         }
 
         /** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds. */
-        aabbIntersectsSkeleton(bounds: SkeletonBounds) {
+        aabbIntersectsSkeleton (bounds: SkeletonBounds) {
             return this.minX < bounds.maxX && this.maxX > bounds.minX && this.minY < bounds.maxY && this.maxY > bounds.minY;
         }
 
         /** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
          * efficient to only call this method if {@link #aabbContainsPoint(float, float)} returns true. */
-        containsPoint(x: number, y: number): BoundingBoxAttachment {
+        containsPoint (x: number, y: number): BoundingBoxAttachment {
             let polygons = this.polygons;
             for (let i = 0, n = polygons.length; i < n; i++)
                 if (this.containsPointPolygon(polygons[i], x, y)) return this.boundingBoxes[i];
@@ -133,7 +137,7 @@ namespace pixi_spine.core {
         }
 
         /** Returns true if the polygon contains the point. */
-        containsPointPolygon(polygon: ArrayLike<number>, x: number, y: number) {
+        containsPointPolygon (polygon: ArrayLike<number>, x: number, y: number) {
             let vertices = polygon;
             let nn = polygon.length;
 
@@ -154,7 +158,7 @@ namespace pixi_spine.core {
         /** Returns the first bounding box attachment that contains any part of the line segment, or null. When doing many checks, it
          * is usually more efficient to only call this method if {@link #aabbIntersectsSegment(float, float, float, float)} returns
          * true. */
-        intersectsSegment(x1: number, y1: number, x2: number, y2: number) {
+        intersectsSegment (x1: number, y1: number, x2: number, y2: number) {
             let polygons = this.polygons;
             for (let i = 0, n = polygons.length; i < n; i++)
                 if (this.intersectsSegmentPolygon(polygons[i], x1, y1, x2, y2)) return this.boundingBoxes[i];
@@ -162,7 +166,7 @@ namespace pixi_spine.core {
         }
 
         /** Returns true if the polygon contains any part of the line segment. */
-        intersectsSegmentPolygon(polygon: ArrayLike<number>, x1: number, y1: number, x2: number, y2: number) {
+        intersectsSegmentPolygon (polygon: ArrayLike<number>, x1: number, y1: number, x2: number, y2: number) {
             let vertices = polygon;
             let nn = polygon.length;
 
@@ -186,17 +190,17 @@ namespace pixi_spine.core {
         }
 
         /** Returns the polygon for the specified bounding box, or null. */
-        getPolygon(boundingBox: BoundingBoxAttachment) {
+        getPolygon (boundingBox: BoundingBoxAttachment) {
             if (boundingBox == null) throw new Error("boundingBox cannot be null.");
             let index = this.boundingBoxes.indexOf(boundingBox);
             return index == -1 ? null : this.polygons[index];
         }
 
-        getWidth() {
+        getWidth () {
             return this.maxX - this.minX;
         }
 
-        getHeight() {
+        getHeight () {
             return this.maxY - this.minY;
         }
     }

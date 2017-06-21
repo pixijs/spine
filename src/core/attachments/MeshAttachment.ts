@@ -33,7 +33,7 @@ namespace pixi_spine.core {
     export class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
-        regionUVs: ArrayLike<number>;
+        regionUVs: ArrayLike<number>; uvs: ArrayLike<number>;
         triangles: Array<number>;
         color = new Color(1, 1, 1, 1);
         hullLength: number;
@@ -41,13 +41,8 @@ namespace pixi_spine.core {
         inheritDeform = false;
         tempColor = new Color(0, 0, 0, 0);
 
-        constructor(name: string) {
+        constructor (name: string) {
             super(name);
-        }
-
-        updateWorldVertices(slot: Slot, premultipliedAlpha: boolean): ArrayLike<number> {
-            return [];
-            //nothing
         }
 
         updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number> {
@@ -77,25 +72,28 @@ namespace pixi_spine.core {
             return uvs;
         }
 
-        applyDeform(sourceAttachment: VertexAttachment): boolean {
+        applyDeform (sourceAttachment: VertexAttachment): boolean {
             return this == sourceAttachment || (this.inheritDeform && this.parentMesh == sourceAttachment);
         }
 
-        getParentMesh() {
+        getParentMesh () {
             return this.parentMesh;
         }
 
         /** @param parentMesh May be null. */
-        setParentMesh(parentMesh: MeshAttachment) {
+        setParentMesh (parentMesh: MeshAttachment) {
             this.parentMesh = parentMesh;
             if (parentMesh != null) {
                 this.bones = parentMesh.bones;
                 this.vertices = parentMesh.vertices;
+                this.worldVerticesLength = parentMesh.worldVerticesLength;
                 this.regionUVs = parentMesh.regionUVs;
                 this.triangles = parentMesh.triangles;
                 this.hullLength = parentMesh.hullLength;
-                this.worldVerticesLength = parentMesh.worldVerticesLength;
+                this.worldVerticesLength = parentMesh.worldVerticesLength
             }
         }
+
+        //computeWorldVerticesWith(slot, 0, this.worldVerticesLength, worldVertices, 0);
     }
 }

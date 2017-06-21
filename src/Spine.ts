@@ -295,7 +295,7 @@ namespace pixi_spine {
                         slot.currentMesh = slot.meshes[meshName];
                         slot.currentMeshName = meshName;
                     }
-                    (attachment as core.VertexAttachment).computeWorldVertices(slot, slot.currentMesh.vertices);
+                    (attachment as core.VertexAttachment).computeWorldVerticesOld(slot, slot.currentMesh.vertices);
                     if (PIXI.VERSION[0] !== '3') {
                         // PIXI version 4
                         // slot.currentMesh.dirty++;

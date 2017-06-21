@@ -31,26 +31,18 @@
 
 namespace pixi_spine.core {
     export class PathConstraint implements Constraint {
-        static NONE = -1;
-        static BEFORE = -2;
-        static AFTER = -3;
+        static NONE = -1; static BEFORE = -2; static AFTER = -3;
 
         data: PathConstraintData;
         bones: Array<Bone>;
         target: Slot;
-        position = 0;
-        spacing = 0;
-        rotateMix = 0;
-        translateMix = 0;
+        position = 0; spacing = 0; rotateMix = 0; translateMix = 0;
 
-        spaces = new Array<number>();
-        positions = new Array<number>();
-        world = new Array<number>();
-        curves = new Array<number>();
-        lengths = new Array<number>();
+        spaces = new Array<number>(); positions = new Array<number>();
+        world = new Array<number>(); curves = new Array<number>(); lengths = new Array<number>();
         segments = new Array<number>();
 
-        constructor(data: PathConstraintData, skeleton: Skeleton) {
+        constructor (data: PathConstraintData, skeleton: Skeleton) {
             if (data == null) throw new Error("data cannot be null.");
             if (skeleton == null) throw new Error("skeleton cannot be null.");
             this.data = data;
@@ -64,11 +56,11 @@ namespace pixi_spine.core {
             this.translateMix = data.translateMix;
         }
 
-        apply() {
+        apply () {
             this.update();
         }
 
-        update() {
+        update () {
             let attachment = this.target.getAttachment();
             if (!(attachment instanceof PathAttachment)) return;
 
@@ -89,11 +81,10 @@ namespace pixi_spine.core {
                 if (scale) lengths = Utils.setArraySize(this.lengths, boneCount);
                 for (let i = 0, n = spacesCount - 1; i < n;) {
                     let bone = bones[i];
-                    let m = bone.matrix;
-                    let length = bone.data.length, x = length * m.a, y = length * m.b;
-                    length = Math.sqrt(x * x + y * y);
+                    let setupLength = bone.data.length, x = setupLength * bone.matrix.a, y = setupLength * bone.matrix.b;
+                    let length = Math.sqrt(x * x + y * y);
                     if (scale) lengths[i] = length;
-                    spaces[++i] = lengthSpacing ? Math.max(0, length + spacing) : spacing;
+                    spaces[++i] = (lengthSpacing ? setupLength + spacing : spacing) * length / setupLength;
                 }
             } else {
                 for (let i = 1; i < spacesCount; i++)
@@ -108,27 +99,27 @@ namespace pixi_spine.core {
                 tip = rotateMode == RotateMode.Chain;
             else {
                 tip = false;
-                let pm = this.target.bone.matrix;
-                offsetRotation *= pm.a * pm.d - pm.b * pm.c > 0 ? MathUtils.degRad : -MathUtils.degRad;
+                let p = this.target.bone.matrix;
+                offsetRotation *= p.a * p.d - p.b * p.c > 0 ? MathUtils.degRad : -MathUtils.degRad;
             }
             for (let i = 0, p = 3; i < boneCount; i++, p += 3) {
                 let bone = bones[i];
-                let m = bone.matrix;
-                m.tx += (boneX - m.tx) * translateMix;
-                m.ty += (boneY - m.ty) * translateMix;
+                let mat = bone.matrix;
+                mat.tx += (boneX - mat.tx) * translateMix;
+                mat.ty += (boneY - mat.ty) * translateMix;
                 let x = positions[p], y = positions[p + 1], dx = x - boneX, dy = y - boneY;
                 if (scale) {
                     let length = lengths[i];
                     if (length != 0) {
                         let s = (Math.sqrt(dx * dx + dy * dy) / length - 1) * rotateMix + 1;
-                        m.a *= s;
-                        m.b *= s;
+                        mat.a *= s;
+                        mat.b *= s;
                     }
                 }
                 boneX = x;
                 boneY = y;
                 if (rotate) {
-                    let a = m.a, b = m.c, c = m.b, d = m.d, r = 0, cos = 0, sin = 0;
+                    let a = mat.a, b = mat.c, c = mat.b, d = mat.d, r = 0, cos = 0, sin = 0;
                     if (tangents)
                         r = positions[p - 1];
                     else if (spaces[i + 1] == 0)
@@ -147,22 +138,22 @@ namespace pixi_spine.core {
                     }
                     if (r > MathUtils.PI)
                         r -= MathUtils.PI2;
-                    else if (r < -MathUtils.PI)
+                    else if (r < -MathUtils.PI) //
                         r += MathUtils.PI2;
                     r *= rotateMix;
                     cos = Math.cos(r);
                     sin = Math.sin(r);
-                    m.a = cos * a - sin * c;
-                    m.c = cos * b - sin * d;
-                    m.b = sin * a + cos * c;
-                    m.d = sin * b + cos * d;
+                    mat.a = cos * a - sin * c;
+                    mat.c = cos * b - sin * d;
+                    mat.b = sin * a + cos * c;
+                    mat.d = sin * b + cos * d;
                 }
                 bone.appliedValid = false;
             }
         }
 
-        computeWorldPositions(path: PathAttachment, spacesCount: number, tangents: boolean, percentPosition: boolean,
-                              percentSpacing: boolean) {
+        computeWorldPositions (path: PathAttachment, spacesCount: number, tangents: boolean, percentPosition: boolean,
+                               percentSpacing: boolean) {
             let target = this.target;
             let position = this.position;
             let spaces = this.spaces, out = Utils.setArraySize(this.positions, spacesCount * 3 + 2), world: Array<number> = null;
@@ -191,21 +182,21 @@ namespace pixi_spine.core {
                     } else if (p < 0) {
                         if (prevCurve != PathConstraint.BEFORE) {
                             prevCurve = PathConstraint.BEFORE;
-                            path.computeWorldVerticesWith(target, 2, 4, world, 0);
+                            path.computeWorldVertices(target, 2, 4, world, 0, 2);
                         }
                         this.addBeforePosition(p, world, 0, out, o);
                         continue;
                     } else if (p > pathLength) {
                         if (prevCurve != PathConstraint.AFTER) {
                             prevCurve = PathConstraint.AFTER;
-                            path.computeWorldVerticesWith(target, verticesLength - 6, 4, world, 0);
+                            path.computeWorldVertices(target, verticesLength - 6, 4, world, 0, 2);
                         }
                         this.addAfterPosition(p - pathLength, world, 0, out, o);
                         continue;
                     }
 
                     // Determine curve containing position.
-                    for (; ; curve++) {
+                    for (;; curve++) {
                         let length = lengths[curve];
                         if (p > length) continue;
                         if (curve == 0)
@@ -219,10 +210,10 @@ namespace pixi_spine.core {
                     if (curve != prevCurve) {
                         prevCurve = curve;
                         if (closed && curve == curveCount) {
-                            path.computeWorldVerticesWith(target, verticesLength - 4, 4, world, 0);
-                            path.computeWorldVerticesWith(target, 0, 4, world, 4);
+                            path.computeWorldVertices(target, verticesLength - 4, 4, world, 0, 2);
+                            path.computeWorldVertices(target, 0, 4, world, 4, 2);
                         } else
-                            path.computeWorldVerticesWith(target, curve * 6 + 2, 8, world, 0);
+                            path.computeWorldVertices(target, curve * 6 + 2, 8, world, 0, 2);
                     }
                     this.addCurvePosition(p, world[0], world[1], world[2], world[3], world[4], world[5], world[6], world[7], out, o,
                         tangents || (i > 0 && space == 0));
@@ -234,15 +225,15 @@ namespace pixi_spine.core {
             if (closed) {
                 verticesLength += 2;
                 world = Utils.setArraySize(this.world, verticesLength);
-                path.computeWorldVerticesWith(target, 2, verticesLength - 4, world, 0);
-                path.computeWorldVerticesWith(target, 0, 2, world, verticesLength - 4);
+                path.computeWorldVertices(target, 2, verticesLength - 4, world, 0, 2);
+                path.computeWorldVertices(target, 0, 2, world, verticesLength - 4, 2);
                 world[verticesLength - 2] = world[0];
                 world[verticesLength - 1] = world[1];
             } else {
                 curveCount--;
                 verticesLength -= 4;
                 world = Utils.setArraySize(this.world, verticesLength);
-                path.computeWorldVerticesWith(target, 2, verticesLength, world, 0);
+                path.computeWorldVertices(target, 2, verticesLength, world, 0, 2);
             }
 
             // Curve lengths.
@@ -307,7 +298,7 @@ namespace pixi_spine.core {
                 }
 
                 // Determine curve containing position.
-                for (; ; curve++) {
+                for (;; curve++) {
                     let length = curves[curve];
                     if (p > length) continue;
                     if (curve == 0)
@@ -362,7 +353,7 @@ namespace pixi_spine.core {
 
                 // Weight by segment length.
                 p *= curveLength;
-                for (; ; segment++) {
+                for (;; segment++) {
                     let length = segments[segment];
                     if (p > length) continue;
                     if (segment == 0)
@@ -378,22 +369,22 @@ namespace pixi_spine.core {
             return out;
         }
 
-        addBeforePosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+        addBeforePosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
             let x1 = temp[i], y1 = temp[i + 1], dx = temp[i + 2] - x1, dy = temp[i + 3] - y1, r = Math.atan2(dy, dx);
             out[o] = x1 + p * Math.cos(r);
             out[o + 1] = y1 + p * Math.sin(r);
             out[o + 2] = r;
         }
 
-        addAfterPosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+        addAfterPosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
             let x1 = temp[i + 2], y1 = temp[i + 3], dx = x1 - temp[i], dy = y1 - temp[i + 1], r = Math.atan2(dy, dx);
             out[o] = x1 + p * Math.cos(r);
             out[o + 1] = y1 + p * Math.sin(r);
             out[o + 2] = r;
         }
 
-        addCurvePosition(p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
-                         out: Array<number>, o: number, tangents: boolean) {
+        addCurvePosition (p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
+                          out: Array<number>, o: number, tangents: boolean) {
             if (p == 0 || isNaN(p)) p = 0.0001;
             let tt = p * p, ttt = tt * p, u = 1 - p, uu = u * u, uuu = uu * u;
             let ut = u * p, ut3 = ut * 3, uut3 = u * ut3, utt3 = ut3 * p;
@@ -403,7 +394,7 @@ namespace pixi_spine.core {
             if (tangents) out[o + 2] = Math.atan2(y - (y1 * uu + cy1 * ut * 2 + cy2 * tt), x - (x1 * uu + cx1 * ut * 2 + cx2 * tt));
         }
 
-        getOrder() {
+        getOrder () {
             return this.data.order;
         }
     }

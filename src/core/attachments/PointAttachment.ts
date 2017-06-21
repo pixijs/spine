@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -30,47 +29,29 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
-    export class AtlasAttachmentLoader implements AttachmentLoader {
-        atlas: TextureAtlas;
+    export class PointAttachment extends VertexAttachment {
+        x: number;
+        y: number;
+        rotation: number;
+        color = new Color(0.38, 0.94, 0, 1);
 
-        constructor(atlas: TextureAtlas) {
-            this.atlas = atlas;
+        constructor(name: string) {
+            super(name);
         }
 
-        /** @return May be null to not load an attachment. */
-        newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment {
-            let region = this.atlas.findRegion(path);
-            if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-            let attachment = new RegionAttachment(name);
-            attachment.region = region;
-            return attachment;
+        computeWorldPosition(bone: Bone, point: Vector2) {
+            const mat = bone.matrix;
+            point.x = this.x * mat.a + this.y * mat.c + bone.worldX;
+            point.y = this.x * mat.b + this.y * mat.d + bone.worldY;
+            return point;
         }
 
-        /** @return May be null to not load an attachment. */
-        newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment {
-            let region = this.atlas.findRegion(path);
-            if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-            let attachment = new MeshAttachment(name);
-            attachment.region = region;
-            return attachment;
-        }
-
-        /** @return May be null to not load an attachment. */
-        newBoundingBoxAttachment(skin: Skin, name: string): BoundingBoxAttachment {
-            return new BoundingBoxAttachment(name);
-        }
-
-        /** @return May be null to not load an attachment */
-        newPathAttachment(skin: Skin, name: string): PathAttachment {
-            return new PathAttachment(name);
-        }
-
-        newPointAttachment(skin: Skin, name: string): PointAttachment {
-            return new PointAttachment(name);
-        }
-
-        newClippingAttachment(skin: Skin, name: string): ClippingAttachment {
-            return new ClippingAttachment(name);
+        computeWorldRotation(bone: Bone) {
+            const mat = bone.matrix;
+            let cos = MathUtils.cosDeg(this.rotation), sin = MathUtils.sinDeg(this.rotation);
+            let x = cos * mat.a + sin * mat.c;
+            let y = cos * mat.b + sin * mat.d;
+            return Math.atan2(y, x) * MathUtils.radDeg;
         }
     }
 }
