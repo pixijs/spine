@@ -444,7 +444,7 @@ declare module PIXI.spine.core {
         constructor(name: string);
     }
 }
-declare module pixi_spine.core {
+declare module PIXI.spine.core {
     class ClippingAttachment extends VertexAttachment {
         endSlot: SlotData;
         color: Color;
