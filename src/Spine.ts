@@ -231,8 +231,8 @@ namespace pixi_spine {
                     if (slotContainer.transform) {
                         //TODO: refactor this thing, switch it on and off for container
                         let transform = slotContainer.transform;
-                        let transAny : any  = transform;
-                        let lt: PIXI.Matrix;
+                        let transAny: any = transform;
+                        let lt: PIXI.Matrix = null;
                         if (transAny.matrix2d) {
                             //gameofbombs pixi fork, sorry for that, we really use it :)
                             lt = transAny.matrix2d;
@@ -241,13 +241,22 @@ namespace pixi_spine {
                             transAny.isStatic = true;
                             transAny.operMode = 0;
                         } else {
-                            if (transAny.position) {
-                                transform = new PIXI.TransformBase();
-                                slotContainer.transform = transform;
+                            if (PIXI.TransformBase) {
+                                if (transAny.position) {
+                                    transform = new PIXI.TransformBase();
+                                    slotContainer.transform = transform;
+                                }
+                                lt = transform.localTransform;
+                            } else {
+                                // if (transAny.autoUpdateLocal) {
+                                //     transAny.autoUpdateLocal = false;
+                                // }
+                                transAny.setFromMatrix(slot.bone.matrix);
                             }
-                            lt = transform.localTransform;
                         }
-                        slot.bone.matrix.copy(lt);
+                        if (lt) {
+                            slot.bone.matrix.copy(lt);
+                        }
                     } else {
                         //PIXI v3
                         var lt = slotContainer.localTransform || new PIXI.Matrix();

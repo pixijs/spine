@@ -189,8 +189,8 @@ namespace pixi_spine.core {
 
                         //TODO: pixiv3 uses different frame/crop/trim
 
-                        if (PIXI.VERSION[0] == '4') {
-                            // pixi v4.0.0
+                        if (PIXI.VERSION[0] != '3') {
+                            // pixi v4 or v5
                             region.texture = new PIXI.Texture(region.page.baseTexture, frame, orig, trim, rotate);
                         } else {
                             // pixi v3.0.11
