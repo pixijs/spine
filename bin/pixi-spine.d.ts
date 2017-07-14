@@ -890,6 +890,8 @@ declare module PIXI.spine.core {
     class Slot {
         currentMesh: any;
         currentSprite: any;
+        currentGraphics: any;
+        clippingContainer: any;
         meshes: any;
         currentMeshName: string;
         sprites: any;
@@ -1240,6 +1242,7 @@ declare module PIXI.spine {
         stateData: core.AnimationStateData;
         state: core.AnimationState;
         slotContainers: Array<PIXI.Container>;
+        tempClipContainers: Array<PIXI.Container>;
         constructor(spineData: core.SkeletonData);
         autoUpdate: boolean;
         tint: number;
@@ -1250,6 +1253,9 @@ declare module PIXI.spine {
         autoUpdateTransform(): void;
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string): SpineSprite;
         createMesh(slot: core.Slot, attachment: core.MeshAttachment): SpineMesh;
+        static clippingPolygon: Array<number>;
+        createGraphics(slot: core.Slot, clip: core.ClippingAttachment): PIXI.Graphics;
+        updateGraphics(slot: core.Slot, clip: core.ClippingAttachment): void;
         hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
         hackTextureBySlotName: (slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
     }

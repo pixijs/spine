@@ -6723,12 +6723,14 @@ var pixi_spine;
             _this.stateData = new pixi_spine.core.AnimationStateData(spineData);
             _this.state = new pixi_spine.core.AnimationState(_this.stateData);
             _this.slotContainers = [];
+            _this.tempClipContainers = [];
             for (var i = 0, n = _this.skeleton.slots.length; i < n; i++) {
                 var slot = _this.skeleton.slots[i];
                 var attachment = slot.attachment;
                 var slotContainer = new PIXI.Container();
                 _this.slotContainers.push(slotContainer);
                 _this.addChild(slotContainer);
+                _this.tempClipContainers.push(null);
                 if (attachment instanceof pixi_spine.core.RegionAttachment) {
                     var spriteName = attachment.region.name;
                     var sprite = _this.createSprite(slot, attachment, spriteName);
@@ -6741,6 +6743,11 @@ var pixi_spine;
                     slot.currentMesh = mesh;
                     slot.currentMeshName = attachment.name;
                     slotContainer.addChild(mesh);
+                }
+                else if (attachment instanceof pixi_spine.core.ClippingAttachment) {
+                    _this.createGraphics(slot, attachment);
+                    slotContainer.addChild(slot.clippingContainer);
+                    slotContainer.addChild(slot.currentGraphics);
                 }
                 else {
                     continue;
@@ -6774,15 +6781,11 @@ var pixi_spine;
             this.state.update(dt);
             this.state.apply(this.skeleton);
             this.skeleton.updateWorldTransform();
-            var drawOrder = this.skeleton.drawOrder;
             var slots = this.skeleton.slots;
-            for (var i = 0, n = drawOrder.length; i < n; i++) {
-                this.children[i] = this.slotContainers[drawOrder[i].data.index];
-            }
             var r0 = this.tintRgb[0];
             var g0 = this.tintRgb[1];
             var b0 = this.tintRgb[2];
-            for (i = 0, n = slots.length; i < n; i++) {
+            for (var i = 0, n = slots.length; i < n; i++) {
                 var slot = slots[i];
                 var attachment = slot.attachment;
                 var slotContainer = this.slotContainers[i];
@@ -6820,9 +6823,9 @@ var pixi_spine;
                     if (slotContainer.transform) {
                         var transform = slotContainer.transform;
                         var transAny = transform;
-                        var lt_1 = null;
+                        var lt = null;
                         if (transAny.matrix2d) {
-                            lt_1 = transAny.matrix2d;
+                            lt = transAny.matrix2d;
                             transAny._dirtyVersion++;
                             transAny.version = transAny._dirtyVersion;
                             transAny.isStatic = true;
@@ -6834,14 +6837,14 @@ var pixi_spine;
                                     transform = new PIXI.TransformBase();
                                     slotContainer.transform = transform;
                                 }
-                                lt_1 = transform.localTransform;
+                                lt = transform.localTransform;
                             }
                             else {
                                 transAny.setFromMatrix(slot.bone.matrix);
                             }
                         }
-                        if (lt_1) {
-                            slot.bone.matrix.copy(lt_1);
+                        if (lt) {
+                            slot.bone.matrix.copy(lt);
                         }
                     }
                     else {
@@ -6894,12 +6897,64 @@ var pixi_spine;
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                 }
+                else if (attachment instanceof pixi_spine.core.ClippingAttachment) {
+                    if (!slot.currentGraphics) {
+                        this.createGraphics(slot, attachment);
+                        slotContainer.addChild(slot.clippingContainer);
+                        slotContainer.addChild(slot.currentGraphics);
+                    }
+                    this.updateGraphics(slot, attachment);
+                }
                 else {
                     slotContainer.visible = false;
                     continue;
                 }
                 slotContainer.visible = true;
                 slotContainer.alpha = slot.color.a;
+            }
+            var drawOrder = this.skeleton.drawOrder;
+            var clippingAttachment = null;
+            var clippingContainer = null;
+            for (var i = 0, n = drawOrder.length; i < n; i++) {
+                var slot = slots[drawOrder[i].data.index];
+                var slotContainer = this.slotContainers[drawOrder[i].data.index];
+                if (!clippingContainer) {
+                    if (slotContainer.parent !== this) {
+                        slotContainer.parent.removeChild(slotContainer);
+                        slotContainer.parent = this;
+                    }
+                }
+                if (slot.currentGraphics) {
+                    clippingContainer = slot.clippingContainer;
+                    clippingAttachment = slot.attachment;
+                    clippingContainer.children.length = 0;
+                    this.children[i] = slotContainer;
+                    if (clippingAttachment.endSlot == slot.data) {
+                        clippingContainer.renderable = false;
+                        clippingContainer = null;
+                        clippingAttachment = null;
+                    }
+                }
+                else {
+                    if (clippingContainer) {
+                        var c = this.tempClipContainers[i];
+                        if (!c) {
+                            c = this.tempClipContainers[i] = new PIXI.Container();
+                            c.visible = false;
+                        }
+                        this.children[i] = c;
+                        slotContainer.parent = null;
+                        clippingContainer.addChild(slotContainer);
+                        if (clippingAttachment.endSlot == slot.data) {
+                            clippingContainer.renderable = true;
+                            clippingContainer = null;
+                            clippingAttachment = null;
+                        }
+                    }
+                    else {
+                        this.children[i] = slotContainer;
+                    }
+                }
             }
         };
         ;
@@ -6973,6 +7028,25 @@ var pixi_spine;
             return strip;
         };
         ;
+        Spine.prototype.createGraphics = function (slot, clip) {
+            var graphics = new PIXI.Graphics();
+            var poly = new PIXI.Polygon([]);
+            graphics.clear();
+            graphics.beginFill(0xffffff, 1);
+            graphics.drawPolygon(poly);
+            graphics.renderable = false;
+            slot.currentGraphics = graphics;
+            slot.clippingContainer = new PIXI.Container();
+            slot.clippingContainer.mask = slot.currentGraphics;
+            return graphics;
+        };
+        Spine.prototype.updateGraphics = function (slot, clip) {
+            var vertices = slot.currentGraphics.graphicsData[0].shape.points;
+            var n = clip.worldVerticesLength;
+            vertices.length = n;
+            clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
+            slot.currentGraphics.dirty++;
+        };
         Spine.prototype.hackTextureBySlotIndex = function (slotIndex, texture, size) {
             if (texture === void 0) { texture = null; }
             if (size === void 0) { size = null; }
@@ -7003,6 +7077,7 @@ var pixi_spine;
         return Spine;
     }(PIXI.Container));
     Spine.globalAutoUpdate = true;
+    Spine.clippingPolygon = [];
     pixi_spine.Spine = Spine;
     function SlotContainerUpdateTransformV3() {
         var pt = this.parent.worldTransform;
