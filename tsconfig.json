@@ -16,6 +16,7 @@
     ],
     "exclude": [
         "node_modules/**/*",
-        "compilation.ts"
+        "compilation.ts",
+        "bin"
     ]
 }
