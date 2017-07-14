@@ -732,8 +732,8 @@ namespace pixi_spine.core {
                         if (alpha == 1) break;
                         if (vertexAttachment.bones == null) {
                             // Unweighted vertex positions.
-                            var setupVertices = vertexAttachment.vertices;
-                            for (var i = 0; i < vertexCount; i++)
+                            let setupVertices = vertexAttachment.vertices;
+                            for (let i = 0; i < vertexCount; i++)
                                 vertices[i] += (setupVertices[i] - vertices[i]) * alpha;
                         } else {
                             // Weighted deform offsets.
