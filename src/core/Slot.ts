@@ -34,10 +34,14 @@ namespace pixi_spine.core {
         //this is for PIXI
         currentMesh: any;
         currentSprite: any;
+        currentGraphics: any;
+        clippingContainer: any;
+
         meshes: any;
         currentMeshName: string;
         sprites: any;
         currentSpriteName: string;
+
         blendMode: number;
         //assign hack region a bit later
         tempRegion: TextureRegion;

@@ -29,14 +29,14 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
-	export class ClippingAttachment extends VertexAttachment {
-		endSlot: SlotData;
+    export class ClippingAttachment extends VertexAttachment {
+        endSlot: SlotData;
 
-		// Nonessential.
-		color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
+        // Nonessential.
+        color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
 
-		constructor (name: string) {
-			super(name);
-		}
-	}
+        constructor(name: string) {
+            super(name);
+        }
+    }
 }

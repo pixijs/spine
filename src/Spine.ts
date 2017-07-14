@@ -28,7 +28,7 @@ namespace pixi_spine {
      * See example 12 (http://www.goodboydigital.com/pixijs/examples/12/) to see a working example and check out the source
      *
      * ```js
-     * var spineAnimation = new spine(spineData);
+     * let spineAnimation = new spine(spineData);
      * ```
      *
      * @class
@@ -45,6 +45,7 @@ namespace pixi_spine {
         stateData: core.AnimationStateData;
         state: core.AnimationState;
         slotContainers: Array<PIXI.Container>;
+        tempClipContainers: Array<PIXI.Container>;
 
         constructor(spineData: core.SkeletonData) {
             super();
@@ -93,25 +94,33 @@ namespace pixi_spine {
              */
             this.slotContainers = [];
 
-            for (var i = 0, n = this.skeleton.slots.length; i < n; i++) {
-                var slot = this.skeleton.slots[i];
-                var attachment: any = slot.attachment;
-                var slotContainer = new PIXI.Container();
+            this.tempClipContainers = [];
+
+            for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
+                let slot = this.skeleton.slots[i];
+                let attachment: any = slot.attachment;
+                let slotContainer = new PIXI.Container();
                 this.slotContainers.push(slotContainer);
                 this.addChild(slotContainer);
+                this.tempClipContainers.push(null);
 
                 if (attachment instanceof core.RegionAttachment) {
-                    var spriteName = (attachment.region as core.TextureAtlasRegion).name;
-                    var sprite = this.createSprite(slot, attachment, spriteName);
+                    let spriteName = (attachment.region as core.TextureAtlasRegion).name;
+                    let sprite = this.createSprite(slot, attachment, spriteName);
                     slot.currentSprite = sprite;
                     slot.currentSpriteName = spriteName;
                     slotContainer.addChild(sprite);
                 }
                 else if (attachment instanceof core.MeshAttachment) {
-                    var mesh = this.createMesh(slot, attachment);
+                    let mesh = this.createMesh(slot, attachment);
                     slot.currentMesh = mesh;
                     slot.currentMeshName = attachment.name;
                     slotContainer.addChild(mesh);
+                }
+                else if (attachment instanceof core.ClippingAttachment) {
+                    this.createGraphics(slot, attachment);
+                    slotContainer.addChild(slot.clippingContainer);
+                    slotContainer.addChild(slot.currentGraphics);
                 }
                 else {
                     continue;
@@ -179,28 +188,23 @@ namespace pixi_spine {
             this.state.apply(this.skeleton);
             this.skeleton.updateWorldTransform();
 
-            let drawOrder = this.skeleton.drawOrder;
             let slots = this.skeleton.slots;
 
-            for (var i = 0, n = drawOrder.length; i < n; i++) {
-                this.children[i] = this.slotContainers[drawOrder[i].data.index];
-            }
+            let r0 = this.tintRgb[0];
+            let g0 = this.tintRgb[1];
+            let b0 = this.tintRgb[2];
 
-            var r0 = this.tintRgb[0];
-            var g0 = this.tintRgb[1];
-            var b0 = this.tintRgb[2];
-
-            for (i = 0, n = slots.length; i < n; i++) {
-                var slot = slots[i];
-                var attachment = slot.attachment;
-                var slotContainer = this.slotContainers[i];
+            for (let i = 0, n = slots.length; i < n; i++) {
+                let slot = slots[i];
+                let attachment = slot.attachment;
+                let slotContainer = this.slotContainers[i];
 
                 if (!attachment) {
                     slotContainer.visible = false;
                     continue;
                 }
 
-                var attColor = (attachment as any).color;
+                let attColor = (attachment as any).color;
                 if (attachment instanceof core.RegionAttachment) {
                     let region = (attachment as core.RegionAttachment).region;
                     if (region) {
@@ -211,7 +215,7 @@ namespace pixi_spine {
                         }
                         let ar = region as core.TextureAtlasRegion;
                         if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
-                            var spriteName = ar.name;
+                            let spriteName = ar.name;
                             if (slot.currentSprite) {
                                 slot.currentSprite.visible = false;
                             }
@@ -220,7 +224,7 @@ namespace pixi_spine {
                                 slot.sprites[spriteName].visible = true;
                             }
                             else {
-                                var sprite = this.createSprite(slot, attachment, spriteName);
+                                let sprite = this.createSprite(slot, attachment, spriteName);
                                 slotContainer.addChild(sprite);
                             }
                             slot.currentSprite = slot.sprites[spriteName];
@@ -259,7 +263,7 @@ namespace pixi_spine {
                         }
                     } else {
                         //PIXI v3
-                        var lt = slotContainer.localTransform || new PIXI.Matrix();
+                        let lt = slotContainer.localTransform || new PIXI.Matrix();
                         slot.bone.matrix.copy(lt);
                         slotContainer.localTransform = lt;
                         (slotContainer as any).displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
@@ -286,7 +290,7 @@ namespace pixi_spine {
                         }
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
-                        var meshName = attachment.name;
+                        let meshName = attachment.name;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                         }
@@ -297,7 +301,7 @@ namespace pixi_spine {
                             slot.meshes[meshName].visible = true;
                         }
                         else {
-                            var mesh = this.createMesh(slot, attachment);
+                            let mesh = this.createMesh(slot, attachment);
                             slotContainer.addChild(mesh);
                         }
 
@@ -309,12 +313,20 @@ namespace pixi_spine {
                         // PIXI version 4
                         // slot.currentMesh.dirty++;
                         //only for PIXI v4
-                        var tintRgb = slot.currentMesh.tintRgb;
+                        let tintRgb = slot.currentMesh.tintRgb;
                         tintRgb[0] = r0 * slot.color.r * attColor.r;
                         tintRgb[1] = g0 * slot.color.g * attColor.g;
                         tintRgb[2] = b0 * slot.color.b * attColor.b;
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
+                }
+                else if (attachment instanceof core.ClippingAttachment) {
+                    if (!slot.currentGraphics) {
+                        this.createGraphics(slot, attachment);
+                        slotContainer.addChild(slot.clippingContainer);
+                        slotContainer.addChild(slot.currentGraphics);
+                    }
+                    this.updateGraphics(slot, attachment);
                 }
                 else {
                     slotContainer.visible = false;
@@ -323,6 +335,59 @@ namespace pixi_spine {
                 slotContainer.visible = true;
 
                 slotContainer.alpha = slot.color.a;
+            }
+
+
+            //== this is clipping implementation ===
+            //TODO: remove parent hacks when pixi masks allow it
+            let drawOrder = this.skeleton.drawOrder;
+            let clippingAttachment: core.ClippingAttachment = null;
+            let clippingContainer: PIXI.Container = null;
+
+            for (let i = 0, n = drawOrder.length; i < n; i++) {
+                let slot = slots[drawOrder[i].data.index];
+                let slotContainer = this.slotContainers[drawOrder[i].data.index];
+
+                if (!clippingContainer) {
+                    if (slotContainer.parent !== this) {
+                        slotContainer.parent.removeChild(slotContainer);
+                        //silend add hack
+                        slotContainer.parent = this;
+                    }
+                }
+                if (slot.currentGraphics) {
+                    clippingContainer = slot.clippingContainer;
+                    clippingAttachment = slot.attachment as core.ClippingAttachment;
+                    clippingContainer.children.length = 0;
+                    this.children[i] = slotContainer;
+
+                    if (clippingAttachment.endSlot == slot.data) {
+                        clippingContainer.renderable = false;
+                        clippingContainer = null;
+                        clippingAttachment = null;
+                    }
+
+                } else {
+                    if (clippingContainer) {
+                        let c = this.tempClipContainers[i];
+                        if (!c) {
+                            c = this.tempClipContainers[i] = new PIXI.Container();
+                            c.visible = false;
+                        }
+                        this.children[i] = c;
+
+                        //silent remove hack
+                        slotContainer.parent = null;
+                        clippingContainer.addChild(slotContainer);
+                        if (clippingAttachment.endSlot == slot.data) {
+                            clippingContainer.renderable = true;
+                            clippingContainer = null;
+                            clippingAttachment = null;
+                        }
+                    } else {
+                        this.children[i] = slotContainer;
+                    }
+                }
             }
         };
 
@@ -362,7 +427,7 @@ namespace pixi_spine {
         autoUpdateTransform() {
             if (Spine.globalAutoUpdate) {
                 this.lastTime = this.lastTime || Date.now();
-                var timeDelta = (Date.now() - this.lastTime) * 0.001;
+                let timeDelta = (Date.now() - this.lastTime) * 0.001;
                 this.lastTime = Date.now();
                 this.update(timeDelta);
             } else {
@@ -386,8 +451,8 @@ namespace pixi_spine {
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            var texture = region.texture;
-            var sprite = new SpineSprite(texture);
+            let texture = region.texture;
+            let sprite = new SpineSprite(texture);
             sprite.rotation = attachment.rotation * core.MathUtils.degRad;
             sprite.anchor.x = 0.5;
             sprite.anchor.y = 0.5;
@@ -435,6 +500,30 @@ namespace pixi_spine {
             return strip;
         };
 
+        static clippingPolygon: Array<number> = [];
+
+        createGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
+            let graphics = new PIXI.Graphics();
+            let poly = new PIXI.Polygon([]);
+            graphics.clear();
+            graphics.beginFill(0xffffff, 1);
+            graphics.drawPolygon(poly as any);
+            graphics.renderable = false;
+            slot.currentGraphics = graphics;
+            slot.clippingContainer = new PIXI.Container();
+            slot.clippingContainer.mask = slot.currentGraphics;
+
+            return graphics;
+        }
+
+        updateGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
+            let vertices = (slot.currentGraphics.graphicsData[0].shape as PIXI.Polygon).points;
+            let n = clip.worldVerticesLength;
+            vertices.length = n;
+            clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
+            slot.currentGraphics.dirty++;
+        }
+
         /**
          * Changes texture in attachment in specific slot.
          *
@@ -446,12 +535,12 @@ namespace pixi_spine {
          * @returns {boolean} Success flag
          */
         hackTextureBySlotIndex(slotIndex: number, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
-            var slot = this.skeleton.slots[slotIndex];
+            let slot = this.skeleton.slots[slotIndex];
             if (!slot) {
                 return false;
             }
-            var attachment: any = slot.attachment;
-            var region: core.TextureRegion = attachment.region;
+            let attachment: any = slot.attachment;
+            let region: core.TextureRegion = attachment.region;
             if (texture) {
                 region = new core.TextureRegion();
                 region.texture = texture;
@@ -480,7 +569,7 @@ namespace pixi_spine {
          * @returns {boolean} Success flag
          */
         hackTextureBySlotName = function (slotName: string, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
-            var index = this.skeleton.findSlotIndex(slotName);
+            let index = this.skeleton.findSlotIndex(slotName);
             if (index == -1) {
                 return false;
             }
@@ -489,9 +578,9 @@ namespace pixi_spine {
     }
 
     function SlotContainerUpdateTransformV3() {
-        var pt = this.parent.worldTransform;
-        var wt = this.worldTransform;
-        var lt = this.localTransform;
+        let pt = this.parent.worldTransform;
+        let wt = this.worldTransform;
+        let lt = this.localTransform;
         wt.a = lt.a * pt.a + lt.b * pt.c;
         wt.b = lt.a * pt.b + lt.b * pt.d;
         wt.c = lt.c * pt.a + lt.d * pt.c;
