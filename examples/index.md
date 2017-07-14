@@ -10,3 +10,4 @@ pixi-spine docs
 7. [How to use pre-loaded json and atlas files](preloaded_json.md)
 8. [How to use spine events](spine_events.md)
 9. [How to choose resolution](texture_and_sprite_resolution.md)
+10. [How to change tint](change_tint.md)
