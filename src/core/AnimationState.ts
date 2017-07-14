@@ -541,12 +541,9 @@ namespace pixi_spine.core {
             let mixingTo = this.mixingTo;
 
             let lastEntry: TrackEntry = null;
-            for (var i = 0, n = this.tracks.length; i < n; i++) {
+            for (let i = 0, n = this.tracks.length; i < n; i++) {
                 let entry = this.tracks[i];
-                if (entry != null) {
-                    entry.setTimelineData(lastEntry, mixingTo, propertyIDs);
-                    lastEntry = entry;
-                }
+                if (entry != null) entry.setTimelineData(null, mixingTo, propertyIDs);
             }
         }
 
