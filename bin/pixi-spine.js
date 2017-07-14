@@ -630,12 +630,15 @@ var pixi_spine;
             return AttachmentTimeline;
         }());
         core.AttachmentTimeline = AttachmentTimeline;
+        var zeros = null;
         var DeformTimeline = (function (_super) {
             __extends(DeformTimeline, _super);
             function DeformTimeline(frameCount) {
                 var _this = _super.call(this, frameCount) || this;
                 _this.frames = core.Utils.newFloatArray(frameCount);
                 _this.frameVertices = new Array(frameCount);
+                if (zeros == null)
+                    zeros = core.Utils.newFloatArray(64);
                 return _this;
             }
             DeformTimeline.prototype.getPropertyId = function () {
@@ -653,19 +656,36 @@ var pixi_spine;
                 var verticesArray = slot.attachmentVertices;
                 var frameVertices = this.frameVertices;
                 var vertexCount = frameVertices[0].length;
-                if (verticesArray.length != vertexCount && pose != MixPose.setup)
-                    alpha = 1;
                 var vertices = core.Utils.setArraySize(verticesArray, vertexCount);
                 var frames = this.frames;
                 if (time < frames[0]) {
+                    var vertexAttachment = slotAttachment;
                     switch (pose) {
                         case MixPose.setup:
-                            verticesArray.length = 0;
+                            var zeroVertices = void 0;
+                            if (vertexAttachment.bones == null) {
+                                zeroVertices = vertexAttachment.vertices;
+                            }
+                            else {
+                                zeroVertices = zeros;
+                                if (zeroVertices.length < vertexCount)
+                                    zeros = zeroVertices = core.Utils.newFloatArray(vertexCount);
+                            }
+                            core.Utils.arrayCopy(zeroVertices, 0, vertices, 0, vertexCount);
                             return;
                         case MixPose.current:
-                            alpha = 1 - alpha;
-                            for (var i = 0; i < vertexCount; i++)
-                                vertices[i] *= alpha;
+                            if (alpha == 1)
+                                break;
+                            if (vertexAttachment.bones == null) {
+                                var setupVertices = vertexAttachment.vertices;
+                                for (var i_1 = 0; i_1 < vertexCount; i_1++)
+                                    vertices[i_1] += (setupVertices[i_1] - vertices[i_1]) * alpha;
+                            }
+                            else {
+                                alpha = 1 - alpha;
+                                for (var i = 0; i < vertexCount; i++)
+                                    vertices[i] *= alpha;
+                            }
                     }
                     return;
                 }
@@ -678,19 +698,19 @@ var pixi_spine;
                         var vertexAttachment = slotAttachment;
                         if (vertexAttachment.bones == null) {
                             var setupVertices = vertexAttachment.vertices;
-                            for (var i = 0; i < vertexCount; i++) {
-                                var setup = setupVertices[i];
-                                vertices[i] = setup + (lastVertices[i] - setup) * alpha;
+                            for (var i_2 = 0; i_2 < vertexCount; i_2++) {
+                                var setup = setupVertices[i_2];
+                                vertices[i_2] = setup + (lastVertices[i_2] - setup) * alpha;
                             }
                         }
                         else {
-                            for (var i = 0; i < vertexCount; i++)
-                                vertices[i] = lastVertices[i] * alpha;
+                            for (var i_3 = 0; i_3 < vertexCount; i_3++)
+                                vertices[i_3] = lastVertices[i_3] * alpha;
                         }
                     }
                     else {
-                        for (var i = 0; i < vertexCount; i++)
-                            vertices[i] += (lastVertices[i] - vertices[i]) * alpha;
+                        for (var i_4 = 0; i_4 < vertexCount; i_4++)
+                            vertices[i_4] += (lastVertices[i_4] - vertices[i_4]) * alpha;
                     }
                     return;
                 }
@@ -700,31 +720,31 @@ var pixi_spine;
                 var frameTime = frames[frame];
                 var percent = this.getCurvePercent(frame - 1, 1 - (time - frameTime) / (frames[frame - 1] - frameTime));
                 if (alpha == 1) {
-                    for (var i = 0; i < vertexCount; i++) {
-                        var prev = prevVertices[i];
-                        vertices[i] = prev + (nextVertices[i] - prev) * percent;
+                    for (var i_5 = 0; i_5 < vertexCount; i_5++) {
+                        var prev = prevVertices[i_5];
+                        vertices[i_5] = prev + (nextVertices[i_5] - prev) * percent;
                     }
                 }
                 else if (pose == MixPose.setup) {
                     var vertexAttachment = slotAttachment;
                     if (vertexAttachment.bones == null) {
                         var setupVertices = vertexAttachment.vertices;
-                        for (var i = 0; i < vertexCount; i++) {
-                            var prev = prevVertices[i], setup = setupVertices[i];
-                            vertices[i] = setup + (prev + (nextVertices[i] - prev) * percent - setup) * alpha;
+                        for (var i_6 = 0; i_6 < vertexCount; i_6++) {
+                            var prev = prevVertices[i_6], setup = setupVertices[i_6];
+                            vertices[i_6] = setup + (prev + (nextVertices[i_6] - prev) * percent - setup) * alpha;
                         }
                     }
                     else {
-                        for (var i = 0; i < vertexCount; i++) {
-                            var prev = prevVertices[i];
-                            vertices[i] = (prev + (nextVertices[i] - prev) * percent) * alpha;
+                        for (var i_7 = 0; i_7 < vertexCount; i_7++) {
+                            var prev = prevVertices[i_7];
+                            vertices[i_7] = (prev + (nextVertices[i_7] - prev) * percent) * alpha;
                         }
                     }
                 }
                 else {
-                    for (var i = 0; i < vertexCount; i++) {
-                        var prev = prevVertices[i];
-                        vertices[i] += (prev + (nextVertices[i] - prev) * percent - vertices[i]) * alpha;
+                    for (var i_8 = 0; i_8 < vertexCount; i_8++) {
+                        var prev = prevVertices[i_8];
+                        vertices[i_8] += (prev + (nextVertices[i_8] - prev) * percent - vertices[i_8]) * alpha;
                     }
                 }
             };
@@ -1588,10 +1608,8 @@ var pixi_spine;
                 var lastEntry = null;
                 for (var i = 0, n = this.tracks.length; i < n; i++) {
                     var entry = this.tracks[i];
-                    if (entry != null) {
-                        entry.setTimelineData(lastEntry, mixingTo, propertyIDs);
-                        lastEntry = entry;
-                    }
+                    if (entry != null)
+                        entry.setTimelineData(null, mixingTo, propertyIDs);
                 }
             };
             AnimationState.prototype.getCurrent = function (trackIndex) {
@@ -4040,7 +4058,7 @@ var pixi_spine;
                                 clippedVerticesItems[s + 7] = v1 * a + v2 * b + v3 * c;
                                 if (twoColor) {
                                     clippedVerticesItems[s + 8] = dark.r;
-                                    clippedVerticesItems[s + 8] = dark.g;
+                                    clippedVerticesItems[s + 9] = dark.g;
                                     clippedVerticesItems[s + 10] = dark.b;
                                     clippedVerticesItems[s + 11] = dark.a;
                                 }
@@ -5529,7 +5547,7 @@ var pixi_spine;
                             var offsetY = parseInt(tuple[1]) / resolution;
                             var orig = new PIXI.Rectangle(0, 0, originalWidth, originalHeight);
                             var trim = new PIXI.Rectangle(offsetX, originalHeight - height - offsetY, width, height);
-                            if (PIXI.VERSION[0] == '4') {
+                            if (PIXI.VERSION[0] != '3') {
                                 region.texture = new PIXI.Texture(region.page.baseTexture, frame, orig, trim, rotate);
                             }
                             else {
@@ -6239,6 +6257,16 @@ var pixi_spine;
                 var y = Math.pow(Math.abs(x), 1 / 3);
                 return x < 0 ? -y : y;
             };
+            MathUtils.randomTriangular = function (min, max) {
+                return MathUtils.randomTriangularWith(min, max, (min + max) * 0.5);
+            };
+            MathUtils.randomTriangularWith = function (min, max, mode) {
+                var u = Math.random();
+                var d = max - min;
+                if (u <= (mode - min) / d)
+                    return min + Math.sqrt(u * d * (mode - min));
+                return max - Math.sqrt((1 - u) * d * (max - mode));
+            };
             return MathUtils;
         }());
         MathUtils.PI = 3.1415927;
@@ -6248,6 +6276,42 @@ var pixi_spine;
         MathUtils.degreesToRadians = MathUtils.PI / 180;
         MathUtils.degRad = MathUtils.degreesToRadians;
         core.MathUtils = MathUtils;
+        var Interpolation = (function () {
+            function Interpolation() {
+            }
+            Interpolation.prototype.apply = function (start, end, a) {
+                return start + (end - start) * this.applyInternal(a);
+            };
+            return Interpolation;
+        }());
+        core.Interpolation = Interpolation;
+        var Pow = (function (_super) {
+            __extends(Pow, _super);
+            function Pow(power) {
+                var _this = _super.call(this) || this;
+                _this.power = 2;
+                _this.power = power;
+                return _this;
+            }
+            Pow.prototype.applyInternal = function (a) {
+                if (a <= 0.5)
+                    return Math.pow(a * 2, this.power) / 2;
+                return Math.pow((a - 1) * 2, this.power) / (this.power % 2 == 0 ? -2 : 2) + 1;
+            };
+            return Pow;
+        }(Interpolation));
+        core.Pow = Pow;
+        var PowOut = (function (_super) {
+            __extends(PowOut, _super);
+            function PowOut(power) {
+                return _super.call(this, power) || this;
+            }
+            PowOut.prototype.applyInternal = function (a) {
+                return Math.pow(a - 1, this.power) * (this.power % 2 == 0 ? -1 : 1) + 1;
+            };
+            return PowOut;
+        }(Pow));
+        core.PowOut = PowOut;
         var Utils = (function () {
             function Utils() {
             }
@@ -6446,6 +6510,67 @@ var pixi_spine;
             return WindowedMean;
         }());
         core.WindowedMean = WindowedMean;
+    })(core = pixi_spine.core || (pixi_spine.core = {}));
+})(pixi_spine || (pixi_spine = {}));
+(function (pixi_spine) {
+    var core;
+    (function (core) {
+        var JitterEffect = (function () {
+            function JitterEffect(jitterX, jitterY) {
+                this.jitterX = 0;
+                this.jitterY = 0;
+                this.jitterX = jitterX;
+                this.jitterY = jitterY;
+            }
+            JitterEffect.prototype.begin = function (skeleton) {
+            };
+            JitterEffect.prototype.transform = function (position, uv, light, dark) {
+                position.x += core.MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+                position.y += core.MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+            };
+            JitterEffect.prototype.end = function () {
+            };
+            return JitterEffect;
+        }());
+        core.JitterEffect = JitterEffect;
+    })(core = pixi_spine.core || (pixi_spine.core = {}));
+})(pixi_spine || (pixi_spine = {}));
+(function (pixi_spine) {
+    var core;
+    (function (core) {
+        var SwirlEffect = (function () {
+            function SwirlEffect(radius) {
+                this.centerX = 0;
+                this.centerY = 0;
+                this.radius = 0;
+                this.angle = 0;
+                this.worldX = 0;
+                this.worldY = 0;
+                this.radius = radius;
+            }
+            SwirlEffect.prototype.begin = function (skeleton) {
+                this.worldX = skeleton.x + this.centerX;
+                this.worldY = skeleton.y + this.centerY;
+            };
+            SwirlEffect.prototype.transform = function (position, uv, light, dark) {
+                var radAngle = this.angle * core.MathUtils.degreesToRadians;
+                var x = position.x - this.worldX;
+                var y = position.y - this.worldY;
+                var dist = Math.sqrt(x * x + y * y);
+                if (dist < this.radius) {
+                    var theta = SwirlEffect.interpolation.apply(0, radAngle, (this.radius - dist) / this.radius);
+                    var cos = Math.cos(theta);
+                    var sin = Math.sin(theta);
+                    position.x = cos * x - sin * y + this.worldX;
+                    position.y = sin * x + cos * y + this.worldY;
+                }
+            };
+            SwirlEffect.prototype.end = function () {
+            };
+            return SwirlEffect;
+        }());
+        SwirlEffect.interpolation = new core.PowOut(2);
+        core.SwirlEffect = SwirlEffect;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 (function (pixi_spine) {
@@ -6695,7 +6820,7 @@ var pixi_spine;
                     if (slotContainer.transform) {
                         var transform = slotContainer.transform;
                         var transAny = transform;
-                        var lt_1 = void 0;
+                        var lt_1 = null;
                         if (transAny.matrix2d) {
                             lt_1 = transAny.matrix2d;
                             transAny._dirtyVersion++;
@@ -6704,13 +6829,20 @@ var pixi_spine;
                             transAny.operMode = 0;
                         }
                         else {
-                            if (transAny.position) {
-                                transform = new PIXI.TransformBase();
-                                slotContainer.transform = transform;
+                            if (PIXI.TransformBase) {
+                                if (transAny.position) {
+                                    transform = new PIXI.TransformBase();
+                                    slotContainer.transform = transform;
+                                }
+                                lt_1 = transform.localTransform;
                             }
-                            lt_1 = transform.localTransform;
+                            else {
+                                transAny.setFromMatrix(slot.bone.matrix);
+                            }
                         }
-                        slot.bone.matrix.copy(lt_1);
+                        if (lt_1) {
+                            slot.bone.matrix.copy(lt_1);
+                        }
                     }
                     else {
                         var lt = slotContainer.localTransform || new PIXI.Matrix();
