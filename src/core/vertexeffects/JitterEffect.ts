@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-module pixi_spine.core {
+namespace pixi_spine.core {
 	export class JitterEffect implements VertexEffect {
 		jitterX = 0;
 		jitterY = 0;
