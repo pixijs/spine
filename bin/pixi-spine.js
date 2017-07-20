@@ -7046,6 +7046,7 @@ var pixi_spine;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
             slot.currentGraphics.dirty++;
+            slot.currentGraphics.clearDirty++;
         };
         Spine.prototype.hackTextureBySlotIndex = function (slotIndex, texture, size) {
             if (texture === void 0) { texture = null; }

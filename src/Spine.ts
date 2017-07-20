@@ -522,6 +522,7 @@ namespace pixi_spine {
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
             slot.currentGraphics.dirty++;
+            slot.currentGraphics.clearDirty++;
         }
 
         /**
