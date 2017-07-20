@@ -1189,7 +1189,7 @@ declare module PIXI.spine.core {
         end(): void;
     }
 }
-declare module pixi_spine.core {
+declare module PIXI.spine.core {
     class JitterEffect implements VertexEffect {
         jitterX: number;
         jitterY: number;
@@ -1199,7 +1199,7 @@ declare module pixi_spine.core {
         end(): void;
     }
 }
-declare module pixi_spine.core {
+declare module PIXI.spine.core {
     class SwirlEffect implements VertexEffect {
         static interpolation: PowOut;
         centerX: number;
