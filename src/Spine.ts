@@ -355,7 +355,7 @@ namespace pixi_spine {
                         slotContainer.parent = this;
                     }
                 }
-                if (slot.currentGraphics) {
+                if (slot.currentGraphics && slot.attachment) {
                     clippingContainer = slot.clippingContainer;
                     clippingAttachment = slot.attachment as core.ClippingAttachment;
                     clippingContainer.children.length = 0;
