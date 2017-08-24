@@ -6924,7 +6924,7 @@ var pixi_spine;
                         slotContainer.parent = this;
                     }
                 }
-                if (slot.currentGraphics) {
+                if (slot.currentGraphics && slot.attachment) {
                     clippingContainer = slot.clippingContainer;
                     clippingAttachment = slot.attachment;
                     clippingContainer.children.length = 0;
