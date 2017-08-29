@@ -48,7 +48,8 @@ Read our [docs](examples/index.md).
 
 ## Using webpack or browserify?
 
-Check out examples at our [sandbox](sandbox/README.md).
+Our library is tested for integration with webpack and browserify,
+check [our travis config](.travis.yml) and [checkpack](http://github.com/cursedcoder/checkpack).
 
 ## Typescript
 
