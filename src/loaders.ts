@@ -1,10 +1,6 @@
 namespace pixi_spine {
     function isJson(resource: PIXI.loaders.Resource) {
-        var TYPE = (PIXI.loaders.Resource as any).TYPE;
-        if (TYPE) {
-            return (resource as any).type === TYPE.JSON
-        }
-        return resource.isJson;
+        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
     }
 
     export function atlasParser() {

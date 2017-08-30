@@ -6,7 +6,8 @@
   "contributors": [
     "Chad Engler <chad@pantherdev.com>",
     "Richard Davey <rdavey@gmail.com>",
-    "Ivan Popelyshev <ivan.popelyshev@gmail.com>"
+    "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
+    "Yevhenii Huselietov <d46k16@gmail.com>"
   ],
   "main": "./bin/pixi-spine.js",
   "types": "./bin/pixi-spine.d.ts",
@@ -24,17 +25,13 @@
     "prestart": "yarn cleanup",
     "start": "parallelshell \"yarn watch\"",
     "watch": "tsc -w",
-    "prebuild": "yarn cleanup && yarn concat",
-    "postbuild": "yarn patch-dts && yarn shx -- rm compilation.ts",
-    "build": "tsc -p tsconfig.compilation.json",
+    "prebuild": "yarn cleanup",
+    "build": "tsc && scripts/make_dts.js",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
-    "patch-dts": "node scripts/patch-dts.js",
-    "concat": "node scripts/concat.js",
-    "sandbox:browserify": "yarn shx -- cp bin/pixi-spine.js sandbox/build/browserify/pixi-spine.js && yarn browserify -- sandbox/src/app.ts -p [ tsify --noImplicitAny ] -o sandbox/build/browserify/pixi-spine.bundle.js",
-    "sandbox:webpack": "yarn webpack -- --config sandbox/webpack.config.js --progress --profile --colors --display-error-details --display-cached",
-    "sandbox:vanillajs": "yarn shx -- cp bin/pixi-spine.js sandbox/build/vanillajs/pixi-spine.js && tsc -p sandbox/tsconfig.vanilla.json",
-    "sandbox:all": "yarn build && yarn sandbox:browserify && yarn sandbox:webpack && yarn sandbox:vanillajs",
-    "sandbox:www": "yarn static-html-server -- -p 9995 -r sandbox/build"
+    "check:browserify": "yarn checkpack -- browserify -e test/checkpack.ts",
+    "check:webpack": "yarn checkpack -- webpack -e test/checkpack.ts",
+    "check:vanillajs": "yarn checkpack -- vanillajs -e test/checkpack.ts",
+    "check:all": "yarn build && yarn check:browserify && yarn check:webpack && yarn check:vanillajs"
   },
   "files": [
     "bin/",
@@ -44,27 +41,20 @@
     "README.md"
   ],
   "devDependencies": {
-    "awesome-typescript-loader": "~3.0.0-beta.18",
-    "browserify": "~14.0.0",
-    "concat-files": "~0.1.1",
+    "checkpack": "~0.0.1",
     "del": "~2.2.0",
     "glob": "~7.1.1",
     "jaguarjs-jsdoc": "~1.0.1",
     "jsdoc": "~3.4.0",
     "mkdirp": "~0.5.1",
     "parallelshell": "~2.0.0",
-    "pixi.js": "~4.3.4",
+    "pixi.js": "~4.5",
     "rimraf": "~2.5.3",
-    "script-loader": "~0.7.0",
-    "shx": "^0.2.2",
-    "source-map-loader": "~0.1.6",
-    "static-html-server": "~0.1.2",
+    "tmp": "^0.0.33",
     "ts-helpers": "~1.1.2",
-    "tsify": "~3.0.1",
-    "typescript": "~2.2",
-    "webpack": "~1.14"
+    "typescript": "~2.4"
   },
   "dependencies": {
-    "@types/pixi.js": "4.3.1"
+    "@types/pixi.js": "^4.5.3"
   }
 }

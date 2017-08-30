@@ -1,9 +1,8 @@
 language: node_js
 
 node_js:
-  - "6"
-  - "6.1"
-  - "5.11"
+  - "7.10"
+  - "8.4"
 
 cache:
   yarn: true
@@ -16,6 +15,6 @@ install:
 
 script:
   - yarn build
-  - yarn sandbox:vanillajs
-  - yarn sandbox:browserify
-  - yarn sandbox:webpack -- --bail
+  - yarn checkpack -- vanillajs -e test/checkpack.ts --validate
+  - yarn checkpack -- browserify -e test/checkpack.ts --validate
+  - yarn checkpack -- webpack -e test/checkpack.ts --validate
