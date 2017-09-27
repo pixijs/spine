@@ -407,6 +407,7 @@ namespace pixi_spine {
         private setMeshRegion(attachment: core.MeshAttachment, mesh: SpineMesh, region: core.TextureRegion) {
             mesh.region = region;
             mesh.texture = region.texture;
+            (region.texture as any)._updateUvs();
             attachment.updateUVs(region, mesh.uvs);
             // if (PIXI.VERSION[0] !== '3') {
             // PIXI version 4
