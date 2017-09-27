@@ -7007,6 +7007,7 @@ var pixi_spine;
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
             mesh.region = region;
             mesh.texture = region.texture;
+            region.texture._updateUvs();
             attachment.updateUVs(region, mesh.uvs);
             mesh.dirty++;
         };
