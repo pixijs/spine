@@ -99,7 +99,7 @@ namespace pixi_spine {
             for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 let slot = this.skeleton.slots[i];
                 let attachment: any = slot.attachment;
-                let slotContainer = new PIXI.Container();
+                let slotContainer = this.newContainer();
                 this.slotContainers.push(slotContainer);
                 this.addChild(slotContainer);
                 this.tempClipContainers.push(null);
@@ -194,6 +194,8 @@ namespace pixi_spine {
             let g0 = this.tintRgb[1];
             let b0 = this.tintRgb[2];
 
+            let thack = PIXI.TransformBase && this.transformHack();
+
             for (let i = 0, n = slots.length; i < n; i++) {
                 let slot = slots[i];
                 let attachment = slot.attachment;
@@ -245,7 +247,7 @@ namespace pixi_spine {
                             transAny.isStatic = true;
                             transAny.operMode = 0;
                         } else {
-                            if (PIXI.TransformBase) {
+                            if (thack) {
                                 if (transAny.position) {
                                     transform = new PIXI.TransformBase();
                                     slotContainer.transform = transform;
@@ -371,7 +373,7 @@ namespace pixi_spine {
                     if (clippingContainer) {
                         let c = this.tempClipContainers[i];
                         if (!c) {
-                            c = this.tempClipContainers[i] = new PIXI.Container();
+                            c = this.tempClipContainers[i] = this.newContainer();
                             c.visible = false;
                         }
                         this.children[i] = c;
@@ -453,7 +455,7 @@ namespace pixi_spine {
                 slot.tempRegion = null;
             }
             let texture = region.texture;
-            let sprite = new SpineSprite(texture);
+            let sprite = this.newSprite(texture);
             sprite.rotation = attachment.rotation * core.MathUtils.degRad;
             sprite.anchor.x = 0.5;
             sprite.anchor.y = 0.5;
@@ -482,7 +484,7 @@ namespace pixi_spine {
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            let strip = new SpineMesh(
+            let strip = this.newMesh(
                 region.texture,
                 new Float32Array(attachment.regionUVs.length),
                 new Float32Array(attachment.regionUVs.length),
@@ -504,14 +506,14 @@ namespace pixi_spine {
         static clippingPolygon: Array<number> = [];
 
         createGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
-            let graphics = new PIXI.Graphics();
+            let graphics = this.newGraphics();
             let poly = new PIXI.Polygon([]);
             graphics.clear();
             graphics.beginFill(0xffffff, 1);
             graphics.drawPolygon(poly as any);
             graphics.renderable = false;
             slot.currentGraphics = graphics;
-            slot.clippingContainer = new PIXI.Container();
+            slot.clippingContainer = this.newContainer();
             slot.clippingContainer.mask = slot.currentGraphics;
 
             return graphics;
@@ -570,12 +572,33 @@ namespace pixi_spine {
          * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
          * @returns {boolean} Success flag
          */
-        hackTextureBySlotName = function (slotName: string, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
+        hackTextureBySlotName(slotName: string, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
             let index = this.skeleton.findSlotIndex(slotName);
             if (index == -1) {
                 return false;
             }
             return this.hackTextureBySlotIndex(index, texture, size);
+        }
+
+        //those methods can be overriden to spawn different classes
+        newContainer() {
+            return new PIXI.Container();
+        }
+
+        newSprite(tex: PIXI.Texture) {
+            return new SpineSprite(tex);
+        }
+
+        newGraphics() {
+            return new PIXI.Graphics();
+        }
+
+        newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
+            return new SpineMesh(texture, vertices, uvs, indices, drawMode);
+        }
+
+        transformHack() {
+            return true;
         }
     }
 

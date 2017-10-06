@@ -1257,6 +1257,11 @@ declare module PIXI.spine {
         createGraphics(slot: core.Slot, clip: core.ClippingAttachment): PIXI.Graphics;
         updateGraphics(slot: core.Slot, clip: core.ClippingAttachment): void;
         hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
-        hackTextureBySlotName: (slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle) => any;
+        hackTextureBySlotName(slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
+        newContainer(): PIXI.Container;
+        newSprite(tex: PIXI.Texture): SpineSprite;
+        newGraphics(): PIXI.Graphics;
+        newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
+        transformHack(): boolean;
     }
 }

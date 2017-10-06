@@ -6736,15 +6736,6 @@ var pixi_spine;
         __extends(Spine, _super);
         function Spine(spineData) {
             var _this = _super.call(this) || this;
-            _this.hackTextureBySlotName = function (slotName, texture, size) {
-                if (texture === void 0) { texture = null; }
-                if (size === void 0) { size = null; }
-                var index = this.skeleton.findSlotIndex(slotName);
-                if (index == -1) {
-                    return false;
-                }
-                return this.hackTextureBySlotIndex(index, texture, size);
-            };
             if (!spineData) {
                 throw new Error('The spineData param is required.');
             }
@@ -6761,7 +6752,7 @@ var pixi_spine;
             for (var i = 0, n = _this.skeleton.slots.length; i < n; i++) {
                 var slot = _this.skeleton.slots[i];
                 var attachment = slot.attachment;
-                var slotContainer = new PIXI.Container();
+                var slotContainer = _this.newContainer();
                 _this.slotContainers.push(slotContainer);
                 _this.addChild(slotContainer);
                 _this.tempClipContainers.push(null);
@@ -6819,6 +6810,7 @@ var pixi_spine;
             var r0 = this.tintRgb[0];
             var g0 = this.tintRgb[1];
             var b0 = this.tintRgb[2];
+            var thack = PIXI.TransformBase && this.transformHack();
             for (var i = 0, n = slots.length; i < n; i++) {
                 var slot = slots[i];
                 var attachment = slot.attachment;
@@ -6866,7 +6858,7 @@ var pixi_spine;
                             transAny.operMode = 0;
                         }
                         else {
-                            if (PIXI.TransformBase) {
+                            if (thack) {
                                 if (transAny.position) {
                                     transform = new PIXI.TransformBase();
                                     slotContainer.transform = transform;
@@ -6973,7 +6965,7 @@ var pixi_spine;
                     if (clippingContainer) {
                         var c = this.tempClipContainers[i];
                         if (!c) {
-                            c = this.tempClipContainers[i] = new PIXI.Container();
+                            c = this.tempClipContainers[i] = this.newContainer();
                             c.visible = false;
                         }
                         this.children[i] = c;
@@ -7032,7 +7024,7 @@ var pixi_spine;
                 slot.tempRegion = null;
             }
             var texture = region.texture;
-            var sprite = new SpineSprite(texture);
+            var sprite = this.newSprite(texture);
             sprite.rotation = attachment.rotation * pixi_spine.core.MathUtils.degRad;
             sprite.anchor.x = 0.5;
             sprite.anchor.y = 0.5;
@@ -7053,7 +7045,7 @@ var pixi_spine;
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            var strip = new SpineMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
+            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
             strip.canvasPadding = 1.5;
             strip.alpha = attachment.color.a;
             strip.region = attachment.region;
@@ -7064,14 +7056,14 @@ var pixi_spine;
         };
         ;
         Spine.prototype.createGraphics = function (slot, clip) {
-            var graphics = new PIXI.Graphics();
+            var graphics = this.newGraphics();
             var poly = new PIXI.Polygon([]);
             graphics.clear();
             graphics.beginFill(0xffffff, 1);
             graphics.drawPolygon(poly);
             graphics.renderable = false;
             slot.currentGraphics = graphics;
-            slot.clippingContainer = new PIXI.Container();
+            slot.clippingContainer = this.newContainer();
             slot.clippingContainer.mask = slot.currentGraphics;
             return graphics;
         };
@@ -7108,6 +7100,30 @@ var pixi_spine;
                 slot.tempRegion = region;
                 slot.tempAttachment = attachment;
             }
+            return true;
+        };
+        Spine.prototype.hackTextureBySlotName = function (slotName, texture, size) {
+            if (texture === void 0) { texture = null; }
+            if (size === void 0) { size = null; }
+            var index = this.skeleton.findSlotIndex(slotName);
+            if (index == -1) {
+                return false;
+            }
+            return this.hackTextureBySlotIndex(index, texture, size);
+        };
+        Spine.prototype.newContainer = function () {
+            return new PIXI.Container();
+        };
+        Spine.prototype.newSprite = function (tex) {
+            return new SpineSprite(tex);
+        };
+        Spine.prototype.newGraphics = function () {
+            return new PIXI.Graphics();
+        };
+        Spine.prototype.newMesh = function (texture, vertices, uvs, indices, drawMode) {
+            return new SpineMesh(texture, vertices, uvs, indices, drawMode);
+        };
+        Spine.prototype.transformHack = function () {
             return true;
         };
         Spine.globalAutoUpdate = true;
