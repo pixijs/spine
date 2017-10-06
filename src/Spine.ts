@@ -190,11 +190,18 @@ namespace pixi_spine {
 
             let slots = this.skeleton.slots;
 
-            let r0 = this.tintRgb[0];
-            let g0 = this.tintRgb[1];
-            let b0 = this.tintRgb[2];
 
-            let thack = PIXI.TransformBase && this.transformHack();
+            // in case pixi has double tint
+            let globalClr = (this as any).color;
+            let light: ArrayLike<number> = null, dark: ArrayLike<number> = null;
+            if (globalClr) {
+                light = globalClr.light;
+                dark = globalClr.dark;
+            } else {
+                light = this.tintRgb;
+            }
+
+            let thack = PIXI.TransformBase && (this.transformHack() == 1);
 
             for (let i = 0, n = slots.length; i < n; i++) {
                 let slot = slots[i];
@@ -205,6 +212,8 @@ namespace pixi_spine {
                     slotContainer.visible = false;
                     continue;
                 }
+
+                let spriteColor: any = null;
 
                 let attColor = (attachment as any).color;
                 if (attachment instanceof core.RegionAttachment) {
@@ -270,10 +279,15 @@ namespace pixi_spine {
                         slotContainer.localTransform = lt;
                         (slotContainer as any).displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                     }
-                    tempRgb[0] = r0 * slot.color.r * attColor.r;
-                    tempRgb[1] = g0 * slot.color.g * attColor.g;
-                    tempRgb[2] = b0 * slot.color.b * attColor.b;
-                    slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
+                    if (slot.currentSprite.color) {
+                        //YAY! double - tint!
+                        spriteColor = slot.currentSprite.color;
+                    } else {
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
+                    }
                     slot.currentSprite.blendMode = slot.blendMode;
                 }
                 else if (attachment instanceof core.MeshAttachment) {
@@ -311,14 +325,16 @@ namespace pixi_spine {
                         slot.currentMeshName = meshName;
                     }
                     (attachment as core.VertexAttachment).computeWorldVerticesOld(slot, slot.currentMesh.vertices);
-                    if (PIXI.VERSION[0] !== '3') {
+                    if (slot.currentMesh.color) {
+                        spriteColor = slot.currentMesh.color;
+                    } else if (PIXI.VERSION[0] !== '3') {
                         // PIXI version 4
                         // slot.currentMesh.dirty++;
                         //only for PIXI v4
                         let tintRgb = slot.currentMesh.tintRgb;
-                        tintRgb[0] = r0 * slot.color.r * attColor.r;
-                        tintRgb[1] = g0 * slot.color.g * attColor.g;
-                        tintRgb[2] = b0 * slot.color.b * attColor.b;
+                        tintRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tintRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tintRgb[2] = light[2] * slot.color.b * attColor.b;
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                 }
@@ -336,9 +352,36 @@ namespace pixi_spine {
                 }
                 slotContainer.visible = true;
 
+                // pixi has double tint
+                if (spriteColor) {
+                    let r0 = slot.color.r * attColor.r;
+                    let g0 = slot.color.g * attColor.g;
+                    let b0 = slot.color.b * attColor.b;
+
+                    //YAY! double-tint!
+                    spriteColor.setLight(
+                        light[0] * r0 + dark[0] * (1.0 - r0),
+                        light[1] * g0 + dark[1] * (1.0 - g0),
+                        light[2] * b0 + dark[2] * (1.0 - b0),
+                    );
+                    if (slot.darkColor) {
+                        r0 = slot.darkColor[0];
+                        g0 = slot.darkColor[1];
+                        b0 = slot.darkColor[2];
+                    } else {
+                        r0 = 0.0;
+                        g0 = 0.0;
+                        b0 = 0.0;
+                    }
+                    spriteColor.setDark(
+                        light[0] * r0 + dark[0] * (1 - r0),
+                        light[1] * g0 + dark[1] * (1 - g0),
+                        light[2] * b0 + dark[2] * (1 - b0),
+                    );
+                }
+
                 slotContainer.alpha = slot.color.a;
             }
-
 
             //== this is clipping implementation ===
             //TODO: remove parent hacks when pixi masks allow it
@@ -598,7 +641,7 @@ namespace pixi_spine {
         }
 
         transformHack() {
-            return true;
+            return 1;
         }
     }
 
