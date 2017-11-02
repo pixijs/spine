@@ -365,9 +365,9 @@ namespace pixi_spine {
                         light[2] * b0 + dark[2] * (1.0 - b0),
                     );
                     if (slot.darkColor) {
-                        r0 = slot.darkColor[0];
-                        g0 = slot.darkColor[1];
-                        b0 = slot.darkColor[2];
+                        r0 = slot.darkColor.r;
+                        g0 = slot.darkColor.g;
+                        b0 = slot.darkColor.b;
                     } else {
                         r0 = 0.0;
                         g0 = 0.0;
