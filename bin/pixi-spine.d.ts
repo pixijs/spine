@@ -1228,7 +1228,6 @@ interface Math {
 declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion;
-        constructor(tex: PIXI.Texture);
     }
     class SpineMesh extends PIXI.mesh.Mesh {
         region: core.TextureRegion;
@@ -1262,6 +1261,6 @@ declare module PIXI.spine {
         newSprite(tex: PIXI.Texture): SpineSprite;
         newGraphics(): PIXI.Graphics;
         newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
-        transformHack(): boolean;
+        transformHack(): number;
     }
 }

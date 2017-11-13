@@ -7,11 +7,7 @@ namespace pixi_spine {
     let tempRgb = [0, 0, 0];
 
     export class SpineSprite extends PIXI.Sprite {
-        region: core.TextureRegion;
-
-        constructor(tex: PIXI.Texture) {
-            super(tex);
-        }
+        region: core.TextureRegion = null;
     }
 
     export class SpineMesh extends PIXI.mesh.Mesh {

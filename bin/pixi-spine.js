@@ -6718,8 +6718,10 @@ var pixi_spine;
     var tempRgb = [0, 0, 0];
     var SpineSprite = (function (_super) {
         __extends(SpineSprite, _super);
-        function SpineSprite(tex) {
-            return _super.call(this, tex) || this;
+        function SpineSprite() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.region = null;
+            return _this;
         }
         return SpineSprite;
     }(PIXI.Sprite));
@@ -6807,10 +6809,16 @@ var pixi_spine;
             this.state.apply(this.skeleton);
             this.skeleton.updateWorldTransform();
             var slots = this.skeleton.slots;
-            var r0 = this.tintRgb[0];
-            var g0 = this.tintRgb[1];
-            var b0 = this.tintRgb[2];
-            var thack = PIXI.TransformBase && this.transformHack();
+            var globalClr = this.color;
+            var light = null, dark = null;
+            if (globalClr) {
+                light = globalClr.light;
+                dark = globalClr.dark;
+            }
+            else {
+                light = this.tintRgb;
+            }
+            var thack = PIXI.TransformBase && (this.transformHack() == 1);
             for (var i = 0, n = slots.length; i < n; i++) {
                 var slot = slots[i];
                 var attachment = slot.attachment;
@@ -6819,6 +6827,7 @@ var pixi_spine;
                     slotContainer.visible = false;
                     continue;
                 }
+                var spriteColor = null;
                 var attColor = attachment.color;
                 if (attachment instanceof pixi_spine.core.RegionAttachment) {
                     var region = attachment.region;
@@ -6879,10 +6888,15 @@ var pixi_spine;
                         slotContainer.localTransform = lt;
                         slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                     }
-                    tempRgb[0] = r0 * slot.color.r * attColor.r;
-                    tempRgb[1] = g0 * slot.color.g * attColor.g;
-                    tempRgb[2] = b0 * slot.color.b * attColor.b;
-                    slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
+                    if (slot.currentSprite.color) {
+                        spriteColor = slot.currentSprite.color;
+                    }
+                    else {
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentSprite.tint = PIXI.utils.rgb2hex(tempRgb);
+                    }
                     slot.currentSprite.blendMode = slot.blendMode;
                 }
                 else if (attachment instanceof pixi_spine.core.MeshAttachment) {
@@ -6915,11 +6929,14 @@ var pixi_spine;
                         slot.currentMeshName = meshName;
                     }
                     attachment.computeWorldVerticesOld(slot, slot.currentMesh.vertices);
-                    if (PIXI.VERSION[0] !== '3') {
+                    if (slot.currentMesh.color) {
+                        spriteColor = slot.currentMesh.color;
+                    }
+                    else if (PIXI.VERSION[0] !== '3') {
                         var tintRgb = slot.currentMesh.tintRgb;
-                        tintRgb[0] = r0 * slot.color.r * attColor.r;
-                        tintRgb[1] = g0 * slot.color.g * attColor.g;
-                        tintRgb[2] = b0 * slot.color.b * attColor.b;
+                        tintRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tintRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tintRgb[2] = light[2] * slot.color.b * attColor.b;
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                 }
@@ -6936,6 +6953,23 @@ var pixi_spine;
                     continue;
                 }
                 slotContainer.visible = true;
+                if (spriteColor) {
+                    var r0 = slot.color.r * attColor.r;
+                    var g0 = slot.color.g * attColor.g;
+                    var b0 = slot.color.b * attColor.b;
+                    spriteColor.setLight(light[0] * r0 + dark[0] * (1.0 - r0), light[1] * g0 + dark[1] * (1.0 - g0), light[2] * b0 + dark[2] * (1.0 - b0));
+                    if (slot.darkColor) {
+                        r0 = slot.darkColor.r;
+                        g0 = slot.darkColor.g;
+                        b0 = slot.darkColor.b;
+                    }
+                    else {
+                        r0 = 0.0;
+                        g0 = 0.0;
+                        b0 = 0.0;
+                    }
+                    spriteColor.setDark(light[0] * r0 + dark[0] * (1 - r0), light[1] * g0 + dark[1] * (1 - g0), light[2] * b0 + dark[2] * (1 - b0));
+                }
                 slotContainer.alpha = slot.color.a;
             }
             var drawOrder = this.skeleton.drawOrder;
@@ -7124,7 +7158,7 @@ var pixi_spine;
             return new SpineMesh(texture, vertices, uvs, indices, drawMode);
         };
         Spine.prototype.transformHack = function () {
-            return true;
+            return 1;
         };
         Spine.globalAutoUpdate = true;
         Spine.clippingPolygon = [];
