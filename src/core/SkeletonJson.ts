@@ -426,7 +426,7 @@ namespace pixi_spine.core {
                             for (let i = 0; i < timelineMap.length; i++) {
                                 let valueMap = timelineMap[i];
                                 let color = new Color();
-                                color.setFromString(valueMap.color);
+                                color.setFromString(valueMap.color || "ffffffff");
                                 timeline.setFrame(frameIndex, valueMap.time, color.r, color.g, color.b, color.a);
                                 this.readCurve(valueMap, timeline, frameIndex);
                                 frameIndex++;
