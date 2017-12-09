@@ -4383,7 +4383,7 @@ var pixi_spine;
                                 for (var i = 0; i < timelineMap.length; i++) {
                                     var valueMap = timelineMap[i];
                                     var color = new core.Color();
-                                    color.setFromString(valueMap.color);
+                                    color.setFromString(valueMap.color || "ffffffff");
                                     timeline.setFrame(frameIndex, valueMap.time, color.r, color.g, color.b, color.a);
                                     this.readCurve(valueMap, timeline, frameIndex);
                                     frameIndex++;
