@@ -1,5 +1,6 @@
 /// <reference types="pixi.js" />
 /// <reference path="polyfills.ts" />
+/// <reference path="core/Bone.ts" />
 namespace pixi_spine {
     /* Esoteric Software SPINE wrapper for pixi.js */
     core.Bone.yDown = true;
