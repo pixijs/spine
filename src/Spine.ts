@@ -404,9 +404,7 @@ namespace pixi_spine {
                     this.children[i] = slotContainer;
 
                     if (clippingAttachment.endSlot == slot.data) {
-                        clippingContainer.renderable = false;
-                        clippingContainer = null;
-                        clippingAttachment = null;
+                        clippingAttachment.endSlot = null;
                     }
 
                 } else {
