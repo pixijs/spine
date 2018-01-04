@@ -6990,9 +6990,7 @@ var pixi_spine;
                     clippingContainer.children.length = 0;
                     this.children[i] = slotContainer;
                     if (clippingAttachment.endSlot == slot.data) {
-                        clippingContainer.renderable = false;
-                        clippingContainer = null;
-                        clippingAttachment = null;
+                        clippingAttachment.endSlot = null;
                     }
                 }
                 else {
