@@ -37,6 +37,11 @@ namespace pixi_spine {
              * have the same name
              */
             let atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + metadataAtlasSuffix;
+            // use atlas path as a params. (no need to use same atlas file name with json file name)
+            if (resource.metadata && resource.metadata.spineAtlasFile) {
+                atlasPath = resource.metadata.spineAtlasFile;
+            }
+            
             //remove the baseUrl
             atlasPath = atlasPath.replace(this.baseUrl, '');
 
