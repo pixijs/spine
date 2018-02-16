@@ -44,6 +44,7 @@ namespace pixi_spine {
         state: core.AnimationState;
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
+        localDelayLimit: number;
 
         constructor(spineData: core.SkeletonData) {
             super();
@@ -182,8 +183,8 @@ namespace pixi_spine {
          * @return {number}
          */
         get delayLimit() : number {
-            return typeof this.spineData.delayLimit !== "undefined"?
-                this.spineData.delayLimit: Spine.globalDelayLimit;
+            return typeof this.localDelayLimit !== "undefined"?
+                this.localDelayLimit: Spine.globalDelayLimit;
         }
 
         /**
