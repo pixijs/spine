@@ -178,13 +178,16 @@ namespace pixi_spine {
         }
 
         /**
-         * Limit value for the update dt, that is fetched from the spineData,
-         * if not set - used default value from Spine.globalDelayLimit
-         * @return {number}
+         * Limit value for the update dt with Spine.globalDelayLimit
+         * that can be overridden with localDelayLimit
+         * @return {number} - Maximum processed dt value for the update
          */
         get delayLimit() : number {
-            return typeof this.localDelayLimit !== "undefined"?
+            let limit = typeof this.localDelayLimit !== "undefined"?
                 this.localDelayLimit: Spine.globalDelayLimit;
+
+            // If limit is 0, this means there is no limit for the delay
+            return limit || Number.MAX_VALUE
         }
 
         /**
@@ -194,7 +197,7 @@ namespace pixi_spine {
          */
         update(dt: number) {
             // Limit delta value to avoid animation jumps
-            let delayLimit = this.delayLimit || Number.MAX_VALUE;
+            let delayLimit = this.delayLimit;
             if (dt > delayLimit) dt = delayLimit;
 
             this.state.update(dt);
