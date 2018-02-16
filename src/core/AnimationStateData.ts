@@ -70,6 +70,5 @@ namespace pixi_spine.core {
             let value = this.animationToMixTime[key];
             return value === undefined ? this.defaultMix : value;
         }
-
     }
 }
