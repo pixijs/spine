@@ -181,6 +181,10 @@ namespace pixi_spine {
          * @param dt {number} Delta time. Time by which the animation should be updated
          */
         update(dt: number) {
+            // Limit delta value to avoid animation jumps
+            let delayLimit = this.spineData.delayLimit || Number.MAX_VALUE;
+            if (dt > delayLimit) dt = delayLimit;
+
             this.state.update(dt);
             this.state.apply(this.skeleton);
             this.skeleton.updateWorldTransform();

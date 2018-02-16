@@ -71,8 +71,5 @@ namespace pixi_spine.core {
             return value === undefined ? this.defaultMix : value;
         }
 
-        getDelayLimit() {
-            return this.skeletonData.delayLimit;
-        }
     }
 }

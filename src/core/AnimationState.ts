@@ -53,10 +53,6 @@ namespace pixi_spine.core {
         }
 
         update (delta: number) {
-            // Limit delta value to avoid animation jumps
-            let delayLimit = this.data.getDelayLimit() || Number.MAX_VALUE;
-            if (delta > delayLimit) delta = delayLimit;
-
             delta *= this.timeScale;
             let tracks = this.tracks;
             for (let i = 0, n = tracks.length; i < n; i++) {
