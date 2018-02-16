@@ -48,7 +48,7 @@ namespace pixi_spine.core {
 
         // Nonessential
         fps = 0;
-        delayLimit = 0;
+        delayLimit: number;
         imagesPath: string;
 
         findBone(boneName: string) {

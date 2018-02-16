@@ -35,6 +35,7 @@ namespace pixi_spine {
      */
     export class Spine extends PIXI.Container {
         static globalAutoUpdate: boolean = true;
+        static globalDelayLimit: number  = 0;
 
         tintRgb: ArrayLike<number>;
         spineData: core.SkeletonData;
@@ -176,13 +177,23 @@ namespace pixi_spine {
         }
 
         /**
+         * Limit value for the update dt, that is fetched from the spineData,
+         * if not set - used default value from Spine.globalDelayLimit
+         * @return {number}
+         */
+        get delayLimit() : number {
+            return typeof this.spineData.delayLimit !== "undefined"?
+                this.spineData.delayLimit: Spine.globalDelayLimit;
+        }
+
+        /**
          * Update the spine skeleton and its animations by delta time (dt)
          *
          * @param dt {number} Delta time. Time by which the animation should be updated
          */
         update(dt: number) {
             // Limit delta value to avoid animation jumps
-            let delayLimit = this.spineData.delayLimit || Number.MAX_VALUE;
+            let delayLimit = this.delayLimit || Number.MAX_VALUE;
             if (dt > delayLimit) dt = delayLimit;
 
             this.state.update(dt);
