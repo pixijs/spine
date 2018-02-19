@@ -255,7 +255,10 @@ namespace pixi_spine {
                         } else {
                             if (thack) {
                                 if (transAny.position) {
+                                    //TODO: refactor this shit
                                     transform = new PIXI.TransformBase();
+                                    (transform as any)._parentID = -1;
+                                    (transform as any)._worldID = (slotContainer.transform as any)._worldID;
                                     slotContainer.transform = transform;
                                 }
                                 lt = transform.localTransform;
@@ -295,7 +298,11 @@ namespace pixi_spine {
                         slot.currentSpriteName = undefined;
 
                         if (slotContainer.transform) {
-                            slotContainer.transform = new PIXI.TransformStatic();
+                            //TODO: refactor this shit
+                            const transform = new PIXI.TransformStatic();
+                            (transform as any)._parentID = -1;
+                            (transform as any)._worldID = (slotContainer.transform as any)._worldID;
+                            slotContainer.transform = transform;
                         }
                         else {
                             slotContainer.localTransform = new PIXI.Matrix();
