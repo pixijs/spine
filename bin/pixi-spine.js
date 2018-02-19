@@ -6611,6 +6611,10 @@ var pixi_spine;
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
 (function (pixi_spine) {
+    PIXI.spine = pixi_spine;
+})(pixi_spine || (pixi_spine = {}));
+var pixi_spine;
+(function (pixi_spine) {
     function isJson(resource) {
         return resource.type === PIXI.loaders.Resource.TYPE.JSON;
     }
@@ -6636,6 +6640,9 @@ var pixi_spine;
             }
             var metadataAtlasSuffix = metadata.spineAtlasSuffix || '.atlas';
             var atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + metadataAtlasSuffix;
+            if (resource.metadata && resource.metadata.spineAtlasFile) {
+                atlasPath = resource.metadata.spineAtlasFile;
+            }
             atlasPath = atlasPath.replace(this.baseUrl, '');
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
@@ -6870,6 +6877,8 @@ var pixi_spine;
                             if (thack) {
                                 if (transAny.position) {
                                     transform = new PIXI.TransformBase();
+                                    transform._parentID = -1;
+                                    transform._worldID = slotContainer.transform._worldID;
                                     slotContainer.transform = transform;
                                 }
                                 lt = transform.localTransform;
@@ -6905,7 +6914,10 @@ var pixi_spine;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
                         if (slotContainer.transform) {
-                            slotContainer.transform = new PIXI.TransformStatic();
+                            var transform = new PIXI.TransformStatic();
+                            transform._parentID = -1;
+                            transform._worldID = slotContainer.transform._worldID;
+                            slotContainer.transform = transform;
                         }
                         else {
                             slotContainer.localTransform = new PIXI.Matrix();
@@ -7177,5 +7189,4 @@ var pixi_spine;
         this._currentBounds = null;
     }
 })(pixi_spine || (pixi_spine = {}));
-PIXI.spine = pixi_spine;
 //# sourceMappingURL=pixi-spine.js.map
