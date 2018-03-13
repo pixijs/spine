@@ -65,18 +65,26 @@ namespace pixi_spine {
                 : metadata.imageLoader ? metadata.imageLoader(this, resource.name + '_atlas_page_', baseUrl, imageOptions)
                     : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
 
-            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: PIXI.loaders.Resource) {
-                new core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
-                    let spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
-                    }
-                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineAtlas = spineAtlas;
+            let createSkeletonWithRawAtlas = function (rawData: string){
+                new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
+						var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+						if (metadataSkeletonScale) {
+							spineJsonParser.scale = metadataSkeletonScale;
+						}
+						resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+						resource.spineAtlas = spineAtlas;
+						next();
+					});
 
-                    next();
-                });
-            });
+            }
+            if (resource.metadata && resource.metadata.atlasRawData) {
+				createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
+
+            } else {
+				this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
+                    createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+				});
+			}
         };
     }
 
