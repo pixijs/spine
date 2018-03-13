@@ -6661,8 +6661,8 @@ var pixi_spine;
                 : metadata.image ? staticImageLoader({ 'default': metadata.image })
                     : metadata.imageLoader ? metadata.imageLoader(this, resource.name + '_atlas_page_', baseUrl, imageOptions)
                         : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
-            this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
-                new pixi_spine.core.TextureAtlas(atlasResource.xhr.responseText, adapter, function (spineAtlas) {
+            var createSkeletonWithRawAtlas = function (rawData) {
+                new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
                     var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
                     if (metadataSkeletonScale) {
                         spineJsonParser.scale = metadataSkeletonScale;
@@ -6671,7 +6671,15 @@ var pixi_spine;
                     resource.spineAtlas = spineAtlas;
                     next();
                 });
-            });
+            };
+            if (resource.metadata && resource.metadata.atlasRawData) {
+                createSkeletonWithRawAtlas(resource.metadata.atlasRawData);
+            }
+            else {
+                this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
+                    createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+                });
+            }
         };
     }
     pixi_spine.atlasParser = atlasParser;
