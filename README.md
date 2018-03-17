@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/pixijs/pixi-spine.svg?branch=master)](https://travis-ci.org/pixijs/pixi-spine)
 
-Spine implementation for pixi v3 and pixi v4.
+Spine implementation for pixi v5.
 
 ## Usage
 

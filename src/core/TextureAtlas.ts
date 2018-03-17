@@ -127,7 +127,7 @@ namespace pixi_spine.core {
 
                         textureLoader(line, (texture: PIXI.BaseTexture) => {
                             page.baseTexture = texture;
-                            if (!texture.hasLoaded) {
+                            if (!texture.valid) {
                                 texture.width = page.width;
                                 texture.height = page.height;
                             }
@@ -202,7 +202,7 @@ namespace pixi_spine.core {
                         }
 
                         region.index = parseInt(reader.readValue());
-                        (region.texture as any)._updateUvs();
+                        region.texture.updateUvs();
 
                         this.regions.push(region);
                     }

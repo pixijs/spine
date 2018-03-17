@@ -11,7 +11,7 @@ namespace pixi_spine {
         region: core.TextureRegion = null;
     }
 
-    export class SpineMesh extends PIXI.mesh.Mesh {
+    export class SpineMesh extends PIXI.Mesh {
         region: core.TextureRegion;
 
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
@@ -198,7 +198,7 @@ namespace pixi_spine {
                 light = this.tintRgb;
             }
 
-            let thack = PIXI.TransformBase && (this.transformHack() == 1);
+            let thack = false;
 
             for (let i = 0, n = slots.length; i < n; i++) {
                 let slot = slots[i];
@@ -243,39 +243,11 @@ namespace pixi_spine {
                     if (slotContainer.transform) {
                         //TODO: refactor this thing, switch it on and off for container
                         let transform = slotContainer.transform;
-                        let transAny: any = transform;
-                        let lt: PIXI.Matrix = null;
-                        if (transAny.matrix2d) {
-                            //gameofbombs pixi fork, sorry for that, we really use it :)
-                            lt = transAny.matrix2d;
-                            transAny._dirtyVersion++;
-                            transAny.version = transAny._dirtyVersion;
-                            transAny.isStatic = true;
-                            transAny.operMode = 0;
-                        } else {
-                            if (thack) {
-                                if (transAny.position) {
-                                    //TODO: refactor this shit
-                                    transform = new PIXI.TransformBase();
-                                    (transform as any)._parentID = -1;
-                                    (transform as any)._worldID = (slotContainer.transform as any)._worldID;
-                                    slotContainer.transform = transform;
-                                }
-                                lt = transform.localTransform;
-                            } else {
-                                // if (transAny.autoUpdateLocal) {
-                                //     transAny.autoUpdateLocal = false;
-                                // }
-                                transAny.setFromMatrix(slot.bone.matrix);
-                            }
-                        }
-                        if (lt) {
-                            slot.bone.matrix.copy(lt);
-                        }
+                        transform.setFromMatrix(slot.bone.matrix);
                     } else {
                         //PIXI v3
                         let lt = slotContainer.localTransform || new PIXI.Matrix();
-                        slot.bone.matrix.copy(lt);
+                        slot.bone.matrix.copyTo(lt);
                         slotContainer.localTransform = lt;
                         (slotContainer as any).displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                     }
@@ -296,18 +268,6 @@ namespace pixi_spine {
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
-
-                        if (slotContainer.transform) {
-                            //TODO: refactor this shit
-                            const transform = new PIXI.TransformStatic();
-                            (transform as any)._parentID = -1;
-                            (transform as any)._worldID = (slotContainer.transform as any)._worldID;
-                            slotContainer.transform = transform;
-                        }
-                        else {
-                            slotContainer.localTransform = new PIXI.Matrix();
-                            (slotContainer as any).displayObjectUpdateTransform = PIXI.DisplayObject.prototype.updateTransform;
-                        }
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         let meshName = attachment.name;
@@ -454,7 +414,7 @@ namespace pixi_spine {
         private setMeshRegion(attachment: core.MeshAttachment, mesh: SpineMesh, region: core.TextureRegion) {
             mesh.region = region;
             mesh.texture = region.texture;
-            (region.texture as any)._updateUvs();
+            region.texture.updateUvs();
             attachment.updateUVs(region, mesh.uvs);
             // if (PIXI.VERSION[0] !== '3') {
             // PIXI version 4
@@ -534,9 +494,7 @@ namespace pixi_spine {
                 new Float32Array(attachment.regionUVs.length),
                 new Float32Array(attachment.regionUVs.length),
                 new Uint16Array(attachment.triangles),
-                PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
-
-            strip.canvasPadding = 1.5;
+                PIXI.Mesh.DRAW_MODES.TRIANGLES);
 
             strip.alpha = attachment.color.a;
 

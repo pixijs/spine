@@ -1,10 +1,10 @@
 namespace pixi_spine {
-    function isJson(resource: PIXI.loaders.Resource) {
-        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
+    function isJson(resource: PIXI.LoaderResource) {
+        return resource.type === PIXI.LoaderResource.TYPE.JSON;
     }
 
-    export function atlasParser() {
-        return function (resource: PIXI.loaders.Resource, next: () => any) {
+    export class AtlasParser {
+        static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
             // skip if no data, its not json, or it isn't atlas data
             if (!resource.data ||
                 !isJson(resource) ||
@@ -47,7 +47,7 @@ namespace pixi_spine {
 
             const atlasOptions = {
                 crossOrigin: resource.crossOrigin,
-                xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
+                xhrType: PIXI.LoaderResource.XHR_RESPONSE_TYPE.TEXT,
                 metadata: metadata.spineMetadata || null,
                 parentResource: resource
             };
@@ -85,7 +85,7 @@ namespace pixi_spine {
                     createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
                 });
             }
-        };
+        }
     }
 
     export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any) {
@@ -95,7 +95,7 @@ namespace pixi_spine {
         return function (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) {
             const name = namePrefix + line;
             const url = baseUrl + line;
-            loader.add(name, url, imageOptions, (resource: PIXI.loaders.Resource) => {
+            loader.add(name, url, imageOptions, (resource: PIXI.LoaderResource) => {
                 callback(resource.texture.baseTexture);
             });
         }
@@ -106,7 +106,7 @@ namespace pixi_spine {
             baseUrl += '/';
         }
         return function (line: any, callback: any) {
-            callback(PIXI.BaseTexture.fromImage(line, crossOrigin));
+            callback(PIXI.BaseTexture.from(line, { resourceOptions: { crossOrigin } }));
         }
     }
 
@@ -120,6 +120,5 @@ namespace pixi_spine {
         }
     }
 
-    PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
-    PIXI.loader.use(atlasParser());
+    PIXI.Loader.registerPlugin(AtlasParser);
 }
