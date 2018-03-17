@@ -4,6 +4,8 @@
 
 Spine implementation for pixi v3 and pixi v4.
 
+For v5 please see [next branch](https://github.com/pixijs/pixi-spine/tree/next) and use npm version `2.0.0-alpha` 
+
 ## Usage
 
 ### Prebuilt Files
