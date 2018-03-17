@@ -5142,7 +5142,7 @@ var pixi_spine;
                                 page.uWrap = page.vWrap = core.TextureWrap.Repeat;
                             textureLoader(line, function (texture) {
                                 page.baseTexture = texture;
-                                if (!texture.hasLoaded) {
+                                if (!texture.valid) {
                                     texture.width = page.width;
                                     texture.height = page.height;
                                 }
@@ -5200,7 +5200,7 @@ var pixi_spine;
                                 region.texture = new PIXI.Texture(region.page.baseTexture, frame2, crop, trim, rotate);
                             }
                             region.index = parseInt(reader.readValue());
-                            region.texture._updateUvs();
+                            region.texture.updateUvs();
                             _this.regions.push(region);
                         }
                     }
@@ -6616,10 +6616,12 @@ var pixi_spine;
 var pixi_spine;
 (function (pixi_spine) {
     function isJson(resource) {
-        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
+        return resource.type === PIXI.LoaderResource.TYPE.JSON;
     }
-    function atlasParser() {
-        return function (resource, next) {
+    var AtlasParser = (function () {
+        function AtlasParser() {
+        }
+        AtlasParser.use = function (resource, next) {
             if (!resource.data ||
                 !isJson(resource) ||
                 !resource.data.bones) {
@@ -6646,7 +6648,7 @@ var pixi_spine;
             atlasPath = atlasPath.replace(this.baseUrl, '');
             var atlasOptions = {
                 crossOrigin: resource.crossOrigin,
-                xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
+                xhrType: PIXI.LoaderResource.XHR_RESPONSE_TYPE.TEXT,
                 metadata: metadata.spineMetadata || null,
                 parentResource: resource
             };
@@ -6681,8 +6683,9 @@ var pixi_spine;
                 });
             }
         };
-    }
-    pixi_spine.atlasParser = atlasParser;
+        return AtlasParser;
+    }());
+    pixi_spine.AtlasParser = AtlasParser;
     function imageLoaderAdapter(loader, namePrefix, baseUrl, imageOptions) {
         if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
             baseUrl += '/';
@@ -6701,7 +6704,7 @@ var pixi_spine;
             baseUrl += '/';
         }
         return function (line, callback) {
-            callback(PIXI.BaseTexture.fromImage(line, crossOrigin));
+            callback(PIXI.BaseTexture.from(line, { resourceOptions: { crossOrigin: crossOrigin } }));
         };
     }
     pixi_spine.syncImageLoaderAdapter = syncImageLoaderAdapter;
@@ -6715,8 +6718,7 @@ var pixi_spine;
         };
     }
     pixi_spine.staticImageLoader = staticImageLoader;
-    PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
-    PIXI.loader.use(atlasParser());
+    PIXI.Loader.registerPlugin(AtlasParser);
 })(pixi_spine || (pixi_spine = {}));
 (function () {
     if (!Math.fround) {
@@ -6747,7 +6749,7 @@ var pixi_spine;
             return _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
         }
         return SpineMesh;
-    }(PIXI.mesh.Mesh));
+    }(PIXI.Mesh));
     pixi_spine.SpineMesh = SpineMesh;
     var Spine = (function (_super) {
         __extends(Spine, _super);
@@ -6833,7 +6835,7 @@ var pixi_spine;
             else {
                 light = this.tintRgb;
             }
-            var thack = PIXI.TransformBase && (this.transformHack() == 1);
+            var thack = false;
             for (var i = 0, n = slots.length; i < n; i++) {
                 var slot = slots[i];
                 var attachment = slot.attachment;
@@ -6872,36 +6874,11 @@ var pixi_spine;
                     }
                     if (slotContainer.transform) {
                         var transform = slotContainer.transform;
-                        var transAny = transform;
-                        var lt = null;
-                        if (transAny.matrix2d) {
-                            lt = transAny.matrix2d;
-                            transAny._dirtyVersion++;
-                            transAny.version = transAny._dirtyVersion;
-                            transAny.isStatic = true;
-                            transAny.operMode = 0;
-                        }
-                        else {
-                            if (thack) {
-                                if (transAny.position) {
-                                    transform = new PIXI.TransformBase();
-                                    transform._parentID = -1;
-                                    transform._worldID = slotContainer.transform._worldID;
-                                    slotContainer.transform = transform;
-                                }
-                                lt = transform.localTransform;
-                            }
-                            else {
-                                transAny.setFromMatrix(slot.bone.matrix);
-                            }
-                        }
-                        if (lt) {
-                            slot.bone.matrix.copy(lt);
-                        }
+                        transform.setFromMatrix(slot.bone.matrix);
                     }
                     else {
                         var lt = slotContainer.localTransform || new PIXI.Matrix();
-                        slot.bone.matrix.copy(lt);
+                        slot.bone.matrix.copyTo(lt);
                         slotContainer.localTransform = lt;
                         slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
                     }
@@ -6921,16 +6898,6 @@ var pixi_spine;
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
-                        if (slotContainer.transform) {
-                            var transform = new PIXI.TransformStatic();
-                            transform._parentID = -1;
-                            transform._worldID = slotContainer.transform._worldID;
-                            slotContainer.transform = transform;
-                        }
-                        else {
-                            slotContainer.localTransform = new PIXI.Matrix();
-                            slotContainer.displayObjectUpdateTransform = PIXI.DisplayObject.prototype.updateTransform;
-                        }
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         var meshName = attachment.name;
@@ -7051,7 +7018,7 @@ var pixi_spine;
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
             mesh.region = region;
             mesh.texture = region.texture;
-            region.texture._updateUvs();
+            region.texture.updateUvs();
             attachment.updateUVs(region, mesh.uvs);
             mesh.dirty++;
         };
@@ -7097,8 +7064,7 @@ var pixi_spine;
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
-            strip.canvasPadding = 1.5;
+            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.Mesh.DRAW_MODES.TRIANGLES);
             strip.alpha = attachment.color.a;
             strip.region = attachment.region;
             this.setMeshRegion(attachment, strip, region);

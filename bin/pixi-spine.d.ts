@@ -1,4 +1,3 @@
-/// <reference types="pixi.js" />
 declare module PIXI.spine.core {
     class Animation {
         name: string;
@@ -1217,7 +1216,9 @@ declare module PIXI.spine.core {
 declare module PIXI.spine {
 }
 declare module PIXI.spine {
-    function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
+    class AtlasParser {
+        static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): any;
+    }
     function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
     function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
     function staticImageLoader(pages: {
@@ -1231,7 +1232,7 @@ declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion;
     }
-    class SpineMesh extends PIXI.mesh.Mesh {
+    class SpineMesh extends PIXI.Mesh {
         region: core.TextureRegion;
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number);
     }
