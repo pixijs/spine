@@ -82,7 +82,7 @@ namespace pixi_spine {
 
             } else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
-                    createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+                    createSkeletonWithRawAtlas(atlasResource.data);
                 });
             }
         };
