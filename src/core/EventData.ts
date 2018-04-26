@@ -35,6 +35,7 @@ namespace pixi_spine.core {
         intValue: number;
         floatValue: number;
         stringValue: string;
+        audio: string;
 
         constructor (name: string) {
             this.name = name;

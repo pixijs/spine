@@ -239,6 +239,7 @@ namespace pixi_spine.core {
                     data.intValue = this.getValue(eventMap, "int", 0);
                     data.floatValue = this.getValue(eventMap, "float", 0);
                     data.stringValue = this.getValue(eventMap, "string", "");
+                    data.audio = this.getValue(eventMap, "audio", null);
                     skeletonData.events.push(data);
                 }
             }
