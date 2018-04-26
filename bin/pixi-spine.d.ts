@@ -648,6 +648,7 @@ declare module PIXI.spine.core {
         intValue: number;
         floatValue: number;
         stringValue: string;
+        audio: string;
         constructor(name: string);
     }
 }
