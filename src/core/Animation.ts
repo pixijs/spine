@@ -708,28 +708,24 @@ namespace pixi_spine.core {
             if (!(slotAttachment instanceof VertexAttachment) || !(<VertexAttachment>slotAttachment).applyDeform(this.attachment)) return;
 
             let verticesArray: Array<number> = slot.attachmentVertices;
+            if (verticesArray.length == 0) alpha = 1;
+
             let frameVertices = this.frameVertices;
             let vertexCount = frameVertices[0].length;
-            let vertices: Array<number> = Utils.setArraySize(verticesArray, vertexCount);
 
             let frames = this.frames;
             if (time < frames[0]) {
                 let vertexAttachment = <VertexAttachment>slotAttachment;
                 switch (pose) {
                     case MixPose.setup:
-                        let zeroVertices: ArrayLike<number>;
-                        if (vertexAttachment.bones == null) {
-                            // Unweighted vertex positions (setup pose).
-                            zeroVertices = vertexAttachment.vertices;
-                        } else {
-                            // Weighted deform offsets (zeros).
-                            zeroVertices = zeros;
-                            if (zeroVertices.length < vertexCount) zeros = zeroVertices = Utils.newFloatArray(vertexCount);
-                        }
-                        Utils.arrayCopy(zeroVertices, 0, vertices, 0, vertexCount);
+                        verticesArray.length = 0;
                         return;
                     case MixPose.current:
-                        if (alpha == 1) break;
+                        if (alpha == 1) {
+                            verticesArray.length = 0;
+                            break;
+                        }
+                        let vertices: Array<number> = Utils.setArraySize(verticesArray, vertexCount);
                         if (vertexAttachment.bones == null) {
                             // Unweighted vertex positions.
                             let setupVertices = vertexAttachment.vertices;
@@ -738,13 +734,14 @@ namespace pixi_spine.core {
                         } else {
                             // Weighted deform offsets.
                             alpha = 1 - alpha;
-                            for (var i = 0; i < vertexCount; i++)
+                            for (let i = 0; i < vertexCount; i++)
                                 vertices[i] *= alpha;
                         }
                 }
                 return;
             }
 
+            let vertices = Utils.setArraySize(verticesArray, vertexCount);
             if (time >= frames[frames.length - 1]) { // Time is after last frame.
                 let lastVertices = frameVertices[frames.length - 1];
                 if (alpha == 1) {

@@ -32,6 +32,7 @@
 namespace pixi_spine.core {
     export class PathConstraint implements Constraint {
         static NONE = -1; static BEFORE = -2; static AFTER = -3;
+        static epsilon = 0.00001;
 
         data: PathConstraintData;
         bones: Array<Bone>;
@@ -81,10 +82,16 @@ namespace pixi_spine.core {
                 if (scale) lengths = Utils.setArraySize(this.lengths, boneCount);
                 for (let i = 0, n = spacesCount - 1; i < n;) {
                     let bone = bones[i];
-                    let setupLength = bone.data.length, x = setupLength * bone.matrix.a, y = setupLength * bone.matrix.b;
-                    let length = Math.sqrt(x * x + y * y);
-                    if (scale) lengths[i] = length;
-                    spaces[++i] = (lengthSpacing ? setupLength + spacing : spacing) * length / setupLength;
+                    let setupLength = bone.data.length;
+                    if (setupLength < PathConstraint.epsilon) {
+                        if (scale) lengths[i] = 0;
+                        spaces[++i] = 0;
+                    } else {
+                        let x = setupLength * bone.matrix.a, y = setupLength * bone.matrix.b;
+                        let length = Math.sqrt(x * x + y * y);
+                        if (scale) lengths[i] = length;
+                        spaces[++i] = (lengthSpacing ? setupLength + spacing : spacing) * length / setupLength;
+                    }
                 }
             } else {
                 for (let i = 1; i < spacesCount; i++)

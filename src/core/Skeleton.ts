@@ -377,7 +377,7 @@ namespace pixi_spine.core {
          * Attachments from the new skin are attached if the corresponding attachment from the old skin was attached. If there was no
          * old skin, each slot's setup mode attachment is attached from the new skin.
          * @param newSkin May be null. */
-        setSkin (newSkin: Skin) {
+        setSkin (newSkin: Skin | null) {
             if (newSkin != null) {
                 if (this.skin != null)
                     newSkin.attachAll(this, this.skin);
