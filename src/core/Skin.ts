@@ -64,7 +64,7 @@ namespace pixi_spine.core {
                     for (let key in dictionary) {
                         let skinAttachment: Attachment = dictionary[key];
                         if (slotAttachment == skinAttachment) {
-                            let attachment = this.getAttachment(slotIndex, name);
+                            let attachment = this.getAttachment(slotIndex, key);
                             if (attachment != null) slot.setAttachment(attachment);
                             break;
                         }
