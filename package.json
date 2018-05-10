@@ -29,9 +29,9 @@
     "make:dts": "node scripts/make_dts.js",
     "build": "tsc && yarn make:dts",
     "docs": "typedoc --out ./docs/ --readme README.md ./src/",
-    "check:browserify": "yarn checkpack -- browserify -e test/checkpack.ts",
-    "check:webpack": "yarn checkpack -- webpack -e test/checkpack.ts",
-    "check:vanillajs": "yarn checkpack -- vanillajs -e test/checkpack.ts",
+    "check:browserify": "yarn checkpack browserify -e test/checkpack.ts",
+    "check:webpack": "yarn checkpack webpack -e test/checkpack.ts",
+    "check:vanillajs": "yarn checkpack vanillajs -e test/checkpack.ts",
     "check:all": "yarn build && yarn check:browserify && yarn check:webpack && yarn check:vanillajs"
   },
   "files": [
@@ -42,7 +42,8 @@
     "README.md"
   ],
   "devDependencies": {
-    "checkpack": "~0.1.0",
+    "@types/lodash": "^4.14.108",
+    "checkpack": "^0.3",
     "del": "~2.2.0",
     "glob": "~7.1.1",
     "mkdirp": "~0.5.1",
@@ -52,7 +53,7 @@
     "tmp": "^0.0.33",
     "ts-helpers": "~1.1.2",
     "typedoc": "^0.9.0",
-    "typescript": "~2.4"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "@types/pixi.js": "^4.5.3"
