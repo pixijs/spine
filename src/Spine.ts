@@ -3,6 +3,8 @@
 /// <reference path="core/Bone.ts" />
 namespace pixi_spine {
     /* Esoteric Software SPINE wrapper for pixi.js */
+    import DestroyOptions = PIXI.DestroyOptions;
+    
     core.Bone.yDown = true;
 
     let tempRgb = [0, 0, 0];
