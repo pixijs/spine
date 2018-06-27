@@ -645,6 +645,21 @@ namespace pixi_spine {
         transformHack() {
             return 1;
         }
+    
+        /**
+         * Base destroy method for generic display objects. This will automatically
+         * remove the display object from its parent Container as well as remove
+         * all current event listeners and internal references. Do not use a DisplayObject
+         * after calling `destroy`.
+         */
+        destroy(options?: DestroyOptions | boolean): void {
+            for (let i = 0, n = this.slotContainers.length; i < n; i++) {
+                this.slotContainers[i].destroy(options);
+            }
+            this.slotContainers = [];
+
+            super.destroy(options);
+        }    
     }
 
     function SlotContainerUpdateTransformV3() {
