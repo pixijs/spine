@@ -60,10 +60,12 @@ namespace pixi_spine {
             //remove the baseUrl
             baseUrl = baseUrl.replace(this.baseUrl, '');
 
+            const namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
+
             const adapter = metadata.images ? staticImageLoader(metadata.images)
                 : metadata.image ? staticImageLoader({'default': metadata.image})
-                    : metadata.imageLoader ? metadata.imageLoader(this, resource.name + '_atlas_page_', baseUrl, imageOptions)
-                        : imageLoaderAdapter(this, resource.name + '_atlas_page_', baseUrl, imageOptions);
+                    : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
+                        : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
 
             const createSkeletonWithRawAtlas = function (rawData: string) {
                 new core.TextureAtlas(rawData, adapter, function (spineAtlas) {
@@ -79,7 +81,6 @@ namespace pixi_spine {
 
             if (resource.metadata && resource.metadata.atlasRawData) {
                 createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
-
             } else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
                     createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
@@ -95,9 +96,24 @@ namespace pixi_spine {
         return function (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) {
             const name = namePrefix + line;
             const url = baseUrl + line;
-            loader.add(name, url, imageOptions, (resource: PIXI.loaders.Resource) => {
-                callback(resource.texture.baseTexture);
-            });
+
+            const cachedResource = loader.resources[name];
+            if (cachedResource) {
+                function done() {
+                    callback(cachedResource.texture.baseTexture)
+                }
+
+                if (cachedResource.texture) {
+                    done();
+                }
+                else {
+                    cachedResource.onAfterMiddleware.add(done);
+                }
+            } else {
+                loader.add(name, url, imageOptions, (resource: PIXI.loaders.Resource) => {
+                    callback(resource.texture.baseTexture);
+                });
+            }
         }
     }
 
