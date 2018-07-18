@@ -1267,5 +1267,6 @@ declare module PIXI.spine {
         newGraphics(): PIXI.Graphics;
         newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
         transformHack(): number;
+        destroy(options?: PIXI.DestroyOptions | boolean): void;
     }
 }
