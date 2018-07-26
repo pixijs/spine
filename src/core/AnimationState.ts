@@ -562,7 +562,8 @@ namespace pixi_spine.core {
 
         addListener (listener: AnimationStateListener2) {
             if (listener == null) throw new Error("listener cannot be null.");
-            this.listeners.push(listener);
+            let index = this.listeners.indexOf(listener);
+            if (index >= 0) this.listeners.push(listener);
         }
 
         /** Removes the listener added with {@link #addListener(AnimationStateListener)}. */
