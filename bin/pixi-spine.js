@@ -7071,18 +7071,18 @@ var pixi_spine;
                 }
             }
         };
-        ;
-        Spine.prototype.setSpriteRegion = function (attachment, sprite, region) {
-            sprite.region = region;
-            sprite.texture = region.texture;
-            if (!region.size) {
-                sprite.scale.x = attachment.scaleX * attachment.width / region.originalWidth;
-                sprite.scale.y = -attachment.scaleY * attachment.height / region.originalHeight;
-            }
-            else {
-                sprite.scale.x = region.size.width / region.originalWidth;
-                sprite.scale.y = -region.size.height / region.originalHeight;
-            }
+        // temp solution for asign normal by slots
+        Spine.prototype.convertToNormal = function (normalSuffix) {
+            normalSuffix = normalSuffix || "_n";
+            let list = [];
+            for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
+                const slot = this.skeleton.slots[i];
+                if(slot.currentSpriteName && slot.currentSpriteName.contains(normalSuffix)){
+                    slot.currentSprite.parentGroup = PIXI.lights.normalGroup;
+                    list.push(slot.currentSprite);
+                };
+            };
+            return list;
         };
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
             mesh.region = region;
