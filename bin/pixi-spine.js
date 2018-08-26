@@ -7084,6 +7084,19 @@ var pixi_spine;
             };
             return list;
         };
+
+        Spine.prototype.setSpriteRegion = function (attachment, sprite, region) {
+            sprite.region = region;
+            sprite.texture = region.texture;
+            if (!region.size) {
+                sprite.scale.x = attachment.scaleX * attachment.width / region.originalWidth;
+                sprite.scale.y = -attachment.scaleY * attachment.height / region.originalHeight;
+            }
+            else {
+                sprite.scale.x = region.size.width / region.originalWidth;
+                sprite.scale.y = -region.size.height / region.originalHeight;
+            }
+        };
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
             mesh.region = region;
             mesh.texture = region.texture;
