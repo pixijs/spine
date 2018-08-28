@@ -7074,12 +7074,14 @@ var pixi_spine;
         // temp solution for asign normal by slots
         Spine.prototype.convertToNormal = function (normalSuffix) {
             normalSuffix = normalSuffix || "_n";
-            let list = [];
+            const list = [];
             for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
                 const slot = this.skeleton.slots[i];
-                if(slot.currentSpriteName && slot.currentSpriteName.contains(normalSuffix)){
-                    slot.currentSprite.parentGroup = PIXI.lights.normalGroup;
-                    list.push(slot.currentSprite);
+                const name = slot.currentSpriteName || slot.currentMeshName || "";
+                if(name.contains(normalSuffix)){
+                    const target = slot.currentSprite || slot.currentMesh;
+                    target.parentGroup = PIXI.lights.normalGroup;
+                    list.push(target);
                 };
             };
             return list;
