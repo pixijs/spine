@@ -431,13 +431,13 @@ namespace pixi_spine.core {
             return entry;
         }
 
-        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number) {
+        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number = 0) {
             let animation = this.data.skeletonData.findAnimation(animationName);
             if (animation == null) throw new Error("Animation not found: " + animationName);
             return this.addAnimationWith(trackIndex, animation, loop, delay);
         }
 
-        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number) {
+        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number = 0) {
             if (animation == null) throw new Error("animation cannot be null.");
 
             let last = this.expandToIndex(trackIndex);
