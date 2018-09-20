@@ -6704,7 +6704,7 @@ var pixi_spine;
             else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
                     if (!atlasResource.error) {
-                        createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+                        createSkeletonWithRawAtlas(atlasResource.data);
                     }
                     else {
                         next();
@@ -6864,7 +6864,19 @@ var pixi_spine;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Spine.prototype, "delayLimit", {
+            get: function () {
+                var limit = typeof this.localDelayLimit !== "undefined" ?
+                    this.localDelayLimit : Spine.globalDelayLimit;
+                return limit || Number.MAX_VALUE;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Spine.prototype.update = function (dt) {
+            var delayLimit = this.delayLimit;
+            if (dt > delayLimit)
+                dt = delayLimit;
             this.state.update(dt);
             this.state.apply(this.skeleton);
             this.skeleton.updateWorldTransform();
@@ -7263,6 +7275,7 @@ var pixi_spine;
             _super.prototype.destroy.call(this, options);
         };
         Spine.globalAutoUpdate = true;
+        Spine.globalDelayLimit = 0;
         Spine.clippingPolygon = [];
         return Spine;
     }(PIXI.Container));

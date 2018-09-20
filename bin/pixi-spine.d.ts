@@ -1240,6 +1240,7 @@ declare module PIXI.spine {
     }
     class Spine extends PIXI.Container {
         static globalAutoUpdate: boolean;
+        static globalDelayLimit: number;
         tintRgb: ArrayLike<number>;
         spineData: core.SkeletonData;
         skeleton: core.Skeleton;
@@ -1247,9 +1248,11 @@ declare module PIXI.spine {
         state: core.AnimationState;
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
+        localDelayLimit: number;
         constructor(spineData: core.SkeletonData);
         autoUpdate: boolean;
         tint: number;
+        readonly delayLimit: number;
         update(dt: number): void;
         private setSpriteRegion(attachment, sprite, region);
         private setMeshRegion(attachment, mesh, region);

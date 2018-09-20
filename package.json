@@ -36,7 +36,6 @@
   },
   "files": [
     "bin/",
-    "src/",
     "SPINE-LICENSE",
     "package.json",
     "README.md"
