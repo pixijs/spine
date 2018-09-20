@@ -7071,7 +7071,22 @@ var pixi_spine;
                 }
             }
         };
-        ;
+        // temp solution for asign normal by slots
+        Spine.prototype.convertToNormal = function (normalSuffix) {
+            normalSuffix = normalSuffix || "_n";
+            const list = [];
+            for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
+                const slot = this.skeleton.slots[i];
+                const name = slot.currentSpriteName || slot.currentMeshName || "";
+                if(name.contains(normalSuffix)){
+                    const target = slot.currentSprite || slot.currentMesh;
+                    target.parentGroup = PIXI.lights.normalGroup;
+                    list.push(target);
+                };
+            };
+            return list;
+        };
+
         Spine.prototype.setSpriteRegion = function (attachment, sprite, region) {
             sprite.region = region;
             sprite.texture = region.texture;
