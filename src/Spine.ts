@@ -646,6 +646,28 @@ namespace pixi_spine {
             return 1;
         }
 
+        /**
+         * Hack for pixi-display and pixi-lights. Every attachment name ending with a suffix will be added to different layer
+         * @param nameSuffix
+         * @param group
+         */
+        hackAttachmentGroups(nameSuffix: string, group: any) {
+            if (!nameSuffix) {
+                return;
+            }
+            const list = [];
+            for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
+                const slot = this.skeleton.slots[i];
+                const name = slot.currentSpriteName || slot.currentMeshName || "";
+                if(name.endsWith(nameSuffix)){
+                    const target = slot.currentSprite || slot.currentMesh;
+                    target.parentGroup = group;
+                    list.push(target);
+                }
+            }
+            return list;
+        }
+
         destroy(options?: PIXI.DestroyOptions | boolean): void {
             for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 let slot = this.skeleton.slots[i];
