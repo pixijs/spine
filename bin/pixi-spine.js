@@ -1216,6 +1216,8 @@ var pixi_spine;
                 if (from == null)
                     return true;
                 var finished = this.updateMixingFrom(from, delta);
+                from.animationLast = from.nextAnimationLast;
+                from.trackLast = from.nextTrackLast;
                 if (to.mixTime > 0 && (to.mixTime >= to.mixDuration || to.timeScale == 0)) {
                     if (from.totalAlpha == 0) {
                         to.mixingFrom = from.mixingFrom;
@@ -1224,8 +1226,6 @@ var pixi_spine;
                     }
                     return finished;
                 }
-                from.animationLast = from.nextAnimationLast;
-                from.trackLast = from.nextTrackLast;
                 from.trackTime += delta * from.timeScale;
                 to.mixTime += delta * to.timeScale;
                 return false;
@@ -1506,12 +1506,14 @@ var pixi_spine;
                 return entry;
             };
             AnimationState.prototype.addAnimation = function (trackIndex, animationName, loop, delay) {
+                if (delay === void 0) { delay = 0; }
                 var animation = this.data.skeletonData.findAnimation(animationName);
                 if (animation == null)
                     throw new Error("Animation not found: " + animationName);
                 return this.addAnimationWith(trackIndex, animation, loop, delay);
             };
             AnimationState.prototype.addAnimationWith = function (trackIndex, animation, loop, delay) {
+                if (delay === void 0) { delay = 0; }
                 if (animation == null)
                     throw new Error("animation cannot be null.");
                 var last = this.expandToIndex(trackIndex);
@@ -1626,7 +1628,9 @@ var pixi_spine;
             AnimationState.prototype.addListener = function (listener) {
                 if (listener == null)
                     throw new Error("listener cannot be null.");
-                this.listeners.push(listener);
+                var index = this.listeners.indexOf(listener);
+                if (index == -1)
+                    this.listeners.push(listener);
             };
             AnimationState.prototype.removeListener = function (listener) {
                 var index = this.listeners.indexOf(listener);
@@ -6699,7 +6703,12 @@ var pixi_spine;
             }
             else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
-                    createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+                    if (!atlasResource.error) {
+                        createSkeletonWithRawAtlas(atlasResource.xhr.responseText);
+                    }
+                    else {
+                        next();
+                    }
                 });
             }
         };
@@ -7214,15 +7223,31 @@ var pixi_spine;
         Spine.prototype.transformHack = function () {
             return 1;
         };
+        Spine.prototype.hackAttachmentGroups = function (nameSuffix, group) {
+            if (!nameSuffix) {
+                return;
+            }
+            var list = [];
+            for (var i = 0, len = this.skeleton.slots.length; i < len; i++) {
+                var slot = this.skeleton.slots[i];
+                var name_2 = slot.currentSpriteName || slot.currentMeshName || "";
+                if (name_2.endsWith(nameSuffix)) {
+                    var target = slot.currentSprite || slot.currentMesh;
+                    target.parentGroup = group;
+                    list.push(target);
+                }
+            }
+            return list;
+        };
         Spine.prototype.destroy = function (options) {
             for (var i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 var slot = this.skeleton.slots[i];
-                for (var name_2 in slot.meshes) {
-                    slot.meshes[name_2].destroy(options);
+                for (var name_3 in slot.meshes) {
+                    slot.meshes[name_3].destroy(options);
                 }
                 slot.meshes = null;
-                for (var name_3 in slot.sprites) {
-                    slot.sprites[name_3].destroy(options);
+                for (var name_4 in slot.sprites) {
+                    slot.sprites[name_4].destroy(options);
                 }
                 slot.sprites = null;
             }

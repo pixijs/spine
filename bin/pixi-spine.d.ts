@@ -264,8 +264,8 @@ declare module PIXI.spine.core {
         setCurrent(index: number, current: TrackEntry, interrupt: boolean): void;
         setAnimation(trackIndex: number, animationName: string, loop: boolean): TrackEntry;
         setAnimationWith(trackIndex: number, animation: Animation, loop: boolean): TrackEntry;
-        addAnimation(trackIndex: number, animationName: string, loop: boolean, delay: number): TrackEntry;
-        addAnimationWith(trackIndex: number, animation: Animation, loop: boolean, delay: number): TrackEntry;
+        addAnimation(trackIndex: number, animationName: string, loop: boolean, delay?: number): TrackEntry;
+        addAnimationWith(trackIndex: number, animation: Animation, loop: boolean, delay?: number): TrackEntry;
         setEmptyAnimation(trackIndex: number, mixDuration: number): TrackEntry;
         addEmptyAnimation(trackIndex: number, mixDuration: number, delay: number): TrackEntry;
         setEmptyAnimations(mixDuration: number): void;
@@ -1267,6 +1267,7 @@ declare module PIXI.spine {
         newGraphics(): PIXI.Graphics;
         newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
         transformHack(): number;
+        hackAttachmentGroups(nameSuffix: string, group: any): any[];
         destroy(options?: PIXI.DestroyOptions | boolean): void;
     }
 }
