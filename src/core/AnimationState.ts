@@ -114,6 +114,8 @@ namespace pixi_spine.core {
 
             let finished = this.updateMixingFrom(from, delta);
 
+            from.animationLast = from.nextAnimationLast;
+            from.trackLast = from.nextTrackLast;
             // Require mixTime > 0 to ensure the mixing from entry was applied at least once.
             if (to.mixTime > 0 && (to.mixTime >= to.mixDuration || to.timeScale == 0)) {
                 if (from.totalAlpha == 0) {
@@ -124,8 +126,6 @@ namespace pixi_spine.core {
                 return finished;
             }
 
-            from.animationLast = from.nextAnimationLast;
-            from.trackLast = from.nextTrackLast;
             from.trackTime += delta * from.timeScale;
             to.mixTime += delta * to.timeScale;
             return false;
@@ -431,13 +431,13 @@ namespace pixi_spine.core {
             return entry;
         }
 
-        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number) {
+        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number = 0) {
             let animation = this.data.skeletonData.findAnimation(animationName);
             if (animation == null) throw new Error("Animation not found: " + animationName);
             return this.addAnimationWith(trackIndex, animation, loop, delay);
         }
 
-        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number) {
+        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number = 0) {
             if (animation == null) throw new Error("animation cannot be null.");
 
             let last = this.expandToIndex(trackIndex);
@@ -562,7 +562,8 @@ namespace pixi_spine.core {
 
         addListener (listener: AnimationStateListener2) {
             if (listener == null) throw new Error("listener cannot be null.");
-            this.listeners.push(listener);
+            let index = this.listeners.indexOf(listener);
+            if (index == - 1) this.listeners.push(listener);
         }
 
         /** Removes the listener added with {@link #addListener(AnimationStateListener)}. */
