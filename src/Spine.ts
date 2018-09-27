@@ -669,6 +669,7 @@ namespace pixi_spine {
          * Hack for pixi-display and pixi-lights. Every attachment name ending with a suffix will be added to different layer
          * @param nameSuffix
          * @param group
+         * @param outGroup
          */
         hackAttachmentGroups(nameSuffix: string, group: any, outGroup: any) {
             if (!nameSuffix) {
