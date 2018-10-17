@@ -417,7 +417,7 @@ namespace pixi_spine {
                 let slotContainer = this.slotContainers[drawOrder[i].data.index];
 
                 if (!clippingContainer) {
-                    if (slotContainer.parent != null && slotContainer.parent !== this) {
+                    if (slotContainer.parent !== null && slotContainer.parent !== this) {
                         slotContainer.parent.removeChild(slotContainer);
                         //silend add hack
                         slotContainer.parent = this;
