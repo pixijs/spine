@@ -754,7 +754,7 @@ namespace pixi_spine.core {
         }
 
         loopsCount() {
-            return Math.floor(this.trackTime / this.trackEnd);
+            return ~~(this.trackTime / this.animationLast);
         }
     }
 
