@@ -140,6 +140,8 @@ namespace pixi_spine {
         }
     }
 
-    PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
-    PIXI.loader.use(atlasParser());
+    if (PIXI.loaders.Loader) {
+        PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
+        PIXI.loader.use(atlasParser());
+    }
 }
