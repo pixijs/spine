@@ -1270,7 +1270,7 @@ declare module PIXI.spine {
         newGraphics(): PIXI.Graphics;
         newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
         transformHack(): number;
-        hackAttachmentGroups(nameSuffix: string, group: any): any[];
+        hackAttachmentGroups(nameSuffix: string, group: any, outGroup: any): any[][];
         destroy(options?: PIXI.DestroyOptions | boolean): void;
     }
 }

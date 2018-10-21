@@ -2201,14 +2201,14 @@ var pixi_spine;
                         var lb = core.MathUtils.cosDeg(90 + shearY) * scaleY;
                         var lc = core.MathUtils.sinDeg(shearX) * scaleX;
                         var ld = core.MathUtils.sinDeg(90 + shearY) * scaleY;
+                        if (this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : ((this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown)) {
+                            zb = -zb;
+                            zd = -zd;
+                        }
                         m.a = za * la + zb * lc;
                         m.c = za * lb + zb * ld;
                         m.b = zc * la + zd * lc;
                         m.d = zc * lb + zd * ld;
-                        if (this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : ((this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown)) {
-                            m.c = -m.c;
-                            m.d = -m.d;
-                        }
                         return;
                     }
                 }
@@ -6760,8 +6760,10 @@ var pixi_spine;
         };
     }
     pixi_spine.staticImageLoader = staticImageLoader;
-    PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
-    PIXI.loader.use(atlasParser());
+    if (PIXI.loaders.Loader) {
+        PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
+        PIXI.loader.use(atlasParser());
+    }
 })(pixi_spine || (pixi_spine = {}));
 (function () {
     if (!Math.fround) {
@@ -7056,7 +7058,7 @@ var pixi_spine;
                 var slot = slots[drawOrder[i].data.index];
                 var slotContainer = this.slotContainers[drawOrder[i].data.index];
                 if (!clippingContainer) {
-                    if (slotContainer.parent !== this) {
+                    if (slotContainer.parent !== null && slotContainer.parent !== this) {
                         slotContainer.parent.removeChild(slotContainer);
                         slotContainer.parent = this;
                     }
@@ -7235,22 +7237,27 @@ var pixi_spine;
         Spine.prototype.transformHack = function () {
             return 1;
         };
-        Spine.prototype.hackAttachmentGroups = function (nameSuffix, group) {
+        Spine.prototype.hackAttachmentGroups = function (nameSuffix, group, outGroup) {
             if (!nameSuffix) {
                 return;
             }
-            var list = [];
+            var list_d = [], list_n = [];
             for (var i = 0, len = this.skeleton.slots.length; i < len; i++) {
                 var slot = this.skeleton.slots[i];
                 var name_2 = slot.currentSpriteName || slot.currentMeshName || "";
+                var target = slot.currentSprite || slot.currentMesh;
                 if (name_2.endsWith(nameSuffix)) {
-                    var target = slot.currentSprite || slot.currentMesh;
                     target.parentGroup = group;
-                    list.push(target);
+                    list_n.push(target);
+                }
+                else if (outGroup && target) {
+                    target.parentGroup = outGroup;
+                    list_d.push(target);
                 }
             }
-            return list;
+            return [list_d, list_n];
         };
+        ;
         Spine.prototype.destroy = function (options) {
             for (var i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 var slot = this.skeleton.slots[i];
