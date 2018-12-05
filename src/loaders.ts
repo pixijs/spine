@@ -79,7 +79,13 @@ namespace pixi_spine {
                 });
             };
 
-            if (resource.metadata && resource.metadata.atlasRawData) {
+            if(resource.metadata && resource.metadata.useMasterAtlasData) {
+                // Uses master atlas if useMasterAtlasData is true for current skeleton data
+                createSkeletonWithRawAtlas(masterAtlasData);
+            } else if (useMasterAtlasData && (!resource.metadata || resource.metadata.useMasterAtlasData == undefined)) {
+                // Uses master atlas if *global useMasterAtlasData is true* and *useMasterAtlasData is not false for current skeleton data*
+                createSkeletonWithRawAtlas(masterAtlasData);
+            } else if (resource.metadata && resource.metadata.atlasRawData) {
                 createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
             } else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
@@ -140,8 +146,33 @@ namespace pixi_spine {
         }
     }
 
+    // Global variable to determine whether to use master atlas data
+    export let useMasterAtlasData: boolean = false;
+
+    // Global variable to save data of all atlas files
+    export let masterAtlasData: string = "";
+
+    // Parser to collect and save data from every atlas file loaded
+    export function masterAtlasParser() {
+        return function masterAtlasParser(resource: PIXI.loaders.Resource, next: () => any) {
+            // skip if no data, or it isn't an .atlas file
+            if (!resource.data ||
+                resource.extension.toLowerCase() !== "atlas") {
+                return next();
+            }
+
+            // Append to global atlas data
+            masterAtlasData += "\n" + resource.data;
+
+            return next();
+        }
+    }
+
     if (PIXI.loaders.Loader) {
         PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
         PIXI.loader.use(atlasParser());
+
+        PIXI.loader.use(masterAtlasParser());
     }
+
 }
