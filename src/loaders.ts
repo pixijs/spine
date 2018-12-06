@@ -62,10 +62,18 @@ namespace pixi_spine {
 
             const namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
 
-            const adapter = metadata.images ? staticImageLoader(metadata.images)
-                : metadata.image ? staticImageLoader({'default': metadata.image})
-                    : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
-                        : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
+            // Uses master atlas if
+            //  - *global useMasterAtlasData is true* and *useMasterAtlasData is not false for current skeleton data*
+            //  (or)
+            //  - useMasterAtlasData is true for current skeleton data
+            const shouldUseMasterAtlasData = useMasterAtlasData ? (!resource.metadata || resource.metadata.useMasterAtlasData !== false)
+                : resource.metadata && resource.metadata.useMasterAtlasData;
+
+            const adapter = shouldUseMasterAtlasData ? imageLoaderAdapter(this, "", baseUrl, imageOptions)
+                :   metadata.images ? staticImageLoader(metadata.images)
+                        : metadata.image ? staticImageLoader({'default': metadata.image})
+                            : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
+                                : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
 
             const createSkeletonWithRawAtlas = function (rawData: string) {
                 new core.TextureAtlas(rawData, adapter, function (spineAtlas) {
@@ -79,7 +87,9 @@ namespace pixi_spine {
                 });
             };
 
-            if (resource.metadata && resource.metadata.atlasRawData) {
+            if(shouldUseMasterAtlasData) {
+                createSkeletonWithRawAtlas(masterAtlasData);
+            } else if (resource.metadata && resource.metadata.atlasRawData) {
                 createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
             } else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
@@ -140,8 +150,33 @@ namespace pixi_spine {
         }
     }
 
+    // Global variable to determine whether to use master atlas data
+    export let useMasterAtlasData: boolean = false;
+
+    // Global variable to save data of all atlas files
+    export let masterAtlasData: string = "";
+
+    // Parser to collect and save data from every atlas file loaded
+    export function masterAtlasParser() {
+        return function masterAtlasParser(resource: PIXI.loaders.Resource, next: () => any) {
+            // skip if no data, or it isn't an .atlas file
+            if (!resource.data ||
+                resource.extension.toLowerCase() !== "atlas") {
+                return next();
+            }
+
+            // Append to global atlas data
+            masterAtlasData += "\n" + resource.data;
+
+            return next();
+        }
+    }
+
     if (PIXI.loaders.Loader) {
         PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
         PIXI.loader.use(atlasParser());
+
+        PIXI.loader.use(masterAtlasParser());
     }
+
 }
