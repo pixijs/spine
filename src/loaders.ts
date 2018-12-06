@@ -62,10 +62,18 @@ namespace pixi_spine {
 
             const namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
 
-            const adapter = metadata.images ? staticImageLoader(metadata.images)
-                : metadata.image ? staticImageLoader({'default': metadata.image})
-                    : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
-                        : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
+            // Uses master atlas if
+            //  - *global useMasterAtlasData is true* and *useMasterAtlasData is not false for current skeleton data*
+            //  (or)
+            //  - useMasterAtlasData is true for current skeleton data
+            const shouldUseMasterAtlasData = useMasterAtlasData ? (!resource.metadata || resource.metadata.useMasterAtlasData !== false)
+                : resource.metadata && resource.metadata.useMasterAtlasData;
+
+            const adapter = shouldUseMasterAtlasData ? imageLoaderAdapter(this, "", baseUrl, imageOptions)
+                :   metadata.images ? staticImageLoader(metadata.images)
+                        : metadata.image ? staticImageLoader({'default': metadata.image})
+                            : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
+                                : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
 
             const createSkeletonWithRawAtlas = function (rawData: string) {
                 new core.TextureAtlas(rawData, adapter, function (spineAtlas) {
@@ -79,11 +87,7 @@ namespace pixi_spine {
                 });
             };
 
-            if(resource.metadata && resource.metadata.useMasterAtlasData) {
-                // Uses master atlas if useMasterAtlasData is true for current skeleton data
-                createSkeletonWithRawAtlas(masterAtlasData);
-            } else if (useMasterAtlasData && (!resource.metadata || resource.metadata.useMasterAtlasData == undefined)) {
-                // Uses master atlas if *global useMasterAtlasData is true* and *useMasterAtlasData is not false for current skeleton data*
+            if(shouldUseMasterAtlasData) {
                 createSkeletonWithRawAtlas(masterAtlasData);
             } else if (resource.metadata && resource.metadata.atlasRawData) {
                 createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
