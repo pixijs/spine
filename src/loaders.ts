@@ -36,7 +36,13 @@ namespace pixi_spine {
              * that correspond to the spine file are in the same base URL and that the .json and .atlas files
              * have the same name
              */
-            let atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + metadataAtlasSuffix;
+            let atlasPath = resource.url
+            let queryStringPos = atlasPath.indexOf('?')
+            if (queryStringPos > 0) {
+                //remove querystring
+                atlasPath = atlasPath.substr(0, queryStringPos)
+            }
+            atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
             // use atlas path as a params. (no need to use same atlas file name with json file name)
             if (resource.metadata && resource.metadata.spineAtlasFile) {
                 atlasPath = resource.metadata.spineAtlasFile;
@@ -63,7 +69,7 @@ namespace pixi_spine {
             const namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
 
             const adapter = metadata.images ? staticImageLoader(metadata.images)
-                : metadata.image ? staticImageLoader({'default': metadata.image})
+                : metadata.image ? staticImageLoader({ 'default': metadata.image })
                     : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
                         : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
 
