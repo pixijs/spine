@@ -21,6 +21,9 @@ namespace pixi_spine {
             if (metadataAtlas && metadataAtlas.pages) {
                 //its an atlas!
                 const spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(metadataAtlas));
+                if (metadataSkeletonScale) {
+                    spineJsonParser.scale = metadataSkeletonScale;
+                }
                 const skeletonData = spineJsonParser.readSkeletonData(resource.data);
 
                 resource.spineData = skeletonData;
