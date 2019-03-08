@@ -522,7 +522,7 @@ namespace pixi_spine.core {
                     for (let i = 0; i < constraintMap.length; i++) {
                         let valueMap = constraintMap[i];
                         timeline.setFrame(frameIndex, valueMap.time, this.getValue(valueMap, "mix", 1),
-                            this.getValue(valueMap, "bendPositive", true) ? 1 : -1);
+                            this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
                         this.readCurve(valueMap, timeline, frameIndex);
                         frameIndex++;
                     }
@@ -705,6 +705,10 @@ namespace pixi_spine.core {
                     event.intValue = this.getValue(eventMap, "int", eventData.intValue);
                     event.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
                     event.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
+                    if (event.data.audioPath != null) {
+                        event.volume = this.getValue(eventMap, "volume", 1);
+                        event.balance = this.getValue(eventMap, "balance", 0);
+                    }
                     timeline.setFrame(frameIndex++, event);
                 }
                 timelines.push(timeline);
