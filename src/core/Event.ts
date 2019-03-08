@@ -36,6 +36,9 @@ namespace pixi_spine.core {
         floatValue: number;
         stringValue: string;
         time: number;
+        volume: number;
+        balance: number;
+
 
         constructor(time: number, data: EventData) {
             if (data == null) throw new Error("data cannot be null.");

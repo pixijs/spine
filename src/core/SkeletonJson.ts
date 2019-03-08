@@ -239,7 +239,11 @@ namespace pixi_spine.core {
                     data.intValue = this.getValue(eventMap, "int", 0);
                     data.floatValue = this.getValue(eventMap, "float", 0);
                     data.stringValue = this.getValue(eventMap, "string", "");
-                    data.audio = this.getValue(eventMap, "audio", null);
+                    data.audioPath = this.getValue(eventMap, "audio", null);
+                    if (data.audioPath != null) {
+                        data.volume = this.getValue(eventMap, "volume", 1);
+                        data.balance = this.getValue(eventMap, "balance", 0);
+                    }
                     skeletonData.events.push(data);
                 }
             }
