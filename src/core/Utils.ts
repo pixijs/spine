@@ -342,7 +342,7 @@ namespace pixi_spine.core {
         private frameTime = 0;
 
         update () {
-            var now = Date.now() / 1000;
+            let now = Date.now() / 1000;
             this.delta = now - this.lastTime;
             this.frameTime += this.delta;
             this.totalTime += this.delta;

@@ -43,7 +43,7 @@ namespace pixi_spine.core {
         addTexture(name: string, texture: PIXI.Texture) {
             let pages = this.pages;
             let page: TextureAtlasPage = null;
-            for (var i = 0; i < pages.length; i++) {
+            for (let i = 0; i < pages.length; i++) {
                 if (pages[i].baseTexture === texture.baseTexture) {
                     page = pages[i];
                     break;
@@ -52,7 +52,7 @@ namespace pixi_spine.core {
             if (page === null) {
                 page = new TextureAtlasPage();
                 page.name = 'texturePage';
-                var baseTexture = texture.baseTexture;
+                let baseTexture = texture.baseTexture;
                 page.width = baseTexture.realWidth;
                 page.height = baseTexture.realHeight;
                 page.baseTexture = baseTexture;
@@ -62,7 +62,7 @@ namespace pixi_spine.core {
                 page.vWrap = TextureWrap.ClampToEdge;
                 pages.push(page);
             }
-            var region = new TextureAtlasRegion();
+            let region = new TextureAtlasRegion();
             region.name = name;
             region.page = page;
             region.texture = texture;
@@ -72,7 +72,7 @@ namespace pixi_spine.core {
         }
 
         addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean) {
-            for (var key in textures) {
+            for (let key in textures) {
                 if (textures.hasOwnProperty(key)) {
                     this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
                 }
@@ -194,8 +194,8 @@ namespace pixi_spine.core {
                             region.texture = new PIXI.Texture(region.page.baseTexture, frame, orig, trim, rotate);
                         } else {
                             // pixi v3.0.11
-                            var frame2 = new PIXI.Rectangle(x, y, width, height);
-                            var crop = frame2.clone();
+                            let frame2 = new PIXI.Rectangle(x, y, width, height);
+                            let crop = frame2.clone();
                             trim.width = originalWidth;
                             trim.height = originalHeight;
                             region.texture = new PIXI.Texture(region.page.baseTexture, frame2, crop, trim, rotate);

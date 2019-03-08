@@ -34,8 +34,10 @@ namespace pixi_spine.core {
         data: IkConstraintData;
         bones: Array<Bone>;
         target: Bone;
-        mix = 1;
         bendDirection = 0;
+        compress = false;
+        stretch = false;
+        mix = 1;
 
         constructor (data: IkConstraintData, skeleton: Skeleton) {
             if (data == null) throw new Error("data cannot be null.");
@@ -43,6 +45,8 @@ namespace pixi_spine.core {
             this.data = data;
             this.mix = data.mix;
             this.bendDirection = data.bendDirection;
+            this.compress = data.compress;
+            this.stretch = data.stretch;
 
             this.bones = new Array<Bone>();
             for (let i = 0; i < data.bones.length; i++)
@@ -63,17 +67,17 @@ namespace pixi_spine.core {
             let bones = this.bones;
             switch (bones.length) {
                 case 1:
-                    this.apply1(bones[0], target.worldX, target.worldY, this.mix);
+                    this.apply1(bones[0], target.worldX, target.worldY, this.compress, this.stretch, this.data.uniform, this.mix);
                     break;
                 case 2:
-                    this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.mix);
+                    this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.mix);
                     break;
             }
         }
 
         /** Adjusts the bone rotation so the tip is as close to the target position as possible. The target is specified in the world
          * coordinate system. */
-        apply1 (bone: Bone, targetX: number, targetY: number, alpha: number) {
+        apply1 (bone: Bone, targetX: number, targetY: number, compress: boolean, stretch: boolean, uniform: boolean, alpha: number) {
             if (!bone.appliedValid) bone.updateAppliedTransform();
             let p = bone.parent.matrix;
             let id = 1 / (p.a * p.d - p.b * p.c);
@@ -84,21 +88,30 @@ namespace pixi_spine.core {
             if (rotationIK > 180)
                 rotationIK -= 360;
             else if (rotationIK < -180) rotationIK += 360;
-            bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, bone.ascaleX, bone.ascaleY, bone.ashearX,
+            let sx = bone.ascaleX, sy = bone.ascaleY;
+            if (compress || stretch) {
+                let b = bone.data.length * sx, dd = Math.sqrt(tx * tx + ty * ty);
+                if ((compress && dd < b) || (stretch && dd > b) && b > 0.0001) {
+                    let s = (dd / b - 1) * alpha + 1;
+                    sx *= s;
+                    if (uniform) sy *= s;
+                }
+            }
+            bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, sx, sy, bone.ashearX,
                 bone.ashearY);
         }
 
         /** Adjusts the parent and child bone rotations so the tip of the child is as close to the target position as possible. The
          * target is specified in the world coordinate system.
          * @param child A direct descendant of the parent bone. */
-        apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, alpha: number) {
+        apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, stretch: boolean, alpha: number) {
             if (alpha == 0) {
                 child.updateWorldTransform();
                 return;
             }
             if (!parent.appliedValid) parent.updateAppliedTransform();
             if (!child.appliedValid) child.updateAppliedTransform();
-            let px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
+            let px = parent.ax, py = parent.ay, psx = parent.ascaleX, sx = psx, psy = parent.ascaleY, csx = child.ascaleX;
             let pmat = parent.matrix;
             let os1 = 0, os2 = 0, s2 = 0;
             if (psx < 0) {
@@ -135,7 +148,7 @@ namespace pixi_spine.core {
             c = pp.b;
             d = pp.d;
             let id = 1 / (a * d - b * c), x = targetX - pp.tx, y = targetY - pp.ty;
-            let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
+            let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py, dd = tx * tx + ty * ty;
             x = cwx - pp.tx;
             y = cwy - pp.ty;
             let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
@@ -143,10 +156,13 @@ namespace pixi_spine.core {
             outer:
                 if (u) {
                     l2 *= psx;
-                    let cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+                    let cos = (dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
                     if (cos < -1)
                         cos = -1;
-                    else if (cos > 1) cos = 1;
+                    else if (cos > 1) {
+                        cos = 1;
+                        if (stretch && l1 + l2 > 0.0001) sx *= (Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
+                    }
                     a2 = Math.acos(cos) * bendDir;
                     a = l1 + l2 * cos;
                     b = l2 * Math.sin(a2);
@@ -154,7 +170,7 @@ namespace pixi_spine.core {
                 } else {
                     a = psx * l2;
                     b = psy * l2;
-                    let aa = a * a, bb = b * b, dd = tx * tx + ty * ty, ta = Math.atan2(ty, tx);
+                    let aa = a * a, bb = b * b, ta = Math.atan2(ty, tx);
                     c = bb * l1 * l1 + aa * dd - aa * bb;
                     let c1 = -2 * bb * l1, c2 = bb - aa;
                     d = c1 * c1 - 4 * c2 * c;
@@ -206,7 +222,7 @@ namespace pixi_spine.core {
             if (a1 > 180)
                 a1 -= 360;
             else if (a1 < -180) a1 += 360;
-            parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.ascaleX, parent.ascaleY, 0, 0);
+            parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, sx, parent.ascaleY, 0, 0);
             rotation = child.arotation;
             a2 = ((a2 + os) * MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
             if (a2 > 180)

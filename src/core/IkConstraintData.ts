@@ -36,9 +36,12 @@ namespace pixi_spine.core {
         bones = new Array<BoneData>();
         target: BoneData;
         bendDirection = 1;
+        compress = false;
+        stretch = false;
+        uniform = false;
         mix = 1;
 
-        constructor(name: string) {
+        constructor (name: string) {
             this.name = name;
         }
     }

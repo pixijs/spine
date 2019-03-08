@@ -145,12 +145,12 @@ namespace pixi_spine.core {
         }
 
         get spineOffsetY(): number {
-            var tex = this.texture;
+            let tex = this.texture;
             return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
         }
 
         get originalWidth(): number {
-            var tex = this.texture;
+            let tex = this.texture;
             if (PIXI.VERSION[0] == '3') {
                 if (tex.trim) {
                     return tex.trim.width;

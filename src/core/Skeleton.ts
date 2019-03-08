@@ -43,7 +43,7 @@ namespace pixi_spine.core {
         skin: Skin;
         color: Color;
         time = 0;
-        flipX = false; flipY = false;
+        scaleX = 1; scaleY = 1;
         x = 0; y = 0;
 
         constructor (data: SkeletonData) {
@@ -506,5 +506,31 @@ namespace pixi_spine.core {
         update (delta: number) {
             this.time += delta;
         }
+
+        get flipX(): boolean {
+            return this.scaleX == -1;
+        }
+
+        set flipX(value: boolean) {
+            if (!Skeleton.deprecatedWarning1) {
+                Skeleton.deprecatedWarning1 = true;
+                console.warn("Spine Deprecation Warning: `Skeleton.flipX/flipY` was deprecated, please use scaleX/scaleY");
+            }
+            this.scaleX = value ? 1.0 : -1.0;
+        }
+
+        get flipY(): boolean {
+            return this.scaleY == -1;
+        }
+
+        set flipY(value: boolean) {
+            if (!Skeleton.deprecatedWarning1) {
+                Skeleton.deprecatedWarning1 = true;
+                console.warn("Spine Deprecation Warning: `Skeleton.flipX/flipY` was deprecated, please use scaleX/scaleY");
+            }
+            this.scaleY = value ? 1.0 : -1.0;
+        }
+
+        private static deprecatedWarning1: boolean = false;
     }
 }

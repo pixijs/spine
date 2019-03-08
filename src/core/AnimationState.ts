@@ -33,8 +33,8 @@ namespace pixi_spine.core {
         static emptyAnimation = new Animation("<empty>", [], 0);
         static SUBSEQUENT = 0;
         static FIRST = 1;
-        static DIP = 2;
-        static DIP_MIX = 3;
+        static HOLD = 2;
+        static HOLD_MIX = 3;
 
         data: AnimationStateData;
         tracks = new Array<TrackEntry>();
@@ -42,7 +42,6 @@ namespace pixi_spine.core {
         listeners = new Array<AnimationStateListener2>();
         queue = new EventQueue(this);
         propertyIDs = new IntSet();
-        mixingTo = new Array<TrackEntry>();
         animationsChanged = false;
         timeScale = 1;
 
@@ -77,11 +76,11 @@ namespace pixi_spine.core {
                     let nextTime = current.trackLast - next.delay;
                     if (nextTime >= 0) {
                         next.delay = 0;
-                        next.trackTime = nextTime + delta * next.timeScale;
+                        next.trackTime = current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
                         current.trackTime += currentDelta;
                         this.setCurrent(i, next, true);
                         while (next.mixingFrom != null) {
-                            next.mixTime += currentDelta;
+                            next.mixTime += delta;
                             next = next.mixingFrom;
                         }
                         continue;
@@ -96,6 +95,7 @@ namespace pixi_spine.core {
                     // End mixing from entries once all have completed.
                     let from = current.mixingFrom;
                     current.mixingFrom = null;
+                    if (from != null) from.mixingTo = null;
                     while (from != null) {
                         this.queue.end(from);
                         from = from.mixingFrom;
@@ -116,10 +116,13 @@ namespace pixi_spine.core {
 
             from.animationLast = from.nextAnimationLast;
             from.trackLast = from.nextTrackLast;
+
             // Require mixTime > 0 to ensure the mixing from entry was applied at least once.
-            if (to.mixTime > 0 && (to.mixTime >= to.mixDuration || to.timeScale == 0)) {
-                if (from.totalAlpha == 0) {
+            if (to.mixTime > 0 && to.mixTime >= to.mixDuration) {
+                // Require totalAlpha == 0 to ensure mixing is complete, unless mixDuration == 0 (the transition is a single frame).
+                if (from.totalAlpha == 0 || to.mixDuration == 0) {
                     to.mixingFrom = from.mixingFrom;
+                    if (from.mixingFrom != null) from.mixingFrom.mixingTo = to;
                     to.interruptAlpha = from.interruptAlpha;
                     this.queue.end(from);
                 }
@@ -127,7 +130,7 @@ namespace pixi_spine.core {
             }
 
             from.trackTime += delta * from.timeScale;
-            to.mixTime += delta * to.timeScale;
+            to.mixTime += delta;
             return false;
         }
 
@@ -143,12 +146,12 @@ namespace pixi_spine.core {
                 let current = tracks[i];
                 if (current == null || current.delay > 0) continue;
                 applied = true;
-                let currentPose = i == 0 ? MixPose.current : MixPose.currentLayered;
+                let blend: MixBlend = i == 0 ? MixBlend.first : current.mixBlend;
 
                 // Apply mixing from entries first.
                 let mix = current.alpha;
                 if (current.mixingFrom != null)
-                    mix *= this.applyMixingFrom(current, skeleton, currentPose);
+                    mix *= this.applyMixingFrom(current, skeleton, blend);
                 else if (current.trackTime >= current.trackEnd && current.next == null)
                     mix = 0;
 
@@ -156,11 +159,11 @@ namespace pixi_spine.core {
                 let animationLast = current.animationLast, animationTime = current.getAnimationTime();
                 let timelineCount = current.animation.timelines.length;
                 let timelines = current.animation.timelines;
-                if (mix == 1) {
+                if (i == 0 && (mix == 1 || blend == MixBlend.add)) {
                     for (let ii = 0; ii < timelineCount; ii++)
-                        timelines[ii].apply(skeleton, animationLast, animationTime, events, 1, MixPose.setup, MixDirection.in);
+                        timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.in);
                 } else {
-                    let timelineData = current.timelineData;
+                    let timelineMode = current.timelineMode;
 
                     let firstFrame = current.timelinesRotation.length == 0;
                     if (firstFrame) Utils.setArraySize(current.timelinesRotation, timelineCount << 1, null);
@@ -168,13 +171,13 @@ namespace pixi_spine.core {
 
                     for (let ii = 0; ii < timelineCount; ii++) {
                         let timeline = timelines[ii];
-                        let pose = timelineData[ii] >= AnimationState.FIRST ? MixPose.setup : currentPose;
+                        let timelineBlend = timelineMode[ii] == AnimationState.SUBSEQUENT ? blend : MixBlend.setup;
                         if (timeline instanceof RotateTimeline) {
-                            this.applyRotateTimeline(timeline, skeleton, animationTime, mix, pose, timelinesRotation, ii << 1, firstFrame);
+                            this.applyRotateTimeline(timeline, skeleton, animationTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
                         } else {
                             // This fixes the WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
-                            Utils.webkit602BugfixHelper(mix, pose);
-                            timeline.apply(skeleton, animationLast, animationTime, events, mix, pose, MixDirection.in);
+                            Utils.webkit602BugfixHelper(mix, blend);
+                            timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, MixDirection.in);
                         }
                     }
                 }
@@ -188,17 +191,18 @@ namespace pixi_spine.core {
             return applied;
         }
 
-        applyMixingFrom (to: TrackEntry, skeleton: Skeleton, currentPose: MixPose) {
+        applyMixingFrom (to: TrackEntry, skeleton: Skeleton, blend: MixBlend) {
             let from = to.mixingFrom;
-            if (from.mixingFrom != null) this.applyMixingFrom(from, skeleton, currentPose);
+            if (from.mixingFrom != null) this.applyMixingFrom(from, skeleton, blend);
 
             let mix = 0;
             if (to.mixDuration == 0) { // Single frame mix to undo mixingFrom changes.
                 mix = 1;
-                currentPose = MixPose.setup;
+                if (blend == MixBlend.first) blend = MixBlend.setup;
             } else {
                 mix = to.mixTime / to.mixDuration;
                 if (mix > 1) mix = 1;
+                if (blend != MixBlend.first) blend = from.mixBlend;
             }
 
             let events = mix < from.eventThreshold ? this.events : null;
@@ -206,45 +210,60 @@ namespace pixi_spine.core {
             let animationLast = from.animationLast, animationTime = from.getAnimationTime();
             let timelineCount = from.animation.timelines.length;
             let timelines = from.animation.timelines;
-            let timelineData = from.timelineData;
-            let timelineDipMix = from.timelineDipMix;
+            let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
+            if (blend == MixBlend.add) {
+                for (let i = 0; i < timelineCount; i++)
+                    timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out);
+            } else {
+                let timelineMode = from.timelineMode;
+                let timelineHoldMix = from.timelineHoldMix;
 
-            let firstFrame = from.timelinesRotation.length == 0;
-            if (firstFrame) Utils.setArraySize(from.timelinesRotation, timelineCount << 1, null);
-            let timelinesRotation = from.timelinesRotation;
+                let firstFrame = from.timelinesRotation.length == 0;
+                if (firstFrame) Utils.setArraySize(from.timelinesRotation, timelineCount << 1, null);
+                let timelinesRotation = from.timelinesRotation;
 
-            let pose: MixPose;
-            let alphaDip = from.alpha * to.interruptAlpha, alphaMix = alphaDip * (1 - mix), alpha = 0;
-            from.totalAlpha = 0;
-            for (var i = 0; i < timelineCount; i++) {
-                let timeline = timelines[i];
-                switch (timelineData[i]) {
-                    case AnimationState.SUBSEQUENT:
-                        if (!attachments && timeline instanceof AttachmentTimeline) continue;
-                        if (!drawOrder && timeline instanceof DrawOrderTimeline) continue;
-                        pose = currentPose;
-                        alpha = alphaMix;
-                        break;
-                    case AnimationState.FIRST:
-                        pose = MixPose.setup
-                        alpha = alphaMix;
-                        break;
-                    case AnimationState.DIP:
-                        pose = MixPose.setup;
-                        alpha = alphaDip;
-                        break;
-                    default:
-                        pose = MixPose.setup;
-                        alpha = alphaDip;
-                        let dipMix = timelineDipMix[i];
-                        alpha *= Math.max(0, 1 - dipMix.mixTime / dipMix.mixDuration);
-                        break;
-                }
-                from.totalAlpha += alpha;
-                if (timeline instanceof RotateTimeline)
-                    this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, pose, timelinesRotation, i << 1, firstFrame);
-                else {
-                    timeline.apply(skeleton, animationLast, animationTime, events, alpha, pose, MixDirection.out);
+                from.totalAlpha = 0;
+                for (let i = 0; i < timelineCount; i++) {
+                    let timeline = timelines[i];
+                    let direction = MixDirection.out;
+                    let timelineBlend: MixBlend;
+                    let alpha = 0;
+                    switch (timelineMode[i]) {
+                        case AnimationState.SUBSEQUENT:
+                            if (!attachments && timeline instanceof AttachmentTimeline) continue;
+                            if (!drawOrder && timeline instanceof DrawOrderTimeline) continue;
+                            timelineBlend = blend;
+                            alpha = alphaMix;
+                            break;
+                        case AnimationState.FIRST:
+                            timelineBlend = MixBlend.setup;
+                            alpha = alphaMix;
+                            break;
+                        case AnimationState.HOLD:
+                            timelineBlend = MixBlend.setup;
+                            alpha = alphaHold;
+                            break;
+                        default:
+                            timelineBlend = MixBlend.setup;
+                            let holdMix = timelineHoldMix[i];
+                            alpha = alphaHold * Math.max(0, 1 - holdMix.mixTime / holdMix.mixDuration);
+                            break;
+                    }
+                    from.totalAlpha += alpha;
+                    if (timeline instanceof RotateTimeline)
+                        this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, timelineBlend, timelinesRotation, i << 1, firstFrame);
+                    else {
+                        // This fixes the WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
+                        Utils.webkit602BugfixHelper(alpha, blend);
+                        if (timelineBlend = MixBlend.setup) {
+                            if (timeline instanceof AttachmentTimeline) {
+                                if (attachments) direction = MixDirection.out;
+                            } else if (timeline instanceof DrawOrderTimeline) {
+                                if (drawOrder) direction = MixDirection.out;
+                            }
+                        }
+                        timeline.apply(skeleton, animationLast, animationTime, events, alpha, timelineBlend, direction);
+                    }
                 }
             }
 
@@ -256,48 +275,55 @@ namespace pixi_spine.core {
             return mix;
         }
 
-        applyRotateTimeline (timeline: Timeline, skeleton: Skeleton, time: number, alpha: number, pose: MixPose,
+        applyRotateTimeline (timeline: Timeline, skeleton: Skeleton, time: number, alpha: number, blend: MixBlend,
                              timelinesRotation: Array<number>, i: number, firstFrame: boolean) {
 
             if (firstFrame) timelinesRotation[i] = 0;
 
             if (alpha == 1) {
-                timeline.apply(skeleton, 0, time, null, 1, pose, MixDirection.in);
+                timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.in);
                 return;
             }
 
             let rotateTimeline = timeline as RotateTimeline;
             let frames = rotateTimeline.frames;
             let bone = skeleton.bones[rotateTimeline.boneIndex];
+            let r1 = 0, r2 = 0;
             if (time < frames[0]) {
-                if (pose == MixPose.setup) bone.rotation = bone.data.rotation;
-                return;
-            }
+                switch (blend) {
+                    case MixBlend.setup:
+                        bone.rotation = bone.data.rotation;
+                    default:
+                        return;
+                    case MixBlend.first:
+                        r1 = bone.rotation;
+                        r2 = bone.data.rotation;
+                }
+            } else {
+                r1 = blend == MixBlend.setup ? bone.data.rotation : bone.rotation;
+                if (time >= frames[frames.length - RotateTimeline.ENTRIES]) // Time is after last frame.
+                    r2 = bone.data.rotation + frames[frames.length + RotateTimeline.PREV_ROTATION];
+                else {
+                    // Interpolate between the previous frame and the current frame.
+                    let frame = Animation.binarySearch(frames, time, RotateTimeline.ENTRIES);
+                    let prevRotation = frames[frame + RotateTimeline.PREV_ROTATION];
+                    let frameTime = frames[frame];
+                    let percent = rotateTimeline.getCurvePercent((frame >> 1) - 1,
+                        1 - (time - frameTime) / (frames[frame + RotateTimeline.PREV_TIME] - frameTime));
 
-            let r2 = 0;
-            if (time >= frames[frames.length - RotateTimeline.ENTRIES]) // Time is after last frame.
-                r2 = bone.data.rotation + frames[frames.length + RotateTimeline.PREV_ROTATION];
-            else {
-                // Interpolate between the previous frame and the current frame.
-                let frame = Animation.binarySearch(frames, time, RotateTimeline.ENTRIES);
-                let prevRotation = frames[frame + RotateTimeline.PREV_ROTATION];
-                let frameTime = frames[frame];
-                let percent = rotateTimeline.getCurvePercent((frame >> 1) - 1,
-                    1 - (time - frameTime) / (frames[frame + RotateTimeline.PREV_TIME] - frameTime));
-
-                r2 = frames[frame + RotateTimeline.ROTATION] - prevRotation;
-                r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
-                r2 = prevRotation + r2 * percent + bone.data.rotation;
-                r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                    r2 = frames[frame + RotateTimeline.ROTATION] - prevRotation;
+                    r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                    r2 = prevRotation + r2 * percent + bone.data.rotation;
+                    r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                }
             }
 
             // Mix between rotations using the direction of the shortest route on the first frame while detecting crosses.
-            let r1 = pose == MixPose.setup ? bone.data.rotation : bone.rotation;
             let total = 0, diff = r2 - r1;
+            diff -= (16384 - ((16384.499999999996 - diff / 360) | 0)) * 360;
             if (diff == 0) {
                 total = timelinesRotation[i];
             } else {
-                diff -= (16384 - ((16384.499999999996 - diff / 360) | 0)) * 360;
                 let lastTotal = 0, lastDiff = 0;
                 if (firstFrame) {
                     lastTotal = 0;
@@ -338,10 +364,12 @@ namespace pixi_spine.core {
             }
 
             // Queue complete if completed a loop iteration or the animation.
-            if (entry.loop ? (trackLastWrapped > entry.trackTime % duration)
-                    : (animationTime >= animationEnd && entry.animationLast < animationEnd)) {
-                this.queue.complete(entry);
-            }
+            let complete = false;
+            if (entry.loop)
+                complete = duration == 0 || trackLastWrapped > entry.trackTime % duration;
+            else
+                complete = animationTime >= animationEnd && entry.animationLast < animationEnd;
+            if (complete) this.queue.complete(entry);
 
             // Queue events after complete.
             for (; i < n; i++) {
@@ -376,6 +404,7 @@ namespace pixi_spine.core {
                 if (from == null) break;
                 this.queue.end(from);
                 entry.mixingFrom = null;
+                entry.mixingTo = null;
                 entry = from;
             }
 
@@ -391,6 +420,7 @@ namespace pixi_spine.core {
             if (from != null) {
                 if (interrupt) this.queue.interrupt(from);
                 current.mixingFrom = from;
+                from.mixingTo = current;
                 current.mixTime = 0;
 
                 // Store the interrupted mix percentage.
@@ -431,13 +461,13 @@ namespace pixi_spine.core {
             return entry;
         }
 
-        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number = 0) {
+        addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number) {
             let animation = this.data.skeletonData.findAnimation(animationName);
             if (animation == null) throw new Error("Animation not found: " + animationName);
             return this.addAnimationWith(trackIndex, animation, loop, delay);
         }
 
-        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number = 0) {
+        addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number) {
             if (animation == null) throw new Error("animation cannot be null.");
 
             let last = this.expandToIndex(trackIndex);
@@ -459,10 +489,10 @@ namespace pixi_spine.core {
                         if (last.loop)
                             delay += duration * (1 + ((last.trackTime / duration) | 0));
                         else
-                            delay += duration;
+                            delay += Math.max(duration, last.trackTime);
                         delay -= this.data.getMix(last.animation, animation);
                     } else
-                        delay = 0;
+                        delay = last.trackTime;
                 }
             }
 
@@ -508,6 +538,7 @@ namespace pixi_spine.core {
             entry.trackIndex = trackIndex;
             entry.animation = animation;
             entry.loop = loop;
+            entry.holdPrevious = false;
 
             entry.eventThreshold = 0;
             entry.attachmentThreshold = 0;
@@ -544,15 +575,65 @@ namespace pixi_spine.core {
         _animationsChanged () {
             this.animationsChanged = false;
 
-            let propertyIDs = this.propertyIDs;
-            propertyIDs.clear();
-            let mixingTo = this.mixingTo;
+            this.propertyIDs.clear();
 
-            let lastEntry: TrackEntry = null;
             for (let i = 0, n = this.tracks.length; i < n; i++) {
                 let entry = this.tracks[i];
-                if (entry != null) entry.setTimelineData(null, mixingTo, propertyIDs);
+                if (entry == null) continue;
+                while (entry.mixingFrom != null)
+                    entry = entry.mixingFrom;
+
+                do {
+                    if (entry.mixingFrom == null || entry.mixBlend != MixBlend.add) this.setTimelineModes(entry);
+                    entry = entry.mixingTo;
+                } while (entry != null)
             }
+        }
+
+        setTimelineModes (entry: TrackEntry) {
+            let to = entry.mixingTo;
+            let timelines = entry.animation.timelines;
+            let timelinesCount = entry.animation.timelines.length;
+            let timelineMode = Utils.setArraySize(entry.timelineMode, timelinesCount);
+            entry.timelineHoldMix.length = 0;
+            let timelineDipMix = Utils.setArraySize(entry.timelineHoldMix, timelinesCount);
+            let propertyIDs = this.propertyIDs;
+
+            if (to != null && to.holdPrevious) {
+                for (let i = 0; i < timelinesCount; i++) {
+                    propertyIDs.add(timelines[i].getPropertyId());
+                    timelineMode[i] = AnimationState.HOLD;
+                }
+                return;
+            }
+
+            outer:
+                for (let i = 0; i < timelinesCount; i++) {
+                    let id = timelines[i].getPropertyId();
+                    if (!propertyIDs.add(id))
+                        timelineMode[i] = AnimationState.SUBSEQUENT;
+                    else if (to == null || !this.hasTimeline(to, id))
+                        timelineMode[i] = AnimationState.FIRST;
+                    else {
+                        for (let next = to.mixingTo; next != null; next = next.mixingTo) {
+                            if (this.hasTimeline(next, id)) continue;
+                            if (entry.mixDuration > 0) {
+                                timelineMode[i] = AnimationState.HOLD_MIX;
+                                timelineDipMix[i] = next;
+                                continue outer;
+                            }
+                            break;
+                        }
+                        timelineMode[i] = AnimationState.HOLD;
+                    }
+                }
+        }
+
+        hasTimeline (entry: TrackEntry, id: number) : boolean {
+            let timelines = entry.animation.timelines;
+            for (let i = 0, n = timelines.length; i < n; i++)
+                if (timelines[i].getPropertyId() == id) return true;
+            return false;
         }
 
         getCurrent (trackIndex: number) {
@@ -562,8 +643,7 @@ namespace pixi_spine.core {
 
         addListener (listener: AnimationStateListener2) {
             if (listener == null) throw new Error("listener cannot be null.");
-            let index = this.listeners.indexOf(listener);
-            if (index == - 1) this.listeners.push(listener);
+            this.listeners.push(listener);
         }
 
         /** Removes the listener added with {@link #addListener(AnimationStateListener)}. */
@@ -591,7 +671,7 @@ namespace pixi_spine.core {
         setAnimationByName(trackIndex: number, animationName: string, loop: boolean) {
             if (!AnimationState.deprecatedWarning1) {
                 AnimationState.deprecatedWarning1 = true;
-                console.warn("Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
+                console.warn("Spine Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
             }
             this.setAnimation(trackIndex, animationName, loop);
         }
@@ -601,7 +681,7 @@ namespace pixi_spine.core {
         addAnimationByName(trackIndex: number, animationName: string, loop: boolean, delay: number) {
             if (!AnimationState.deprecatedWarning2) {
                 AnimationState.deprecatedWarning2 = true;
-                console.warn("Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
+                console.warn("Spine Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
             }
             this.addAnimation(trackIndex, animationName, loop, delay);
         }
@@ -616,7 +696,7 @@ namespace pixi_spine.core {
         hasAnimationByName(animationName: string): boolean {
             if (!AnimationState.deprecatedWarning3) {
                 AnimationState.deprecatedWarning3 = true;
-                console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
+                console.warn("Spine Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
             }
             return this.hasAnimation(animationName);
         }
@@ -624,70 +704,29 @@ namespace pixi_spine.core {
 
     export class TrackEntry {
         animation: Animation;
-        next: TrackEntry; mixingFrom: TrackEntry;
+        next: TrackEntry; mixingFrom: TrackEntry; mixingTo: TrackEntry;
         listener: AnimationStateListener2;
         trackIndex: number;
         loop: boolean;
+        holdPrevious: boolean;
         eventThreshold: number; attachmentThreshold: number; drawOrderThreshold: number;
         animationStart: number; animationEnd: number; animationLast: number; nextAnimationLast: number;
         delay: number; trackTime: number; trackLast: number; nextTrackLast: number; trackEnd: number; timeScale: number;
         alpha: number; mixTime: number; mixDuration: number; interruptAlpha: number; totalAlpha: number;
-        timelineData = new Array<number>();
-        timelineDipMix = new Array<TrackEntry>();
+        mixBlend = MixBlend.replace;
+        timelineMode = new Array<number>();
+        timelineHoldMix = new Array<TrackEntry>();
         timelinesRotation = new Array<number>();
 
         reset () {
             this.next = null;
             this.mixingFrom = null;
+            this.mixingTo = null;
             this.animation = null;
             this.listener = null;
-            this.timelineData.length = 0;
-            this.timelineDipMix.length = 0;
+            this.timelineMode.length = 0;
+            this.timelineHoldMix.length = 0;
             this.timelinesRotation.length = 0;
-        }
-
-        setTimelineData (to: TrackEntry, mixingToArray: Array<TrackEntry>, propertyIDs: IntSet) : TrackEntry {
-            if (to != null) mixingToArray.push(to);
-            let lastEntry = this.mixingFrom != null ? this.mixingFrom.setTimelineData(this, mixingToArray, propertyIDs) : this;
-            if (to != null) mixingToArray.pop();
-
-            let mixingTo = mixingToArray;
-            let mixingToLast = mixingToArray.length - 1;
-            let timelines = this.animation.timelines;
-            let timelinesCount = this.animation.timelines.length;
-            let timelineData = Utils.setArraySize(this.timelineData, timelinesCount);
-            this.timelineDipMix.length = 0;
-            let timelineDipMix = Utils.setArraySize(this.timelineDipMix, timelinesCount);
-
-            outer:
-                for (var i = 0; i < timelinesCount; i++) {
-                    let id = timelines[i].getPropertyId();
-                    if (!propertyIDs.add(id))
-                        timelineData[i] = AnimationState.SUBSEQUENT;
-                    else if (to == null || !to.hasTimeline(id))
-                        timelineData[i] = AnimationState.FIRST;
-                    else {
-                        for (var ii = mixingToLast; ii >= 0; ii--) {
-                            let entry = mixingTo[ii];
-                            if (!entry.hasTimeline(id)) {
-                                if (entry.mixDuration > 0) {
-                                    timelineData[i] = AnimationState.DIP_MIX;
-                                    timelineDipMix[i] = entry;
-                                    continue outer;
-                                }
-                            }
-                        }
-                        timelineData[i] = AnimationState.DIP;
-                    }
-                }
-            return lastEntry;
-        }
-
-        hasTimeline (id: number) : boolean {
-            let timelines = this.animation.timelines;
-            for (var i = 0, n = timelines.length; i < n; i++)
-                if (timelines[i].getPropertyId() == id) return true;
-            return false;
         }
 
         getAnimationTime () {
@@ -724,7 +763,7 @@ namespace pixi_spine.core {
         get time() {
             if (!TrackEntry.deprecatedWarning1) {
                 TrackEntry.deprecatedWarning1 = true;
-                console.warn("Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+                console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
             }
             return this.trackTime;
         }
@@ -732,7 +771,7 @@ namespace pixi_spine.core {
         set time(value: number) {
             if (!TrackEntry.deprecatedWarning1) {
                 TrackEntry.deprecatedWarning1 = true;
-                console.warn("Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+                console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
             }
             this.trackTime = value;
         }
@@ -740,7 +779,7 @@ namespace pixi_spine.core {
         get endTime() {
             if (!TrackEntry.deprecatedWarning2) {
                 TrackEntry.deprecatedWarning2 = true;
-                console.warn("Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+                console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
             }
             return this.trackTime;
         }
@@ -748,7 +787,7 @@ namespace pixi_spine.core {
         set endTime(value: number) {
             if (!TrackEntry.deprecatedWarning2) {
                 TrackEntry.deprecatedWarning2 = true;
-                console.warn("Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+                console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
             }
             this.trackTime = value;
         }
@@ -805,7 +844,7 @@ namespace pixi_spine.core {
         deprecateStuff() {
             if (!EventQueue.deprecatedWarning1) {
                 EventQueue.deprecatedWarning1 = true;
-                console.warn("Deprecation Warning: onComplete, onStart, onEnd, onEvent art deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
+                console.warn("Spine Deprecation Warning: onComplete, onStart, onEnd, onEvent art deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
             }
             return true;
         }
