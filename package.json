@@ -1,6 +1,6 @@
 {
   "name": "pixi-spine",
-  "version": "1.5.19",
+  "version": "1.5.20",
   "description": "Spine implementation for pixi v^3 and v^4",
   "author": "Mat Groves",
   "contributors": [

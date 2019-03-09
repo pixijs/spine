@@ -22,7 +22,7 @@ var pixi_spine;
                 this.timelines = timelines;
                 this.duration = duration;
             }
-            Animation.prototype.apply = function (skeleton, lastTime, time, loop, events, alpha, pose, direction) {
+            Animation.prototype.apply = function (skeleton, lastTime, time, loop, events, alpha, blend, direction) {
                 if (skeleton == null)
                     throw new Error("skeleton cannot be null.");
                 if (loop && this.duration != 0) {
@@ -32,7 +32,7 @@ var pixi_spine;
                 }
                 var timelines = this.timelines;
                 for (var i = 0, n = timelines.length; i < n; i++)
-                    timelines[i].apply(skeleton, lastTime, time, events, alpha, pose, direction);
+                    timelines[i].apply(skeleton, lastTime, time, events, alpha, blend, direction);
             };
             Animation.binarySearch = function (values, target, step) {
                 if (step === void 0) { step = 1; }
@@ -60,12 +60,13 @@ var pixi_spine;
             return Animation;
         }());
         core.Animation = Animation;
-        var MixPose;
-        (function (MixPose) {
-            MixPose[MixPose["setup"] = 0] = "setup";
-            MixPose[MixPose["current"] = 1] = "current";
-            MixPose[MixPose["currentLayered"] = 2] = "currentLayered";
-        })(MixPose = core.MixPose || (core.MixPose = {}));
+        var MixBlend;
+        (function (MixBlend) {
+            MixBlend[MixBlend["setup"] = 0] = "setup";
+            MixBlend[MixBlend["first"] = 1] = "first";
+            MixBlend[MixBlend["replace"] = 2] = "replace";
+            MixBlend[MixBlend["add"] = 3] = "add";
+        })(MixBlend = core.MixBlend || (core.MixBlend = {}));
         var MixDirection;
         (function (MixDirection) {
             MixDirection[MixDirection["in"] = 0] = "in";
@@ -186,28 +187,32 @@ var pixi_spine;
                 this.frames[frameIndex] = time;
                 this.frames[frameIndex + RotateTimeline.ROTATION] = degrees;
             };
-            RotateTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            RotateTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var frames = this.frames;
                 var bone = skeleton.bones[this.boneIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             bone.rotation = bone.data.rotation;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             var r_1 = bone.data.rotation - bone.rotation;
-                            r_1 -= (16384 - ((16384.499999999996 - r_1 / 360) | 0)) * 360;
-                            bone.rotation += r_1 * alpha;
+                            bone.rotation += (r_1 - (16384 - ((16384.499999999996 - r_1 / 360) | 0)) * 360) * alpha;
                     }
                     return;
                 }
                 if (time >= frames[frames.length - RotateTimeline.ENTRIES]) {
-                    if (pose == MixPose.setup)
-                        bone.rotation = bone.data.rotation + frames[frames.length + RotateTimeline.PREV_ROTATION] * alpha;
-                    else {
-                        var r_2 = bone.data.rotation + frames[frames.length + RotateTimeline.PREV_ROTATION] - bone.rotation;
-                        r_2 -= (16384 - ((16384.499999999996 - r_2 / 360) | 0)) * 360;
-                        bone.rotation += r_2 * alpha;
+                    var r_2 = frames[frames.length + RotateTimeline.PREV_ROTATION];
+                    switch (blend) {
+                        case MixBlend.setup:
+                            bone.rotation = bone.data.rotation + r_2 * alpha;
+                            break;
+                        case MixBlend.first:
+                        case MixBlend.replace:
+                            r_2 += bone.data.rotation - bone.rotation;
+                            r_2 -= (16384 - ((16384.499999999996 - r_2 / 360) | 0)) * 360;
+                        case MixBlend.add:
+                            bone.rotation += r_2 * alpha;
                     }
                     return;
                 }
@@ -216,16 +221,16 @@ var pixi_spine;
                 var frameTime = frames[frame];
                 var percent = this.getCurvePercent((frame >> 1) - 1, 1 - (time - frameTime) / (frames[frame + RotateTimeline.PREV_TIME] - frameTime));
                 var r = frames[frame + RotateTimeline.ROTATION] - prevRotation;
-                r -= (16384 - ((16384.499999999996 - r / 360) | 0)) * 360;
-                r = prevRotation + r * percent;
-                if (pose == MixPose.setup) {
-                    r -= (16384 - ((16384.499999999996 - r / 360) | 0)) * 360;
-                    bone.rotation = bone.data.rotation + r * alpha;
-                }
-                else {
-                    r = bone.data.rotation + r - bone.rotation;
-                    r -= (16384 - ((16384.499999999996 - r / 360) | 0)) * 360;
-                    bone.rotation += r * alpha;
+                r = prevRotation + (r - (16384 - ((16384.499999999996 - r / 360) | 0)) * 360) * percent;
+                switch (blend) {
+                    case MixBlend.setup:
+                        bone.rotation = bone.data.rotation + (r - (16384 - ((16384.499999999996 - r / 360) | 0)) * 360) * alpha;
+                        break;
+                    case MixBlend.first:
+                    case MixBlend.replace:
+                        r += bone.data.rotation - bone.rotation;
+                    case MixBlend.add:
+                        bone.rotation += (r - (16384 - ((16384.499999999996 - r / 360) | 0)) * 360) * alpha;
                 }
             };
             RotateTimeline.ENTRIES = 2;
@@ -251,16 +256,16 @@ var pixi_spine;
                 this.frames[frameIndex + TranslateTimeline.X] = x;
                 this.frames[frameIndex + TranslateTimeline.Y] = y;
             };
-            TranslateTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            TranslateTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var frames = this.frames;
                 var bone = skeleton.bones[this.boneIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             bone.x = bone.data.x;
                             bone.y = bone.data.y;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             bone.x += (bone.data.x - bone.x) * alpha;
                             bone.y += (bone.data.y - bone.y) * alpha;
                     }
@@ -280,13 +285,19 @@ var pixi_spine;
                     x += (frames[frame + TranslateTimeline.X] - x) * percent;
                     y += (frames[frame + TranslateTimeline.Y] - y) * percent;
                 }
-                if (pose == MixPose.setup) {
-                    bone.x = bone.data.x + x * alpha;
-                    bone.y = bone.data.y + y * alpha;
-                }
-                else {
-                    bone.x += (bone.data.x + x - bone.x) * alpha;
-                    bone.y += (bone.data.y + y - bone.y) * alpha;
+                switch (blend) {
+                    case MixBlend.setup:
+                        bone.x = bone.data.x + x * alpha;
+                        bone.y = bone.data.y + y * alpha;
+                        break;
+                    case MixBlend.first:
+                    case MixBlend.replace:
+                        bone.x += (bone.data.x + x - bone.x) * alpha;
+                        bone.y += (bone.data.y + y - bone.y) * alpha;
+                        break;
+                    case MixBlend.add:
+                        bone.x += x * alpha;
+                        bone.y += y * alpha;
                 }
             };
             TranslateTimeline.ENTRIES = 3;
@@ -306,16 +317,16 @@ var pixi_spine;
             ScaleTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.scale << 24) + this.boneIndex;
             };
-            ScaleTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            ScaleTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var frames = this.frames;
                 var bone = skeleton.bones[this.boneIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             bone.scaleX = bone.data.scaleX;
                             bone.scaleY = bone.data.scaleY;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             bone.scaleX += (bone.data.scaleX - bone.scaleX) * alpha;
                             bone.scaleY += (bone.data.scaleY - bone.scaleY) * alpha;
                     }
@@ -336,29 +347,61 @@ var pixi_spine;
                     y = (y + (frames[frame + ScaleTimeline.Y] - y) * percent) * bone.data.scaleY;
                 }
                 if (alpha == 1) {
-                    bone.scaleX = x;
-                    bone.scaleY = y;
+                    if (blend == MixBlend.add) {
+                        bone.scaleX += x - bone.data.scaleX;
+                        bone.scaleY += y - bone.data.scaleY;
+                    }
+                    else {
+                        bone.scaleX = x;
+                        bone.scaleY = y;
+                    }
                 }
                 else {
                     var bx = 0, by = 0;
-                    if (pose == MixPose.setup) {
-                        bx = bone.data.scaleX;
-                        by = bone.data.scaleY;
-                    }
-                    else {
-                        bx = bone.scaleX;
-                        by = bone.scaleY;
-                    }
                     if (direction == MixDirection.out) {
-                        x = Math.abs(x) * core.MathUtils.signum(bx);
-                        y = Math.abs(y) * core.MathUtils.signum(by);
+                        switch (blend) {
+                            case MixBlend.setup:
+                                bx = bone.data.scaleX;
+                                by = bone.data.scaleY;
+                                bone.scaleX = bx + (Math.abs(x) * core.MathUtils.signum(bx) - bx) * alpha;
+                                bone.scaleY = by + (Math.abs(y) * core.MathUtils.signum(by) - by) * alpha;
+                                break;
+                            case MixBlend.first:
+                            case MixBlend.replace:
+                                bx = bone.scaleX;
+                                by = bone.scaleY;
+                                bone.scaleX = bx + (Math.abs(x) * core.MathUtils.signum(bx) - bx) * alpha;
+                                bone.scaleY = by + (Math.abs(y) * core.MathUtils.signum(by) - by) * alpha;
+                                break;
+                            case MixBlend.add:
+                                bx = bone.scaleX;
+                                by = bone.scaleY;
+                                bone.scaleX = bx + (Math.abs(x) * core.MathUtils.signum(bx) - bone.data.scaleX) * alpha;
+                                bone.scaleY = by + (Math.abs(y) * core.MathUtils.signum(by) - bone.data.scaleY) * alpha;
+                        }
                     }
                     else {
-                        bx = Math.abs(bx) * core.MathUtils.signum(x);
-                        by = Math.abs(by) * core.MathUtils.signum(y);
+                        switch (blend) {
+                            case MixBlend.setup:
+                                bx = Math.abs(bone.data.scaleX) * core.MathUtils.signum(x);
+                                by = Math.abs(bone.data.scaleY) * core.MathUtils.signum(y);
+                                bone.scaleX = bx + (x - bx) * alpha;
+                                bone.scaleY = by + (y - by) * alpha;
+                                break;
+                            case MixBlend.first:
+                            case MixBlend.replace:
+                                bx = Math.abs(bone.scaleX) * core.MathUtils.signum(x);
+                                by = Math.abs(bone.scaleY) * core.MathUtils.signum(y);
+                                bone.scaleX = bx + (x - bx) * alpha;
+                                bone.scaleY = by + (y - by) * alpha;
+                                break;
+                            case MixBlend.add:
+                                bx = core.MathUtils.signum(x);
+                                by = core.MathUtils.signum(y);
+                                bone.scaleX = Math.abs(bone.scaleX) * bx + (x - Math.abs(bone.data.scaleX) * bx) * alpha;
+                                bone.scaleY = Math.abs(bone.scaleY) * by + (y - Math.abs(bone.data.scaleY) * by) * alpha;
+                        }
                     }
-                    bone.scaleX = bx + (x - bx) * alpha;
-                    bone.scaleY = by + (y - by) * alpha;
                 }
             };
             return ScaleTimeline;
@@ -372,16 +415,16 @@ var pixi_spine;
             ShearTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.shear << 24) + this.boneIndex;
             };
-            ShearTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            ShearTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var frames = this.frames;
                 var bone = skeleton.bones[this.boneIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             bone.shearX = bone.data.shearX;
                             bone.shearY = bone.data.shearY;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             bone.shearX += (bone.data.shearX - bone.shearX) * alpha;
                             bone.shearY += (bone.data.shearY - bone.shearY) * alpha;
                     }
@@ -401,13 +444,19 @@ var pixi_spine;
                     x = x + (frames[frame + ShearTimeline.X] - x) * percent;
                     y = y + (frames[frame + ShearTimeline.Y] - y) * percent;
                 }
-                if (pose == MixPose.setup) {
-                    bone.shearX = bone.data.shearX + x * alpha;
-                    bone.shearY = bone.data.shearY + y * alpha;
-                }
-                else {
-                    bone.shearX += (bone.data.shearX + x - bone.shearX) * alpha;
-                    bone.shearY += (bone.data.shearY + y - bone.shearY) * alpha;
+                switch (blend) {
+                    case MixBlend.setup:
+                        bone.shearX = bone.data.shearX + x * alpha;
+                        bone.shearY = bone.data.shearY + y * alpha;
+                        break;
+                    case MixBlend.first:
+                    case MixBlend.replace:
+                        bone.shearX += (bone.data.shearX + x - bone.shearX) * alpha;
+                        bone.shearY += (bone.data.shearY + y - bone.shearY) * alpha;
+                        break;
+                    case MixBlend.add:
+                        bone.shearX += x * alpha;
+                        bone.shearY += y * alpha;
                 }
             };
             return ShearTimeline;
@@ -431,15 +480,15 @@ var pixi_spine;
                 this.frames[frameIndex + ColorTimeline.B] = b;
                 this.frames[frameIndex + ColorTimeline.A] = a;
             };
-            ColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            ColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var slot = skeleton.slots[this.slotIndex];
                 var frames = this.frames;
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             slot.color.setFromColor(slot.data.color);
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             var color = slot.color, setup = slot.data.color;
                             color.add((setup.r - color.r) * alpha, (setup.g - color.g) * alpha, (setup.b - color.b) * alpha, (setup.a - color.a) * alpha);
                     }
@@ -470,7 +519,7 @@ var pixi_spine;
                     slot.color.set(r, g, b, a);
                 else {
                     var color = slot.color;
-                    if (pose == MixPose.setup)
+                    if (blend == MixBlend.setup)
                         color.setFromColor(slot.data.color);
                     color.add((r - color.r) * alpha, (g - color.g) * alpha, (b - color.b) * alpha, (a - color.a) * alpha);
                 }
@@ -509,16 +558,16 @@ var pixi_spine;
                 this.frames[frameIndex + TwoColorTimeline.G2] = g2;
                 this.frames[frameIndex + TwoColorTimeline.B2] = b2;
             };
-            TwoColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            TwoColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var slot = skeleton.slots[this.slotIndex];
                 var frames = this.frames;
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             slot.color.setFromColor(slot.data.color);
                             slot.darkColor.setFromColor(slot.data.darkColor);
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             var light = slot.color, dark = slot.darkColor, setupLight = slot.data.color, setupDark = slot.data.darkColor;
                             light.add((setupLight.r - light.r) * alpha, (setupLight.g - light.g) * alpha, (setupLight.b - light.b) * alpha, (setupLight.a - light.a) * alpha);
                             dark.add((setupDark.r - dark.r) * alpha, (setupDark.g - dark.g) * alpha, (setupDark.b - dark.b) * alpha, 0);
@@ -561,7 +610,7 @@ var pixi_spine;
                 }
                 else {
                     var light = slot.color, dark = slot.darkColor;
-                    if (pose == MixPose.setup) {
+                    if (blend == MixBlend.setup) {
                         light.setFromColor(slot.data.color);
                         dark.setFromColor(slot.data.darkColor);
                     }
@@ -603,16 +652,16 @@ var pixi_spine;
                 this.frames[frameIndex] = time;
                 this.attachmentNames[frameIndex] = attachmentName;
             };
-            AttachmentTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, pose, direction) {
+            AttachmentTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
                 var slot = skeleton.slots[this.slotIndex];
-                if (direction == MixDirection.out && pose == MixPose.setup) {
+                if (direction == MixDirection.out && blend == MixBlend.setup) {
                     var attachmentName_1 = slot.data.attachmentName;
                     slot.setAttachment(attachmentName_1 == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName_1));
                     return;
                 }
                 var frames = this.frames;
                 if (time < frames[0]) {
-                    if (pose == MixPose.setup) {
+                    if (blend == MixBlend.setup || blend == MixBlend.first) {
                         var attachmentName_2 = slot.data.attachmentName;
                         slot.setAttachment(attachmentName_2 == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName_2));
                     }
@@ -648,24 +697,24 @@ var pixi_spine;
                 this.frames[frameIndex] = time;
                 this.frameVertices[frameIndex] = vertices;
             };
-            DeformTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            DeformTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var slot = skeleton.slots[this.slotIndex];
                 var slotAttachment = slot.getAttachment();
                 if (!(slotAttachment instanceof core.VertexAttachment) || !slotAttachment.applyDeform(this.attachment))
                     return;
                 var verticesArray = slot.attachmentVertices;
                 if (verticesArray.length == 0)
-                    alpha = 1;
+                    blend = MixBlend.setup;
                 var frameVertices = this.frameVertices;
                 var vertexCount = frameVertices[0].length;
                 var frames = this.frames;
                 if (time < frames[0]) {
                     var vertexAttachment = slotAttachment;
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             verticesArray.length = 0;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             if (alpha == 1) {
                                 verticesArray.length = 0;
                                 break;
@@ -688,25 +737,57 @@ var pixi_spine;
                 if (time >= frames[frames.length - 1]) {
                     var lastVertices = frameVertices[frames.length - 1];
                     if (alpha == 1) {
-                        core.Utils.arrayCopy(lastVertices, 0, vertices, 0, vertexCount);
-                    }
-                    else if (pose == MixPose.setup) {
-                        var vertexAttachment = slotAttachment;
-                        if (vertexAttachment.bones == null) {
-                            var setupVertices = vertexAttachment.vertices;
-                            for (var i = 0; i < vertexCount; i++) {
-                                var setup = setupVertices[i];
-                                vertices[i] = setup + (lastVertices[i] - setup) * alpha;
+                        if (blend == MixBlend.add) {
+                            var vertexAttachment = slotAttachment;
+                            if (vertexAttachment.bones == null) {
+                                var setupVertices = vertexAttachment.vertices;
+                                for (var i = 0; i < vertexCount; i++) {
+                                    vertices[i] += lastVertices[i] - setupVertices[i];
+                                }
+                            }
+                            else {
+                                for (var i = 0; i < vertexCount; i++)
+                                    vertices[i] += lastVertices[i];
                             }
                         }
                         else {
-                            for (var i = 0; i < vertexCount; i++)
-                                vertices[i] = lastVertices[i] * alpha;
+                            core.Utils.arrayCopy(lastVertices, 0, vertices, 0, vertexCount);
                         }
                     }
                     else {
-                        for (var i = 0; i < vertexCount; i++)
-                            vertices[i] += (lastVertices[i] - vertices[i]) * alpha;
+                        switch (blend) {
+                            case MixBlend.setup: {
+                                var vertexAttachment_1 = slotAttachment;
+                                if (vertexAttachment_1.bones == null) {
+                                    var setupVertices = vertexAttachment_1.vertices;
+                                    for (var i = 0; i < vertexCount; i++) {
+                                        var setup = setupVertices[i];
+                                        vertices[i] = setup + (lastVertices[i] - setup) * alpha;
+                                    }
+                                }
+                                else {
+                                    for (var i = 0; i < vertexCount; i++)
+                                        vertices[i] = lastVertices[i] * alpha;
+                                }
+                                break;
+                            }
+                            case MixBlend.first:
+                            case MixBlend.replace:
+                                for (var i = 0; i < vertexCount; i++)
+                                    vertices[i] += (lastVertices[i] - vertices[i]) * alpha;
+                            case MixBlend.add:
+                                var vertexAttachment = slotAttachment;
+                                if (vertexAttachment.bones == null) {
+                                    var setupVertices = vertexAttachment.vertices;
+                                    for (var i = 0; i < vertexCount; i++) {
+                                        vertices[i] += (lastVertices[i] - setupVertices[i]) * alpha;
+                                    }
+                                }
+                                else {
+                                    for (var i = 0; i < vertexCount; i++)
+                                        vertices[i] += lastVertices[i] * alpha;
+                                }
+                        }
                     }
                     return;
                 }
@@ -716,31 +797,70 @@ var pixi_spine;
                 var frameTime = frames[frame];
                 var percent = this.getCurvePercent(frame - 1, 1 - (time - frameTime) / (frames[frame - 1] - frameTime));
                 if (alpha == 1) {
-                    for (var i = 0; i < vertexCount; i++) {
-                        var prev = prevVertices[i];
-                        vertices[i] = prev + (nextVertices[i] - prev) * percent;
-                    }
-                }
-                else if (pose == MixPose.setup) {
-                    var vertexAttachment = slotAttachment;
-                    if (vertexAttachment.bones == null) {
-                        var setupVertices = vertexAttachment.vertices;
-                        for (var i = 0; i < vertexCount; i++) {
-                            var prev = prevVertices[i], setup = setupVertices[i];
-                            vertices[i] = setup + (prev + (nextVertices[i] - prev) * percent - setup) * alpha;
+                    if (blend == MixBlend.add) {
+                        var vertexAttachment = slotAttachment;
+                        if (vertexAttachment.bones == null) {
+                            var setupVertices = vertexAttachment.vertices;
+                            for (var i = 0; i < vertexCount; i++) {
+                                var prev = prevVertices[i];
+                                vertices[i] += prev + (nextVertices[i] - prev) * percent - setupVertices[i];
+                            }
+                        }
+                        else {
+                            for (var i = 0; i < vertexCount; i++) {
+                                var prev = prevVertices[i];
+                                vertices[i] += prev + (nextVertices[i] - prev) * percent;
+                            }
                         }
                     }
                     else {
                         for (var i = 0; i < vertexCount; i++) {
                             var prev = prevVertices[i];
-                            vertices[i] = (prev + (nextVertices[i] - prev) * percent) * alpha;
+                            vertices[i] = prev + (nextVertices[i] - prev) * percent;
                         }
                     }
                 }
                 else {
-                    for (var i = 0; i < vertexCount; i++) {
-                        var prev = prevVertices[i];
-                        vertices[i] += (prev + (nextVertices[i] - prev) * percent - vertices[i]) * alpha;
+                    switch (blend) {
+                        case MixBlend.setup: {
+                            var vertexAttachment_2 = slotAttachment;
+                            if (vertexAttachment_2.bones == null) {
+                                var setupVertices = vertexAttachment_2.vertices;
+                                for (var i = 0; i < vertexCount; i++) {
+                                    var prev = prevVertices[i], setup = setupVertices[i];
+                                    vertices[i] = setup + (prev + (nextVertices[i] - prev) * percent - setup) * alpha;
+                                }
+                            }
+                            else {
+                                for (var i = 0; i < vertexCount; i++) {
+                                    var prev = prevVertices[i];
+                                    vertices[i] = (prev + (nextVertices[i] - prev) * percent) * alpha;
+                                }
+                            }
+                            break;
+                        }
+                        case MixBlend.first:
+                        case MixBlend.replace:
+                            for (var i = 0; i < vertexCount; i++) {
+                                var prev = prevVertices[i];
+                                vertices[i] += (prev + (nextVertices[i] - prev) * percent - vertices[i]) * alpha;
+                            }
+                            break;
+                        case MixBlend.add:
+                            var vertexAttachment = slotAttachment;
+                            if (vertexAttachment.bones == null) {
+                                var setupVertices = vertexAttachment.vertices;
+                                for (var i = 0; i < vertexCount; i++) {
+                                    var prev = prevVertices[i];
+                                    vertices[i] += (prev + (nextVertices[i] - prev) * percent - setupVertices[i]) * alpha;
+                                }
+                            }
+                            else {
+                                for (var i = 0; i < vertexCount; i++) {
+                                    var prev = prevVertices[i];
+                                    vertices[i] += (prev + (nextVertices[i] - prev) * percent) * alpha;
+                                }
+                            }
                     }
                 }
             };
@@ -762,13 +882,13 @@ var pixi_spine;
                 this.frames[frameIndex] = event.time;
                 this.events[frameIndex] = event;
             };
-            EventTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            EventTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 if (firedEvents == null)
                     return;
                 var frames = this.frames;
                 var frameCount = this.frames.length;
                 if (lastTime > time) {
-                    this.apply(skeleton, lastTime, Number.MAX_VALUE, firedEvents, alpha, pose, direction);
+                    this.apply(skeleton, lastTime, Number.MAX_VALUE, firedEvents, alpha, blend, direction);
                     lastTime = -1;
                 }
                 else if (lastTime >= frames[frameCount - 1])
@@ -808,16 +928,16 @@ var pixi_spine;
                 this.frames[frameIndex] = time;
                 this.drawOrders[frameIndex] = drawOrder;
             };
-            DrawOrderTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            DrawOrderTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var drawOrder = skeleton.drawOrder;
                 var slots = skeleton.slots;
-                if (direction == MixDirection.out && pose == MixPose.setup) {
+                if (direction == MixDirection.out && blend == MixBlend.setup) {
                     core.Utils.arrayCopy(skeleton.slots, 0, skeleton.drawOrder, 0, skeleton.slots.length);
                     return;
                 }
                 var frames = this.frames;
                 if (time < frames[0]) {
-                    if (pose == MixPose.setup)
+                    if (blend == MixBlend.setup || blend == MixBlend.first)
                         core.Utils.arrayCopy(skeleton.slots, 0, skeleton.drawOrder, 0, skeleton.slots.length);
                     return;
                 }
@@ -847,37 +967,54 @@ var pixi_spine;
             IkConstraintTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.ikConstraint << 24) + this.ikConstraintIndex;
             };
-            IkConstraintTimeline.prototype.setFrame = function (frameIndex, time, mix, bendDirection) {
+            IkConstraintTimeline.prototype.setFrame = function (frameIndex, time, mix, bendDirection, compress, stretch) {
                 frameIndex *= IkConstraintTimeline.ENTRIES;
                 this.frames[frameIndex] = time;
                 this.frames[frameIndex + IkConstraintTimeline.MIX] = mix;
                 this.frames[frameIndex + IkConstraintTimeline.BEND_DIRECTION] = bendDirection;
+                this.frames[frameIndex + IkConstraintTimeline.COMPRESS] = compress ? 1 : 0;
+                this.frames[frameIndex + IkConstraintTimeline.STRETCH] = stretch ? 1 : 0;
             };
-            IkConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            IkConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var frames = this.frames;
                 var constraint = skeleton.ikConstraints[this.ikConstraintIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             constraint.mix = constraint.data.mix;
                             constraint.bendDirection = constraint.data.bendDirection;
+                            constraint.compress = constraint.data.compress;
+                            constraint.stretch = constraint.data.stretch;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             constraint.mix += (constraint.data.mix - constraint.mix) * alpha;
                             constraint.bendDirection = constraint.data.bendDirection;
+                            constraint.compress = constraint.data.compress;
+                            constraint.stretch = constraint.data.stretch;
                     }
                     return;
                 }
                 if (time >= frames[frames.length - IkConstraintTimeline.ENTRIES]) {
-                    if (pose == MixPose.setup) {
+                    if (blend == MixBlend.setup) {
                         constraint.mix = constraint.data.mix + (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.data.mix) * alpha;
-                        constraint.bendDirection = direction == MixDirection.out ? constraint.data.bendDirection
-                            : frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                        if (direction == MixDirection.out) {
+                            constraint.bendDirection = constraint.data.bendDirection;
+                            constraint.compress = constraint.data.compress;
+                            constraint.stretch = constraint.data.stretch;
+                        }
+                        else {
+                            constraint.bendDirection = frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                            constraint.compress = frames[frames.length + IkConstraintTimeline.PREV_COMPRESS] != 0;
+                            constraint.stretch = frames[frames.length + IkConstraintTimeline.PREV_STRETCH] != 0;
+                        }
                     }
                     else {
                         constraint.mix += (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.mix) * alpha;
-                        if (direction == MixDirection.in)
+                        if (direction == MixDirection.in) {
                             constraint.bendDirection = frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                            constraint.compress = frames[frames.length + IkConstraintTimeline.PREV_COMPRESS] != 0;
+                            constraint.stretch = frames[frames.length + IkConstraintTimeline.PREV_STRETCH] != 0;
+                        }
                     }
                     return;
                 }
@@ -885,22 +1022,38 @@ var pixi_spine;
                 var mix = frames[frame + IkConstraintTimeline.PREV_MIX];
                 var frameTime = frames[frame];
                 var percent = this.getCurvePercent(frame / IkConstraintTimeline.ENTRIES - 1, 1 - (time - frameTime) / (frames[frame + IkConstraintTimeline.PREV_TIME] - frameTime));
-                if (pose == MixPose.setup) {
+                if (blend == MixBlend.setup) {
                     constraint.mix = constraint.data.mix + (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.data.mix) * alpha;
-                    constraint.bendDirection = direction == MixDirection.out ? constraint.data.bendDirection : frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                    if (direction == MixDirection.out) {
+                        constraint.bendDirection = constraint.data.bendDirection;
+                        constraint.compress = constraint.data.compress;
+                        constraint.stretch = constraint.data.stretch;
+                    }
+                    else {
+                        constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                        constraint.compress = frames[frame + IkConstraintTimeline.PREV_COMPRESS] != 0;
+                        constraint.stretch = frames[frame + IkConstraintTimeline.PREV_STRETCH] != 0;
+                    }
                 }
                 else {
                     constraint.mix += (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.mix) * alpha;
-                    if (direction == MixDirection.in)
+                    if (direction == MixDirection.in) {
                         constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
+                        constraint.compress = frames[frame + IkConstraintTimeline.PREV_COMPRESS] != 0;
+                        constraint.stretch = frames[frame + IkConstraintTimeline.PREV_STRETCH] != 0;
+                    }
                 }
             };
-            IkConstraintTimeline.ENTRIES = 3;
-            IkConstraintTimeline.PREV_TIME = -3;
-            IkConstraintTimeline.PREV_MIX = -2;
-            IkConstraintTimeline.PREV_BEND_DIRECTION = -1;
+            IkConstraintTimeline.ENTRIES = 5;
+            IkConstraintTimeline.PREV_TIME = -5;
+            IkConstraintTimeline.PREV_MIX = -4;
+            IkConstraintTimeline.PREV_BEND_DIRECTION = -3;
+            IkConstraintTimeline.PREV_COMPRESS = -2;
+            IkConstraintTimeline.PREV_STRETCH = -1;
             IkConstraintTimeline.MIX = 1;
             IkConstraintTimeline.BEND_DIRECTION = 2;
+            IkConstraintTimeline.COMPRESS = 3;
+            IkConstraintTimeline.STRETCH = 4;
             return IkConstraintTimeline;
         }(CurveTimeline));
         core.IkConstraintTimeline = IkConstraintTimeline;
@@ -922,19 +1075,19 @@ var pixi_spine;
                 this.frames[frameIndex + TransformConstraintTimeline.SCALE] = scaleMix;
                 this.frames[frameIndex + TransformConstraintTimeline.SHEAR] = shearMix;
             };
-            TransformConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            TransformConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var frames = this.frames;
                 var constraint = skeleton.transformConstraints[this.transformConstraintIndex];
                 if (time < frames[0]) {
                     var data = constraint.data;
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             constraint.rotateMix = data.rotateMix;
                             constraint.translateMix = data.translateMix;
                             constraint.scaleMix = data.scaleMix;
                             constraint.shearMix = data.shearMix;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             constraint.rotateMix += (data.rotateMix - constraint.rotateMix) * alpha;
                             constraint.translateMix += (data.translateMix - constraint.translateMix) * alpha;
                             constraint.scaleMix += (data.scaleMix - constraint.scaleMix) * alpha;
@@ -963,7 +1116,7 @@ var pixi_spine;
                     scale += (frames[frame + TransformConstraintTimeline.SCALE] - scale) * percent;
                     shear += (frames[frame + TransformConstraintTimeline.SHEAR] - shear) * percent;
                 }
-                if (pose == MixPose.setup) {
+                if (blend == MixBlend.setup) {
                     var data = constraint.data;
                     constraint.rotateMix = data.rotateMix + (rotate - data.rotateMix) * alpha;
                     constraint.translateMix = data.translateMix + (translate - data.translateMix) * alpha;
@@ -1005,15 +1158,15 @@ var pixi_spine;
                 this.frames[frameIndex] = time;
                 this.frames[frameIndex + PathConstraintPositionTimeline.VALUE] = value;
             };
-            PathConstraintPositionTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            PathConstraintPositionTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var frames = this.frames;
                 var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             constraint.position = constraint.data.position;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             constraint.position += (constraint.data.position - constraint.position) * alpha;
                     }
                     return;
@@ -1028,7 +1181,7 @@ var pixi_spine;
                     var percent = this.getCurvePercent(frame / PathConstraintPositionTimeline.ENTRIES - 1, 1 - (time - frameTime) / (frames[frame + PathConstraintPositionTimeline.PREV_TIME] - frameTime));
                     position += (frames[frame + PathConstraintPositionTimeline.VALUE] - position) * percent;
                 }
-                if (pose == MixPose.setup)
+                if (blend == MixBlend.setup)
                     constraint.position = constraint.data.position + (position - constraint.data.position) * alpha;
                 else
                     constraint.position += (position - constraint.position) * alpha;
@@ -1048,15 +1201,15 @@ var pixi_spine;
             PathConstraintSpacingTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.pathConstraintSpacing << 24) + this.pathConstraintIndex;
             };
-            PathConstraintSpacingTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            PathConstraintSpacingTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var frames = this.frames;
                 var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             constraint.spacing = constraint.data.spacing;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             constraint.spacing += (constraint.data.spacing - constraint.spacing) * alpha;
                     }
                     return;
@@ -1071,7 +1224,7 @@ var pixi_spine;
                     var percent = this.getCurvePercent(frame / PathConstraintSpacingTimeline.ENTRIES - 1, 1 - (time - frameTime) / (frames[frame + PathConstraintSpacingTimeline.PREV_TIME] - frameTime));
                     spacing += (frames[frame + PathConstraintSpacingTimeline.VALUE] - spacing) * percent;
                 }
-                if (pose == MixPose.setup)
+                if (blend == MixBlend.setup)
                     constraint.spacing = constraint.data.spacing + (spacing - constraint.data.spacing) * alpha;
                 else
                     constraint.spacing += (spacing - constraint.spacing) * alpha;
@@ -1095,16 +1248,16 @@ var pixi_spine;
                 this.frames[frameIndex + PathConstraintMixTimeline.ROTATE] = rotateMix;
                 this.frames[frameIndex + PathConstraintMixTimeline.TRANSLATE] = translateMix;
             };
-            PathConstraintMixTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, pose, direction) {
+            PathConstraintMixTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
                 var frames = this.frames;
                 var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
                 if (time < frames[0]) {
-                    switch (pose) {
-                        case MixPose.setup:
+                    switch (blend) {
+                        case MixBlend.setup:
                             constraint.rotateMix = constraint.data.rotateMix;
                             constraint.translateMix = constraint.data.translateMix;
                             return;
-                        case MixPose.current:
+                        case MixBlend.first:
                             constraint.rotateMix += (constraint.data.rotateMix - constraint.rotateMix) * alpha;
                             constraint.translateMix += (constraint.data.translateMix - constraint.translateMix) * alpha;
                     }
@@ -1124,7 +1277,7 @@ var pixi_spine;
                     rotate += (frames[frame + PathConstraintMixTimeline.ROTATE] - rotate) * percent;
                     translate += (frames[frame + PathConstraintMixTimeline.TRANSLATE] - translate) * percent;
                 }
-                if (pose == MixPose.setup) {
+                if (blend == MixBlend.setup) {
                     constraint.rotateMix = constraint.data.rotateMix + (rotate - constraint.data.rotateMix) * alpha;
                     constraint.translateMix = constraint.data.translateMix + (translate - constraint.data.translateMix) * alpha;
                 }
@@ -1155,7 +1308,6 @@ var pixi_spine;
                 this.listeners = new Array();
                 this.queue = new EventQueue(this);
                 this.propertyIDs = new core.IntSet();
-                this.mixingTo = new Array();
                 this.animationsChanged = false;
                 this.timeScale = 1;
                 this.trackEntryPool = new core.Pool(function () { return new TrackEntry(); });
@@ -1183,11 +1335,11 @@ var pixi_spine;
                         var nextTime = current.trackLast - next.delay;
                         if (nextTime >= 0) {
                             next.delay = 0;
-                            next.trackTime = nextTime + delta * next.timeScale;
+                            next.trackTime = current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
                             current.trackTime += currentDelta;
                             this.setCurrent(i, next, true);
                             while (next.mixingFrom != null) {
-                                next.mixTime += currentDelta;
+                                next.mixTime += delta;
                                 next = next.mixingFrom;
                             }
                             continue;
@@ -1202,6 +1354,8 @@ var pixi_spine;
                     if (current.mixingFrom != null && this.updateMixingFrom(current, delta)) {
                         var from = current.mixingFrom;
                         current.mixingFrom = null;
+                        if (from != null)
+                            from.mixingTo = null;
                         while (from != null) {
                             this.queue.end(from);
                             from = from.mixingFrom;
@@ -1218,16 +1372,18 @@ var pixi_spine;
                 var finished = this.updateMixingFrom(from, delta);
                 from.animationLast = from.nextAnimationLast;
                 from.trackLast = from.nextTrackLast;
-                if (to.mixTime > 0 && (to.mixTime >= to.mixDuration || to.timeScale == 0)) {
-                    if (from.totalAlpha == 0) {
+                if (to.mixTime > 0 && to.mixTime >= to.mixDuration) {
+                    if (from.totalAlpha == 0 || to.mixDuration == 0) {
                         to.mixingFrom = from.mixingFrom;
+                        if (from.mixingFrom != null)
+                            from.mixingFrom.mixingTo = to;
                         to.interruptAlpha = from.interruptAlpha;
                         this.queue.end(from);
                     }
                     return finished;
                 }
                 from.trackTime += delta * from.timeScale;
-                to.mixTime += delta * to.timeScale;
+                to.mixTime += delta;
                 return false;
             };
             AnimationState.prototype.apply = function (skeleton) {
@@ -1243,34 +1399,34 @@ var pixi_spine;
                     if (current == null || current.delay > 0)
                         continue;
                     applied = true;
-                    var currentPose = i == 0 ? core.MixPose.current : core.MixPose.currentLayered;
+                    var blend = i == 0 ? core.MixBlend.first : current.mixBlend;
                     var mix = current.alpha;
                     if (current.mixingFrom != null)
-                        mix *= this.applyMixingFrom(current, skeleton, currentPose);
+                        mix *= this.applyMixingFrom(current, skeleton, blend);
                     else if (current.trackTime >= current.trackEnd && current.next == null)
                         mix = 0;
                     var animationLast = current.animationLast, animationTime = current.getAnimationTime();
                     var timelineCount = current.animation.timelines.length;
                     var timelines = current.animation.timelines;
-                    if (mix == 1) {
+                    if (i == 0 && (mix == 1 || blend == core.MixBlend.add)) {
                         for (var ii = 0; ii < timelineCount; ii++)
-                            timelines[ii].apply(skeleton, animationLast, animationTime, events, 1, core.MixPose.setup, core.MixDirection.in);
+                            timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, core.MixDirection.in);
                     }
                     else {
-                        var timelineData = current.timelineData;
+                        var timelineMode = current.timelineMode;
                         var firstFrame = current.timelinesRotation.length == 0;
                         if (firstFrame)
                             core.Utils.setArraySize(current.timelinesRotation, timelineCount << 1, null);
                         var timelinesRotation = current.timelinesRotation;
                         for (var ii = 0; ii < timelineCount; ii++) {
                             var timeline = timelines[ii];
-                            var pose = timelineData[ii] >= AnimationState.FIRST ? core.MixPose.setup : currentPose;
+                            var timelineBlend = timelineMode[ii] == AnimationState.SUBSEQUENT ? blend : core.MixBlend.setup;
                             if (timeline instanceof core.RotateTimeline) {
-                                this.applyRotateTimeline(timeline, skeleton, animationTime, mix, pose, timelinesRotation, ii << 1, firstFrame);
+                                this.applyRotateTimeline(timeline, skeleton, animationTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
                             }
                             else {
-                                core.Utils.webkit602BugfixHelper(mix, pose);
-                                timeline.apply(skeleton, animationLast, animationTime, events, mix, pose, core.MixDirection.in);
+                                core.Utils.webkit602BugfixHelper(mix, blend);
+                                timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, core.MixDirection.in);
                             }
                         }
                     }
@@ -1282,65 +1438,86 @@ var pixi_spine;
                 this.queue.drain();
                 return applied;
             };
-            AnimationState.prototype.applyMixingFrom = function (to, skeleton, currentPose) {
+            AnimationState.prototype.applyMixingFrom = function (to, skeleton, blend) {
                 var from = to.mixingFrom;
                 if (from.mixingFrom != null)
-                    this.applyMixingFrom(from, skeleton, currentPose);
+                    this.applyMixingFrom(from, skeleton, blend);
                 var mix = 0;
                 if (to.mixDuration == 0) {
                     mix = 1;
-                    currentPose = core.MixPose.setup;
+                    if (blend == core.MixBlend.first)
+                        blend = core.MixBlend.setup;
                 }
                 else {
                     mix = to.mixTime / to.mixDuration;
                     if (mix > 1)
                         mix = 1;
+                    if (blend != core.MixBlend.first)
+                        blend = from.mixBlend;
                 }
                 var events = mix < from.eventThreshold ? this.events : null;
                 var attachments = mix < from.attachmentThreshold, drawOrder = mix < from.drawOrderThreshold;
                 var animationLast = from.animationLast, animationTime = from.getAnimationTime();
                 var timelineCount = from.animation.timelines.length;
                 var timelines = from.animation.timelines;
-                var timelineData = from.timelineData;
-                var timelineDipMix = from.timelineDipMix;
-                var firstFrame = from.timelinesRotation.length == 0;
-                if (firstFrame)
-                    core.Utils.setArraySize(from.timelinesRotation, timelineCount << 1, null);
-                var timelinesRotation = from.timelinesRotation;
-                var pose;
-                var alphaDip = from.alpha * to.interruptAlpha, alphaMix = alphaDip * (1 - mix), alpha = 0;
-                from.totalAlpha = 0;
-                for (var i = 0; i < timelineCount; i++) {
-                    var timeline = timelines[i];
-                    switch (timelineData[i]) {
-                        case AnimationState.SUBSEQUENT:
-                            if (!attachments && timeline instanceof core.AttachmentTimeline)
-                                continue;
-                            if (!drawOrder && timeline instanceof core.DrawOrderTimeline)
-                                continue;
-                            pose = currentPose;
-                            alpha = alphaMix;
-                            break;
-                        case AnimationState.FIRST:
-                            pose = core.MixPose.setup;
-                            alpha = alphaMix;
-                            break;
-                        case AnimationState.DIP:
-                            pose = core.MixPose.setup;
-                            alpha = alphaDip;
-                            break;
-                        default:
-                            pose = core.MixPose.setup;
-                            alpha = alphaDip;
-                            var dipMix = timelineDipMix[i];
-                            alpha *= Math.max(0, 1 - dipMix.mixTime / dipMix.mixDuration);
-                            break;
-                    }
-                    from.totalAlpha += alpha;
-                    if (timeline instanceof core.RotateTimeline)
-                        this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, pose, timelinesRotation, i << 1, firstFrame);
-                    else {
-                        timeline.apply(skeleton, animationLast, animationTime, events, alpha, pose, core.MixDirection.out);
+                var alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
+                if (blend == core.MixBlend.add) {
+                    for (var i = 0; i < timelineCount; i++)
+                        timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, core.MixDirection.out);
+                }
+                else {
+                    var timelineMode = from.timelineMode;
+                    var timelineHoldMix = from.timelineHoldMix;
+                    var firstFrame = from.timelinesRotation.length == 0;
+                    if (firstFrame)
+                        core.Utils.setArraySize(from.timelinesRotation, timelineCount << 1, null);
+                    var timelinesRotation = from.timelinesRotation;
+                    from.totalAlpha = 0;
+                    for (var i = 0; i < timelineCount; i++) {
+                        var timeline = timelines[i];
+                        var direction = core.MixDirection.out;
+                        var timelineBlend = void 0;
+                        var alpha = 0;
+                        switch (timelineMode[i]) {
+                            case AnimationState.SUBSEQUENT:
+                                if (!attachments && timeline instanceof core.AttachmentTimeline)
+                                    continue;
+                                if (!drawOrder && timeline instanceof core.DrawOrderTimeline)
+                                    continue;
+                                timelineBlend = blend;
+                                alpha = alphaMix;
+                                break;
+                            case AnimationState.FIRST:
+                                timelineBlend = core.MixBlend.setup;
+                                alpha = alphaMix;
+                                break;
+                            case AnimationState.HOLD:
+                                timelineBlend = core.MixBlend.setup;
+                                alpha = alphaHold;
+                                break;
+                            default:
+                                timelineBlend = core.MixBlend.setup;
+                                var holdMix = timelineHoldMix[i];
+                                alpha = alphaHold * Math.max(0, 1 - holdMix.mixTime / holdMix.mixDuration);
+                                break;
+                        }
+                        from.totalAlpha += alpha;
+                        if (timeline instanceof core.RotateTimeline)
+                            this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, timelineBlend, timelinesRotation, i << 1, firstFrame);
+                        else {
+                            core.Utils.webkit602BugfixHelper(alpha, blend);
+                            if (timelineBlend == core.MixBlend.setup) {
+                                if (timeline instanceof core.AttachmentTimeline) {
+                                    if (attachments)
+                                        direction = core.MixDirection.out;
+                                }
+                                else if (timeline instanceof core.DrawOrderTimeline) {
+                                    if (drawOrder)
+                                        direction = core.MixDirection.out;
+                                }
+                            }
+                            timeline.apply(skeleton, animationLast, animationTime, events, alpha, timelineBlend, direction);
+                        }
                     }
                 }
                 if (to.mixDuration > 0)
@@ -1350,41 +1527,49 @@ var pixi_spine;
                 from.nextTrackLast = from.trackTime;
                 return mix;
             };
-            AnimationState.prototype.applyRotateTimeline = function (timeline, skeleton, time, alpha, pose, timelinesRotation, i, firstFrame) {
+            AnimationState.prototype.applyRotateTimeline = function (timeline, skeleton, time, alpha, blend, timelinesRotation, i, firstFrame) {
                 if (firstFrame)
                     timelinesRotation[i] = 0;
                 if (alpha == 1) {
-                    timeline.apply(skeleton, 0, time, null, 1, pose, core.MixDirection.in);
+                    timeline.apply(skeleton, 0, time, null, 1, blend, core.MixDirection.in);
                     return;
                 }
                 var rotateTimeline = timeline;
                 var frames = rotateTimeline.frames;
                 var bone = skeleton.bones[rotateTimeline.boneIndex];
+                var r1 = 0, r2 = 0;
                 if (time < frames[0]) {
-                    if (pose == core.MixPose.setup)
-                        bone.rotation = bone.data.rotation;
-                    return;
+                    switch (blend) {
+                        case core.MixBlend.setup:
+                            bone.rotation = bone.data.rotation;
+                        default:
+                            return;
+                        case core.MixBlend.first:
+                            r1 = bone.rotation;
+                            r2 = bone.data.rotation;
+                    }
                 }
-                var r2 = 0;
-                if (time >= frames[frames.length - core.RotateTimeline.ENTRIES])
-                    r2 = bone.data.rotation + frames[frames.length + core.RotateTimeline.PREV_ROTATION];
                 else {
-                    var frame = core.Animation.binarySearch(frames, time, core.RotateTimeline.ENTRIES);
-                    var prevRotation = frames[frame + core.RotateTimeline.PREV_ROTATION];
-                    var frameTime = frames[frame];
-                    var percent = rotateTimeline.getCurvePercent((frame >> 1) - 1, 1 - (time - frameTime) / (frames[frame + core.RotateTimeline.PREV_TIME] - frameTime));
-                    r2 = frames[frame + core.RotateTimeline.ROTATION] - prevRotation;
-                    r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
-                    r2 = prevRotation + r2 * percent + bone.data.rotation;
-                    r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                    r1 = blend == core.MixBlend.setup ? bone.data.rotation : bone.rotation;
+                    if (time >= frames[frames.length - core.RotateTimeline.ENTRIES])
+                        r2 = bone.data.rotation + frames[frames.length + core.RotateTimeline.PREV_ROTATION];
+                    else {
+                        var frame = core.Animation.binarySearch(frames, time, core.RotateTimeline.ENTRIES);
+                        var prevRotation = frames[frame + core.RotateTimeline.PREV_ROTATION];
+                        var frameTime = frames[frame];
+                        var percent = rotateTimeline.getCurvePercent((frame >> 1) - 1, 1 - (time - frameTime) / (frames[frame + core.RotateTimeline.PREV_TIME] - frameTime));
+                        r2 = frames[frame + core.RotateTimeline.ROTATION] - prevRotation;
+                        r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                        r2 = prevRotation + r2 * percent + bone.data.rotation;
+                        r2 -= (16384 - ((16384.499999999996 - r2 / 360) | 0)) * 360;
+                    }
                 }
-                var r1 = pose == core.MixPose.setup ? bone.data.rotation : bone.rotation;
                 var total = 0, diff = r2 - r1;
+                diff -= (16384 - ((16384.499999999996 - diff / 360) | 0)) * 360;
                 if (diff == 0) {
                     total = timelinesRotation[i];
                 }
                 else {
-                    diff -= (16384 - ((16384.499999999996 - diff / 360) | 0)) * 360;
                     var lastTotal = 0, lastDiff = 0;
                     if (firstFrame) {
                         lastTotal = 0;
@@ -1423,10 +1608,13 @@ var pixi_spine;
                         continue;
                     this.queue.event(entry, event_1);
                 }
-                if (entry.loop ? (trackLastWrapped > entry.trackTime % duration)
-                    : (animationTime >= animationEnd && entry.animationLast < animationEnd)) {
+                var complete = false;
+                if (entry.loop)
+                    complete = duration == 0 || trackLastWrapped > entry.trackTime % duration;
+                else
+                    complete = animationTime >= animationEnd && entry.animationLast < animationEnd;
+                if (complete)
                     this.queue.complete(entry);
-                }
                 for (; i < n; i++) {
                     var event_2 = events[i];
                     if (event_2.time < animationStart)
@@ -1458,6 +1646,7 @@ var pixi_spine;
                         break;
                     this.queue.end(from);
                     entry.mixingFrom = null;
+                    entry.mixingTo = null;
                     entry = from;
                 }
                 this.tracks[current.trackIndex] = null;
@@ -1470,6 +1659,7 @@ var pixi_spine;
                     if (interrupt)
                         this.queue.interrupt(from);
                     current.mixingFrom = from;
+                    from.mixingTo = current;
                     current.mixTime = 0;
                     if (from.mixingFrom != null && from.mixDuration > 0)
                         current.interruptAlpha *= Math.min(1, from.mixTime / from.mixDuration);
@@ -1506,14 +1696,12 @@ var pixi_spine;
                 return entry;
             };
             AnimationState.prototype.addAnimation = function (trackIndex, animationName, loop, delay) {
-                if (delay === void 0) { delay = 0; }
                 var animation = this.data.skeletonData.findAnimation(animationName);
                 if (animation == null)
                     throw new Error("Animation not found: " + animationName);
                 return this.addAnimationWith(trackIndex, animation, loop, delay);
             };
             AnimationState.prototype.addAnimationWith = function (trackIndex, animation, loop, delay) {
-                if (delay === void 0) { delay = 0; }
                 if (animation == null)
                     throw new Error("animation cannot be null.");
                 var last = this.expandToIndex(trackIndex);
@@ -1534,11 +1722,11 @@ var pixi_spine;
                             if (last.loop)
                                 delay += duration * (1 + ((last.trackTime / duration) | 0));
                             else
-                                delay += duration;
+                                delay += Math.max(duration, last.trackTime);
                             delay -= this.data.getMix(last.animation, animation);
                         }
                         else
-                            delay = 0;
+                            delay = last.trackTime;
                     }
                 }
                 entry.delay = delay;
@@ -1581,6 +1769,7 @@ var pixi_spine;
                 entry.trackIndex = trackIndex;
                 entry.animation = animation;
                 entry.loop = loop;
+                entry.holdPrevious = false;
                 entry.eventThreshold = 0;
                 entry.attachmentThreshold = 0;
                 entry.drawOrderThreshold = 0;
@@ -1610,15 +1799,62 @@ var pixi_spine;
             };
             AnimationState.prototype._animationsChanged = function () {
                 this.animationsChanged = false;
-                var propertyIDs = this.propertyIDs;
-                propertyIDs.clear();
-                var mixingTo = this.mixingTo;
-                var lastEntry = null;
+                this.propertyIDs.clear();
                 for (var i = 0, n = this.tracks.length; i < n; i++) {
                     var entry = this.tracks[i];
-                    if (entry != null)
-                        entry.setTimelineData(null, mixingTo, propertyIDs);
+                    if (entry == null)
+                        continue;
+                    while (entry.mixingFrom != null)
+                        entry = entry.mixingFrom;
+                    do {
+                        if (entry.mixingFrom == null || entry.mixBlend != core.MixBlend.add)
+                            this.setTimelineModes(entry);
+                        entry = entry.mixingTo;
+                    } while (entry != null);
                 }
+            };
+            AnimationState.prototype.setTimelineModes = function (entry) {
+                var to = entry.mixingTo;
+                var timelines = entry.animation.timelines;
+                var timelinesCount = entry.animation.timelines.length;
+                var timelineMode = core.Utils.setArraySize(entry.timelineMode, timelinesCount);
+                entry.timelineHoldMix.length = 0;
+                var timelineDipMix = core.Utils.setArraySize(entry.timelineHoldMix, timelinesCount);
+                var propertyIDs = this.propertyIDs;
+                if (to != null && to.holdPrevious) {
+                    for (var i = 0; i < timelinesCount; i++) {
+                        propertyIDs.add(timelines[i].getPropertyId());
+                        timelineMode[i] = AnimationState.HOLD;
+                    }
+                    return;
+                }
+                outer: for (var i = 0; i < timelinesCount; i++) {
+                    var id = timelines[i].getPropertyId();
+                    if (!propertyIDs.add(id))
+                        timelineMode[i] = AnimationState.SUBSEQUENT;
+                    else if (to == null || !this.hasTimeline(to, id))
+                        timelineMode[i] = AnimationState.FIRST;
+                    else {
+                        for (var next = to.mixingTo; next != null; next = next.mixingTo) {
+                            if (this.hasTimeline(next, id))
+                                continue;
+                            if (entry.mixDuration > 0) {
+                                timelineMode[i] = AnimationState.HOLD_MIX;
+                                timelineDipMix[i] = next;
+                                continue outer;
+                            }
+                            break;
+                        }
+                        timelineMode[i] = AnimationState.HOLD;
+                    }
+                }
+            };
+            AnimationState.prototype.hasTimeline = function (entry, id) {
+                var timelines = entry.animation.timelines;
+                for (var i = 0, n = timelines.length; i < n; i++)
+                    if (timelines[i].getPropertyId() == id)
+                        return true;
+                return false;
             };
             AnimationState.prototype.getCurrent = function (trackIndex) {
                 if (trackIndex >= this.tracks.length)
@@ -1628,9 +1864,7 @@ var pixi_spine;
             AnimationState.prototype.addListener = function (listener) {
                 if (listener == null)
                     throw new Error("listener cannot be null.");
-                var index = this.listeners.indexOf(listener);
-                if (index == -1)
-                    this.listeners.push(listener);
+                this.listeners.push(listener);
             };
             AnimationState.prototype.removeListener = function (listener) {
                 var index = this.listeners.indexOf(listener);
@@ -1646,14 +1880,14 @@ var pixi_spine;
             AnimationState.prototype.setAnimationByName = function (trackIndex, animationName, loop) {
                 if (!AnimationState.deprecatedWarning1) {
                     AnimationState.deprecatedWarning1 = true;
-                    console.warn("Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
+                    console.warn("Spine Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
                 }
                 this.setAnimation(trackIndex, animationName, loop);
             };
             AnimationState.prototype.addAnimationByName = function (trackIndex, animationName, loop, delay) {
                 if (!AnimationState.deprecatedWarning2) {
                     AnimationState.deprecatedWarning2 = true;
-                    console.warn("Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
+                    console.warn("Spine Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
                 }
                 this.addAnimation(trackIndex, animationName, loop, delay);
             };
@@ -1664,15 +1898,15 @@ var pixi_spine;
             AnimationState.prototype.hasAnimationByName = function (animationName) {
                 if (!AnimationState.deprecatedWarning3) {
                     AnimationState.deprecatedWarning3 = true;
-                    console.warn("Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
+                    console.warn("Spine Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
                 }
                 return this.hasAnimation(animationName);
             };
             AnimationState.emptyAnimation = new core.Animation("<empty>", [], 0);
             AnimationState.SUBSEQUENT = 0;
             AnimationState.FIRST = 1;
-            AnimationState.DIP = 2;
-            AnimationState.DIP_MIX = 3;
+            AnimationState.HOLD = 2;
+            AnimationState.HOLD_MIX = 3;
             AnimationState.deprecatedWarning1 = false;
             AnimationState.deprecatedWarning2 = false;
             AnimationState.deprecatedWarning3 = false;
@@ -1681,60 +1915,20 @@ var pixi_spine;
         core.AnimationState = AnimationState;
         var TrackEntry = (function () {
             function TrackEntry() {
-                this.timelineData = new Array();
-                this.timelineDipMix = new Array();
+                this.mixBlend = core.MixBlend.replace;
+                this.timelineMode = new Array();
+                this.timelineHoldMix = new Array();
                 this.timelinesRotation = new Array();
             }
             TrackEntry.prototype.reset = function () {
                 this.next = null;
                 this.mixingFrom = null;
+                this.mixingTo = null;
                 this.animation = null;
                 this.listener = null;
-                this.timelineData.length = 0;
-                this.timelineDipMix.length = 0;
+                this.timelineMode.length = 0;
+                this.timelineHoldMix.length = 0;
                 this.timelinesRotation.length = 0;
-            };
-            TrackEntry.prototype.setTimelineData = function (to, mixingToArray, propertyIDs) {
-                if (to != null)
-                    mixingToArray.push(to);
-                var lastEntry = this.mixingFrom != null ? this.mixingFrom.setTimelineData(this, mixingToArray, propertyIDs) : this;
-                if (to != null)
-                    mixingToArray.pop();
-                var mixingTo = mixingToArray;
-                var mixingToLast = mixingToArray.length - 1;
-                var timelines = this.animation.timelines;
-                var timelinesCount = this.animation.timelines.length;
-                var timelineData = core.Utils.setArraySize(this.timelineData, timelinesCount);
-                this.timelineDipMix.length = 0;
-                var timelineDipMix = core.Utils.setArraySize(this.timelineDipMix, timelinesCount);
-                outer: for (var i = 0; i < timelinesCount; i++) {
-                    var id = timelines[i].getPropertyId();
-                    if (!propertyIDs.add(id))
-                        timelineData[i] = AnimationState.SUBSEQUENT;
-                    else if (to == null || !to.hasTimeline(id))
-                        timelineData[i] = AnimationState.FIRST;
-                    else {
-                        for (var ii = mixingToLast; ii >= 0; ii--) {
-                            var entry = mixingTo[ii];
-                            if (!entry.hasTimeline(id)) {
-                                if (entry.mixDuration > 0) {
-                                    timelineData[i] = AnimationState.DIP_MIX;
-                                    timelineDipMix[i] = entry;
-                                    continue outer;
-                                }
-                            }
-                        }
-                        timelineData[i] = AnimationState.DIP;
-                    }
-                }
-                return lastEntry;
-            };
-            TrackEntry.prototype.hasTimeline = function (id) {
-                var timelines = this.animation.timelines;
-                for (var i = 0, n = timelines.length; i < n; i++)
-                    if (timelines[i].getPropertyId() == id)
-                        return true;
-                return false;
             };
             TrackEntry.prototype.getAnimationTime = function () {
                 if (this.loop) {
@@ -1759,14 +1953,14 @@ var pixi_spine;
                 get: function () {
                     if (!TrackEntry.deprecatedWarning1) {
                         TrackEntry.deprecatedWarning1 = true;
-                        console.warn("Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+                        console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
                     }
                     return this.trackTime;
                 },
                 set: function (value) {
                     if (!TrackEntry.deprecatedWarning1) {
                         TrackEntry.deprecatedWarning1 = true;
-                        console.warn("Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+                        console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
                     }
                     this.trackTime = value;
                 },
@@ -1777,14 +1971,14 @@ var pixi_spine;
                 get: function () {
                     if (!TrackEntry.deprecatedWarning2) {
                         TrackEntry.deprecatedWarning2 = true;
-                        console.warn("Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+                        console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
                     }
                     return this.trackTime;
                 },
                 set: function (value) {
                     if (!TrackEntry.deprecatedWarning2) {
                         TrackEntry.deprecatedWarning2 = true;
-                        console.warn("Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+                        console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
                     }
                     this.trackTime = value;
                 },
@@ -1835,7 +2029,7 @@ var pixi_spine;
             EventQueue.prototype.deprecateStuff = function () {
                 if (!EventQueue.deprecatedWarning1) {
                     EventQueue.deprecatedWarning1 = true;
-                    console.warn("Deprecation Warning: onComplete, onStart, onEnd, onEvent art deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
+                    console.warn("Spine Deprecation Warning: onComplete, onStart, onEnd, onEvent art deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
                 }
                 return true;
             };
@@ -2107,29 +2301,17 @@ var pixi_spine;
                 this.appliedValid = true;
                 var parent = this.parent;
                 var m = this.matrix;
+                var sx = this.skeleton.scaleX;
+                var sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
                 if (parent == null) {
-                    var rotationY = rotation + 90 + shearY;
-                    var la = core.MathUtils.cosDeg(rotation + shearX) * scaleX;
-                    var lb = core.MathUtils.cosDeg(rotationY) * scaleY;
-                    var lc = core.MathUtils.sinDeg(rotation + shearX) * scaleX;
-                    var ld = core.MathUtils.sinDeg(rotationY) * scaleY;
                     var skeleton = this.skeleton;
-                    if (skeleton.flipX) {
-                        x = -x;
-                        la = -la;
-                        lb = -lb;
-                    }
-                    if (skeleton.flipY !== Bone.yDown) {
-                        y = -y;
-                        lc = -lc;
-                        ld = -ld;
-                    }
-                    m.a = la;
-                    m.c = lb;
-                    m.b = lc;
-                    m.d = ld;
-                    m.tx = x + skeleton.x;
-                    m.ty = y + skeleton.y;
+                    var rotationY = rotation + 90 + shearY;
+                    m.a = core.MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
+                    m.c = core.MathUtils.cosDeg(rotationY) * scaleY * sy;
+                    m.b = core.MathUtils.sinDeg(rotation + shearX) * scaleX * sx;
+                    m.d = core.MathUtils.sinDeg(rotationY) * scaleY * sy;
+                    m.tx = x * sx + skeleton.x;
+                    m.ty = y * sy + skeleton.y;
                     return;
                 }
                 var pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
@@ -2186,8 +2368,8 @@ var pixi_spine;
                     case core.TransformMode.NoScaleOrReflection: {
                         var cos = core.MathUtils.cosDeg(rotation);
                         var sin = core.MathUtils.sinDeg(rotation);
-                        var za = pa * cos + pb * sin;
-                        var zc = pc * cos + pd * sin;
+                        var za = (pa * cos + pb * sin) / sx;
+                        var zc = (pc * cos + pd * sin) / sy;
                         var s = Math.sqrt(za * za + zc * zc);
                         if (s > 0.00001)
                             s = 1 / s;
@@ -2209,17 +2391,13 @@ var pixi_spine;
                         m.c = za * lb + zb * ld;
                         m.b = zc * la + zd * lc;
                         m.d = zc * lb + zd * ld;
-                        return;
+                        break;
                     }
                 }
-                if (this.skeleton.flipX) {
-                    m.a = -m.a;
-                    m.c = -m.c;
-                }
-                if (this.skeleton.flipY != Bone.yDown) {
-                    m.b = -m.b;
-                    m.d = -m.d;
-                }
+                m.a *= sx;
+                m.c *= sx;
+                m.b *= sy;
+                m.d *= sy;
             };
             Bone.prototype.setToSetupPose = function () {
                 var data = this.data;
@@ -2399,8 +2577,10 @@ var pixi_spine;
     (function (core) {
         var IkConstraint = (function () {
             function IkConstraint(data, skeleton) {
-                this.mix = 1;
                 this.bendDirection = 0;
+                this.compress = false;
+                this.stretch = false;
+                this.mix = 1;
                 if (data == null)
                     throw new Error("data cannot be null.");
                 if (skeleton == null)
@@ -2408,6 +2588,8 @@ var pixi_spine;
                 this.data = data;
                 this.mix = data.mix;
                 this.bendDirection = data.bendDirection;
+                this.compress = data.compress;
+                this.stretch = data.stretch;
                 this.bones = new Array();
                 for (var i = 0; i < data.bones.length; i++)
                     this.bones.push(skeleton.findBone(data.bones[i].name));
@@ -2424,14 +2606,14 @@ var pixi_spine;
                 var bones = this.bones;
                 switch (bones.length) {
                     case 1:
-                        this.apply1(bones[0], target.worldX, target.worldY, this.mix);
+                        this.apply1(bones[0], target.worldX, target.worldY, this.compress, this.stretch, this.data.uniform, this.mix);
                         break;
                     case 2:
-                        this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.mix);
+                        this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.mix);
                         break;
                 }
             };
-            IkConstraint.prototype.apply1 = function (bone, targetX, targetY, alpha) {
+            IkConstraint.prototype.apply1 = function (bone, targetX, targetY, compress, stretch, uniform, alpha) {
                 if (!bone.appliedValid)
                     bone.updateAppliedTransform();
                 var p = bone.parent.matrix;
@@ -2445,9 +2627,19 @@ var pixi_spine;
                     rotationIK -= 360;
                 else if (rotationIK < -180)
                     rotationIK += 360;
-                bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, bone.ascaleX, bone.ascaleY, bone.ashearX, bone.ashearY);
+                var sx = bone.ascaleX, sy = bone.ascaleY;
+                if (compress || stretch) {
+                    var b = bone.data.length * sx, dd = Math.sqrt(tx * tx + ty * ty);
+                    if ((compress && dd < b) || (stretch && dd > b) && b > 0.0001) {
+                        var s = (dd / b - 1) * alpha + 1;
+                        sx *= s;
+                        if (uniform)
+                            sy *= s;
+                    }
+                }
+                bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, sx, sy, bone.ashearX, bone.ashearY);
             };
-            IkConstraint.prototype.apply2 = function (parent, child, targetX, targetY, bendDir, alpha) {
+            IkConstraint.prototype.apply2 = function (parent, child, targetX, targetY, bendDir, stretch, alpha) {
                 if (alpha == 0) {
                     child.updateWorldTransform();
                     return;
@@ -2456,7 +2648,7 @@ var pixi_spine;
                     parent.updateAppliedTransform();
                 if (!child.appliedValid)
                     child.updateAppliedTransform();
-                var px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, csx = child.ascaleX;
+                var px = parent.ax, py = parent.ay, psx = parent.ascaleX, sx = psx, psy = parent.ascaleY, csx = child.ascaleX;
                 var pmat = parent.matrix;
                 var os1 = 0, os2 = 0, s2 = 0;
                 if (psx < 0) {
@@ -2496,18 +2688,21 @@ var pixi_spine;
                 c = pp.b;
                 d = pp.d;
                 var id = 1 / (a * d - b * c), x = targetX - pp.tx, y = targetY - pp.ty;
-                var tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
+                var tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py, dd = tx * tx + ty * ty;
                 x = cwx - pp.tx;
                 y = cwy - pp.ty;
                 var dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
                 var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
                 outer: if (u) {
                     l2 *= psx;
-                    var cos = (tx * tx + ty * ty - l1 * l1 - l2 * l2) / (2 * l1 * l2);
+                    var cos = (dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
                     if (cos < -1)
                         cos = -1;
-                    else if (cos > 1)
+                    else if (cos > 1) {
                         cos = 1;
+                        if (stretch && l1 + l2 > 0.0001)
+                            sx *= (Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
+                    }
                     a2 = Math.acos(cos) * bendDir;
                     a = l1 + l2 * cos;
                     b = l2 * Math.sin(a2);
@@ -2516,7 +2711,7 @@ var pixi_spine;
                 else {
                     a = psx * l2;
                     b = psy * l2;
-                    var aa = a * a, bb = b * b, dd = tx * tx + ty * ty, ta = Math.atan2(ty, tx);
+                    var aa = a * a, bb = b * b, ta = Math.atan2(ty, tx);
                     c = bb * l1 * l1 + aa * dd - aa * bb;
                     var c1 = -2 * bb * l1, c2 = bb - aa;
                     d = c1 * c1 - 4 * c2 * c;
@@ -2571,7 +2766,7 @@ var pixi_spine;
                     a1 -= 360;
                 else if (a1 < -180)
                     a1 += 360;
-                parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, parent.ascaleX, parent.ascaleY, 0, 0);
+                parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, sx, parent.ascaleY, 0, 0);
                 rotation = child.arotation;
                 a2 = ((a2 + os) * core.MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
                 if (a2 > 180)
@@ -2594,6 +2789,9 @@ var pixi_spine;
                 this.order = 0;
                 this.bones = new Array();
                 this.bendDirection = 1;
+                this.compress = false;
+                this.stretch = false;
+                this.uniform = false;
                 this.mix = 1;
                 this.name = name;
             }
@@ -3023,8 +3221,8 @@ var pixi_spine;
                 this._updateCache = new Array();
                 this.updateCacheReset = new Array();
                 this.time = 0;
-                this.flipX = false;
-                this.flipY = false;
+                this.scaleX = 1;
+                this.scaleY = 1;
                 this.x = 0;
                 this.y = 0;
                 if (data == null)
@@ -3444,6 +3642,35 @@ var pixi_spine;
             Skeleton.prototype.update = function (delta) {
                 this.time += delta;
             };
+            Object.defineProperty(Skeleton.prototype, "flipX", {
+                get: function () {
+                    return this.scaleX == -1;
+                },
+                set: function (value) {
+                    if (!Skeleton.deprecatedWarning1) {
+                        Skeleton.deprecatedWarning1 = true;
+                        console.warn("Spine Deprecation Warning: `Skeleton.flipX/flipY` was deprecated, please use scaleX/scaleY");
+                    }
+                    this.scaleX = value ? 1.0 : -1.0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Skeleton.prototype, "flipY", {
+                get: function () {
+                    return this.scaleY == -1;
+                },
+                set: function (value) {
+                    if (!Skeleton.deprecatedWarning1) {
+                        Skeleton.deprecatedWarning1 = true;
+                        console.warn("Spine Deprecation Warning: `Skeleton.flipX/flipY` was deprecated, please use scaleX/scaleY");
+                    }
+                    this.scaleY = value ? 1.0 : -1.0;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Skeleton.deprecatedWarning1 = false;
             return Skeleton;
         }());
         core.Skeleton = Skeleton;
@@ -4226,7 +4453,11 @@ var pixi_spine;
                         data.intValue = this.getValue(eventMap, "int", 0);
                         data.floatValue = this.getValue(eventMap, "float", 0);
                         data.stringValue = this.getValue(eventMap, "string", "");
-                        data.audio = this.getValue(eventMap, "audio", null);
+                        data.audioPath = this.getValue(eventMap, "audio", null);
+                        if (data.audioPath != null) {
+                            data.volume = this.getValue(eventMap, "volume", 1);
+                            data.balance = this.getValue(eventMap, "balance", 0);
+                        }
                         skeletonData.events.push(data);
                     }
                 }
@@ -4490,7 +4721,7 @@ var pixi_spine;
                         var frameIndex = 0;
                         for (var i = 0; i < constraintMap.length; i++) {
                             var valueMap = constraintMap[i];
-                            timeline.setFrame(frameIndex, valueMap.time, this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "bendPositive", true) ? 1 : -1);
+                            timeline.setFrame(frameIndex, valueMap.time, this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
@@ -4663,6 +4894,10 @@ var pixi_spine;
                         event_5.intValue = this.getValue(eventMap, "int", eventData.intValue);
                         event_5.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
                         event_5.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
+                        if (event_5.data.audioPath != null) {
+                            event_5.volume = this.getValue(eventMap, "volume", 1);
+                            event_5.balance = this.getValue(eventMap, "balance", 0);
+                        }
                         timeline.setFrame(frameIndex++, event_5);
                     }
                     timelines.push(timeline);
@@ -6037,7 +6272,7 @@ var pixi_spine;
             Utils.toSinglePrecision = function (value) {
                 return Utils.SUPPORTS_TYPED_ARRAYS ? Math.fround(value) : value;
             };
-            Utils.webkit602BugfixHelper = function (alpha, pose) {
+            Utils.webkit602BugfixHelper = function (alpha, blend) {
             };
             Utils.SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
             return Utils;
@@ -6658,13 +6893,21 @@ var pixi_spine;
             }
             if (metadataAtlas && metadataAtlas.pages) {
                 var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(metadataAtlas));
+                if (metadataSkeletonScale) {
+                    spineJsonParser.scale = metadataSkeletonScale;
+                }
                 var skeletonData = spineJsonParser.readSkeletonData(resource.data);
                 resource.spineData = skeletonData;
                 resource.spineAtlas = metadataAtlas;
                 return next();
             }
             var metadataAtlasSuffix = metadata.spineAtlasSuffix || '.atlas';
-            var atlasPath = resource.url.substr(0, resource.url.lastIndexOf('.')) + metadataAtlasSuffix;
+            var atlasPath = resource.url;
+            var queryStringPos = atlasPath.indexOf('?');
+            if (queryStringPos > 0) {
+                atlasPath = atlasPath.substr(0, queryStringPos);
+            }
+            atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
             if (resource.metadata && resource.metadata.spineAtlasFile) {
                 atlasPath = resource.metadata.spineAtlasFile;
             }
