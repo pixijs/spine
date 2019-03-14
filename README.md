@@ -4,7 +4,7 @@
 
 Spine implementation for pixi v3 and pixi v4.
 
-For v5 please see [next branch](https://github.com/pixijs/pixi-spine/tree/next) and use npm version `2.0.0-alpha` 
+For v5 please see [next branch](https://github.com/pixijs/pixi-spine/tree/next) and use npm version `2.0.0-alpha`
 
 ## Usage
 
@@ -14,6 +14,18 @@ If you are just including the built files, pixi spine adds itself to a pixi name
 
 ```js
 new PIXI.spine.Spine();
+```
+
+### NPM Install
+
+```bash
+npm install pixi-spine
+```
+
+The correct way to import pixi-spine is to add it to the namespace.
+
+```js
+import 'pixi-spine'
 ```
 
 ### Basic example
@@ -30,8 +42,8 @@ PIXI.loader
 
         // add the animation to the scene and render...
         app.stage.addChild(animation);
-        
-        // run 
+
+        // run
         var animation = new PIXI.spine.Spine(spineBoyData);
         if (animation.state.hasAnimation('run')) {
             // run forever, little boy!
@@ -39,7 +51,7 @@ PIXI.loader
             // dont run too fast
             animation.state.timeScale = 0.1;
         }
-        
+
         app.start();
     });
 ```
@@ -59,7 +71,7 @@ There's "bin/pixi-spine.d.ts" file, you can use it.
 
 ## Spine version
 
-Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5. 
+Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5.
 
 Please enable "beta updates" and re-export everything from the spine editor.
 
