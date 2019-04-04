@@ -2302,7 +2302,7 @@ var pixi_spine;
                 var parent = this.parent;
                 var m = this.matrix;
                 var sx = this.skeleton.scaleX;
-                var sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
+                var sy = this.skeleton.scaleY;
                 if (parent == null) {
                     var skeleton = this.skeleton;
                     var rotationY = rotation + 90 + shearY;
@@ -2312,6 +2312,10 @@ var pixi_spine;
                     m.d = core.MathUtils.sinDeg(rotationY) * scaleY * sy;
                     m.tx = x * sx + skeleton.x;
                     m.ty = y * sy + skeleton.y;
+                    if (Bone.yDown) {
+                        m.b = -m.b;
+                        m.d = -m.d;
+                    }
                     return;
                 }
                 var pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
@@ -2398,6 +2402,10 @@ var pixi_spine;
                 m.c *= sx;
                 m.b *= sy;
                 m.d *= sy;
+                if (Bone.yDown) {
+                    m.b = -m.b;
+                    m.d = -m.d;
+                }
             };
             Bone.prototype.setToSetupPose = function () {
                 var data = this.data;
