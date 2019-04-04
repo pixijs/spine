@@ -100,7 +100,7 @@ namespace pixi_spine.core {
             let m = this.matrix;
 
             let sx = this.skeleton.scaleX;
-            let sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
+            let sy = this.skeleton.scaleY;
 
             if (parent == null) { // Root bone.
                 let skeleton = this.skeleton;
@@ -111,6 +111,11 @@ namespace pixi_spine.core {
                 m.d = MathUtils.sinDeg(rotationY) * scaleY * sy;
                 m.tx = x * sx + skeleton.x;
                 m.ty = y * sy + skeleton.y;
+
+                if (Bone.yDown) {
+                    m.b = -m.b;
+                    m.d = -m.d;
+                }
                 return;
             }
 
@@ -196,6 +201,11 @@ namespace pixi_spine.core {
             m.c *= sx;
             m.b *= sy;
             m.d *= sy;
+
+            if (Bone.yDown) {
+                m.b = -m.b;
+                m.d = -m.d;
+            }
         }
 
         setToSetupPose() {
