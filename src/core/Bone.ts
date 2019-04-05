@@ -178,6 +178,12 @@ namespace pixi_spine.core {
                     za *= s;
                     zc *= s;
                     s = Math.sqrt(za * za + zc * zc);
+                    if (
+                        this.data.transformMode == TransformMode.NoScale
+                        && (pa * pd - pb * pc < 0) != (Bone.yDown?
+                        (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
+                            (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0))
+                    ) s = -s;
                     let r = Math.PI / 2 + Math.atan2(zc, za);
                     let zb = Math.cos(r) * s;
                     let zd = Math.sin(r) * s;
