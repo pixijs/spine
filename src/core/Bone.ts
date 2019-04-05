@@ -100,9 +100,13 @@ namespace pixi_spine.core {
             let m = this.matrix;
 
             let sx = this.skeleton.scaleX;
-            let sy = this.skeleton.scaleY;
+            let sy = Bone.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
 
             if (parent == null) { // Root bone.
+                if(Bone.yDown){
+                    rotation = -rotation;
+                    this.arotation = rotation;
+                }
                 let skeleton = this.skeleton;
                 let rotationY = rotation + 90 + shearY;
                 m.a = MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
@@ -111,11 +115,6 @@ namespace pixi_spine.core {
                 m.d = MathUtils.sinDeg(rotationY) * scaleY * sy;
                 m.tx = x * sx + skeleton.x;
                 m.ty = y * sy + skeleton.y;
-
-                if (Bone.yDown) {
-                    m.b = -m.b;
-                    m.d = -m.d;
-                }
                 return;
             }
 
@@ -186,10 +185,6 @@ namespace pixi_spine.core {
                     let lb = MathUtils.cosDeg(90 + shearY) * scaleY;
                     let lc = MathUtils.sinDeg(shearX) * scaleX;
                     let ld = MathUtils.sinDeg(90 + shearY) * scaleY;
-                    if (this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : ((this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown)) {
-                        zb = -zb;
-                        zd = -zd;
-                    }
                     m.a = za * la + zb * lc;
                     m.c = za * lb + zb * ld;
                     m.b = zc * la + zd * lc;
@@ -201,11 +196,6 @@ namespace pixi_spine.core {
             m.c *= sx;
             m.b *= sy;
             m.d *= sy;
-
-            if (Bone.yDown) {
-                m.b = -m.b;
-                m.d = -m.d;
-            }
         }
 
         setToSetupPose() {
