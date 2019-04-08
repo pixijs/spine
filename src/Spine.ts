@@ -202,6 +202,11 @@ namespace pixi_spine {
 
             this.state.update(dt);
             this.state.apply(this.skeleton);
+
+            //check we haven't been destroyed via a spine event callback in state update
+            if(!this.skeleton)
+                return;
+
             this.skeleton.updateWorldTransform();
 
             let slots = this.skeleton.slots;
