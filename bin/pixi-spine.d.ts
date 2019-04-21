@@ -1,4 +1,3 @@
-/// <reference types="pixi.js" />
 declare module PIXI.spine.core {
     class Animation {
         name: string;
@@ -17,11 +16,11 @@ declare module PIXI.spine.core {
         setup = 0,
         first = 1,
         replace = 2,
-        add = 3,
+        add = 3
     }
     enum MixDirection {
         in = 0,
-        out = 1,
+        out = 1
     }
     enum TimelineType {
         rotate = 0,
@@ -38,7 +37,7 @@ declare module PIXI.spine.core {
         pathConstraintPosition = 11,
         pathConstraintSpacing = 12,
         pathConstraintMix = 13,
-        twoColor = 14,
+        twoColor = 14
     }
     abstract class CurveTimeline implements Timeline {
         static LINEAR: number;
@@ -364,7 +363,7 @@ declare module PIXI.spine.core {
         end = 2,
         dispose = 3,
         complete = 4,
-        event = 5,
+        event = 5
     }
     interface AnimationStateListener2 {
         start?(entry: TrackEntry): void;
@@ -442,7 +441,7 @@ declare module PIXI.spine.core {
         Mesh = 2,
         LinkedMesh = 3,
         Path = 4,
-        Point = 5,
+        Point = 5
     }
 }
 declare module PIXI.spine.core {
@@ -564,7 +563,7 @@ declare module PIXI.spine.core {
         Normal = 0,
         Additive = 1,
         Multiply = 2,
-        Screen = 3,
+        Screen = 3
     }
 }
 declare module PIXI.spine.core {
@@ -631,7 +630,7 @@ declare module PIXI.spine.core {
         OnlyTranslation = 1,
         NoRotationOrReflection = 2,
         NoScale = 3,
-        NoScaleOrReflection = 4,
+        NoScaleOrReflection = 4
     }
 }
 declare module PIXI.spine.core {
@@ -741,17 +740,17 @@ declare module PIXI.spine.core {
     }
     enum PositionMode {
         Fixed = 0,
-        Percent = 1,
+        Percent = 1
     }
     enum SpacingMode {
         Length = 0,
         Fixed = 1,
-        Percent = 2,
+        Percent = 2
     }
     enum RotateMode {
         Tangent = 0,
         Chain = 1,
-        ChainScale = 2,
+        ChainScale = 2
     }
 }
 declare module PIXI.spine.core {
@@ -965,12 +964,12 @@ declare module PIXI.spine.core {
         MipMapNearestNearest = 9984,
         MipMapLinearNearest = 9985,
         MipMapNearestLinear = 9986,
-        MipMapLinearLinear = 9987,
+        MipMapLinearLinear = 9987
     }
     enum TextureWrap {
         MirroredRepeat = 33648,
         ClampToEdge = 33071,
-        Repeat = 10497,
+        Repeat = 10497
     }
     class TextureRegion {
         texture: PIXI.Texture;
@@ -1000,7 +999,7 @@ declare module PIXI.spine.core {
         addTexture(name: string, texture: PIXI.Texture): TextureAtlasRegion;
         addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean): void;
         addSpineAtlas(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any): void;
-        private load(atlasText, textureLoader, callback);
+        private load;
         findRegion(name: string): TextureAtlasRegion;
         dispose(): void;
     }
@@ -1073,9 +1072,9 @@ declare module PIXI.spine.core {
         private polygonIndicesPool;
         triangulate(verticesArray: ArrayLike<number>): Array<number>;
         decompose(verticesArray: Array<number>, triangles: Array<number>): Array<Array<number>>;
-        private static isConcave(index, vertexCount, vertices, indices);
-        private static positiveArea(p1x, p1y, p2x, p2y, p3x, p3y);
-        private static winding(p1x, p1y, p2x, p2y, p3x, p3y);
+        private static isConcave;
+        private static positiveArea;
+        private static winding;
     }
 }
 declare module PIXI.spine.core {
@@ -1239,7 +1238,9 @@ declare module PIXI.spine.core {
 declare module PIXI.spine {
 }
 declare module PIXI.spine {
-    function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
+    class AtlasParser {
+        static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): any;
+    }
     function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
     function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any): (line: any, callback: any) => void;
     function staticImageLoader(pages: {
@@ -1253,7 +1254,7 @@ declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion;
     }
-    class SpineMesh extends PIXI.mesh.Mesh {
+    class SpineMesh extends PIXI.SimpleMesh {
         region: core.TextureRegion;
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number);
     }
@@ -1273,8 +1274,8 @@ declare module PIXI.spine {
         tint: number;
         readonly delayLimit: number;
         update(dt: number): void;
-        private setSpriteRegion(attachment, sprite, region);
-        private setMeshRegion(attachment, mesh, region);
+        private setSpriteRegion;
+        private setMeshRegion;
         protected lastTime: number;
         autoUpdateTransform(): void;
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string): SpineSprite;
@@ -1290,6 +1291,6 @@ declare module PIXI.spine {
         newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
         transformHack(): number;
         hackAttachmentGroups(nameSuffix: string, group: any, outGroup: any): any[][];
-        destroy(options?: PIXI.DestroyOptions | boolean): void;
+        destroy(options?: any): void;
     }
 }

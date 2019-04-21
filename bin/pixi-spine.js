@@ -2302,8 +2302,12 @@ var pixi_spine;
                 var parent = this.parent;
                 var m = this.matrix;
                 var sx = this.skeleton.scaleX;
-                var sy = this.skeleton.scaleY;
+                var sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
                 if (parent == null) {
+                    if (Bone.yDown) {
+                        rotation = -rotation;
+                        this.arotation = rotation;
+                    }
                     var skeleton = this.skeleton;
                     var rotationY = rotation + 90 + shearY;
                     m.a = core.MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
@@ -2312,10 +2316,6 @@ var pixi_spine;
                     m.d = core.MathUtils.sinDeg(rotationY) * scaleY * sy;
                     m.tx = x * sx + skeleton.x;
                     m.ty = y * sy + skeleton.y;
-                    if (Bone.yDown) {
-                        m.b = -m.b;
-                        m.d = -m.d;
-                    }
                     return;
                 }
                 var pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
@@ -2380,6 +2380,11 @@ var pixi_spine;
                         za *= s;
                         zc *= s;
                         s = Math.sqrt(za * za + zc * zc);
+                        if (this.data.transformMode == core.TransformMode.NoScale
+                            && (pa * pd - pb * pc < 0) != (Bone.yDown ?
+                                (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
+                                (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0)))
+                            s = -s;
                         var r = Math.PI / 2 + Math.atan2(zc, za);
                         var zb = Math.cos(r) * s;
                         var zd = Math.sin(r) * s;
@@ -2387,10 +2392,6 @@ var pixi_spine;
                         var lb = core.MathUtils.cosDeg(90 + shearY) * scaleY;
                         var lc = core.MathUtils.sinDeg(shearX) * scaleX;
                         var ld = core.MathUtils.sinDeg(90 + shearY) * scaleY;
-                        if (this.data.transformMode != core.TransformMode.NoScaleOrReflection ? pa * pd - pb * pc < 0 : ((this.skeleton.flipX != this.skeleton.flipY) != Bone.yDown)) {
-                            zb = -zb;
-                            zd = -zd;
-                        }
                         m.a = za * la + zb * lc;
                         m.c = za * lb + zb * ld;
                         m.b = zc * la + zd * lc;
@@ -2402,10 +2403,6 @@ var pixi_spine;
                 m.c *= sx;
                 m.b *= sy;
                 m.d *= sy;
-                if (Bone.yDown) {
-                    m.b = -m.b;
-                    m.d = -m.d;
-                }
             };
             Bone.prototype.setToSetupPose = function () {
                 var data = this.data;
@@ -5404,9 +5401,8 @@ var pixi_spine;
                                 page.uWrap = page.vWrap = core.TextureWrap.Repeat;
                             textureLoader(line, function (texture) {
                                 page.baseTexture = texture;
-                                if (!texture.hasLoaded) {
-                                    texture.width = page.width;
-                                    texture.height = page.height;
+                                if (!texture.valid) {
+                                    texture.setSize(page.width, page.height);
                                 }
                                 _this.pages.push(page);
                                 page.setFilters();
@@ -5462,7 +5458,7 @@ var pixi_spine;
                                 region.texture = new PIXI.Texture(region.page.baseTexture, frame2, crop, trim, rotate);
                             }
                             region.index = parseInt(reader.readValue());
-                            region.texture._updateUvs();
+                            region.texture.updateUvs();
                             _this.regions.push(region);
                         }
                     }
@@ -5533,7 +5529,7 @@ var pixi_spine;
                     tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
                 }
                 else {
-                    tex.mipmap = true;
+                    tex.mipmap = PIXI.MIPMAP_MODES.POW2;
                     if (filter == core.TextureFilter.MipMapNearestNearest) {
                         tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
                     }
@@ -6873,149 +6869,6 @@ var pixi_spine;
         core.SwirlEffect = SwirlEffect;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
-var pixi_spine;
-(function (pixi_spine) {
-    PIXI.spine = pixi_spine;
-    var TextureProto = PIXI.Texture.prototype;
-    if (!TextureProto._updateUvs) {
-        TextureProto._updateUvs = TextureProto.updateUvs;
-    }
-})(pixi_spine || (pixi_spine = {}));
-var pixi_spine;
-(function (pixi_spine) {
-    function isJson(resource) {
-        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
-    }
-    function atlasParser() {
-        return function atlasParser(resource, next) {
-            if (!resource.data ||
-                !isJson(resource) ||
-                !resource.data.bones) {
-                return next();
-            }
-            var metadata = resource.metadata || {};
-            var metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
-            var metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
-            if (metadataAtlas === false) {
-                return next();
-            }
-            if (metadataAtlas && metadataAtlas.pages) {
-                var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(metadataAtlas));
-                if (metadataSkeletonScale) {
-                    spineJsonParser.scale = metadataSkeletonScale;
-                }
-                var skeletonData = spineJsonParser.readSkeletonData(resource.data);
-                resource.spineData = skeletonData;
-                resource.spineAtlas = metadataAtlas;
-                return next();
-            }
-            var metadataAtlasSuffix = metadata.spineAtlasSuffix || '.atlas';
-            var atlasPath = resource.url;
-            var queryStringPos = atlasPath.indexOf('?');
-            if (queryStringPos > 0) {
-                atlasPath = atlasPath.substr(0, queryStringPos);
-            }
-            atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
-            if (resource.metadata && resource.metadata.spineAtlasFile) {
-                atlasPath = resource.metadata.spineAtlasFile;
-            }
-            atlasPath = atlasPath.replace(this.baseUrl, '');
-            var atlasOptions = {
-                crossOrigin: resource.crossOrigin,
-                xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
-                metadata: metadata.spineMetadata || null,
-                parentResource: resource
-            };
-            var imageOptions = {
-                crossOrigin: resource.crossOrigin,
-                metadata: metadata.imageMetadata || null,
-                parentResource: resource
-            };
-            var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
-            baseUrl = baseUrl.replace(this.baseUrl, '');
-            var namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
-            var adapter = metadata.images ? staticImageLoader(metadata.images)
-                : metadata.image ? staticImageLoader({ 'default': metadata.image })
-                    : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
-                        : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
-            var createSkeletonWithRawAtlas = function (rawData) {
-                new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
-                    var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
-                    }
-                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineAtlas = spineAtlas;
-                    next();
-                });
-            };
-            if (resource.metadata && resource.metadata.atlasRawData) {
-                createSkeletonWithRawAtlas(resource.metadata.atlasRawData);
-            }
-            else {
-                this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
-                    if (!atlasResource.error) {
-                        createSkeletonWithRawAtlas(atlasResource.data);
-                    }
-                    else {
-                        next();
-                    }
-                });
-            }
-        };
-    }
-    pixi_spine.atlasParser = atlasParser;
-    function imageLoaderAdapter(loader, namePrefix, baseUrl, imageOptions) {
-        if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
-            baseUrl += '/';
-        }
-        return function (line, callback) {
-            var name = namePrefix + line;
-            var url = baseUrl + line;
-            var cachedResource = loader.resources[name];
-            if (cachedResource) {
-                function done() {
-                    callback(cachedResource.texture.baseTexture);
-                }
-                if (cachedResource.texture) {
-                    done();
-                }
-                else {
-                    cachedResource.onAfterMiddleware.add(done);
-                }
-            }
-            else {
-                loader.add(name, url, imageOptions, function (resource) {
-                    callback(resource.texture.baseTexture);
-                });
-            }
-        };
-    }
-    pixi_spine.imageLoaderAdapter = imageLoaderAdapter;
-    function syncImageLoaderAdapter(baseUrl, crossOrigin) {
-        if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
-            baseUrl += '/';
-        }
-        return function (line, callback) {
-            callback(PIXI.BaseTexture.fromImage(line, crossOrigin));
-        };
-    }
-    pixi_spine.syncImageLoaderAdapter = syncImageLoaderAdapter;
-    function staticImageLoader(pages) {
-        return function (line, callback) {
-            var page = pages[line] || pages['default'];
-            if (page && page.baseTexture)
-                callback(page.baseTexture);
-            else
-                callback(page);
-        };
-    }
-    pixi_spine.staticImageLoader = staticImageLoader;
-    if (PIXI.loaders.Loader) {
-        PIXI.loaders.Loader.addPixiMiddleware(atlasParser);
-        PIXI.loader.use(atlasParser());
-    }
-})(pixi_spine || (pixi_spine = {}));
 (function () {
     if (!Math.fround) {
         Math.fround = Math.fround = (function (array) {
@@ -7045,7 +6898,7 @@ var pixi_spine;
             return _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
         }
         return SpineMesh;
-    }(PIXI.mesh.Mesh));
+    }(PIXI.SimpleMesh));
     pixi_spine.SpineMesh = SpineMesh;
     var Spine = (function (_super) {
         __extends(Spine, _super);
@@ -7132,6 +6985,8 @@ var pixi_spine;
                 dt = delayLimit;
             this.state.update(dt);
             this.state.apply(this.skeleton);
+            if (!this.skeleton)
+                return;
             this.skeleton.updateWorldTransform();
             var slots = this.skeleton.slots;
             var globalClr = this.color;
@@ -7143,7 +6998,7 @@ var pixi_spine;
             else {
                 light = this.tintRgb;
             }
-            var thack = PIXI.TransformBase && (this.transformHack() == 1);
+            var thack = false;
             for (var i = 0, n = slots.length; i < n; i++) {
                 var slot = slots[i];
                 var attachment = slot.attachment;
@@ -7180,41 +7035,8 @@ var pixi_spine;
                             slot.currentSpriteName = spriteName;
                         }
                     }
-                    if (slotContainer.transform) {
-                        var transform = slotContainer.transform;
-                        var transAny = transform;
-                        var lt = null;
-                        if (transAny.matrix2d) {
-                            lt = transAny.matrix2d;
-                            transAny._dirtyVersion++;
-                            transAny.version = transAny._dirtyVersion;
-                            transAny.isStatic = true;
-                            transAny.operMode = 0;
-                        }
-                        else {
-                            if (thack) {
-                                if (transAny.position) {
-                                    transform = new PIXI.TransformBase();
-                                    transform._parentID = -1;
-                                    transform._worldID = slotContainer.transform._worldID;
-                                    slotContainer.transform = transform;
-                                }
-                                lt = transform.localTransform;
-                            }
-                            else {
-                                transAny.setFromMatrix(slot.bone.matrix);
-                            }
-                        }
-                        if (lt) {
-                            slot.bone.matrix.copy(lt);
-                        }
-                    }
-                    else {
-                        var lt = slotContainer.localTransform || new PIXI.Matrix();
-                        slot.bone.matrix.copy(lt);
-                        slotContainer.localTransform = lt;
-                        slotContainer.displayObjectUpdateTransform = SlotContainerUpdateTransformV3;
-                    }
+                    var transform = slotContainer.transform;
+                    transform.setFromMatrix(slot.bone.matrix);
                     if (slot.currentSprite.color) {
                         spriteColor = slot.currentSprite.color;
                     }
@@ -7231,16 +7053,6 @@ var pixi_spine;
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
-                        if (slotContainer.transform) {
-                            var transform = new PIXI.TransformStatic();
-                            transform._parentID = -1;
-                            transform._worldID = slotContainer.transform._worldID;
-                            slotContainer.transform = transform;
-                        }
-                        else {
-                            slotContainer.localTransform = new PIXI.Matrix();
-                            slotContainer.displayObjectUpdateTransform = PIXI.DisplayObject.prototype.updateTransform;
-                        }
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         var meshName = attachment.name;
@@ -7262,11 +7074,11 @@ var pixi_spine;
                     if (slot.currentMesh.color) {
                         spriteColor = slot.currentMesh.color;
                     }
-                    else if (PIXI.VERSION[0] !== '3') {
-                        var tintRgb = slot.currentMesh.tintRgb;
-                        tintRgb[0] = light[0] * slot.color.r * attColor.r;
-                        tintRgb[1] = light[1] * slot.color.g * attColor.g;
-                        tintRgb[2] = light[2] * slot.color.b * attColor.b;
+                    else {
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentMesh.tint = PIXI.utils.rgb2hex(tempRgb);
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                 }
@@ -7361,9 +7173,9 @@ var pixi_spine;
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
             mesh.region = region;
             mesh.texture = region.texture;
-            region.texture._updateUvs();
-            attachment.updateUVs(region, mesh.uvs);
-            mesh.dirty++;
+            region.texture.updateUvs();
+            attachment.updateUVs(region, mesh.uvBuffer.data);
+            mesh.uvBuffer.update();
         };
         Spine.prototype.autoUpdateTransform = function () {
             if (Spine.globalAutoUpdate) {
@@ -7407,8 +7219,10 @@ var pixi_spine;
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
-            strip.canvasPadding = 1.5;
+            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.DRAW_MODES.TRIANGLES);
+            if (strip.canvasPadding) {
+                strip.canvasPadding = 1.5;
+            }
             strip.alpha = attachment.color.a;
             strip.region = attachment.region;
             this.setMeshRegion(attachment, strip, region);
@@ -7550,6 +7364,151 @@ var pixi_spine;
         wt.ty = lt.tx * pt.b + lt.ty * pt.d + pt.ty;
         this.worldAlpha = this.alpha * this.parent.worldAlpha;
         this._currentBounds = null;
+    }
+})(pixi_spine || (pixi_spine = {}));
+var pixi_spine;
+(function (pixi_spine) {
+    PIXI.spine = pixi_spine;
+    var TextureProto = PIXI.Texture.prototype;
+    if (!TextureProto._updateUvs) {
+        TextureProto._updateUvs = TextureProto.updateUvs;
+    }
+})(pixi_spine || (pixi_spine = {}));
+var pixi_spine;
+(function (pixi_spine) {
+    function isJson(resource) {
+        return resource.type === PIXI.LoaderResource.TYPE.JSON;
+    }
+    var AtlasParser = (function () {
+        function AtlasParser() {
+        }
+        AtlasParser.use = function (resource, next) {
+            if (!resource.data ||
+                !isJson(resource) ||
+                !resource.data.bones) {
+                return next();
+            }
+            var metadata = resource.metadata || {};
+            var metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
+            var metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
+            if (metadataAtlas === false) {
+                return next();
+            }
+            if (metadataAtlas && metadataAtlas.pages) {
+                var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(metadataAtlas));
+                if (metadataSkeletonScale) {
+                    spineJsonParser.scale = metadataSkeletonScale;
+                }
+                var skeletonData = spineJsonParser.readSkeletonData(resource.data);
+                resource.spineData = skeletonData;
+                resource.spineAtlas = metadataAtlas;
+                return next();
+            }
+            var metadataAtlasSuffix = metadata.spineAtlasSuffix || '.atlas';
+            var atlasPath = resource.url;
+            var queryStringPos = atlasPath.indexOf('?');
+            if (queryStringPos > 0) {
+                atlasPath = atlasPath.substr(0, queryStringPos);
+            }
+            atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
+            if (resource.metadata && resource.metadata.spineAtlasFile) {
+                atlasPath = resource.metadata.spineAtlasFile;
+            }
+            atlasPath = atlasPath.replace(this.baseUrl, '');
+            var atlasOptions = {
+                crossOrigin: resource.crossOrigin,
+                xhrType: PIXI.LoaderResource.XHR_RESPONSE_TYPE.TEXT,
+                metadata: metadata.spineMetadata || null,
+                parentResource: resource
+            };
+            var imageOptions = {
+                crossOrigin: resource.crossOrigin,
+                metadata: metadata.imageMetadata || null,
+                parentResource: resource
+            };
+            var baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
+            baseUrl = baseUrl.replace(this.baseUrl, '');
+            var namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
+            var adapter = metadata.images ? staticImageLoader(metadata.images)
+                : metadata.image ? staticImageLoader({ 'default': metadata.image })
+                    : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
+                        : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
+            var createSkeletonWithRawAtlas = function (rawData) {
+                new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
+                    var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+                    if (metadataSkeletonScale) {
+                        spineJsonParser.scale = metadataSkeletonScale;
+                    }
+                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+                    resource.spineAtlas = spineAtlas;
+                    next();
+                });
+            };
+            if (resource.metadata && resource.metadata.atlasRawData) {
+                createSkeletonWithRawAtlas(resource.metadata.atlasRawData);
+            }
+            else {
+                this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource) {
+                    if (!atlasResource.error) {
+                        createSkeletonWithRawAtlas(atlasResource.data);
+                    }
+                    else {
+                        next();
+                    }
+                });
+            }
+        };
+        return AtlasParser;
+    }());
+    pixi_spine.AtlasParser = AtlasParser;
+    function imageLoaderAdapter(loader, namePrefix, baseUrl, imageOptions) {
+        if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
+            baseUrl += '/';
+        }
+        return function (line, callback) {
+            var name = namePrefix + line;
+            var url = baseUrl + line;
+            var cachedResource = loader.resources[name];
+            if (cachedResource) {
+                function done() {
+                    callback(cachedResource.texture.baseTexture);
+                }
+                if (cachedResource.texture) {
+                    done();
+                }
+                else {
+                    cachedResource.onAfterMiddleware.add(done);
+                }
+            }
+            else {
+                loader.add(name, url, imageOptions, function (resource) {
+                    callback(resource.texture.baseTexture);
+                });
+            }
+        };
+    }
+    pixi_spine.imageLoaderAdapter = imageLoaderAdapter;
+    function syncImageLoaderAdapter(baseUrl, crossOrigin) {
+        if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
+            baseUrl += '/';
+        }
+        return function (line, callback) {
+            callback(PIXI.BaseTexture.from(line, crossOrigin));
+        };
+    }
+    pixi_spine.syncImageLoaderAdapter = syncImageLoaderAdapter;
+    function staticImageLoader(pages) {
+        return function (line, callback) {
+            var page = pages[line] || pages['default'];
+            if (page && page.baseTexture)
+                callback(page.baseTexture);
+            else
+                callback(page);
+        };
+    }
+    pixi_spine.staticImageLoader = staticImageLoader;
+    if (PIXI.Loader) {
+        PIXI.Loader.registerPlugin(AtlasParser);
     }
 })(pixi_spine || (pixi_spine = {}));
 //# sourceMappingURL=pixi-spine.js.map
