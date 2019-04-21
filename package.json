@@ -1,7 +1,7 @@
 {
   "name": "pixi-spine",
-  "version": "1.5.21",
-  "description": "Spine implementation for pixi v^3 and v^4",
+  "version": "2.0.0",
+  "description": "Spine implementation for pixi v^5",
   "author": "Mat Groves",
   "contributors": [
     "Chad Engler <chad@pantherdev.com>",
@@ -47,14 +47,11 @@
     "glob": "~7.1.1",
     "mkdirp": "~0.5.1",
     "parallelshell": "~2.0.0",
-    "pixi.js": "~4.8.1",
+    "pixi.js": "~5.0.0-rc.3",
     "rimraf": "~2.5.3",
     "tmp": "^0.0.33",
     "ts-helpers": "~1.1.2",
     "typedoc": "^0.9.0",
     "typescript": "^2.8.3"
-  },
-  "dependencies": {
-    "@types/pixi.js": "^4.8.0"
   }
 }

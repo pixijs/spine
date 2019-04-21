@@ -10,9 +10,6 @@
     "removeComments": true,
     "inlineSources": true,
     "declaration": false,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "lib": ["es6", "dom"]
   },
   "include": [

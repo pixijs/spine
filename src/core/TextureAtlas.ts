@@ -127,9 +127,8 @@ namespace pixi_spine.core {
 
                         textureLoader(line, (texture: PIXI.BaseTexture) => {
                             page.baseTexture = texture;
-                            if (!texture.hasLoaded) {
-                                texture.width = page.width;
-                                texture.height = page.height;
+                            if (!texture.valid) {
+                                texture.setSize(page.width, page.height);
                             }
                             this.pages.push(page);
                             page.setFilters();
@@ -202,12 +201,12 @@ namespace pixi_spine.core {
                         }
 
                         region.index = parseInt(reader.readValue());
-                        (region.texture as any)._updateUvs();
+                        region.texture.updateUvs();
 
                         this.regions.push(region);
                     }
                 }
-            }
+            };
 
             iterateParser();
         }
@@ -285,7 +284,7 @@ namespace pixi_spine.core {
             } else if (this.minFilter == TextureFilter.Nearest) {
                 tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
             } else {
-                tex.mipmap = true;
+                tex.mipmap = PIXI.MIPMAP_MODES.POW2;
                 if (filter == TextureFilter.MipMapNearestNearest) {
                     tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
                 } else {

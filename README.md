@@ -2,15 +2,15 @@
 
 [![Build Status](https://travis-ci.org/pixijs/pixi-spine.svg?branch=master)](https://travis-ci.org/pixijs/pixi-spine)
 
-Spine implementation for pixi v3 and pixi v4.
+Spine implementation for PixiJS v5.
 
-For v5 please see [next branch](https://github.com/pixijs/pixi-spine/tree/next) and use npm version `2.0.0-alpha` 
+For v4 please see [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) and use npm version `1.5.21` 
 
 ## Usage
 
 ### Prebuilt Files
 
-If you are just including the built files, pixi spine adds itself to a pixi namespace:
+If you are just including the built files, pixi spine adds itself to a `PIXI` namespace:
 
 ```js
 new PIXI.spine.Spine();
@@ -23,7 +23,7 @@ var app = new PIXI.Application();
 
 document.body.appendChild(app.view);
 
-PIXI.loader
+app.loader
     .add('spineCharacter', 'spine-data-1/HERO.json')
     .load(function (loader, resources) {
         var animation = new PIXI.spine.Spine(resources.spineCharacter.spineData);
@@ -59,9 +59,9 @@ There's "bin/pixi-spine.d.ts" file, you can use it.
 
 ## Spine version
 
-Pixi-spine 1.3.x works ONLY with data exported from Spine 3.5. 
+We aim to support the latest stable version of spine. 
 
-Please enable "beta updates" and re-export everything from the spine editor.
+If you are below Spine 3.5, please please enable "beta updates" and re-export everything from the spine editor.
 
 According to spine runtime license, you can use runtime only if you have bought the editor, so exporting latest versions of animations shouldn't be a problem for you.
 
