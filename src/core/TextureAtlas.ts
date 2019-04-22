@@ -126,6 +126,10 @@ namespace pixi_spine.core {
                             page.uWrap = page.vWrap = TextureWrap.Repeat;
 
                         textureLoader(line, (texture: PIXI.BaseTexture) => {
+                            if (texture === null) {
+                                this.pages.splice(this.pages.indexOf(page), 1);
+                                return callback && callback(null);
+                            }
                             page.baseTexture = texture;
                             if (!texture.valid) {
                                 texture.setSize(page.width, page.height);
