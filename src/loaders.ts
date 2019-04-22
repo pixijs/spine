@@ -78,12 +78,14 @@ namespace pixi_spine {
 
             const createSkeletonWithRawAtlas = function (rawData: string) {
                 new core.TextureAtlas(rawData, adapter, function (spineAtlas) {
-                    const spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
+                    if (spineAtlas) {
+                        const spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+                        if (metadataSkeletonScale) {
+                            spineJsonParser.scale = metadataSkeletonScale;
+                        }
+                        resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+                        resource.spineAtlas = spineAtlas;
                     }
-                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineAtlas = spineAtlas;
                     next();
                 });
             };
@@ -124,7 +126,11 @@ namespace pixi_spine {
                 }
             } else {
                 loader.add(name, url, imageOptions, (resource: PIXI.loaders.Resource) => {
+                  if (!resource.error) {
                     callback(resource.texture.baseTexture);
+                  } else {
+                    callback(null);
+                  }
                 });
             }
         }
