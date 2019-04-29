@@ -536,12 +536,13 @@ namespace pixi_spine {
         }
 
         updateGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
-            let vertices = (slot.currentGraphics.graphicsData[0].shape as PIXI.Polygon).points;
+            let geom = slot.currentGraphics.geometry;
+            let vertices = (geom.graphicsData[0].shape as PIXI.Polygon).points;
             let n = clip.worldVerticesLength;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-            slot.currentGraphics.dirty++;
-            slot.currentGraphics.clearDirty++;
+            geom.currentGraphics.dirty++;
+            geom.currentGraphics.clearDirty++;
         }
 
         /**
