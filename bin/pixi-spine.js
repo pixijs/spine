@@ -5400,6 +5400,10 @@ var pixi_spine;
                             else if (direction == "xy")
                                 page.uWrap = page.vWrap = core.TextureWrap.Repeat;
                             textureLoader(line, function (texture) {
+                                if (texture === null) {
+                                    _this.pages.splice(_this.pages.indexOf(page), 1);
+                                    return callback && callback(null);
+                                }
                                 page.baseTexture = texture;
                                 if (!texture.valid) {
                                     texture.setSize(page.width, page.height);
@@ -7244,12 +7248,13 @@ var pixi_spine;
             return graphics;
         };
         Spine.prototype.updateGraphics = function (slot, clip) {
-            var vertices = slot.currentGraphics.graphicsData[0].shape.points;
+            var geom = slot.currentGraphics.geometry;
+            var vertices = geom.graphicsData[0].shape.points;
             var n = clip.worldVerticesLength;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-            slot.currentGraphics.dirty++;
-            slot.currentGraphics.clearDirty++;
+            geom.currentGraphics.dirty++;
+            geom.currentGraphics.clearDirty++;
         };
         Spine.prototype.hackTextureBySlotIndex = function (slotIndex, texture, size) {
             if (texture === void 0) { texture = null; }
@@ -7435,12 +7440,14 @@ var pixi_spine;
                         : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
             var createSkeletonWithRawAtlas = function (rawData) {
                 new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
-                    var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                    if (metadataSkeletonScale) {
-                        spineJsonParser.scale = metadataSkeletonScale;
+                    if (spineAtlas) {
+                        var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
+                        if (metadataSkeletonScale) {
+                            spineJsonParser.scale = metadataSkeletonScale;
+                        }
+                        resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+                        resource.spineAtlas = spineAtlas;
                     }
-                    resource.spineData = spineJsonParser.readSkeletonData(resource.data);
-                    resource.spineAtlas = spineAtlas;
                     next();
                 });
             };
@@ -7482,7 +7489,12 @@ var pixi_spine;
             }
             else {
                 loader.add(name, url, imageOptions, function (resource) {
-                    callback(resource.texture.baseTexture);
+                    if (!resource.error) {
+                        callback(resource.texture.baseTexture);
+                    }
+                    else {
+                        callback(null);
+                    }
                 });
             }
         };
