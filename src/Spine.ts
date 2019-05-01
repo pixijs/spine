@@ -541,8 +541,8 @@ namespace pixi_spine {
             let n = clip.worldVerticesLength;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-            geom.currentGraphics.dirty++;
-            geom.currentGraphics.clearDirty++;
+            geom.dirty++;
+            geom.clearDirty++;
         }
 
         /**
