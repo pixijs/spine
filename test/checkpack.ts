@@ -1,20 +1,21 @@
 import 'pixi.js';
 import '../bin/pixi-spine.js';
-import ResourceDictionary = PIXI.loaders.ResourceDictionary;
-import Loader = PIXI.loaders.Loader;
+import ResourceDictionary = PIXI.IResourceDictionary;
+import Loader = PIXI.Loader;
 
 //@../node_modules/pixi.js/dist/pixi.min.js
 //@../bin/pixi-spine.js
 
 // remove loader middleware which
 // automatically loads spine objects
-PIXI.loader['_afterMiddleware'].pop();
 
 let app = new PIXI.Application();
 
+app.loader['_afterMiddleware'].pop();
+
 document.body.appendChild(app.view);
 
-PIXI.loader
+app.loader
     .add('spineboy_atlas', 'http://esotericsoftware.com/demos/exports/atlas1.atlas')
     .add('spineboy_png', 'http://esotericsoftware.com/demos/exports/atlas1.png')
     .add('spineboy_json', 'http://esotericsoftware.com/demos/exports/demos.json')
