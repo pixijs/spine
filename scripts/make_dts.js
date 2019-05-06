@@ -21,7 +21,7 @@ var process = require('child_process');
 tmp.file(function (err, filename) {
   fs.writeFileSync(filename, filesCompilation);
 
-  process.exec('tsc --module none --target es5 --declaration --removeComments node_modules/pixi.js-legacy/pixi.js.d.ts ' + filename, function(err, stdout, stderr) {
+  process.exec('tsc --module none --target es5 --declaration --removeComments node_modules/pixi.js/pixi.js.d.ts ' + filename, function(err, stdout, stderr) {
     var dtsPath = filename.replace('.ts', '.d.ts');
     var dtsContent = '' + fs.readFileSync(dtsPath);
 

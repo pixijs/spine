@@ -1,9 +1,9 @@
-import 'pixi.js';
+import 'pixi.js-legacy';
 import '../bin/pixi-spine.js';
 import ResourceDictionary = PIXI.IResourceDictionary;
 import Loader = PIXI.Loader;
 
-//@../node_modules/pixi.js/dist/pixi.min.js
+//@../node_modules/pixi.js-legacy/dist/pixi.min.js
 //@../bin/pixi-spine.js
 
 // remove loader middleware which
