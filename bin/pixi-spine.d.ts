@@ -470,7 +470,6 @@ declare module PIXI.spine.core {
         inheritDeform: boolean;
         tempColor: Color;
         constructor(name: string);
-        updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number>;
         applyDeform(sourceAttachment: VertexAttachment): boolean;
         getParentMesh(): MeshAttachment;
         setParentMesh(parentMesh: MeshAttachment): void;

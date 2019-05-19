@@ -6574,28 +6574,6 @@ var pixi_spine;
                 _this.tempColor = new core.Color(0, 0, 0, 0);
                 return _this;
             }
-            MeshAttachment.prototype.updateUVs = function (region, uvs) {
-                var regionUVs = this.regionUVs;
-                var n = regionUVs.length;
-                if (!uvs || uvs.length != n) {
-                    uvs = core.Utils.newFloatArray(n);
-                }
-                if (region == null) {
-                    return;
-                }
-                var texture = region.texture;
-                var r = texture._uvs;
-                var w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-                var x = region.offsetX, y = region.pixiOffsetY;
-                for (var i = 0; i < n; i += 2) {
-                    var u = this.regionUVs[i], v = this.regionUVs[i + 1];
-                    u = (u * w2 - x) / w1;
-                    v = (v * h2 - y) / h1;
-                    uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1 - v) + (r.x3 * (1 - u) + r.x2 * u) * v;
-                    uvs[i + 1] = (r.y0 * (1 - u) + r.y1 * u) * (1 - v) + (r.y3 * (1 - u) + r.y2 * u) * v;
-                }
-                return uvs;
-            };
             MeshAttachment.prototype.applyDeform = function (sourceAttachment) {
                 return this == sourceAttachment || (this.inheritDeform && this.parentMesh == sourceAttachment);
             };
@@ -7178,8 +7156,7 @@ var pixi_spine;
             mesh.region = region;
             mesh.texture = region.texture;
             region.texture.updateUvs();
-            attachment.updateUVs(region, mesh.uvBuffer.data);
-            mesh.uvBuffer.update();
+            mesh.uvBuffer.update(attachment.regionUVs);
         };
         Spine.prototype.autoUpdateTransform = function () {
             if (Spine.globalAutoUpdate) {
