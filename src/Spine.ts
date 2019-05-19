@@ -430,8 +430,7 @@ namespace pixi_spine {
             mesh.region = region;
             mesh.texture = region.texture;
             region.texture.updateUvs();
-            attachment.updateUVs(region, mesh.uvBuffer.data as any);
-            mesh.uvBuffer.update();
+            mesh.uvBuffer.update(attachment.regionUVs as any);
         }
 
         protected lastTime: number;

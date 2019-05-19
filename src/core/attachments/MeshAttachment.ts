@@ -45,33 +45,6 @@ namespace pixi_spine.core {
             super(name);
         }
 
-        updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number> {
-            let regionUVs = this.regionUVs;
-            let n = regionUVs.length;
-            if (!uvs || uvs.length != n) {
-                uvs = Utils.newFloatArray(n);
-            }
-
-            if (region == null) {
-                return;
-            }
-
-            let texture = region.texture;
-            let r = (texture as any)._uvs;
-            let w1 = region.width, h1 = region.height, w2 = region.originalWidth, h2 = region.originalHeight;
-            let x = region.offsetX, y = region.pixiOffsetY;
-
-            for (let i = 0; i < n; i += 2) {
-                let u = this.regionUVs[i], v = this.regionUVs[i + 1];
-                u = (u * w2 - x) / w1;
-                v = (v * h2 - y) / h1;
-                uvs[i] = (r.x0 * (1 - u) + r.x1 * u) * (1 - v) + (r.x3 * (1 - u) + r.x2 * u) * v;
-                uvs[i + 1] = (r.y0 * (1 - u) + r.y1 * u) * (1 - v) + (r.y3 * (1 - u) + r.y2 * u) * v;
-            }
-
-            return uvs;
-        }
-
         applyDeform (sourceAttachment: VertexAttachment): boolean {
             return this == sourceAttachment || (this.inheritDeform && this.parentMesh == sourceAttachment);
         }
