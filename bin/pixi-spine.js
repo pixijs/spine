@@ -4526,7 +4526,7 @@ var pixi_spine;
                         var uvs = map.uvs;
                         this.readVertices(map, mesh, uvs.length);
                         mesh.triangles = map.triangles;
-                        mesh.regionUVs = uvs;
+                        mesh.regionUVs = new Float32Array(uvs);
                         mesh.hullLength = this.getValue(map, "hull", 0) * 2;
                         return mesh;
                     }
@@ -7200,7 +7200,7 @@ var pixi_spine;
                 slot.tempAttachment = null;
                 slot.tempRegion = null;
             }
-            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.DRAW_MODES.TRIANGLES);
+            var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), attachment.regionUVs, new Uint16Array(attachment.triangles), PIXI.DRAW_MODES.TRIANGLES);
             if (strip.canvasPadding) {
                 strip.canvasPadding = 1.5;
             }

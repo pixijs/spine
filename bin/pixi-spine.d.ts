@@ -461,7 +461,7 @@ declare module PIXI.spine.core {
     class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
-        regionUVs: ArrayLike<number>;
+        regionUVs: Float32Array;
         uvs: ArrayLike<number>;
         triangles: Array<number>;
         color: Color;
