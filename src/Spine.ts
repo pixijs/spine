@@ -430,7 +430,7 @@ namespace pixi_spine {
             mesh.region = region;
             mesh.texture = region.texture;
             region.texture.updateUvs();
-            mesh.uvBuffer.update(attachment.regionUVs as any);
+            mesh.uvBuffer.update(attachment.regionUVs);
         }
 
         protected lastTime: number;
@@ -500,7 +500,7 @@ namespace pixi_spine {
             let strip = this.newMesh(
                 region.texture,
                 new Float32Array(attachment.regionUVs.length),
-                new Float32Array(attachment.regionUVs.length),
+                attachment.regionUVs,
                 new Uint16Array(attachment.triangles),
                 PIXI.DRAW_MODES.TRIANGLES);
 

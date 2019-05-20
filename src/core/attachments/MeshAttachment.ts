@@ -33,7 +33,7 @@ namespace pixi_spine.core {
     export class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
-        regionUVs: ArrayLike<number>; uvs: ArrayLike<number>;
+        regionUVs: Float32Array; uvs: ArrayLike<number>;
         triangles: Array<number>;
         color = new Color(1, 1, 1, 1);
         hullLength: number;

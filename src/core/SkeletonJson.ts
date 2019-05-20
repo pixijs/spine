@@ -313,7 +313,7 @@ namespace pixi_spine.core {
                     let uvs: Array<number> = map.uvs;
                     this.readVertices(map, mesh, uvs.length);
                     mesh.triangles = map.triangles;
-                    mesh.regionUVs = uvs;
+                    mesh.regionUVs = new Float32Array(uvs);
                     //mesh.updateUVs();
 
                     mesh.hullLength = this.getValue(map, "hull", 0) * 2;
