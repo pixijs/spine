@@ -97,7 +97,7 @@ namespace pixi_spine {
 
             for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 let slot = this.skeleton.slots[i];
-                let attachment: any = slot.attachment;
+                let attachment: any = slot.getAttachment();
                 let slotContainer = this.newContainer();
                 this.slotContainers.push(slotContainer);
                 this.addChild(slotContainer);
@@ -226,7 +226,7 @@ namespace pixi_spine {
 
             for (let i = 0, n = slots.length; i < n; i++) {
                 let slot = slots[i];
-                let attachment = slot.attachment;
+                let attachment = slot.getAttachment();
                 let slotContainer = this.slotContainers[i];
 
                 if (!attachment) {
@@ -429,9 +429,9 @@ namespace pixi_spine {
                         slotContainer.parent = this;
                     }
                 }
-                if (slot.currentGraphics && slot.attachment) {
+                if (slot.currentGraphics && slot.getAttachment()) {
                     clippingContainer = slot.clippingContainer;
-                    clippingAttachment = slot.attachment as core.ClippingAttachment;
+                    clippingAttachment = slot.getAttachment() as core.ClippingAttachment;
                     clippingContainer.children.length = 0;
                     this.children[i] = slotContainer;
 
@@ -613,7 +613,7 @@ namespace pixi_spine {
             if (!slot) {
                 return false;
             }
-            let attachment: any = slot.attachment;
+            let attachment: any = slot.getAttachment();
             let region: core.TextureRegion = attachment.region;
             if (texture) {
                 region = new core.TextureRegion();

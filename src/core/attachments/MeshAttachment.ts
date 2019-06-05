@@ -39,6 +39,7 @@ namespace pixi_spine.core {
         width: number;
         height: number;
         hullLength: number;
+        edges: Array<number>;
         private parentMesh: MeshAttachment;
         tempColor = new Color(0, 0, 0, 0);
 
@@ -126,7 +127,7 @@ namespace pixi_spine.core {
             copy.color.setFromColor(this.color);
             copy.deformAttachment = this.deformAttachment;
             copy.setParentMesh(this.parentMesh != null ? this.parentMesh : this);
-            copy.updateUVs();
+            // copy.updateUVs();
             return copy;
         }
     }

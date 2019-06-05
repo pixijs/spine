@@ -1,6 +1,24 @@
+declare namespace PIXI.loaders {
+    export interface IMetadata {
+        spineSkeletonScale?: number;
+        spineAtlas?: any;
+        spineAtlasSuffix?: string;
+        spineAtlasFile?: string;
+        spineMetadata?: any;
+        imageNamePrefix?: string;
+        atlasRawData?: string;
+        imageLoader?: any;
+        images?: any;
+        imageMetadata?: any;
+        image?: any;
+    }
+}
+
 namespace pixi_spine {
+    let Resource: any = PIXI.loaders.Resource; //pixijs 4.8.7 types, !@#$
+
     function isJson(resource: PIXI.loaders.Resource) {
-        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
+        return resource.type === Resource.TYPE.JSON;
     }
 
     export function atlasParser() {
@@ -56,7 +74,7 @@ namespace pixi_spine {
 
             const atlasOptions = {
                 crossOrigin: resource.crossOrigin,
-                xhrType: PIXI.loaders.Resource.XHR_RESPONSE_TYPE.TEXT,
+                xhrType: Resource.XHR_RESPONSE_TYPE.TEXT,
                 metadata: metadata.spineMetadata || null,
                 parentResource: resource
             };

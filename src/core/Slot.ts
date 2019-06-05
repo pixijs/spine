@@ -52,9 +52,9 @@ namespace pixi_spine.core {
         bone: Bone;
         color: Color;
         darkColor: Color;
-        attachment: Attachment;
+        private attachment: Attachment;
         private attachmentTime: number;
-        attachmentVertices = new Array<number>();
+        deform = new Array<number>();
 
         constructor (data: SlotData, bone: Bone) {
             if (data == null) throw new Error("data cannot be null.");
@@ -79,7 +79,7 @@ namespace pixi_spine.core {
             if (this.attachment == attachment) return;
             this.attachment = attachment;
             this.attachmentTime = this.bone.skeleton.time;
-            this.attachmentVertices.length = 0;
+            this.deform.length = 0;
         }
 
         setAttachmentTime (time: number) {

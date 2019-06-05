@@ -37,6 +37,8 @@ namespace pixi_spine.core {
             if (name == null) throw new Error("name cannot be null.");
             this.name = name;
         }
+
+        abstract copy (): Attachment;
     }
 
     export abstract class VertexAttachment extends Attachment {
@@ -61,10 +63,10 @@ namespace pixi_spine.core {
          * @param count The number of world vertex values to output. Must be <= {@link #getWorldVerticesLength()} - start.
          * @param worldVertices The output world vertices. Must have a length >= offset + count.
          * @param offset The worldVertices index to begin writing values. */
-        computeWorldVertices(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number, stride: number) {
+        computeWorldVertices (slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number, stride: number) {
             count = offset + (count >> 1) * stride;
             let skeleton = slot.bone.skeleton;
-            let deformArray = slot.attachmentVertices;
+            let deformArray = slot.deform;
             let vertices = this.vertices;
             let bones = this.bones;
             if (bones == null) {
@@ -109,8 +111,7 @@ namespace pixi_spine.core {
                     n += v;
                     for (; v < n; v++, b += 3, f += 2) {
                         let mat = skeletonBones[bones[v]].matrix;
-                        let vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1],
-                            weight = vertices[b + 2];
+                        let vx = vertices[b] + deform[f], vy = vertices[b + 1] + deform[f + 1], weight = vertices[b + 2];
                         wx += (vx * mat.a + vy * mat.c + mat.tx) * weight;
                         wy += (vx * mat.b + vy * mat.d + mat.ty) * weight;
                     }

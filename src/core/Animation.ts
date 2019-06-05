@@ -89,7 +89,7 @@ namespace pixi_spine.core {
     }
 
     export enum MixDirection {
-        in, out
+        mixIn, mixOut
     }
 
     export enum TimelineType {
@@ -219,6 +219,7 @@ namespace pixi_spine.core {
             let frames = this.frames;
 
             let bone = skeleton.bones[this.boneIndex];
+            if (!bone.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -298,6 +299,7 @@ namespace pixi_spine.core {
             let frames = this.frames;
 
             let bone = skeleton.bones[this.boneIndex];
+            if (!bone.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -357,6 +359,7 @@ namespace pixi_spine.core {
             let frames = this.frames;
 
             let bone = skeleton.bones[this.boneIndex];
+            if (!bone.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -396,7 +399,7 @@ namespace pixi_spine.core {
                 }
             } else {
                 let bx = 0, by = 0;
-                if (direction == MixDirection.out) {
+                if (direction == MixDirection.mixOut) {
                     switch (blend) {
                         case MixBlend.setup:
                             bx = bone.data.scaleX;
@@ -456,6 +459,7 @@ namespace pixi_spine.core {
             let frames = this.frames;
 
             let bone = skeleton.bones[this.boneIndex];
+            if (!bone.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -531,6 +535,7 @@ namespace pixi_spine.core {
 
         apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let slot = skeleton.slots[this.slotIndex];
+            if (!slot.bone.active) return;
             let frames = this.frames;
             if (time < frames[0]) {
                 switch (blend) {
@@ -611,6 +616,7 @@ namespace pixi_spine.core {
 
         apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let slot = skeleton.slots[this.slotIndex];
+            if (!slot.bone.active) return;
             let frames = this.frames;
             if (time < frames[0]) {
                 switch (blend) {
@@ -700,7 +706,8 @@ namespace pixi_spine.core {
 
         apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let slot = skeleton.slots[this.slotIndex];
-            if (direction == MixDirection.out && blend == MixBlend.setup) {
+            if (!slot.bone.active) return;
+            if (direction == MixDirection.mixOut && blend == MixBlend.setup) {
                 let attachmentName = slot.data.attachmentName;
                 slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName));
                 return;
@@ -754,11 +761,12 @@ namespace pixi_spine.core {
 
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let slot: Slot = skeleton.slots[this.slotIndex];
+            if (!slot.bone.active) return;
             let slotAttachment: Attachment = slot.getAttachment();
             if (!(slotAttachment instanceof VertexAttachment) || !((<VertexAttachment>slotAttachment).deformAttachment == this.attachment)) return;
 
-            let verticesArray: Array<number> = slot.attachmentVertices;
-            if (verticesArray.length == 0) blend = MixBlend.setup;
+            let deformArray: Array<number> = slot.deform;
+            if (deformArray.length == 0) blend = MixBlend.setup;
 
             let frameVertices = this.frameVertices;
             let vertexCount = frameVertices[0].length;
@@ -768,30 +776,30 @@ namespace pixi_spine.core {
                 let vertexAttachment = <VertexAttachment>slotAttachment;
                 switch (blend) {
                     case MixBlend.setup:
-                        verticesArray.length = 0;
+                        deformArray.length = 0;
                         return;
                     case MixBlend.first:
                         if (alpha == 1) {
-                            verticesArray.length = 0;
+                            deformArray.length = 0;
                             break;
                         }
-                        let vertices: Array<number> = Utils.setArraySize(verticesArray, vertexCount);
+                        let deform: Array<number> = Utils.setArraySize(deformArray, vertexCount);
                         if (vertexAttachment.bones == null) {
                             // Unweighted vertex positions.
                             let setupVertices = vertexAttachment.vertices;
-                            for (let i = 0; i < vertexCount; i++)
-                                vertices[i] += (setupVertices[i] - vertices[i]) * alpha;
+                            for (var i = 0; i < vertexCount; i++)
+                                deform[i] += (setupVertices[i] - deform[i]) * alpha;
                         } else {
                             // Weighted deform offsets.
                             alpha = 1 - alpha;
-                            for (let i = 0; i < vertexCount; i++)
-                                vertices[i] *= alpha;
+                            for (var i = 0; i < vertexCount; i++)
+                                deform[i] *= alpha;
                         }
                 }
                 return;
             }
 
-            let vertices: Array<number> = Utils.setArraySize(verticesArray, vertexCount);
+            let deform: Array<number> = Utils.setArraySize(deformArray, vertexCount);
             if (time >= frames[frames.length - 1]) { // Time is after last frame.
                 let lastVertices = frameVertices[frames.length - 1];
                 if (alpha == 1) {
@@ -801,15 +809,15 @@ namespace pixi_spine.core {
                             // Unweighted vertex positions, with alpha.
                             let setupVertices = vertexAttachment.vertices;
                             for (let i = 0; i < vertexCount; i++) {
-                                vertices[i] += lastVertices[i] - setupVertices[i];
+                                deform[i] += lastVertices[i] - setupVertices[i];
                             }
                         } else {
                             // Weighted deform offsets, with alpha.
                             for (let i = 0; i < vertexCount; i++)
-                                vertices[i] += lastVertices[i];
+                                deform[i] += lastVertices[i];
                         }
                     } else {
-                        Utils.arrayCopy(lastVertices, 0, vertices, 0, vertexCount);
+                        Utils.arrayCopy(lastVertices, 0, deform, 0, vertexCount);
                     }
                 } else {
                     switch (blend) {
@@ -820,31 +828,31 @@ namespace pixi_spine.core {
                                 let setupVertices = vertexAttachment.vertices;
                                 for (let i = 0; i < vertexCount; i++) {
                                     let setup = setupVertices[i];
-                                    vertices[i] = setup + (lastVertices[i] - setup) * alpha;
+                                    deform[i] = setup + (lastVertices[i] - setup) * alpha;
                                 }
                             } else {
                                 // Weighted deform offsets, with alpha.
                                 for (let i = 0; i < vertexCount; i++)
-                                    vertices[i] = lastVertices[i] * alpha;
+                                    deform[i] = lastVertices[i] * alpha;
                             }
                             break;
                         }
                         case MixBlend.first:
                         case MixBlend.replace:
                             for (let i = 0; i < vertexCount; i++)
-                                vertices[i] += (lastVertices[i] - vertices[i]) * alpha;
+                                deform[i] += (lastVertices[i] - deform[i]) * alpha;
                         case MixBlend.add:
                             let vertexAttachment = slotAttachment as VertexAttachment;
                             if (vertexAttachment.bones == null) {
                                 // Unweighted vertex positions, with alpha.
                                 let setupVertices = vertexAttachment.vertices;
                                 for (let i = 0; i < vertexCount; i++) {
-                                    vertices[i] += (lastVertices[i] - setupVertices[i]) * alpha;
+                                    deform[i] += (lastVertices[i] - setupVertices[i]) * alpha;
                                 }
                             } else {
                                 // Weighted deform offsets, with alpha.
                                 for (let i = 0; i < vertexCount; i++)
-                                    vertices[i] += lastVertices[i] * alpha;
+                                    deform[i] += lastVertices[i] * alpha;
                             }
                     }
                 }
@@ -866,19 +874,19 @@ namespace pixi_spine.core {
                         let setupVertices = vertexAttachment.vertices;
                         for (let i = 0; i < vertexCount; i++) {
                             let prev = prevVertices[i];
-                            vertices[i] += prev + (nextVertices[i] - prev) * percent - setupVertices[i];
+                            deform[i] += prev + (nextVertices[i] - prev) * percent - setupVertices[i];
                         }
                     } else {
                         // Weighted deform offsets, with alpha.
                         for (let i = 0; i < vertexCount; i++) {
                             let prev = prevVertices[i];
-                            vertices[i] += prev + (nextVertices[i] - prev) * percent;
+                            deform[i] += prev + (nextVertices[i] - prev) * percent;
                         }
                     }
                 } else {
                     for (let i = 0; i < vertexCount; i++) {
                         let prev = prevVertices[i];
-                        vertices[i] = prev + (nextVertices[i] - prev) * percent;
+                        deform[i] = prev + (nextVertices[i] - prev) * percent;
                     }
                 }
             } else {
@@ -890,13 +898,13 @@ namespace pixi_spine.core {
                             let setupVertices = vertexAttachment.vertices;
                             for (let i = 0; i < vertexCount; i++) {
                                 let prev = prevVertices[i], setup = setupVertices[i];
-                                vertices[i] = setup + (prev + (nextVertices[i] - prev) * percent - setup) * alpha;
+                                deform[i] = setup + (prev + (nextVertices[i] - prev) * percent - setup) * alpha;
                             }
                         } else {
                             // Weighted deform offsets, with alpha.
                             for (let i = 0; i < vertexCount; i++) {
                                 let prev = prevVertices[i];
-                                vertices[i] = (prev + (nextVertices[i] - prev) * percent) * alpha;
+                                deform[i] = (prev + (nextVertices[i] - prev) * percent) * alpha;
                             }
                         }
                         break;
@@ -905,7 +913,7 @@ namespace pixi_spine.core {
                     case MixBlend.replace:
                         for (let i = 0; i < vertexCount; i++) {
                             let prev = prevVertices[i];
-                            vertices[i] += (prev + (nextVertices[i] - prev) * percent - vertices[i]) * alpha;
+                            deform[i] += (prev + (nextVertices[i] - prev) * percent - deform[i]) * alpha;
                         }
                         break;
                     case MixBlend.add:
@@ -915,13 +923,13 @@ namespace pixi_spine.core {
                             let setupVertices = vertexAttachment.vertices;
                             for (let i = 0; i < vertexCount; i++) {
                                 let prev = prevVertices[i];
-                                vertices[i] += (prev + (nextVertices[i] - prev) * percent - setupVertices[i]) * alpha;
+                                deform[i] += (prev + (nextVertices[i] - prev) * percent - setupVertices[i]) * alpha;
                             }
                         } else {
                             // Weighted deform offsets, with alpha.
                             for (let i = 0; i < vertexCount; i++) {
                                 let prev = prevVertices[i];
-                                vertices[i] += (prev + (nextVertices[i] - prev) * percent) * alpha;
+                                deform[i] += (prev + (nextVertices[i] - prev) * percent) * alpha;
                             }
                         }
                 }
@@ -1008,7 +1016,7 @@ namespace pixi_spine.core {
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let drawOrder: Array<Slot> = skeleton.drawOrder;
             let slots: Array<Slot> = skeleton.slots;
-            if (direction == MixDirection.out && blend == MixBlend.setup) {
+            if (direction == MixDirection.mixOut && blend == MixBlend.setup) {
                 Utils.arrayCopy(skeleton.slots, 0, skeleton.drawOrder, 0, skeleton.slots.length);
                 return;
             }
@@ -1065,6 +1073,7 @@ namespace pixi_spine.core {
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let frames = this.frames;
             let constraint: IkConstraint = skeleton.ikConstraints[this.ikConstraintIndex];
+            if (!constraint.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -1085,7 +1094,7 @@ namespace pixi_spine.core {
             if (time >= frames[frames.length - IkConstraintTimeline.ENTRIES]) { // Time is after last frame.
                 if (blend == MixBlend.setup) {
                     constraint.mix = constraint.data.mix + (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.data.mix) * alpha;
-                    if (direction == MixDirection.out) {
+                    if (direction == MixDirection.mixOut) {
                         constraint.bendDirection = constraint.data.bendDirection;
                         constraint.compress = constraint.data.compress;
                         constraint.stretch = constraint.data.stretch;
@@ -1096,7 +1105,7 @@ namespace pixi_spine.core {
                     }
                 } else {
                     constraint.mix += (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.mix) * alpha;
-                    if (direction == MixDirection.in) {
+                    if (direction == MixDirection.mixIn) {
                         constraint.bendDirection = frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
                         constraint.compress = frames[frames.length + IkConstraintTimeline.PREV_COMPRESS] != 0;
                         constraint.stretch = frames[frames.length + IkConstraintTimeline.PREV_STRETCH] != 0;
@@ -1114,7 +1123,7 @@ namespace pixi_spine.core {
 
             if (blend == MixBlend.setup) {
                 constraint.mix = constraint.data.mix + (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.data.mix) * alpha;
-                if (direction == MixDirection.out) {
+                if (direction == MixDirection.mixOut) {
                     constraint.bendDirection = constraint.data.bendDirection;
                     constraint.compress = constraint.data.compress;
                     constraint.stretch = constraint.data.stretch;
@@ -1125,7 +1134,7 @@ namespace pixi_spine.core {
                 }
             } else {
                 constraint.mix += (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.mix) * alpha;
-                if (direction == MixDirection.in) {
+                if (direction == MixDirection.mixIn) {
                     constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
                     constraint.compress = frames[frame + IkConstraintTimeline.PREV_COMPRESS] != 0;
                     constraint.stretch = frames[frame + IkConstraintTimeline.PREV_STRETCH] != 0;
@@ -1165,6 +1174,7 @@ namespace pixi_spine.core {
             let frames = this.frames;
 
             let constraint: TransformConstraint = skeleton.transformConstraints[this.transformConstraintIndex];
+            if (!constraint.active) return;
             if (time < frames[0]) {
                 let data = constraint.data;
                 switch (blend) {
@@ -1249,6 +1259,7 @@ namespace pixi_spine.core {
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let frames = this.frames;
             let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];
+            if (!constraint.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -1292,6 +1303,7 @@ namespace pixi_spine.core {
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let frames = this.frames;
             let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];
+            if (!constraint.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
@@ -1353,7 +1365,7 @@ namespace pixi_spine.core {
         apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
             let frames = this.frames;
             let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];
-
+            if (!constraint.active) return;
             if (time < frames[0]) {
                 switch (blend) {
                     case MixBlend.setup:
