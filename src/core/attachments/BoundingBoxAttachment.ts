@@ -33,8 +33,15 @@ namespace pixi_spine.core {
     export class BoundingBoxAttachment extends VertexAttachment {
         color = new Color(1, 1, 1, 1);
 
-        constructor(name: string) {
+        constructor (name: string) {
             super(name);
+        }
+
+        copy (): Attachment {
+            let copy = new BoundingBoxAttachment(name);
+            this.copyTo(copy);
+            copy.color.setFromColor(this.color);
+            return copy;
         }
     }
 }

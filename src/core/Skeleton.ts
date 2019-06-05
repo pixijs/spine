@@ -102,8 +102,23 @@ namespace pixi_spine.core {
             this.updateCacheReset.length = 0;
 
             let bones = this.bones;
-            for (let i = 0, n = bones.length; i < n; i++)
-                bones[i].sorted = false;
+            for (let i = 0, n = bones.length; i < n; i++) {
+                let bone = bones[i];
+                bone.sorted = bone.data.skinRequired;
+                bone.active = !bone.sorted;
+            }
+
+            if (this.skin != null) {
+                let skinBones = this.skin.bones;
+                for (let i = 0, n = this.skin.bones.length; i < n; i++) {
+                    let bone = this.bones[skinBones[i].index];
+                    do {
+                        bone.sorted = false;
+                        bone.active = true;
+                        bone = bone.parent;
+                    } while (bone != null);
+                }
+            }
 
             // IK first, lowest hierarchy depth first.
             let ikConstraints = this.ikConstraints;
@@ -142,6 +157,9 @@ namespace pixi_spine.core {
         }
 
         sortIkConstraint (constraint: IkConstraint) {
+            constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+            if (!constraint.active) return;
+
             let target = constraint.target;
             this.sortBone(target);
 
@@ -161,6 +179,9 @@ namespace pixi_spine.core {
         }
 
         sortPathConstraint (constraint: PathConstraint) {
+            constraint.active = constraint.target.bone.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+            if (!constraint.active) return;
+
             let slot = constraint.target;
             let slotIndex = slot.data.index;
             let slotBone = slot.bone;
@@ -187,6 +208,9 @@ namespace pixi_spine.core {
         }
 
         sortTransformConstraint (constraint: TransformConstraint) {
+            constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+            if (!constraint.active) return;
+
             this.sortBone(constraint.target);
 
             let constrained = constraint.bones;
@@ -248,6 +272,7 @@ namespace pixi_spine.core {
         sortReset (bones: Array<Bone>) {
             for (let i = 0, n = bones.length; i < n; i++) {
                 let bone = bones[i];
+                if (!bone.active) continue;
                 if (bone.sorted) this.sortReset(bone.children);
                 bone.sorted = false;
             }
@@ -287,8 +312,10 @@ namespace pixi_spine.core {
             let ikConstraints = this.ikConstraints;
             for (let i = 0, n = ikConstraints.length; i < n; i++) {
                 let constraint = ikConstraints[i];
-                constraint.bendDirection = constraint.data.bendDirection;
                 constraint.mix = constraint.data.mix;
+                constraint.bendDirection = constraint.data.bendDirection;
+                constraint.compress = constraint.data.compress;
+                constraint.stretch = constraint.data.stretch;
             }
 
             let transformConstraints = this.transformConstraints;
@@ -377,7 +404,8 @@ namespace pixi_spine.core {
          * Attachments from the new skin are attached if the corresponding attachment from the old skin was attached. If there was no
          * old skin, each slot's setup mode attachment is attached from the new skin.
          * @param newSkin May be null. */
-        setSkin (newSkin: Skin | null) {
+        setSkin (newSkin: Skin) {
+            if (newSkin == this.skin) return;
             if (newSkin != null) {
                 if (this.skin != null)
                     newSkin.attachAll(this, this.skin);
@@ -394,6 +422,7 @@ namespace pixi_spine.core {
                 }
             }
             this.skin = newSkin;
+            this.updateCache();
         }
 
         /** @return May be null. */
@@ -469,13 +498,14 @@ namespace pixi_spine.core {
          * @param offset The distance from the skeleton origin to the bottom left corner of the AABB.
          * @param size The width and height of the AABB.
          * @param temp Working memory */
-        getBounds (offset: Vector2, size: Vector2, temp: Array<number>) {
+        getBounds (offset: Vector2, size: Vector2, temp: Array<number> = new Array<number>(2)) {
             if (offset == null) throw new Error("offset cannot be null.");
             if (size == null) throw new Error("size cannot be null.");
             let drawOrder = this.drawOrder;
             let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY, maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY;
             for (let i = 0, n = drawOrder.length; i < n; i++) {
                 let slot = drawOrder[i];
+                if (!slot.bone.active) continue;
                 let verticesLength = 0;
                 let vertices: ArrayLike<number> = null;
                 let attachment = slot.getAttachment();

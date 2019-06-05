@@ -41,6 +41,8 @@ namespace pixi_spine.core {
         ikConstraints = new Array<IkConstraintData>();
         transformConstraints = new Array<TransformConstraintData>();
         pathConstraints = new Array<PathConstraintData>();
+        x: number;
+        y: number;
         width: number;
         height: number;
         version: string;

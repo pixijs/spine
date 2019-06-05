@@ -154,7 +154,15 @@ namespace pixi_spine.core {
                         region.name = line;
                         region.page = page;
 
-                        let rotate: number = reader.readValue() == "true" ? 6 : 0;
+                        let rotateValue = reader.readValue();
+                        let rotate = 0;
+                        if (rotateValue.toLocaleLowerCase() == "true") {
+                            rotate = 6;
+                        } else if (rotateValue.toLocaleLowerCase() == "false") {
+                            rotate = 0;
+                        } else {
+                            rotate = ((720 - parseFloat(rotateValue))% 360) / 45;
+                        }
 
                         reader.readTuple(tuple);
                         let x = parseInt(tuple[0]);

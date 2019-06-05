@@ -30,7 +30,7 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
-    export class IkConstraint implements Constraint {
+    export class IkConstraint implements Updatable {
         data: IkConstraintData;
         bones: Array<Bone>;
         target: Bone;
@@ -38,6 +38,7 @@ namespace pixi_spine.core {
         compress = false;
         stretch = false;
         mix = 1;
+        active = false;
 
         constructor (data: IkConstraintData, skeleton: Skeleton) {
             if (data == null) throw new Error("data cannot be null.");
@@ -54,8 +55,8 @@ namespace pixi_spine.core {
             this.target = skeleton.findBone(data.target.name);
         }
 
-        getOrder () {
-            return this.data.order;
+        isActive () {
+            return this.active;
         }
 
         apply () {
