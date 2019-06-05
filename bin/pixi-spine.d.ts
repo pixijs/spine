@@ -17,11 +17,11 @@ declare module PIXI.spine.core {
         setup = 0,
         first = 1,
         replace = 2,
-        add = 3,
+        add = 3
     }
     enum MixDirection {
-        in = 0,
-        out = 1,
+        mixIn = 0,
+        mixOut = 1
     }
     enum TimelineType {
         rotate = 0,
@@ -38,7 +38,7 @@ declare module PIXI.spine.core {
         pathConstraintPosition = 11,
         pathConstraintSpacing = 12,
         pathConstraintMix = 13,
-        twoColor = 14,
+        twoColor = 14
     }
     abstract class CurveTimeline implements Timeline {
         static LINEAR: number;
@@ -247,6 +247,7 @@ declare module PIXI.spine.core {
         static FIRST: number;
         static HOLD: number;
         static HOLD_MIX: number;
+        static NOT_LAST: number;
         data: AnimationStateData;
         tracks: TrackEntry[];
         events: Event[];
@@ -277,7 +278,8 @@ declare module PIXI.spine.core {
         trackEntry(trackIndex: number, animation: Animation, loop: boolean, last: TrackEntry): TrackEntry;
         disposeNext(entry: TrackEntry): void;
         _animationsChanged(): void;
-        setTimelineModes(entry: TrackEntry): void;
+        computeHold(entry: TrackEntry): void;
+        computeNotLast(entry: TrackEntry): void;
         hasTimeline(entry: TrackEntry, id: number): boolean;
         getCurrent(trackIndex: number): TrackEntry;
         addListener(listener: AnimationStateListener2): void;
@@ -364,7 +366,7 @@ declare module PIXI.spine.core {
         end = 2,
         dispose = 3,
         complete = 4,
-        event = 5,
+        event = 5
     }
     interface AnimationStateListener2 {
         start?(entry: TrackEntry): void;
@@ -412,6 +414,7 @@ declare module PIXI.spine.core {
     abstract class Attachment {
         name: string;
         constructor(name: string);
+        abstract copy(): Attachment;
     }
     abstract class VertexAttachment extends Attachment {
         private static nextID;
@@ -419,10 +422,11 @@ declare module PIXI.spine.core {
         bones: Array<number>;
         vertices: ArrayLike<number>;
         worldVerticesLength: number;
+        deformAttachment: VertexAttachment;
         constructor(name: string);
         computeWorldVerticesOld(slot: Slot, worldVertices: ArrayLike<number>): void;
         computeWorldVertices(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number, stride: number): void;
-        applyDeform(sourceAttachment: VertexAttachment): boolean;
+        copyTo(attachment: VertexAttachment): void;
     }
 }
 declare module PIXI.spine.core {
@@ -442,13 +446,14 @@ declare module PIXI.spine.core {
         Mesh = 2,
         LinkedMesh = 3,
         Path = 4,
-        Point = 5,
+        Point = 5
     }
 }
 declare module PIXI.spine.core {
     class BoundingBoxAttachment extends VertexAttachment {
         color: Color;
         constructor(name: string);
+        copy(): Attachment;
     }
 }
 declare module PIXI.spine.core {
@@ -456,6 +461,7 @@ declare module PIXI.spine.core {
         endSlot: SlotData;
         color: Color;
         constructor(name: string);
+        copy(): Attachment;
     }
 }
 declare module PIXI.spine.core {
@@ -466,15 +472,18 @@ declare module PIXI.spine.core {
         uvs: ArrayLike<number>;
         triangles: Array<number>;
         color: Color;
+        width: number;
+        height: number;
         hullLength: number;
+        edges: Array<number>;
         private parentMesh;
-        inheritDeform: boolean;
         tempColor: Color;
         constructor(name: string);
         updateUVs(region: TextureRegion, uvs: ArrayLike<number>): ArrayLike<number>;
-        applyDeform(sourceAttachment: VertexAttachment): boolean;
         getParentMesh(): MeshAttachment;
         setParentMesh(parentMesh: MeshAttachment): void;
+        copy(): Attachment;
+        newLinkedMesh(): MeshAttachment;
     }
 }
 declare module PIXI.spine.core {
@@ -484,6 +493,7 @@ declare module PIXI.spine.core {
         constantSpeed: boolean;
         color: Color;
         constructor(name: string);
+        copy(): Attachment;
     }
 }
 declare module PIXI.spine.core {
@@ -495,6 +505,7 @@ declare module PIXI.spine.core {
         constructor(name: string);
         computeWorldPosition(bone: Bone, point: Vector2): Vector2;
         computeWorldRotation(bone: Bone): number;
+        copy(): Attachment;
     }
 }
 declare module PIXI.spine.core {
@@ -557,6 +568,7 @@ declare module PIXI.spine.core {
         updateOffset(): void;
         setRegion(region: TextureRegion): void;
         computeWorldVertices(bone: Bone, worldVertices: ArrayLike<number>, offset: number, stride: number): void;
+        copy(): Attachment;
     }
 }
 declare module PIXI.spine.core {
@@ -564,7 +576,7 @@ declare module PIXI.spine.core {
         Normal = 0,
         Additive = 1,
         Multiply = 2,
-        Screen = 3,
+        Screen = 3
     }
 }
 declare module PIXI.spine.core {
@@ -593,7 +605,9 @@ declare module PIXI.spine.core {
         ashearY: number;
         appliedValid: boolean;
         sorted: boolean;
+        active: boolean;
         constructor(data: BoneData, skeleton: Skeleton, parent: Bone);
+        isActive(): boolean;
         update(): void;
         updateWorldTransform(): void;
         updateWorldTransformWith(x: number, y: number, rotation: number, scaleX: number, scaleY: number, shearX: number, shearY: number): void;
@@ -624,6 +638,7 @@ declare module PIXI.spine.core {
         shearX: number;
         shearY: number;
         transformMode: TransformMode;
+        skinRequired: boolean;
         constructor(index: number, name: string, parent: BoneData);
     }
     enum TransformMode {
@@ -631,12 +646,15 @@ declare module PIXI.spine.core {
         OnlyTranslation = 1,
         NoRotationOrReflection = 2,
         NoScale = 3,
-        NoScaleOrReflection = 4,
+        NoScaleOrReflection = 4
     }
 }
 declare module PIXI.spine.core {
-    interface Constraint extends Updatable {
-        getOrder(): number;
+    abstract class ConstraintData {
+        name: string;
+        order: number;
+        skinRequired: boolean;
+        constructor(name: string, order: number, skinRequired: boolean);
     }
 }
 declare module PIXI.spine.core {
@@ -664,7 +682,7 @@ declare module PIXI.spine.core {
     }
 }
 declare module PIXI.spine.core {
-    class IkConstraint implements Constraint {
+    class IkConstraint implements Updatable {
         data: IkConstraintData;
         bones: Array<Bone>;
         target: Bone;
@@ -672,8 +690,9 @@ declare module PIXI.spine.core {
         compress: boolean;
         stretch: boolean;
         mix: number;
+        active: boolean;
         constructor(data: IkConstraintData, skeleton: Skeleton);
-        getOrder(): number;
+        isActive(): boolean;
         apply(): void;
         update(): void;
         apply1(bone: Bone, targetX: number, targetY: number, compress: boolean, stretch: boolean, uniform: boolean, alpha: number): void;
@@ -681,9 +700,7 @@ declare module PIXI.spine.core {
     }
 }
 declare module PIXI.spine.core {
-    class IkConstraintData {
-        name: string;
-        order: number;
+    class IkConstraintData extends ConstraintData {
         bones: BoneData[];
         target: BoneData;
         bendDirection: number;
@@ -695,7 +712,7 @@ declare module PIXI.spine.core {
     }
 }
 declare module PIXI.spine.core {
-    class PathConstraint implements Constraint {
+    class PathConstraint implements Updatable {
         static NONE: number;
         static BEFORE: number;
         static AFTER: number;
@@ -713,20 +730,19 @@ declare module PIXI.spine.core {
         curves: number[];
         lengths: number[];
         segments: number[];
+        active: boolean;
         constructor(data: PathConstraintData, skeleton: Skeleton);
+        isActive(): boolean;
         apply(): void;
         update(): void;
         computeWorldPositions(path: PathAttachment, spacesCount: number, tangents: boolean, percentPosition: boolean, percentSpacing: boolean): number[];
         addBeforePosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number): void;
         addAfterPosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number): void;
         addCurvePosition(p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number, out: Array<number>, o: number, tangents: boolean): void;
-        getOrder(): number;
     }
 }
 declare module PIXI.spine.core {
-    class PathConstraintData {
-        name: string;
-        order: number;
+    class PathConstraintData extends ConstraintData {
         bones: BoneData[];
         target: SlotData;
         positionMode: PositionMode;
@@ -741,17 +757,17 @@ declare module PIXI.spine.core {
     }
     enum PositionMode {
         Fixed = 0,
-        Percent = 1,
+        Percent = 1
     }
     enum SpacingMode {
         Length = 0,
         Fixed = 1,
-        Percent = 2,
+        Percent = 2
     }
     enum RotateMode {
         Tangent = 0,
         Chain = 1,
-        ChainScale = 2,
+        ChainScale = 2
     }
 }
 declare module PIXI.spine.core {
@@ -791,14 +807,14 @@ declare module PIXI.spine.core {
         findSlot(slotName: string): Slot;
         findSlotIndex(slotName: string): number;
         setSkinByName(skinName: string): void;
-        setSkin(newSkin: Skin | null): void;
+        setSkin(newSkin: Skin): void;
         getAttachmentByName(slotName: string, attachmentName: string): Attachment;
         getAttachment(slotIndex: number, attachmentName: string): Attachment;
         setAttachment(slotName: string, attachmentName: string): void;
         findIkConstraint(constraintName: string): IkConstraint;
         findTransformConstraint(constraintName: string): TransformConstraint;
         findPathConstraint(constraintName: string): PathConstraint;
-        getBounds(offset: Vector2, size: Vector2, temp: Array<number>): void;
+        getBounds(offset: Vector2, size: Vector2, temp?: Array<number>): void;
         update(delta: number): void;
         flipX: boolean;
         flipY: boolean;
@@ -859,6 +875,8 @@ declare module PIXI.spine.core {
         ikConstraints: IkConstraintData[];
         transformConstraints: TransformConstraintData[];
         pathConstraints: PathConstraintData[];
+        x: number;
+        y: number;
         width: number;
         height: number;
         version: string;
@@ -898,12 +916,26 @@ declare module PIXI.spine.core {
     }
 }
 declare module PIXI.spine.core {
+    class SkinEntry {
+        slotIndex: number;
+        name: string;
+        attachment: Attachment;
+        constructor(slotIndex: number, name: string, attachment: Attachment);
+    }
     class Skin {
         name: string;
         attachments: Map<Attachment>[];
+        bones: BoneData[];
+        constraints: ConstraintData[];
         constructor(name: string);
-        addAttachment(slotIndex: number, name: string, attachment: Attachment): void;
+        setAttachment(slotIndex: number, name: string, attachment: Attachment): void;
+        addSkin(skin: Skin): void;
+        copySkin(skin: Skin): void;
         getAttachment(slotIndex: number, name: string): Attachment;
+        removeAttachment(slotIndex: number, name: string): void;
+        getAttachments(): Array<SkinEntry>;
+        getAttachmentsForSlot(slotIndex: number, attachments: Array<SkinEntry>): void;
+        clear(): void;
         attachAll(skeleton: Skeleton, oldSkin: Skin): void;
     }
 }
@@ -924,9 +956,9 @@ declare module PIXI.spine.core {
         bone: Bone;
         color: Color;
         darkColor: Color;
-        attachment: Attachment;
+        private attachment;
         private attachmentTime;
-        attachmentVertices: number[];
+        deform: number[];
         constructor(data: SlotData, bone: Bone);
         getAttachment(): Attachment;
         setAttachment(attachment: Attachment): void;
@@ -965,12 +997,12 @@ declare module PIXI.spine.core {
         MipMapNearestNearest = 9984,
         MipMapLinearNearest = 9985,
         MipMapNearestLinear = 9986,
-        MipMapLinearLinear = 9987,
+        MipMapLinearLinear = 9987
     }
     enum TextureWrap {
         MirroredRepeat = 33648,
         ClampToEdge = 33071,
-        Repeat = 10497,
+        Repeat = 10497
     }
     class TextureRegion {
         texture: PIXI.Texture;
@@ -1000,7 +1032,7 @@ declare module PIXI.spine.core {
         addTexture(name: string, texture: PIXI.Texture): TextureAtlasRegion;
         addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean): void;
         addSpineAtlas(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: PIXI.BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any): void;
-        private load(atlasText, textureLoader, callback);
+        private load;
         findRegion(name: string): TextureAtlasRegion;
         dispose(): void;
     }
@@ -1022,7 +1054,7 @@ declare module PIXI.spine.core {
     }
 }
 declare module PIXI.spine.core {
-    class TransformConstraint implements Constraint {
+    class TransformConstraint implements Updatable {
         data: TransformConstraintData;
         bones: Array<Bone>;
         target: Bone;
@@ -1031,20 +1063,19 @@ declare module PIXI.spine.core {
         scaleMix: number;
         shearMix: number;
         temp: Vector2;
+        active: boolean;
         constructor(data: TransformConstraintData, skeleton: Skeleton);
+        isActive(): boolean;
         apply(): void;
         update(): void;
         applyAbsoluteWorld(): void;
         applyRelativeWorld(): void;
         applyAbsoluteLocal(): void;
         applyRelativeLocal(): void;
-        getOrder(): number;
     }
 }
 declare module PIXI.spine.core {
-    class TransformConstraintData {
-        name: string;
-        order: number;
+    class TransformConstraintData extends ConstraintData {
         bones: BoneData[];
         target: BoneData;
         rotateMix: number;
@@ -1073,14 +1104,15 @@ declare module PIXI.spine.core {
         private polygonIndicesPool;
         triangulate(verticesArray: ArrayLike<number>): Array<number>;
         decompose(verticesArray: Array<number>, triangles: Array<number>): Array<Array<number>>;
-        private static isConcave(index, vertexCount, vertices, indices);
-        private static positiveArea(p1x, p1y, p2x, p2y, p3x, p3y);
-        private static winding(p1x, p1y, p2x, p2y, p3x, p3y);
+        private static isConcave;
+        private static positiveArea;
+        private static winding;
     }
 }
 declare module PIXI.spine.core {
     interface Updatable {
         update(): void;
+        isActive(): boolean;
     }
 }
 declare module PIXI.spine.core {
@@ -1157,6 +1189,7 @@ declare module PIXI.spine.core {
         static toFloatArray(array: Array<number>): number[] | Float32Array;
         static toSinglePrecision(value: number): number;
         static webkit602BugfixHelper(alpha: number, blend: MixBlend): void;
+        static contains<T>(array: Array<T>, element: T, identity?: boolean): boolean;
     }
     class DebugUtils {
         static logBones(skeleton: Skeleton): void;
@@ -1238,6 +1271,21 @@ declare module PIXI.spine.core {
 }
 declare module PIXI.spine {
 }
+declare namespace PIXI.loaders {
+    interface IMetadata {
+        spineSkeletonScale?: number;
+        spineAtlas?: any;
+        spineAtlasSuffix?: string;
+        spineAtlasFile?: string;
+        spineMetadata?: any;
+        imageNamePrefix?: string;
+        atlasRawData?: string;
+        imageLoader?: any;
+        images?: any;
+        imageMetadata?: any;
+        image?: any;
+    }
+}
 declare module PIXI.spine {
     function atlasParser(): (resource: PIXI.loaders.Resource, next: () => any) => any;
     function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any): (line: string, callback: (baseTexture: PIXI.BaseTexture) => any) => void;
@@ -1273,8 +1321,8 @@ declare module PIXI.spine {
         tint: number;
         readonly delayLimit: number;
         update(dt: number): void;
-        private setSpriteRegion(attachment, sprite, region);
-        private setMeshRegion(attachment, mesh, region);
+        private setSpriteRegion;
+        private setMeshRegion;
         protected lastTime: number;
         autoUpdateTransform(): void;
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string): SpineSprite;
