@@ -53,6 +53,20 @@ Read our [docs](examples/index.md).
 Our library is tested for integration with webpack and browserify,
 check [our travis config](.travis.yml) and [checkpack](http://github.com/cursedcoder/checkpack).
 
+### How to get a wrong result using browserify/webpack
+
+If `resource.spineData` is missing and you consider to use `resource.data` instead, please don't do that and think about middlewares. You probably created `loader` before `pixi-spine` was connected to the project. Consider that you use `app.loader`, here's what to check:
+
+```js
+if (app.loader._afterMiddleware.indexOf(PIXI.spine.AtlasParser.use) < 0) {
+   app.loader.use(PIXI.spine.AtlasParser.use);
+   console.log('Hey, I managed to initialize loader before pixi-spine module!');
+}
+```
+
+If you see it in the console, then you should consider using `pixi.js` and `pixi-spine` as external dependencies and not pack them inside the build. Or at least create `loader` in the same module you call `add` and `load` functions.
+
+
 ## Typescript
 
 There's "bin/pixi-spine.d.ts" file, you can use it.
