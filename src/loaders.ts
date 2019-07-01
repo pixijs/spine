@@ -1,6 +1,6 @@
 namespace pixi_spine {
     function isJson(resource: PIXI.loaders.Resource) {
-        return resource.type === PIXI.loaders.Resource.TYPE.JSON;
+        return resource.type === (PIXI.loaders.Resource.TYPE.JSON as any);
     }
 
     export function atlasParser() {
@@ -11,10 +11,10 @@ namespace pixi_spine {
                 !resource.data.bones) {
                 return next();
             }
-            const metadata = resource.metadata || {};
-            const metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
+            const metadata: any = resource.metadata || {};
+            const metadataSkeletonScale = metadata ? (resource.metadata as any).spineSkeletonScale : null;
 
-            const metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
+            const metadataAtlas = metadata ? (resource.metadata as any).spineAtlas : null;
             if (metadataAtlas === false) {
                 return next();
             }
@@ -47,8 +47,8 @@ namespace pixi_spine {
             }
             atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
             // use atlas path as a params. (no need to use same atlas file name with json file name)
-            if (resource.metadata && resource.metadata.spineAtlasFile) {
-                atlasPath = resource.metadata.spineAtlasFile;
+            if (resource.metadata && (resource.metadata as any).spineAtlasFile) {
+                atlasPath = (resource.metadata as any).spineAtlasFile;
             }
 
             //remove the baseUrl
@@ -90,8 +90,8 @@ namespace pixi_spine {
                 });
             };
 
-            if (resource.metadata && resource.metadata.atlasRawData) {
-                createSkeletonWithRawAtlas(resource.metadata.atlasRawData)
+            if (resource.metadata && (resource.metadata as any).atlasRawData) {
+                createSkeletonWithRawAtlas((resource.metadata as any).atlasRawData)
             } else {
                 this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
                     if (!atlasResource.error) {
