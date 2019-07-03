@@ -7035,6 +7035,10 @@ var pixi_spine;
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
+                        var transform = new PIXI.Transform();
+                        transform._parentID = -1;
+                        transform._worldID = slotContainer.transform._worldID;
+                        slotContainer.transform = transform;
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         var meshName = attachment.name;
