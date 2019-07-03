@@ -284,6 +284,12 @@ namespace pixi_spine {
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
+
+                        //TODO: refactor this shit
+                        const transform = new PIXI.Transform();
+                        (transform as any)._parentID = -1;
+                        (transform as any)._worldID = (slotContainer.transform as any)._worldID;
+                        slotContainer.transform = transform;
                     }
                     if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
                         let meshName = attachment.name;
