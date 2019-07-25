@@ -11,6 +11,18 @@ namespace pixi_spine {
         region: core.TextureRegion = null;
     }
 
+    const gp = PIXI.GraphicsGeometry.prototype as any;
+    if (!gp.invalidate) {
+        let tmp = [];
+        gp.invalidate = function() {
+            const t = this.graphicsData;
+            tmp.push(0);
+            this.graphicsData = tmp;
+            this.clear();
+            this.graphicsData = t;
+        }
+    }
+
     export class SpineMesh extends PIXI.SimpleMesh {
         region: core.TextureRegion;
 
@@ -546,8 +558,7 @@ namespace pixi_spine {
             let n = clip.worldVerticesLength;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-            geom.dirty++;
-            geom.clearDirty++;
+            geom.invalidate();
         }
 
         /**
