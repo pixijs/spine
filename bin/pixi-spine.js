@@ -6874,6 +6874,17 @@ var pixi_spine;
         return SpineSprite;
     }(PIXI.Sprite));
     pixi_spine.SpineSprite = SpineSprite;
+    var gp = PIXI.GraphicsGeometry.prototype;
+    if (!gp.invalidate) {
+        var tmp_1 = [];
+        gp.invalidate = function () {
+            var t = this.graphicsData;
+            tmp_1.push(0);
+            this.graphicsData = tmp_1;
+            this.clear();
+            this.graphicsData = t;
+        };
+    }
     var SpineMesh = (function (_super) {
         __extends(SpineMesh, _super);
         function SpineMesh(texture, vertices, uvs, indices, drawMode) {
@@ -7234,8 +7245,7 @@ var pixi_spine;
             var n = clip.worldVerticesLength;
             vertices.length = n;
             clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
-            geom.dirty++;
-            geom.clearDirty++;
+            geom.invalidate();
         };
         Spine.prototype.hackTextureBySlotIndex = function (slotIndex, texture, size) {
             if (texture === void 0) { texture = null; }
