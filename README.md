@@ -48,6 +48,32 @@ app.loader
 
 Read our [docs](examples/index.md).
 
+## Two-color tint
+
+Light-dark tint is supported with help of [pixi-heaven](https://github.com/gameofbombs/pixi-heaven)
+
+```js
+let spine = new PIXI.heaven.Spine(spineData);
+```
+
+## WebPack and Angular
+
+Possible webpack way: 
+
+```js
+import * as PIXI from "pixi.js';
+window.PIXI = PIXI;
+import "pixi-spine";
+```
+
+Angular:
+
+```ts
+import * as PIXI from "pixi.js";
+global.PIXI = PIXI;
+require("pixi-spine");
+```
+
 ## Using webpack or browserify?
 
 Our library is tested for integration with webpack and browserify,
