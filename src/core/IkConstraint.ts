@@ -150,7 +150,7 @@ namespace pixi_spine.core {
             b = pp.c;
             c = pp.b;
             d = pp.d;
-            let id = 1 / (a * d - b * c), x = targetX - pp.tx, y = targetY - pp.ty;
+            let id = 1 / (a * d - b * c), x = cwx - pp.tx, y = cwy - pp.ty;
             let dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
             let l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
             if (l1 < 0.0001) {

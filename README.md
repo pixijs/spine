@@ -1,10 +1,14 @@
 # pixi-spine
 
-[![Build Status](https://travis-ci.org/pixijs/pixi-spine.svg?branch=master)](https://travis-ci.org/pixijs/pixi-spine)
+Spine 3.8 implementation for PixiJS v5.
 
-Spine implementation for PixiJS v5.
+PixiJS v5 Spine 3.8 - this branch, latest npm
 
-For v4 please see [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) and use npm version `1.5.21` 
+PixiJS v5 Spine 3.7 - [pixi5-spine3.7 branch](https://github.com/pixijs/pixi-spine/tree/pixi5-spine3.7) npm `2.0.5`
+
+PixiJS v4 Spine 3.8 - [v4.x-3.8 branch](https://github.com/pixijs/pixi-spine/tree/v4.x-3.8) , no npm 
+
+PixiJS v4 Spine 3.7 - [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) npm version `1.5.21` 
 
 ## Usage
 
