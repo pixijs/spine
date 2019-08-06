@@ -33,7 +33,7 @@ namespace pixi_spine.core {
     export class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
-        regionUVs: ArrayLike<number>; uvs: ArrayLike<number>;
+        regionUVs: Float32Array; uvs: ArrayLike<number>;
         triangles: Array<number>;
         color = new Color(1, 1, 1, 1);
         width: number;
@@ -101,7 +101,7 @@ namespace pixi_spine.core {
             copy.color.setFromColor(this.color);
 
             this.copyTo(copy);
-            copy.regionUVs = new Array<number>(this.regionUVs.length);
+            copy.regionUVs = new Float32Array(this.regionUVs.length);
             Utils.arrayCopy(this.regionUVs, 0, copy.regionUVs, 0, this.regionUVs.length);
             copy.uvs = new Array<number>(this.uvs.length);
             Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, this.uvs.length);

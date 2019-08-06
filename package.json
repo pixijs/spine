@@ -55,6 +55,6 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@types/pixi.js": "^4.8.0"
+    "@types/pixi.js": "^4.8.8"
   }
 }

@@ -108,15 +108,11 @@ namespace pixi_spine.core {
             let sy = Bone.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
 
             if (parent == null) { // Root bone.
-                if(Bone.yDown){
-                    rotation = -rotation;
-                    this.arotation = rotation;
-                }
                 let skeleton = this.skeleton;
                 let rotationY = rotation + 90 + shearY;
                 m.a = MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
-                m.c = MathUtils.cosDeg(rotationY) * scaleY * sy;
-                m.b = MathUtils.sinDeg(rotation + shearX) * scaleX * sx;
+                m.c = MathUtils.cosDeg(rotationY) * scaleY * sx;
+                m.b = MathUtils.sinDeg(rotation + shearX) * scaleX * sy;
                 m.d = MathUtils.sinDeg(rotationY) * scaleY * sy;
                 m.tx = x * sx + skeleton.x;
                 m.ty = y * sy + skeleton.y;

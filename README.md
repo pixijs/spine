@@ -1,10 +1,8 @@
 # pixi-spine
 
-[![Build Status](https://travis-ci.org/pixijs/pixi-spine.svg?branch=master)](https://travis-ci.org/pixijs/pixi-spine)
+Spine 3.8 implementation for pixi v3 and pixi v4.
 
-Spine implementation for pixi v3 and pixi v4.
-
-For v5 please see [next branch](https://github.com/pixijs/pixi-spine/tree/next) and use npm version `2.0.0-alpha` 
+Works both with `json` and binary `skel` files!
 
 ## Usage
 

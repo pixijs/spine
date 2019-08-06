@@ -15,22 +15,50 @@ declare namespace PIXI.loaders {
 }
 
 namespace pixi_spine {
-    let Resource: any = PIXI.loaders.Resource; //pixijs 4.8.7 types, !@#$
+    const Resource = PIXI.loaders.Resource;
 
-    function isJson(resource: PIXI.loaders.Resource) {
-        return resource.type === Resource.TYPE.JSON;
+    function isJson(resource: any) {
+        return resource.type == Resource.TYPE.JSON;
     }
+
+    function isBuffer(resource: any) {
+        return resource.xhrType == Resource.XHR_RESPONSE_TYPE.BUFFER;
+    }
+
+    Resource.setExtensionXhrType('skel', Resource.XHR_RESPONSE_TYPE.BUFFER);
 
     export function atlasParser() {
         return function atlasParser(resource: PIXI.loaders.Resource, next: () => any) {
             // skip if no data, its not json, or it isn't atlas data
-            if (!resource.data ||
-                !isJson(resource) ||
-                !resource.data.bones) {
+            if (!resource.data) {
                 return next();
             }
+
+            const isJsonSpineModel = isJson(resource) && !resource.data.bones;
+            const isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata.spineMetadata);
+
+            if (!isBinarySpineModel && !isBinarySpineModel) {
+                return next();
+            }
+
+            let parser: any = null;
+            let dataToParse = resource.data;
+
+            if (isJsonSpineModel) {
+                parser = new core.SkeletonJson(null);
+            } else {
+                parser = new core.SkeletonBinary(null);
+                if (resource.data instanceof ArrayBuffer) {
+                    dataToParse = new Uint8Array(resource.data);
+                }
+            }
+
             const metadata = resource.metadata || {};
             const metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
+
+            if (metadataSkeletonScale) {
+                parser.scale = metadataSkeletonScale;
+            }
 
             const metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
             if (metadataAtlas === false) {
@@ -38,13 +66,8 @@ namespace pixi_spine {
             }
             if (metadataAtlas && metadataAtlas.pages) {
                 //its an atlas!
-                const spineJsonParser = new core.SkeletonJson(new core.AtlasAttachmentLoader(metadataAtlas));
-                if (metadataSkeletonScale) {
-                    spineJsonParser.scale = metadataSkeletonScale;
-                }
-                const skeletonData = spineJsonParser.readSkeletonData(resource.data);
-
-                resource.spineData = skeletonData;
+                parser.attachmentLoader = new core.AtlasAttachmentLoader(metadataAtlas);
+                resource.spineData = parser.readSkeletonData(dataToParse);
                 resource.spineAtlas = metadataAtlas;
 
                 return next();
@@ -57,8 +80,8 @@ namespace pixi_spine {
              * that correspond to the spine file are in the same base URL and that the .json and .atlas files
              * have the same name
              */
-            let atlasPath = resource.url
-            let queryStringPos = atlasPath.indexOf('?')
+            let atlasPath = resource.url;
+            let queryStringPos = atlasPath.indexOf('?');
             if (queryStringPos > 0) {
                 //remove querystring
                 atlasPath = atlasPath.substr(0, queryStringPos)
@@ -97,11 +120,8 @@ namespace pixi_spine {
             const createSkeletonWithRawAtlas = function (rawData: string) {
                 new core.TextureAtlas(rawData, adapter, function (spineAtlas) {
                     if (spineAtlas) {
-                        const spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                        if (metadataSkeletonScale) {
-                            spineJsonParser.scale = metadataSkeletonScale;
-                        }
-                        resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+                        parser.attachmentLoader = new core.AtlasAttachmentLoader(spineAtlas);
+                        resource.spineData = parser.readSkeletonData(dataToParse);
                         resource.spineAtlas = spineAtlas;
                     }
                     next();
@@ -119,7 +139,7 @@ namespace pixi_spine {
                     }
                 });
             }
-        };
+        }
     }
 
     export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any) {

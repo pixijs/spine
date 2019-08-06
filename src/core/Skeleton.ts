@@ -313,6 +313,7 @@ namespace pixi_spine.core {
             for (let i = 0, n = ikConstraints.length; i < n; i++) {
                 let constraint = ikConstraints[i];
                 constraint.mix = constraint.data.mix;
+                constraint.softness = constraint.data.softness;
                 constraint.bendDirection = constraint.data.bendDirection;
                 constraint.compress = constraint.data.compress;
                 constraint.stretch = constraint.data.stretch;

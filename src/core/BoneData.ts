@@ -45,6 +45,8 @@ namespace pixi_spine.core {
         transformMode = TransformMode.Normal;
         skinRequired = false;
 
+        color = new Color();
+
         constructor(index: number, name: string, parent: BoneData) {
             if (index < 0) throw new Error("index must be >= 0.");
             if (name == null) throw new Error("name cannot be null.");

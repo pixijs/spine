@@ -983,10 +983,11 @@ var pixi_spine;
             IkConstraintTimeline.prototype.getPropertyId = function () {
                 return (TimelineType.ikConstraint << 24) + this.ikConstraintIndex;
             };
-            IkConstraintTimeline.prototype.setFrame = function (frameIndex, time, mix, bendDirection, compress, stretch) {
+            IkConstraintTimeline.prototype.setFrame = function (frameIndex, time, mix, softness, bendDirection, compress, stretch) {
                 frameIndex *= IkConstraintTimeline.ENTRIES;
                 this.frames[frameIndex] = time;
                 this.frames[frameIndex + IkConstraintTimeline.MIX] = mix;
+                this.frames[frameIndex + IkConstraintTimeline.SOFTNESS] = softness;
                 this.frames[frameIndex + IkConstraintTimeline.BEND_DIRECTION] = bendDirection;
                 this.frames[frameIndex + IkConstraintTimeline.COMPRESS] = compress ? 1 : 0;
                 this.frames[frameIndex + IkConstraintTimeline.STRETCH] = stretch ? 1 : 0;
@@ -1000,12 +1001,14 @@ var pixi_spine;
                     switch (blend) {
                         case MixBlend.setup:
                             constraint.mix = constraint.data.mix;
+                            constraint.softness = constraint.data.softness;
                             constraint.bendDirection = constraint.data.bendDirection;
                             constraint.compress = constraint.data.compress;
                             constraint.stretch = constraint.data.stretch;
                             return;
                         case MixBlend.first:
                             constraint.mix += (constraint.data.mix - constraint.mix) * alpha;
+                            constraint.softness += (constraint.data.softness - constraint.softness) * alpha;
                             constraint.bendDirection = constraint.data.bendDirection;
                             constraint.compress = constraint.data.compress;
                             constraint.stretch = constraint.data.stretch;
@@ -1015,6 +1018,8 @@ var pixi_spine;
                 if (time >= frames[frames.length - IkConstraintTimeline.ENTRIES]) {
                     if (blend == MixBlend.setup) {
                         constraint.mix = constraint.data.mix + (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.data.mix) * alpha;
+                        constraint.softness = constraint.data.softness
+                            + (frames[frames.length + IkConstraintTimeline.PREV_SOFTNESS] - constraint.data.softness) * alpha;
                         if (direction == MixDirection.mixOut) {
                             constraint.bendDirection = constraint.data.bendDirection;
                             constraint.compress = constraint.data.compress;
@@ -1028,6 +1033,7 @@ var pixi_spine;
                     }
                     else {
                         constraint.mix += (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.mix) * alpha;
+                        constraint.softness += (frames[frames.length + IkConstraintTimeline.PREV_SOFTNESS] - constraint.softness) * alpha;
                         if (direction == MixDirection.mixIn) {
                             constraint.bendDirection = frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
                             constraint.compress = frames[frames.length + IkConstraintTimeline.PREV_COMPRESS] != 0;
@@ -1038,10 +1044,13 @@ var pixi_spine;
                 }
                 var frame = Animation.binarySearch(frames, time, IkConstraintTimeline.ENTRIES);
                 var mix = frames[frame + IkConstraintTimeline.PREV_MIX];
+                var softness = frames[frame + IkConstraintTimeline.PREV_SOFTNESS];
                 var frameTime = frames[frame];
                 var percent = this.getCurvePercent(frame / IkConstraintTimeline.ENTRIES - 1, 1 - (time - frameTime) / (frames[frame + IkConstraintTimeline.PREV_TIME] - frameTime));
                 if (blend == MixBlend.setup) {
                     constraint.mix = constraint.data.mix + (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.data.mix) * alpha;
+                    constraint.softness = constraint.data.softness
+                        + (softness + (frames[frame + IkConstraintTimeline.SOFTNESS] - softness) * percent - constraint.data.softness) * alpha;
                     if (direction == MixDirection.mixOut) {
                         constraint.bendDirection = constraint.data.bendDirection;
                         constraint.compress = constraint.data.compress;
@@ -1055,6 +1064,7 @@ var pixi_spine;
                 }
                 else {
                     constraint.mix += (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.mix) * alpha;
+                    constraint.softness += (softness + (frames[frame + IkConstraintTimeline.SOFTNESS] - softness) * percent - constraint.softness) * alpha;
                     if (direction == MixDirection.mixIn) {
                         constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
                         constraint.compress = frames[frame + IkConstraintTimeline.PREV_COMPRESS] != 0;
@@ -1062,16 +1072,18 @@ var pixi_spine;
                     }
                 }
             };
-            IkConstraintTimeline.ENTRIES = 5;
-            IkConstraintTimeline.PREV_TIME = -5;
-            IkConstraintTimeline.PREV_MIX = -4;
+            IkConstraintTimeline.ENTRIES = 6;
+            IkConstraintTimeline.PREV_TIME = -6;
+            IkConstraintTimeline.PREV_MIX = -5;
+            IkConstraintTimeline.PREV_SOFTNESS = -4;
             IkConstraintTimeline.PREV_BEND_DIRECTION = -3;
             IkConstraintTimeline.PREV_COMPRESS = -2;
             IkConstraintTimeline.PREV_STRETCH = -1;
             IkConstraintTimeline.MIX = 1;
-            IkConstraintTimeline.BEND_DIRECTION = 2;
-            IkConstraintTimeline.COMPRESS = 3;
-            IkConstraintTimeline.STRETCH = 4;
+            IkConstraintTimeline.SOFTNESS = 2;
+            IkConstraintTimeline.BEND_DIRECTION = 3;
+            IkConstraintTimeline.COMPRESS = 4;
+            IkConstraintTimeline.STRETCH = 5;
             return IkConstraintTimeline;
         }(CurveTimeline));
         core.IkConstraintTimeline = IkConstraintTimeline;
@@ -1435,8 +1447,10 @@ var pixi_spine;
                     var timelineCount = current.animation.timelines.length;
                     var timelines = current.animation.timelines;
                     if ((i == 0 && mix == 1) || blend == core.MixBlend.add) {
-                        for (var ii = 0; ii < timelineCount; ii++)
+                        for (var ii = 0; ii < timelineCount; ii++) {
+                            core.Utils.webkit602BugfixHelper(mix, blend);
                             timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, core.MixDirection.mixIn);
+                        }
                     }
                     else {
                         var timelineMode = current.timelineMode;
@@ -2364,15 +2378,11 @@ var pixi_spine;
                 var sx = this.skeleton.scaleX;
                 var sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
                 if (parent == null) {
-                    if (Bone.yDown) {
-                        rotation = -rotation;
-                        this.arotation = rotation;
-                    }
                     var skeleton = this.skeleton;
                     var rotationY = rotation + 90 + shearY;
                     m.a = core.MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
-                    m.c = core.MathUtils.cosDeg(rotationY) * scaleY * sy;
-                    m.b = core.MathUtils.sinDeg(rotation + shearX) * scaleX * sx;
+                    m.c = core.MathUtils.cosDeg(rotationY) * scaleY * sx;
+                    m.b = core.MathUtils.sinDeg(rotation + shearX) * scaleX * sy;
                     m.d = core.MathUtils.sinDeg(rotationY) * scaleY * sy;
                     m.tx = x * sx + skeleton.x;
                     m.ty = y * sy + skeleton.y;
@@ -2587,6 +2597,7 @@ var pixi_spine;
                 this.shearY = 0;
                 this.transformMode = TransformMode.Normal;
                 this.skinRequired = false;
+                this.color = new core.Color();
                 if (index < 0)
                     throw new Error("index must be >= 0.");
                 if (name == null)
@@ -2662,6 +2673,7 @@ var pixi_spine;
                 this.compress = false;
                 this.stretch = false;
                 this.mix = 1;
+                this.softness = 0;
                 this.active = false;
                 if (data == null)
                     throw new Error("data cannot be null.");
@@ -2669,6 +2681,7 @@ var pixi_spine;
                     throw new Error("skeleton cannot be null.");
                 this.data = data;
                 this.mix = data.mix;
+                this.softness = data.softness;
                 this.bendDirection = data.bendDirection;
                 this.compress = data.compress;
                 this.stretch = data.stretch;
@@ -2691,7 +2704,7 @@ var pixi_spine;
                         this.apply1(bones[0], target.worldX, target.worldY, this.compress, this.stretch, this.data.uniform, this.mix);
                         break;
                     case 2:
-                        this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.mix);
+                        this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.softness, this.mix);
                         break;
                 }
             };
@@ -2721,7 +2734,7 @@ var pixi_spine;
                 }
                 bone.updateWorldTransformWith(bone.ax, bone.ay, bone.arotation + rotationIK * alpha, sx, sy, bone.ashearX, bone.ashearY);
             };
-            IkConstraint.prototype.apply2 = function (parent, child, targetX, targetY, bendDir, stretch, alpha) {
+            IkConstraint.prototype.apply2 = function (parent, child, targetX, targetY, bendDir, stretch, softness, alpha) {
                 if (alpha == 0) {
                     child.updateWorldTransform();
                     return;
@@ -2769,12 +2782,29 @@ var pixi_spine;
                 b = pp.c;
                 c = pp.b;
                 d = pp.d;
-                var id = 1 / (a * d - b * c), x = targetX - pp.tx, y = targetY - pp.ty;
-                var tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py, dd = tx * tx + ty * ty;
-                x = cwx - pp.tx;
-                y = cwy - pp.ty;
+                var id = 1 / (a * d - b * c), x = cwx - pp.tx, y = cwy - pp.ty;
                 var dx = (x * d - y * b) * id - px, dy = (y * a - x * c) * id - py;
-                var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1 = 0, a2 = 0;
+                var l1 = Math.sqrt(dx * dx + dy * dy), l2 = child.data.length * csx, a1, a2;
+                if (l1 < 0.0001) {
+                    this.apply1(parent, targetX, targetY, false, stretch, false, alpha);
+                    child.updateWorldTransformWith(cx, cy, 0, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
+                    return;
+                }
+                x = targetX - pp.tx;
+                y = targetY - pp.ty;
+                var tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
+                var dd = tx * tx + ty * ty;
+                if (softness != 0) {
+                    softness *= psx * (csx + 1) / 2;
+                    var td = Math.sqrt(dd), sd = td - l1 - l2 * psx + softness;
+                    if (sd > 0) {
+                        var p = Math.min(1, sd / (softness * 2)) - 1;
+                        p = (sd - softness * (1 - p * p)) / td;
+                        tx -= p * tx;
+                        ty -= p * ty;
+                        dd = tx * tx + ty * ty;
+                    }
+                }
                 outer: if (u) {
                     l2 *= psx;
                     var cos = (dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
@@ -2782,7 +2812,7 @@ var pixi_spine;
                         cos = -1;
                     else if (cos > 1) {
                         cos = 1;
-                        if (stretch && l1 + l2 > 0.0001)
+                        if (stretch)
                             sx *= (Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
                     }
                     a2 = Math.acos(cos) * bendDir;
@@ -2876,6 +2906,7 @@ var pixi_spine;
                 _this.stretch = false;
                 _this.uniform = false;
                 _this.mix = 1;
+                _this.softness = 0;
                 return _this;
             }
             return IkConstraintData;
@@ -3549,6 +3580,7 @@ var pixi_spine;
                 for (var i = 0, n = ikConstraints.length; i < n; i++) {
                     var constraint = ikConstraints[i];
                     constraint.mix = constraint.data.mix;
+                    constraint.softness = constraint.data.softness;
                     constraint.bendDirection = constraint.data.bendDirection;
                     constraint.compress = constraint.data.compress;
                     constraint.stretch = constraint.data.stretch;
@@ -3798,6 +3830,812 @@ var pixi_spine;
 (function (pixi_spine) {
     var core;
     (function (core) {
+        var SkeletonBinary = (function () {
+            function SkeletonBinary(attachmentLoader) {
+                this.scale = 1;
+                this.linkedMeshes = new Array();
+                this.attachmentLoader = attachmentLoader;
+            }
+            SkeletonBinary.prototype.readSkeletonData = function (binary) {
+                var scale = this.scale;
+                var skeletonData = new core.SkeletonData();
+                skeletonData.name = "";
+                var input = new BinaryInput(binary);
+                skeletonData.hash = input.readString();
+                skeletonData.version = input.readString();
+                skeletonData.x = input.readFloat();
+                skeletonData.y = input.readFloat();
+                skeletonData.width = input.readFloat();
+                skeletonData.height = input.readFloat();
+                var nonessential = input.readBoolean();
+                if (nonessential) {
+                    skeletonData.fps = input.readFloat();
+                    skeletonData.imagesPath = input.readString();
+                    skeletonData.audioPath = input.readString();
+                }
+                var n = 0;
+                n = input.readInt(true);
+                for (var i = 0; i < n; i++)
+                    input.strings.push(input.readString());
+                n = input.readInt(true);
+                for (var i = 0; i < n; i++) {
+                    var name_2 = input.readString();
+                    var parent_2 = i == 0 ? null : skeletonData.bones[input.readInt(true)];
+                    var data = new core.BoneData(i, name_2, parent_2);
+                    data.rotation = input.readFloat();
+                    data.x = input.readFloat() * scale;
+                    data.y = input.readFloat() * scale;
+                    data.scaleX = input.readFloat();
+                    data.scaleY = input.readFloat();
+                    data.shearX = input.readFloat();
+                    data.shearY = input.readFloat();
+                    data.length = input.readFloat() * scale;
+                    data.transformMode = SkeletonBinary.TransformModeValues[input.readInt(true)];
+                    data.skinRequired = input.readBoolean();
+                    if (nonessential)
+                        core.Color.rgba8888ToColor(data.color, input.readInt32());
+                    skeletonData.bones.push(data);
+                }
+                n = input.readInt(true);
+                for (var i = 0; i < n; i++) {
+                    var slotName = input.readString();
+                    var boneData = skeletonData.bones[input.readInt(true)];
+                    var data = new core.SlotData(i, slotName, boneData);
+                    core.Color.rgba8888ToColor(data.color, input.readInt32());
+                    var darkColor = input.readInt32();
+                    if (darkColor != -1)
+                        core.Color.rgb888ToColor(data.darkColor = new core.Color(), darkColor);
+                    data.attachmentName = input.readStringRef();
+                    data.blendMode = SkeletonBinary.BlendModeValues[input.readInt(true)];
+                    skeletonData.slots.push(data);
+                }
+                n = input.readInt(true);
+                for (var i = 0, nn = void 0; i < n; i++) {
+                    var data = new core.IkConstraintData(input.readString());
+                    data.order = input.readInt(true);
+                    data.skinRequired = input.readBoolean();
+                    nn = input.readInt(true);
+                    for (var ii = 0; ii < nn; ii++)
+                        data.bones.push(skeletonData.bones[input.readInt(true)]);
+                    data.target = skeletonData.bones[input.readInt(true)];
+                    data.mix = input.readFloat();
+                    data.softness = input.readFloat() * scale;
+                    data.bendDirection = input.readByte();
+                    data.compress = input.readBoolean();
+                    data.stretch = input.readBoolean();
+                    data.uniform = input.readBoolean();
+                    skeletonData.ikConstraints.push(data);
+                }
+                n = input.readInt(true);
+                for (var i = 0, nn = void 0; i < n; i++) {
+                    var data = new core.TransformConstraintData(input.readString());
+                    data.order = input.readInt(true);
+                    data.skinRequired = input.readBoolean();
+                    nn = input.readInt(true);
+                    for (var ii = 0; ii < nn; ii++)
+                        data.bones.push(skeletonData.bones[input.readInt(true)]);
+                    data.target = skeletonData.bones[input.readInt(true)];
+                    data.local = input.readBoolean();
+                    data.relative = input.readBoolean();
+                    data.offsetRotation = input.readFloat();
+                    data.offsetX = input.readFloat() * scale;
+                    data.offsetY = input.readFloat() * scale;
+                    data.offsetScaleX = input.readFloat();
+                    data.offsetScaleY = input.readFloat();
+                    data.offsetShearY = input.readFloat();
+                    data.rotateMix = input.readFloat();
+                    data.translateMix = input.readFloat();
+                    data.scaleMix = input.readFloat();
+                    data.shearMix = input.readFloat();
+                    skeletonData.transformConstraints.push(data);
+                }
+                n = input.readInt(true);
+                for (var i = 0, nn = void 0; i < n; i++) {
+                    var data = new core.PathConstraintData(input.readString());
+                    data.order = input.readInt(true);
+                    data.skinRequired = input.readBoolean();
+                    nn = input.readInt(true);
+                    for (var ii = 0; ii < nn; ii++)
+                        data.bones.push(skeletonData.bones[input.readInt(true)]);
+                    data.target = skeletonData.slots[input.readInt(true)];
+                    data.positionMode = SkeletonBinary.PositionModeValues[input.readInt(true)];
+                    data.spacingMode = SkeletonBinary.SpacingModeValues[input.readInt(true)];
+                    data.rotateMode = SkeletonBinary.RotateModeValues[input.readInt(true)];
+                    data.offsetRotation = input.readFloat();
+                    data.position = input.readFloat();
+                    if (data.positionMode == core.PositionMode.Fixed)
+                        data.position *= scale;
+                    data.spacing = input.readFloat();
+                    if (data.spacingMode == core.SpacingMode.Length || data.spacingMode == core.SpacingMode.Fixed)
+                        data.spacing *= scale;
+                    data.rotateMix = input.readFloat();
+                    data.translateMix = input.readFloat();
+                    skeletonData.pathConstraints.push(data);
+                }
+                var defaultSkin = this.readSkin(input, skeletonData, true, nonessential);
+                if (defaultSkin != null) {
+                    skeletonData.defaultSkin = defaultSkin;
+                    skeletonData.skins.push(defaultSkin);
+                }
+                {
+                    var i = skeletonData.skins.length;
+                    core.Utils.setArraySize(skeletonData.skins, n = i + input.readInt(true));
+                    for (; i < n; i++)
+                        skeletonData.skins[i] = this.readSkin(input, skeletonData, false, nonessential);
+                }
+                n = this.linkedMeshes.length;
+                for (var i = 0; i < n; i++) {
+                    var linkedMesh = this.linkedMeshes[i];
+                    var skin = linkedMesh.skin == null ? skeletonData.defaultSkin : skeletonData.findSkin(linkedMesh.skin);
+                    if (skin == null)
+                        throw new Error("Skin not found: " + linkedMesh.skin);
+                    var parent_3 = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
+                    if (parent_3 == null)
+                        throw new Error("Parent mesh not found: " + linkedMesh.parent);
+                    linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform ? parent_3 : linkedMesh.mesh;
+                    linkedMesh.mesh.setParentMesh(parent_3);
+                }
+                this.linkedMeshes.length = 0;
+                n = input.readInt(true);
+                for (var i = 0; i < n; i++) {
+                    var data = new core.EventData(input.readStringRef());
+                    data.intValue = input.readInt(false);
+                    data.floatValue = input.readFloat();
+                    data.stringValue = input.readString();
+                    data.audioPath = input.readString();
+                    if (data.audioPath != null) {
+                        data.volume = input.readFloat();
+                        data.balance = input.readFloat();
+                    }
+                    skeletonData.events.push(data);
+                }
+                n = input.readInt(true);
+                for (var i = 0; i < n; i++)
+                    skeletonData.animations.push(this.readAnimation(input, input.readString(), skeletonData));
+                return skeletonData;
+            };
+            SkeletonBinary.prototype.readSkin = function (input, skeletonData, defaultSkin, nonessential) {
+                var skin = new core.Skin(defaultSkin ? "default" : input.readStringRef());
+                if (!defaultSkin) {
+                    skin.bones.length = input.readInt(true);
+                    for (var i = 0, n = skin.bones.length; i < n; i++)
+                        skin.bones[i] = skeletonData.bones[input.readInt(true)];
+                    for (var i = 0, n = input.readInt(true); i < n; i++)
+                        skin.constraints.push(skeletonData.ikConstraints[input.readInt(true)]);
+                    for (var i = 0, n = input.readInt(true); i < n; i++)
+                        skin.constraints.push(skeletonData.transformConstraints[input.readInt(true)]);
+                    for (var i = 0, n = input.readInt(true); i < n; i++)
+                        skin.constraints.push(skeletonData.pathConstraints[input.readInt(true)]);
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var slotIndex = input.readInt(true);
+                    for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                        var name_3 = input.readStringRef();
+                        var attachment = this.readAttachment(input, skeletonData, skin, slotIndex, name_3, nonessential);
+                        if (attachment != null)
+                            skin.setAttachment(slotIndex, name_3, attachment);
+                    }
+                }
+                return skin;
+            };
+            SkeletonBinary.prototype.readAttachment = function (input, skeletonData, skin, slotIndex, attachmentName, nonessential) {
+                var scale = this.scale;
+                var name = input.readStringRef();
+                if (name == null)
+                    name = attachmentName;
+                var typeIndex = input.readByte();
+                var type = SkeletonBinary.AttachmentTypeValues[typeIndex];
+                switch (type) {
+                    case core.AttachmentType.Region: {
+                        var path = input.readStringRef();
+                        var rotation = input.readFloat();
+                        var x = input.readFloat();
+                        var y = input.readFloat();
+                        var scaleX = input.readFloat();
+                        var scaleY = input.readFloat();
+                        var width = input.readFloat();
+                        var height = input.readFloat();
+                        var color = input.readInt32();
+                        if (path == null)
+                            path = name;
+                        var region = this.attachmentLoader.newRegionAttachment(skin, name, path);
+                        if (region == null)
+                            return null;
+                        region.path = path;
+                        region.x = x * scale;
+                        region.y = y * scale;
+                        region.scaleX = scaleX;
+                        region.scaleY = scaleY;
+                        region.rotation = rotation;
+                        region.width = width * scale;
+                        region.height = height * scale;
+                        core.Color.rgba8888ToColor(region.color, color);
+                        region.updateOffset();
+                        return region;
+                    }
+                    case core.AttachmentType.BoundingBox: {
+                        var vertexCount = input.readInt(true);
+                        var vertices = this.readVertices(input, vertexCount);
+                        var color = nonessential ? input.readInt32() : 0;
+                        var box = this.attachmentLoader.newBoundingBoxAttachment(skin, name);
+                        if (box == null)
+                            return null;
+                        box.worldVerticesLength = vertexCount << 1;
+                        box.vertices = vertices.vertices;
+                        box.bones = vertices.bones;
+                        if (nonessential)
+                            core.Color.rgba8888ToColor(box.color, color);
+                        return box;
+                    }
+                    case core.AttachmentType.Mesh: {
+                        var path = input.readStringRef();
+                        var color = input.readInt32();
+                        var vertexCount = input.readInt(true);
+                        var uvs = this.readFloatArray(input, vertexCount << 1, 1);
+                        var triangles = this.readShortArray(input);
+                        var vertices = this.readVertices(input, vertexCount);
+                        var hullLength = input.readInt(true);
+                        var edges = null;
+                        var width = 0, height = 0;
+                        if (nonessential) {
+                            edges = this.readShortArray(input);
+                            width = input.readFloat();
+                            height = input.readFloat();
+                        }
+                        if (path == null)
+                            path = name;
+                        var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                        if (mesh == null)
+                            return null;
+                        mesh.path = path;
+                        core.Color.rgba8888ToColor(mesh.color, color);
+                        mesh.bones = vertices.bones;
+                        mesh.vertices = vertices.vertices;
+                        mesh.worldVerticesLength = vertexCount << 1;
+                        mesh.triangles = triangles;
+                        mesh.regionUVs = new Float32Array(uvs);
+                        mesh.hullLength = hullLength << 1;
+                        if (nonessential) {
+                            mesh.edges = edges;
+                            mesh.width = width * scale;
+                            mesh.height = height * scale;
+                        }
+                        return mesh;
+                    }
+                    case core.AttachmentType.LinkedMesh: {
+                        var path = input.readStringRef();
+                        var color = input.readInt32();
+                        var skinName = input.readStringRef();
+                        var parent_4 = input.readStringRef();
+                        var inheritDeform = input.readBoolean();
+                        var width = 0, height = 0;
+                        if (nonessential) {
+                            width = input.readFloat();
+                            height = input.readFloat();
+                        }
+                        if (path == null)
+                            path = name;
+                        var mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                        if (mesh == null)
+                            return null;
+                        mesh.path = path;
+                        core.Color.rgba8888ToColor(mesh.color, color);
+                        if (nonessential) {
+                            mesh.width = width * scale;
+                            mesh.height = height * scale;
+                        }
+                        this.linkedMeshes.push(new LinkedMesh(mesh, skinName, slotIndex, parent_4, inheritDeform));
+                        return mesh;
+                    }
+                    case core.AttachmentType.Path: {
+                        var closed_1 = input.readBoolean();
+                        var constantSpeed = input.readBoolean();
+                        var vertexCount = input.readInt(true);
+                        var vertices = this.readVertices(input, vertexCount);
+                        var lengths = core.Utils.newArray(vertexCount / 3, 0);
+                        for (var i = 0, n = lengths.length; i < n; i++)
+                            lengths[i] = input.readFloat() * scale;
+                        var color = nonessential ? input.readInt32() : 0;
+                        var path = this.attachmentLoader.newPathAttachment(skin, name);
+                        if (path == null)
+                            return null;
+                        path.closed = closed_1;
+                        path.constantSpeed = constantSpeed;
+                        path.worldVerticesLength = vertexCount << 1;
+                        path.vertices = vertices.vertices;
+                        path.bones = vertices.bones;
+                        path.lengths = lengths;
+                        if (nonessential)
+                            core.Color.rgba8888ToColor(path.color, color);
+                        return path;
+                    }
+                    case core.AttachmentType.Point: {
+                        var rotation = input.readFloat();
+                        var x = input.readFloat();
+                        var y = input.readFloat();
+                        var color = nonessential ? input.readInt32() : 0;
+                        var point = this.attachmentLoader.newPointAttachment(skin, name);
+                        if (point == null)
+                            return null;
+                        point.x = x * scale;
+                        point.y = y * scale;
+                        point.rotation = rotation;
+                        if (nonessential)
+                            core.Color.rgba8888ToColor(point.color, color);
+                        return point;
+                    }
+                    case core.AttachmentType.Clipping: {
+                        var endSlotIndex = input.readInt(true);
+                        var vertexCount = input.readInt(true);
+                        var vertices = this.readVertices(input, vertexCount);
+                        var color = nonessential ? input.readInt32() : 0;
+                        var clip = this.attachmentLoader.newClippingAttachment(skin, name);
+                        if (clip == null)
+                            return null;
+                        clip.endSlot = skeletonData.slots[endSlotIndex];
+                        clip.worldVerticesLength = vertexCount << 1;
+                        clip.vertices = vertices.vertices;
+                        clip.bones = vertices.bones;
+                        if (nonessential)
+                            core.Color.rgba8888ToColor(clip.color, color);
+                        return clip;
+                    }
+                }
+                return null;
+            };
+            SkeletonBinary.prototype.readVertices = function (input, vertexCount) {
+                var verticesLength = vertexCount << 1;
+                var vertices = new Vertices();
+                var scale = this.scale;
+                if (!input.readBoolean()) {
+                    vertices.vertices = this.readFloatArray(input, verticesLength, scale);
+                    return vertices;
+                }
+                var weights = new Array();
+                var bonesArray = new Array();
+                for (var i = 0; i < vertexCount; i++) {
+                    var boneCount = input.readInt(true);
+                    bonesArray.push(boneCount);
+                    for (var ii = 0; ii < boneCount; ii++) {
+                        bonesArray.push(input.readInt(true));
+                        weights.push(input.readFloat() * scale);
+                        weights.push(input.readFloat() * scale);
+                        weights.push(input.readFloat());
+                    }
+                }
+                vertices.vertices = core.Utils.toFloatArray(weights);
+                vertices.bones = bonesArray;
+                return vertices;
+            };
+            SkeletonBinary.prototype.readFloatArray = function (input, n, scale) {
+                var array = new Array(n);
+                if (scale == 1) {
+                    for (var i = 0; i < n; i++)
+                        array[i] = input.readFloat();
+                }
+                else {
+                    for (var i = 0; i < n; i++)
+                        array[i] = input.readFloat() * scale;
+                }
+                return array;
+            };
+            SkeletonBinary.prototype.readShortArray = function (input) {
+                var n = input.readInt(true);
+                var array = new Array(n);
+                for (var i = 0; i < n; i++)
+                    array[i] = input.readShort();
+                return array;
+            };
+            SkeletonBinary.prototype.readAnimation = function (input, name, skeletonData) {
+                var timelines = new Array();
+                var scale = this.scale;
+                var duration = 0;
+                var tempColor1 = new core.Color();
+                var tempColor2 = new core.Color();
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var slotIndex = input.readInt(true);
+                    for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                        var timelineType = input.readByte();
+                        var frameCount = input.readInt(true);
+                        switch (timelineType) {
+                            case SkeletonBinary.SLOT_ATTACHMENT: {
+                                var timeline = new core.AttachmentTimeline(frameCount);
+                                timeline.slotIndex = slotIndex;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++)
+                                    timeline.setFrame(frameIndex, input.readFloat(), input.readStringRef());
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[frameCount - 1]);
+                                break;
+                            }
+                            case SkeletonBinary.SLOT_COLOR: {
+                                var timeline = new core.ColorTimeline(frameCount);
+                                timeline.slotIndex = slotIndex;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    var time = input.readFloat();
+                                    core.Color.rgba8888ToColor(tempColor1, input.readInt32());
+                                    timeline.setFrame(frameIndex, time, tempColor1.r, tempColor1.g, tempColor1.b, tempColor1.a);
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.ColorTimeline.ENTRIES]);
+                                break;
+                            }
+                            case SkeletonBinary.SLOT_TWO_COLOR: {
+                                var timeline = new core.TwoColorTimeline(frameCount);
+                                timeline.slotIndex = slotIndex;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    var time = input.readFloat();
+                                    core.Color.rgba8888ToColor(tempColor1, input.readInt32());
+                                    core.Color.rgb888ToColor(tempColor2, input.readInt32());
+                                    timeline.setFrame(frameIndex, time, tempColor1.r, tempColor1.g, tempColor1.b, tempColor1.a, tempColor2.r, tempColor2.g, tempColor2.b);
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.TwoColorTimeline.ENTRIES]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var boneIndex = input.readInt(true);
+                    for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                        var timelineType = input.readByte();
+                        var frameCount = input.readInt(true);
+                        switch (timelineType) {
+                            case SkeletonBinary.BONE_ROTATE: {
+                                var timeline = new core.RotateTimeline(frameCount);
+                                timeline.boneIndex = boneIndex;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    timeline.setFrame(frameIndex, input.readFloat(), input.readFloat());
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.RotateTimeline.ENTRIES]);
+                                break;
+                            }
+                            case SkeletonBinary.BONE_TRANSLATE:
+                            case SkeletonBinary.BONE_SCALE:
+                            case SkeletonBinary.BONE_SHEAR: {
+                                var timeline = void 0;
+                                var timelineScale = 1;
+                                if (timelineType == SkeletonBinary.BONE_SCALE)
+                                    timeline = new core.ScaleTimeline(frameCount);
+                                else if (timelineType == SkeletonBinary.BONE_SHEAR)
+                                    timeline = new core.ShearTimeline(frameCount);
+                                else {
+                                    timeline = new core.TranslateTimeline(frameCount);
+                                    timelineScale = scale;
+                                }
+                                timeline.boneIndex = boneIndex;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    timeline.setFrame(frameIndex, input.readFloat(), input.readFloat() * timelineScale, input.readFloat() * timelineScale);
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.TranslateTimeline.ENTRIES]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var index = input.readInt(true);
+                    var frameCount = input.readInt(true);
+                    var timeline = new core.IkConstraintTimeline(frameCount);
+                    timeline.ikConstraintIndex = index;
+                    for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                        timeline.setFrame(frameIndex, input.readFloat(), input.readFloat(), input.readFloat() * scale, input.readByte(), input.readBoolean(), input.readBoolean());
+                        if (frameIndex < frameCount - 1)
+                            this.readCurve(input, frameIndex, timeline);
+                    }
+                    timelines.push(timeline);
+                    duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.IkConstraintTimeline.ENTRIES]);
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var index = input.readInt(true);
+                    var frameCount = input.readInt(true);
+                    var timeline = new core.TransformConstraintTimeline(frameCount);
+                    timeline.transformConstraintIndex = index;
+                    for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                        timeline.setFrame(frameIndex, input.readFloat(), input.readFloat(), input.readFloat(), input.readFloat(), input.readFloat());
+                        if (frameIndex < frameCount - 1)
+                            this.readCurve(input, frameIndex, timeline);
+                    }
+                    timelines.push(timeline);
+                    duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.TransformConstraintTimeline.ENTRIES]);
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var index = input.readInt(true);
+                    var data = skeletonData.pathConstraints[index];
+                    for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                        var timelineType = input.readByte();
+                        var frameCount = input.readInt(true);
+                        switch (timelineType) {
+                            case SkeletonBinary.PATH_POSITION:
+                            case SkeletonBinary.PATH_SPACING: {
+                                var timeline = void 0;
+                                var timelineScale = 1;
+                                if (timelineType == SkeletonBinary.PATH_SPACING) {
+                                    timeline = new core.PathConstraintSpacingTimeline(frameCount);
+                                    if (data.spacingMode == core.SpacingMode.Length || data.spacingMode == core.SpacingMode.Fixed)
+                                        timelineScale = scale;
+                                }
+                                else {
+                                    timeline = new core.PathConstraintPositionTimeline(frameCount);
+                                    if (data.positionMode == core.PositionMode.Fixed)
+                                        timelineScale = scale;
+                                }
+                                timeline.pathConstraintIndex = index;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    timeline.setFrame(frameIndex, input.readFloat(), input.readFloat() * timelineScale);
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.PathConstraintPositionTimeline.ENTRIES]);
+                                break;
+                            }
+                            case SkeletonBinary.PATH_MIX: {
+                                var timeline = new core.PathConstraintMixTimeline(frameCount);
+                                timeline.pathConstraintIndex = index;
+                                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                    timeline.setFrame(frameIndex, input.readFloat(), input.readFloat(), input.readFloat());
+                                    if (frameIndex < frameCount - 1)
+                                        this.readCurve(input, frameIndex, timeline);
+                                }
+                                timelines.push(timeline);
+                                duration = Math.max(duration, timeline.frames[(frameCount - 1) * core.PathConstraintMixTimeline.ENTRIES]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                    var skin = skeletonData.skins[input.readInt(true)];
+                    for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                        var slotIndex = input.readInt(true);
+                        for (var iii = 0, nnn = input.readInt(true); iii < nnn; iii++) {
+                            var attachment = skin.getAttachment(slotIndex, input.readStringRef());
+                            var weighted = attachment.bones != null;
+                            var vertices = attachment.vertices;
+                            var deformLength = weighted ? vertices.length / 3 * 2 : vertices.length;
+                            var frameCount = input.readInt(true);
+                            var timeline = new core.DeformTimeline(frameCount);
+                            timeline.slotIndex = slotIndex;
+                            timeline.attachment = attachment;
+                            for (var frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                                var time = input.readFloat();
+                                var deform = void 0;
+                                var end = input.readInt(true);
+                                if (end == 0)
+                                    deform = weighted ? core.Utils.newFloatArray(deformLength) : vertices;
+                                else {
+                                    deform = core.Utils.newFloatArray(deformLength);
+                                    var start = input.readInt(true);
+                                    end += start;
+                                    if (scale == 1) {
+                                        for (var v = start; v < end; v++)
+                                            deform[v] = input.readFloat();
+                                    }
+                                    else {
+                                        for (var v = start; v < end; v++)
+                                            deform[v] = input.readFloat() * scale;
+                                    }
+                                    if (!weighted) {
+                                        for (var v = 0, vn = deform.length; v < vn; v++)
+                                            deform[v] += vertices[v];
+                                    }
+                                }
+                                timeline.setFrame(frameIndex, time, deform);
+                                if (frameIndex < frameCount - 1)
+                                    this.readCurve(input, frameIndex, timeline);
+                            }
+                            timelines.push(timeline);
+                            duration = Math.max(duration, timeline.frames[frameCount - 1]);
+                        }
+                    }
+                }
+                var drawOrderCount = input.readInt(true);
+                if (drawOrderCount > 0) {
+                    var timeline = new core.DrawOrderTimeline(drawOrderCount);
+                    var slotCount = skeletonData.slots.length;
+                    for (var i = 0; i < drawOrderCount; i++) {
+                        var time = input.readFloat();
+                        var offsetCount = input.readInt(true);
+                        var drawOrder = core.Utils.newArray(slotCount, 0);
+                        for (var ii = slotCount - 1; ii >= 0; ii--)
+                            drawOrder[ii] = -1;
+                        var unchanged = core.Utils.newArray(slotCount - offsetCount, 0);
+                        var originalIndex = 0, unchangedIndex = 0;
+                        for (var ii = 0; ii < offsetCount; ii++) {
+                            var slotIndex = input.readInt(true);
+                            while (originalIndex != slotIndex)
+                                unchanged[unchangedIndex++] = originalIndex++;
+                            drawOrder[originalIndex + input.readInt(true)] = originalIndex++;
+                        }
+                        while (originalIndex < slotCount)
+                            unchanged[unchangedIndex++] = originalIndex++;
+                        for (var ii = slotCount - 1; ii >= 0; ii--)
+                            if (drawOrder[ii] == -1)
+                                drawOrder[ii] = unchanged[--unchangedIndex];
+                        timeline.setFrame(i, time, drawOrder);
+                    }
+                    timelines.push(timeline);
+                    duration = Math.max(duration, timeline.frames[drawOrderCount - 1]);
+                }
+                var eventCount = input.readInt(true);
+                if (eventCount > 0) {
+                    var timeline = new core.EventTimeline(eventCount);
+                    for (var i = 0; i < eventCount; i++) {
+                        var time = input.readFloat();
+                        var eventData = skeletonData.events[input.readInt(true)];
+                        var event_4 = new core.Event(time, eventData);
+                        event_4.intValue = input.readInt(false);
+                        event_4.floatValue = input.readFloat();
+                        event_4.stringValue = input.readBoolean() ? input.readString() : eventData.stringValue;
+                        if (event_4.data.audioPath != null) {
+                            event_4.volume = input.readFloat();
+                            event_4.balance = input.readFloat();
+                        }
+                        timeline.setFrame(i, event_4);
+                    }
+                    timelines.push(timeline);
+                    duration = Math.max(duration, timeline.frames[eventCount - 1]);
+                }
+                return new core.Animation(name, timelines, duration);
+            };
+            SkeletonBinary.prototype.readCurve = function (input, frameIndex, timeline) {
+                switch (input.readByte()) {
+                    case SkeletonBinary.CURVE_STEPPED:
+                        timeline.setStepped(frameIndex);
+                        break;
+                    case SkeletonBinary.CURVE_BEZIER:
+                        this.setCurve(timeline, frameIndex, input.readFloat(), input.readFloat(), input.readFloat(), input.readFloat());
+                        break;
+                }
+            };
+            SkeletonBinary.prototype.setCurve = function (timeline, frameIndex, cx1, cy1, cx2, cy2) {
+                timeline.setCurve(frameIndex, cx1, cy1, cx2, cy2);
+            };
+            SkeletonBinary.AttachmentTypeValues = [0, 1, 2, 3, 4, 5, 6];
+            SkeletonBinary.TransformModeValues = [core.TransformMode.Normal, core.TransformMode.OnlyTranslation, core.TransformMode.NoRotationOrReflection, core.TransformMode.NoScale, core.TransformMode.NoScaleOrReflection];
+            SkeletonBinary.PositionModeValues = [core.PositionMode.Fixed, core.PositionMode.Percent];
+            SkeletonBinary.SpacingModeValues = [core.SpacingMode.Length, core.SpacingMode.Fixed, core.SpacingMode.Percent];
+            SkeletonBinary.RotateModeValues = [core.RotateMode.Tangent, core.RotateMode.Chain, core.RotateMode.ChainScale];
+            SkeletonBinary.BlendModeValues = [core.BlendMode.Normal, core.BlendMode.Additive, core.BlendMode.Multiply, core.BlendMode.Screen];
+            SkeletonBinary.BONE_ROTATE = 0;
+            SkeletonBinary.BONE_TRANSLATE = 1;
+            SkeletonBinary.BONE_SCALE = 2;
+            SkeletonBinary.BONE_SHEAR = 3;
+            SkeletonBinary.SLOT_ATTACHMENT = 0;
+            SkeletonBinary.SLOT_COLOR = 1;
+            SkeletonBinary.SLOT_TWO_COLOR = 2;
+            SkeletonBinary.PATH_POSITION = 0;
+            SkeletonBinary.PATH_SPACING = 1;
+            SkeletonBinary.PATH_MIX = 2;
+            SkeletonBinary.CURVE_LINEAR = 0;
+            SkeletonBinary.CURVE_STEPPED = 1;
+            SkeletonBinary.CURVE_BEZIER = 2;
+            return SkeletonBinary;
+        }());
+        core.SkeletonBinary = SkeletonBinary;
+        var BinaryInput = (function () {
+            function BinaryInput(data, strings, index, buffer) {
+                if (strings === void 0) { strings = new Array(); }
+                if (index === void 0) { index = 0; }
+                if (buffer === void 0) { buffer = new DataView(data.buffer); }
+                this.strings = strings;
+                this.index = index;
+                this.buffer = buffer;
+            }
+            BinaryInput.prototype.readByte = function () {
+                return this.buffer.getInt8(this.index++);
+            };
+            BinaryInput.prototype.readShort = function () {
+                var value = this.buffer.getInt16(this.index);
+                this.index += 2;
+                return value;
+            };
+            BinaryInput.prototype.readInt32 = function () {
+                var value = this.buffer.getInt32(this.index);
+                this.index += 4;
+                return value;
+            };
+            BinaryInput.prototype.readInt = function (optimizePositive) {
+                var b = this.readByte();
+                var result = b & 0x7F;
+                if ((b & 0x80) != 0) {
+                    b = this.readByte();
+                    result |= (b & 0x7F) << 7;
+                    if ((b & 0x80) != 0) {
+                        b = this.readByte();
+                        result |= (b & 0x7F) << 14;
+                        if ((b & 0x80) != 0) {
+                            b = this.readByte();
+                            result |= (b & 0x7F) << 21;
+                            if ((b & 0x80) != 0) {
+                                b = this.readByte();
+                                result |= (b & 0x7F) << 28;
+                            }
+                        }
+                    }
+                }
+                return optimizePositive ? result : ((result >>> 1) ^ -(result & 1));
+            };
+            BinaryInput.prototype.readStringRef = function () {
+                var index = this.readInt(true);
+                return index == 0 ? null : this.strings[index - 1];
+            };
+            BinaryInput.prototype.readString = function () {
+                var byteCount = this.readInt(true);
+                switch (byteCount) {
+                    case 0:
+                        return null;
+                    case 1:
+                        return "";
+                }
+                byteCount--;
+                var chars = "";
+                var charCount = 0;
+                for (var i = 0; i < byteCount;) {
+                    var b = this.readByte();
+                    switch (b >> 4) {
+                        case 12:
+                        case 13:
+                            chars += String.fromCharCode(((b & 0x1F) << 6 | this.readByte() & 0x3F));
+                            i += 2;
+                            break;
+                        case 14:
+                            chars += String.fromCharCode(((b & 0x0F) << 12 | (this.readByte() & 0x3F) << 6 | this.readByte() & 0x3F));
+                            i += 3;
+                            break;
+                        default:
+                            chars += String.fromCharCode(b);
+                            i++;
+                    }
+                }
+                return chars;
+            };
+            BinaryInput.prototype.readFloat = function () {
+                var value = this.buffer.getFloat32(this.index);
+                this.index += 4;
+                return value;
+            };
+            BinaryInput.prototype.readBoolean = function () {
+                return this.readByte() != 0;
+            };
+            return BinaryInput;
+        }());
+        var LinkedMesh = (function () {
+            function LinkedMesh(mesh, skin, slotIndex, parent, inheritDeform) {
+                this.mesh = mesh;
+                this.skin = skin;
+                this.slotIndex = slotIndex;
+                this.parent = parent;
+                this.inheritDeform = inheritDeform;
+            }
+            return LinkedMesh;
+        }());
+        var Vertices = (function () {
+            function Vertices(bones, vertices) {
+                if (bones === void 0) { bones = null; }
+                if (vertices === void 0) { vertices = null; }
+                this.bones = bones;
+                this.vertices = vertices;
+            }
+            return Vertices;
+        }());
+    })(core = pixi_spine.core || (pixi_spine.core = {}));
+})(pixi_spine || (pixi_spine = {}));
+var pixi_spine;
+(function (pixi_spine) {
+    var core;
+    (function (core) {
         var SkeletonBounds = (function () {
             function SkeletonBounds() {
                 this.minX = 0;
@@ -3823,6 +4661,8 @@ var pixi_spine;
                 polygons.length = 0;
                 for (var i = 0; i < slotCount; i++) {
                     var slot = slots[i];
+                    if (!slot.bone.active)
+                        continue;
                     var attachment = slot.getAttachment();
                     if (attachment instanceof core.BoundingBoxAttachment) {
                         var boundingBox = attachment;
@@ -4318,9 +5158,9 @@ var pixi_spine;
                     throw new Error("eventDataName cannot be null.");
                 var events = this.events;
                 for (var i = 0, n = events.length; i < n; i++) {
-                    var event_4 = events[i];
-                    if (event_4.name == eventDataName)
-                        return event_4;
+                    var event_5 = events[i];
+                    if (event_5.name == eventDataName)
+                        return event_5;
                 }
                 return null;
             };
@@ -4410,14 +5250,14 @@ var pixi_spine;
                 if (root.bones) {
                     for (var i = 0; i < root.bones.length; i++) {
                         var boneMap = root.bones[i];
-                        var parent_2 = null;
+                        var parent_5 = null;
                         var parentName = this.getValue(boneMap, "parent", null);
                         if (parentName != null) {
-                            parent_2 = skeletonData.findBone(parentName);
-                            if (parent_2 == null)
+                            parent_5 = skeletonData.findBone(parentName);
+                            if (parent_5 == null)
                                 throw new Error("Parent bone not found: " + parentName);
                         }
-                        var data = new core.BoneData(skeletonData.bones.length, boneMap.name, parent_2);
+                        var data = new core.BoneData(skeletonData.bones.length, boneMap.name, parent_5);
                         data.length = this.getValue(boneMap, "length", 0) * scale;
                         data.x = this.getValue(boneMap, "x", 0) * scale;
                         data.y = this.getValue(boneMap, "y", 0) * scale;
@@ -4471,6 +5311,7 @@ var pixi_spine;
                         if (data.target == null)
                             throw new Error("IK target bone not found: " + targetName);
                         data.mix = this.getValue(constraintMap, "mix", 1);
+                        data.softness = this.getValue(constraintMap, "softness", 0) * scale;
                         data.bendDirection = this.getValue(constraintMap, "bendPositive", true) ? 1 : -1;
                         data.compress = this.getValue(constraintMap, "compress", false);
                         data.stretch = this.getValue(constraintMap, "stretch", false);
@@ -4564,7 +5405,7 @@ var pixi_spine;
                         }
                         if (skinMap.transform) {
                             for (var ii = 0; ii < skinMap.transform.length; ii++) {
-                                var constraint = skeletonData.findIkConstraint(skinMap.transform[ii]);
+                                var constraint = skeletonData.findTransformConstraint(skinMap.transform[ii]);
                                 if (constraint == null)
                                     throw new Error("Skin transform constraint not found: " + skinMap.transform[i]);
                                 skin.constraints.push(constraint);
@@ -4572,7 +5413,7 @@ var pixi_spine;
                         }
                         if (skinMap.path) {
                             for (var ii = 0; ii < skinMap.path.length; ii++) {
-                                var constraint = skeletonData.findIkConstraint(skinMap.path[ii]);
+                                var constraint = skeletonData.findPathConstraint(skinMap.path[ii]);
                                 if (constraint == null)
                                     throw new Error("Skin path constraint not found: " + skinMap.path[i]);
                                 skin.constraints.push(constraint);
@@ -4599,11 +5440,11 @@ var pixi_spine;
                     var skin = linkedMesh.skin == null ? skeletonData.defaultSkin : skeletonData.findSkin(linkedMesh.skin);
                     if (skin == null)
                         throw new Error("Skin not found: " + linkedMesh.skin);
-                    var parent_3 = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
-                    if (parent_3 == null)
+                    var parent_6 = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
+                    if (parent_6 == null)
                         throw new Error("Parent mesh not found: " + linkedMesh.parent);
-                    linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform ? parent_3 : linkedMesh.mesh;
-                    linkedMesh.mesh.setParentMesh(parent_3);
+                    linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform ? parent_6 : linkedMesh.mesh;
+                    linkedMesh.mesh.setParentMesh(parent_6);
                 }
                 this.linkedMeshes.length = 0;
                 if (root.events) {
@@ -4650,6 +5491,7 @@ var pixi_spine;
                         var color = this.getValue(map, "color", null);
                         if (color != null)
                             region.color.setFromString(color);
+                        region.updateOffset();
                         return region;
                     }
                     case "boundingbox": {
@@ -4674,15 +5516,15 @@ var pixi_spine;
                             mesh.color.setFromString(color);
                         mesh.width = this.getValue(map, "width", 0) * scale;
                         mesh.height = this.getValue(map, "height", 0) * scale;
-                        var parent_4 = this.getValue(map, "parent", null);
-                        if (parent_4 != null) {
-                            this.linkedMeshes.push(new LinkedMesh(mesh, this.getValue(map, "skin", null), slotIndex, parent_4, this.getValue(map, "deform", true)));
+                        var parent_7 = this.getValue(map, "parent", null);
+                        if (parent_7 != null) {
+                            this.linkedMeshes.push(new LinkedMesh(mesh, this.getValue(map, "skin", null), slotIndex, parent_7, this.getValue(map, "deform", true)));
                             return mesh;
                         }
                         var uvs = map.uvs;
                         this.readVertices(map, mesh, uvs.length);
                         mesh.triangles = map.triangles;
-                        mesh.regionUVs = uvs;
+                        mesh.regionUVs = new Float32Array(uvs);
                         mesh.edges = this.getValue(map, "edges", null);
                         mesh.hullLength = this.getValue(map, "hull", 0) * 2;
                         return mesh;
@@ -4885,7 +5727,7 @@ var pixi_spine;
                         var frameIndex = 0;
                         for (var i = 0; i < constraintMap.length; i++) {
                             var valueMap = constraintMap[i];
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
+                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "softness", 0) * scale, this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
@@ -5054,15 +5896,15 @@ var pixi_spine;
                         var eventData = skeletonData.findEvent(eventMap.name);
                         if (eventData == null)
                             throw new Error("Event not found: " + eventMap.name);
-                        var event_5 = new core.Event(core.Utils.toSinglePrecision(this.getValue(eventMap, "time", 0)), eventData);
-                        event_5.intValue = this.getValue(eventMap, "int", eventData.intValue);
-                        event_5.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
-                        event_5.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
-                        if (event_5.data.audioPath != null) {
-                            event_5.volume = this.getValue(eventMap, "volume", 1);
-                            event_5.balance = this.getValue(eventMap, "balance", 0);
+                        var event_6 = new core.Event(core.Utils.toSinglePrecision(this.getValue(eventMap, "time", 0)), eventData);
+                        event_6.intValue = this.getValue(eventMap, "int", eventData.intValue);
+                        event_6.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
+                        event_6.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
+                        if (event_6.data.audioPath != null) {
+                            event_6.volume = this.getValue(eventMap, "volume", 1);
+                            event_6.balance = this.getValue(eventMap, "balance", 0);
                         }
-                        timeline.setFrame(frameIndex++, event_5);
+                        timeline.setFrame(frameIndex++, event_6);
                     }
                     timelines.push(timeline);
                     duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
@@ -5271,10 +6113,10 @@ var pixi_spine;
                 for (var i = 0; i < this.attachments.length; i++) {
                     var slotAttachments = this.attachments[i];
                     if (slotAttachments) {
-                        for (var name_2 in slotAttachments) {
-                            var attachment = slotAttachments[name_2];
+                        for (var name_4 in slotAttachments) {
+                            var attachment = slotAttachments[name_4];
                             if (attachment)
-                                entries.push(new SkinEntry(i, name_2, attachment));
+                                entries.push(new SkinEntry(i, name_4, attachment));
                         }
                     }
                 }
@@ -5283,10 +6125,10 @@ var pixi_spine;
             Skin.prototype.getAttachmentsForSlot = function (slotIndex, attachments) {
                 var slotAttachments = this.attachments[slotIndex];
                 if (slotAttachments) {
-                    for (var name_3 in slotAttachments) {
-                        var attachment = slotAttachments[name_3];
+                    for (var name_5 in slotAttachments) {
+                        var attachment = slotAttachments[name_5];
                         if (attachment)
-                            attachments.push(new SkinEntry(slotIndex, name_3, attachment));
+                            attachments.push(new SkinEntry(slotIndex, name_5, attachment));
                     }
                 }
             };
@@ -6418,6 +7260,17 @@ var pixi_spine;
                     this.a = 1;
                 return this;
             };
+            Color.rgba8888ToColor = function (color, value) {
+                color.r = ((value & 0xff000000) >>> 24) / 255;
+                color.g = ((value & 0x00ff0000) >>> 16) / 255;
+                color.b = ((value & 0x0000ff00) >>> 8) / 255;
+                color.a = ((value & 0x000000ff)) / 255;
+            };
+            Color.rgb888ToColor = function (color, value) {
+                color.r = ((value & 0x00ff0000) >>> 16) / 255;
+                color.g = ((value & 0x0000ff00) >>> 8) / 255;
+                color.b = ((value & 0x000000ff)) / 255;
+            };
             Color.WHITE = new Color(1, 1, 1, 1);
             Color.RED = new Color(1, 0, 0, 1);
             Color.GREEN = new Color(0, 1, 0, 1);
@@ -6835,6 +7688,7 @@ var pixi_spine;
             AttachmentType[AttachmentType["LinkedMesh"] = 3] = "LinkedMesh";
             AttachmentType[AttachmentType["Path"] = 4] = "Path";
             AttachmentType[AttachmentType["Point"] = 5] = "Point";
+            AttachmentType[AttachmentType["Clipping"] = 6] = "Clipping";
         })(AttachmentType = core.AttachmentType || (core.AttachmentType = {}));
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
@@ -6940,7 +7794,7 @@ var pixi_spine;
                 copy.path = this.path;
                 copy.color.setFromColor(this.color);
                 this.copyTo(copy);
-                copy.regionUVs = new Array(this.regionUVs.length);
+                copy.regionUVs = new Float32Array(this.regionUVs.length);
                 core.Utils.arrayCopy(this.regionUVs, 0, copy.regionUVs, 0, this.regionUVs.length);
                 copy.uvs = new Array(this.uvs.length);
                 core.Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, this.uvs.length);
@@ -7739,9 +8593,9 @@ var pixi_spine;
             var list_d = [], list_n = [];
             for (var i = 0, len = this.skeleton.slots.length; i < len; i++) {
                 var slot = this.skeleton.slots[i];
-                var name_4 = slot.currentSpriteName || slot.currentMeshName || "";
+                var name_6 = slot.currentSpriteName || slot.currentMeshName || "";
                 var target = slot.currentSprite || slot.currentMesh;
-                if (name_4.endsWith(nameSuffix)) {
+                if (name_6.endsWith(nameSuffix)) {
                     target.parentGroup = group;
                     list_n.push(target);
                 }
@@ -7756,12 +8610,12 @@ var pixi_spine;
         Spine.prototype.destroy = function (options) {
             for (var i = 0, n = this.skeleton.slots.length; i < n; i++) {
                 var slot = this.skeleton.slots[i];
-                for (var name_5 in slot.meshes) {
-                    slot.meshes[name_5].destroy(options);
+                for (var name_7 in slot.meshes) {
+                    slot.meshes[name_7].destroy(options);
                 }
                 slot.meshes = null;
-                for (var name_6 in slot.sprites) {
-                    slot.sprites[name_6].destroy(options);
+                for (var name_8 in slot.sprites) {
+                    slot.sprites[name_8].destroy(options);
                 }
                 slot.sprites = null;
             }
@@ -7808,28 +8662,45 @@ var pixi_spine;
 (function (pixi_spine) {
     var Resource = PIXI.loaders.Resource;
     function isJson(resource) {
-        return resource.type === Resource.TYPE.JSON;
+        return resource.type == Resource.TYPE.JSON;
     }
+    function isBuffer(resource) {
+        return resource.xhrType == Resource.XHR_RESPONSE_TYPE.BUFFER;
+    }
+    Resource.setExtensionXhrType('skel', Resource.XHR_RESPONSE_TYPE.BUFFER);
     function atlasParser() {
         return function atlasParser(resource, next) {
-            if (!resource.data ||
-                !isJson(resource) ||
-                !resource.data.bones) {
+            if (!resource.data) {
                 return next();
+            }
+            var isJsonSpineModel = isJson(resource) && !resource.data.bones;
+            var isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata.spineMetadata);
+            if (!isBinarySpineModel && !isBinarySpineModel) {
+                return next();
+            }
+            var parser = null;
+            var dataToParse = resource.data;
+            if (isJsonSpineModel) {
+                parser = new pixi_spine.core.SkeletonJson(null);
+            }
+            else {
+                parser = new pixi_spine.core.SkeletonBinary(null);
+                if (resource.data instanceof ArrayBuffer) {
+                    dataToParse = new Uint8Array(resource.data);
+                }
             }
             var metadata = resource.metadata || {};
             var metadataSkeletonScale = metadata ? resource.metadata.spineSkeletonScale : null;
+            if (metadataSkeletonScale) {
+                parser.scale = metadataSkeletonScale;
+            }
             var metadataAtlas = metadata ? resource.metadata.spineAtlas : null;
             if (metadataAtlas === false) {
                 return next();
             }
             if (metadataAtlas && metadataAtlas.pages) {
-                var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(metadataAtlas));
-                if (metadataSkeletonScale) {
-                    spineJsonParser.scale = metadataSkeletonScale;
-                }
-                var skeletonData = spineJsonParser.readSkeletonData(resource.data);
-                resource.spineData = skeletonData;
+                parser.attachmentLoader = new pixi_spine.core.AtlasAttachmentLoader(metadataAtlas);
+                resource.spineData = parser.readSkeletonData(dataToParse);
                 resource.spineAtlas = metadataAtlas;
                 return next();
             }
@@ -7865,11 +8736,8 @@ var pixi_spine;
             var createSkeletonWithRawAtlas = function (rawData) {
                 new pixi_spine.core.TextureAtlas(rawData, adapter, function (spineAtlas) {
                     if (spineAtlas) {
-                        var spineJsonParser = new pixi_spine.core.SkeletonJson(new pixi_spine.core.AtlasAttachmentLoader(spineAtlas));
-                        if (metadataSkeletonScale) {
-                            spineJsonParser.scale = metadataSkeletonScale;
-                        }
-                        resource.spineData = spineJsonParser.readSkeletonData(resource.data);
+                        parser.attachmentLoader = new pixi_spine.core.AtlasAttachmentLoader(spineAtlas);
+                        resource.spineData = parser.readSkeletonData(dataToParse);
                         resource.spineAtlas = spineAtlas;
                     }
                     next();

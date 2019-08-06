@@ -38,6 +38,7 @@ namespace pixi_spine.core {
         stretch = false;
         uniform = false;
         mix = 1;
+        softness = 0;
 
         constructor (name: string) {
             super(name, 0, false);

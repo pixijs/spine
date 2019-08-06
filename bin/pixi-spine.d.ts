@@ -176,10 +176,12 @@ declare module PIXI.spine.core {
         static ENTRIES: number;
         static PREV_TIME: number;
         static PREV_MIX: number;
+        static PREV_SOFTNESS: number;
         static PREV_BEND_DIRECTION: number;
         static PREV_COMPRESS: number;
         static PREV_STRETCH: number;
         static MIX: number;
+        static SOFTNESS: number;
         static BEND_DIRECTION: number;
         static COMPRESS: number;
         static STRETCH: number;
@@ -187,7 +189,7 @@ declare module PIXI.spine.core {
         frames: ArrayLike<number>;
         constructor(frameCount: number);
         getPropertyId(): number;
-        setFrame(frameIndex: number, time: number, mix: number, bendDirection: number, compress: boolean, stretch: boolean): void;
+        setFrame(frameIndex: number, time: number, mix: number, softness: number, bendDirection: number, compress: boolean, stretch: boolean): void;
         apply(skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
     }
     class TransformConstraintTimeline extends CurveTimeline {
@@ -446,7 +448,8 @@ declare module PIXI.spine.core {
         Mesh = 2,
         LinkedMesh = 3,
         Path = 4,
-        Point = 5
+        Point = 5,
+        Clipping = 6
     }
 }
 declare module PIXI.spine.core {
@@ -468,7 +471,7 @@ declare module PIXI.spine.core {
     class MeshAttachment extends VertexAttachment {
         region: TextureRegion;
         path: string;
-        regionUVs: ArrayLike<number>;
+        regionUVs: Float32Array;
         uvs: ArrayLike<number>;
         triangles: Array<number>;
         color: Color;
@@ -639,6 +642,7 @@ declare module PIXI.spine.core {
         shearY: number;
         transformMode: TransformMode;
         skinRequired: boolean;
+        color: Color;
         constructor(index: number, name: string, parent: BoneData);
     }
     enum TransformMode {
@@ -690,13 +694,14 @@ declare module PIXI.spine.core {
         compress: boolean;
         stretch: boolean;
         mix: number;
+        softness: number;
         active: boolean;
         constructor(data: IkConstraintData, skeleton: Skeleton);
         isActive(): boolean;
         apply(): void;
         update(): void;
         apply1(bone: Bone, targetX: number, targetY: number, compress: boolean, stretch: boolean, uniform: boolean, alpha: number): void;
-        apply2(parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, stretch: boolean, alpha: number): void;
+        apply2(parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, stretch: boolean, softness: number, alpha: number): void;
     }
 }
 declare module PIXI.spine.core {
@@ -708,6 +713,7 @@ declare module PIXI.spine.core {
         stretch: boolean;
         uniform: boolean;
         mix: number;
+        softness: number;
         constructor(name: string);
     }
 }
@@ -821,6 +827,42 @@ declare module PIXI.spine.core {
         private static deprecatedWarning1;
     }
 }
+declare module pixi_spine.core {
+    class SkeletonBinary {
+        static AttachmentTypeValues: number[];
+        static TransformModeValues: TransformMode[];
+        static PositionModeValues: PositionMode[];
+        static SpacingModeValues: SpacingMode[];
+        static RotateModeValues: RotateMode[];
+        static BlendModeValues: BlendMode[];
+        static BONE_ROTATE: number;
+        static BONE_TRANSLATE: number;
+        static BONE_SCALE: number;
+        static BONE_SHEAR: number;
+        static SLOT_ATTACHMENT: number;
+        static SLOT_COLOR: number;
+        static SLOT_TWO_COLOR: number;
+        static PATH_POSITION: number;
+        static PATH_SPACING: number;
+        static PATH_MIX: number;
+        static CURVE_LINEAR: number;
+        static CURVE_STEPPED: number;
+        static CURVE_BEZIER: number;
+        attachmentLoader: AttachmentLoader;
+        scale: number;
+        private linkedMeshes;
+        constructor(attachmentLoader: AttachmentLoader);
+        readSkeletonData(binary: Uint8Array): SkeletonData;
+        private readSkin;
+        private readAttachment;
+        private readVertices;
+        private readFloatArray;
+        private readShortArray;
+        private readAnimation;
+        private readCurve;
+        setCurve(timeline: CurveTimeline, frameIndex: number, cx1: number, cy1: number, cx2: number, cy2: number): void;
+    }
+}
 declare module PIXI.spine.core {
     class SkeletonBounds {
         minX: number;
@@ -883,6 +925,7 @@ declare module PIXI.spine.core {
         hash: string;
         fps: number;
         imagesPath: string;
+        audioPath: string;
         findBone(boneName: string): BoneData;
         findBoneIndex(boneName: string): number;
         findSlot(slotName: string): SlotData;
@@ -1148,6 +1191,8 @@ declare module PIXI.spine.core {
         setFromString(hex: string): this;
         add(r: number, g: number, b: number, a: number): this;
         clamp(): this;
+        static rgba8888ToColor(color: Color, value: number): void;
+        static rgb888ToColor(color: Color, value: number): void;
     }
     class MathUtils {
         static PI: number;
