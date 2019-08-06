@@ -1,10 +1,6 @@
 # pixi-spine
 
-[![Build Status](https://travis-ci.org/pixijs/pixi-spine.svg?branch=master)](https://travis-ci.org/pixijs/pixi-spine)
-
-Spine implementation for PixiJS v5.
-
-For v4 please see [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) and use npm version `1.5.21` 
+Spine 3.7 implementation for PixiJS v5.
 
 ## Usage
 
