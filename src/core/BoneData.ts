@@ -43,6 +43,7 @@ namespace pixi_spine.core {
         shearX = 0;
         shearY = 0;
         transformMode = TransformMode.Normal;
+        skinRequired = false;
 
         constructor(index: number, name: string, parent: BoneData) {
             if (index < 0) throw new Error("index must be >= 0.");

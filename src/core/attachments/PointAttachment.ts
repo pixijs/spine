@@ -30,12 +30,10 @@
 
 namespace pixi_spine.core {
     export class PointAttachment extends VertexAttachment {
-        x: number;
-        y: number;
-        rotation: number;
+        x: number; y: number; rotation: number;
         color = new Color(0.38, 0.94, 0, 1);
 
-        constructor(name: string) {
+        constructor (name: string) {
             super(name);
         }
 
@@ -52,6 +50,15 @@ namespace pixi_spine.core {
             let x = cos * mat.a + sin * mat.c;
             let y = cos * mat.b + sin * mat.d;
             return Math.atan2(y, x) * MathUtils.radDeg;
+        }
+
+        copy (): Attachment {
+            let copy = new PointAttachment(name);
+            copy.x = this.x;
+            copy.y = this.y;
+            copy.rotation = this.rotation;
+            copy.color.setFromColor(this.color);
+            return copy;
         }
     }
 }

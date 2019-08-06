@@ -264,6 +264,13 @@ namespace pixi_spine.core {
         static webkit602BugfixHelper (alpha: number, blend: MixBlend) {
 
         }
+
+        static contains<T> (array: Array<T>, element: T, identity = true) {
+            for (let i = 0; i < array.length; i++) {
+                if (array[i] == element) return true;
+            }
+            return false;
+        }
     }
 
     export class DebugUtils {

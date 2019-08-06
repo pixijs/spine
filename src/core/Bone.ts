@@ -64,6 +64,7 @@ namespace pixi_spine.core {
         appliedValid = false;
 
         sorted = false;
+        active = false;
 
         /** @param parent May be null. */
         constructor(data: BoneData, skeleton: Skeleton, parent: Bone) {
@@ -73,6 +74,10 @@ namespace pixi_spine.core {
             this.skeleton = skeleton;
             this.parent = parent;
             this.setToSetupPose();
+        }
+
+        isActive () {
+            return this.active;
         }
 
         /** Same as {@link #updateWorldTransform()}. This method exists for Bone to implement {@link Updatable}. */

@@ -30,22 +30,17 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
-    export class PathConstraintData {
-        name: string;
-        order = 0;
+    export class PathConstraintData extends ConstraintData {
         bones = new Array<BoneData>();
         target: SlotData;
         positionMode: PositionMode;
         spacingMode: SpacingMode;
         rotateMode: RotateMode;
         offsetRotation: number;
-        position: number;
-        spacing: number;
-        rotateMix: number;
-        translateMix: number;
+        position: number; spacing: number; rotateMix: number; translateMix: number;
 
-        constructor(name: string) {
-            this.name = name;
+        constructor (name: string) {
+            super(name, 0, false);
         }
     }
 

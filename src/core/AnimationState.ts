@@ -35,6 +35,7 @@ namespace pixi_spine.core {
         static FIRST = 1;
         static HOLD = 2;
         static HOLD_MIX = 3;
+        static NOT_LAST = 4;
 
         data: AnimationStateData;
         tracks = new Array<TrackEntry>();
@@ -159,9 +160,9 @@ namespace pixi_spine.core {
                 let animationLast = current.animationLast, animationTime = current.getAnimationTime();
                 let timelineCount = current.animation.timelines.length;
                 let timelines = current.animation.timelines;
-                if (i == 0 && (mix == 1 || blend == MixBlend.add)) {
+                if ((i == 0 && mix == 1) || blend == MixBlend.add) {
                     for (let ii = 0; ii < timelineCount; ii++)
-                        timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.in);
+                        timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.mixIn);
                 } else {
                     let timelineMode = current.timelineMode;
 
@@ -171,13 +172,13 @@ namespace pixi_spine.core {
 
                     for (let ii = 0; ii < timelineCount; ii++) {
                         let timeline = timelines[ii];
-                        let timelineBlend = timelineMode[ii] == AnimationState.SUBSEQUENT ? blend : MixBlend.setup;
+                        let timelineBlend = (timelineMode[ii] & (AnimationState.NOT_LAST - 1)) == AnimationState.SUBSEQUENT ? blend : MixBlend.setup;
                         if (timeline instanceof RotateTimeline) {
                             this.applyRotateTimeline(timeline, skeleton, animationTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
                         } else {
                             // This fixes the WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
                             Utils.webkit602BugfixHelper(mix, blend);
-                            timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, MixDirection.in);
+                            timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, MixDirection.mixIn);
                         }
                     }
                 }
@@ -213,7 +214,7 @@ namespace pixi_spine.core {
             let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
             if (blend == MixBlend.add) {
                 for (let i = 0; i < timelineCount; i++)
-                    timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out);
+                    timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.mixOut);
             } else {
                 let timelineMode = from.timelineMode;
                 let timelineHoldMix = from.timelineHoldMix;
@@ -225,12 +226,15 @@ namespace pixi_spine.core {
                 from.totalAlpha = 0;
                 for (let i = 0; i < timelineCount; i++) {
                     let timeline = timelines[i];
-                    let direction = MixDirection.out;
+                    let direction = MixDirection.mixOut;
                     let timelineBlend: MixBlend;
                     let alpha = 0;
-                    switch (timelineMode[i]) {
+                    switch (timelineMode[i] & (AnimationState.NOT_LAST - 1)) {
                         case AnimationState.SUBSEQUENT:
-                            if (!attachments && timeline instanceof AttachmentTimeline) continue;
+                            if (!attachments && timeline instanceof AttachmentTimeline) {
+                                if ((timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST) continue;
+                                blend = MixBlend.setup;
+                            }
                             if (!drawOrder && timeline instanceof DrawOrderTimeline) continue;
                             timelineBlend = blend;
                             alpha = alphaMix;
@@ -257,9 +261,9 @@ namespace pixi_spine.core {
                         Utils.webkit602BugfixHelper(alpha, blend);
                         if (timelineBlend == MixBlend.setup) {
                             if (timeline instanceof AttachmentTimeline) {
-                                if (attachments) direction = MixDirection.out;
+                                if (attachments || (timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST) direction = MixDirection.mixIn;
                             } else if (timeline instanceof DrawOrderTimeline) {
-                                if (drawOrder) direction = MixDirection.out;
+                                if (drawOrder) direction = MixDirection.mixIn;
                             }
                         }
                         timeline.apply(skeleton, animationLast, animationTime, events, alpha, timelineBlend, direction);
@@ -281,13 +285,14 @@ namespace pixi_spine.core {
             if (firstFrame) timelinesRotation[i] = 0;
 
             if (alpha == 1) {
-                timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.in);
+                timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.mixIn);
                 return;
             }
 
             let rotateTimeline = timeline as RotateTimeline;
             let frames = rotateTimeline.frames;
             let bone = skeleton.bones[rotateTimeline.boneIndex];
+            if (!bone.active) return;
             let r1 = 0, r2 = 0;
             if (time < frames[0]) {
                 switch (blend) {
@@ -528,7 +533,7 @@ namespace pixi_spine.core {
 
         expandToIndex (index: number) {
             if (index < this.tracks.length) return this.tracks[index];
-            Utils.ensureArrayCapacity(this.tracks, index - this.tracks.length + 1, null);
+            Utils.ensureArrayCapacity(this.tracks, index + 1, null);
             this.tracks.length = index + 1;
             return null;
         }
@@ -584,13 +589,22 @@ namespace pixi_spine.core {
                     entry = entry.mixingFrom;
 
                 do {
-                    if (entry.mixingFrom == null || entry.mixBlend != MixBlend.add) this.setTimelineModes(entry);
+                    if (entry.mixingFrom == null || entry.mixBlend != MixBlend.add) this.computeHold(entry);
                     entry = entry.mixingTo;
                 } while (entry != null)
             }
+
+            this.propertyIDs.clear();
+            for (let i = this.tracks.length - 1; i >= 0; i--) {
+                let entry = this.tracks[i];
+                while (entry != null) {
+                    this.computeNotLast(entry);
+                    entry = entry.mixingFrom;
+                }
+            }
         }
 
-        setTimelineModes (entry: TrackEntry) {
+        computeHold (entry: TrackEntry) {
             let to = entry.mixingTo;
             let timelines = entry.animation.timelines;
             let timelinesCount = entry.animation.timelines.length;
@@ -609,12 +623,14 @@ namespace pixi_spine.core {
 
             outer:
                 for (let i = 0; i < timelinesCount; i++) {
-                    let id = timelines[i].getPropertyId();
+                    let timeline = timelines[i];
+                    let id = timeline.getPropertyId();
                     if (!propertyIDs.add(id))
                         timelineMode[i] = AnimationState.SUBSEQUENT;
-                    else if (to == null || !this.hasTimeline(to, id))
+                    else if (to == null || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
+                        || timeline instanceof EventTimeline || !this.hasTimeline(to, id)) {
                         timelineMode[i] = AnimationState.FIRST;
-                    else {
+                    } else {
                         for (let next = to.mixingTo; next != null; next = next.mixingTo) {
                             if (this.hasTimeline(next, id)) continue;
                             if (entry.mixDuration > 0) {
@@ -627,6 +643,20 @@ namespace pixi_spine.core {
                         timelineMode[i] = AnimationState.HOLD;
                     }
                 }
+        }
+
+        computeNotLast (entry: TrackEntry) {
+            let timelines = entry.animation.timelines;
+            let timelinesCount = entry.animation.timelines.length;
+            let timelineMode = entry.timelineMode;
+            let propertyIDs = this.propertyIDs;
+
+            for (let i = 0; i < timelinesCount; i++) {
+                if (timelines[i] instanceof AttachmentTimeline) {
+                    let timeline = timelines[i] as AttachmentTimeline;
+                    if (!propertyIDs.add(timeline.slotIndex)) timelineMode[i] |= AnimationState.NOT_LAST;
+                }
+            }
         }
 
         hasTimeline (entry: TrackEntry, id: number) : boolean {

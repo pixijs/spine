@@ -32,5 +32,7 @@
 namespace pixi_spine.core {
     export interface Updatable {
         update(): void;
+
+        isActive(): boolean;
     }
 }

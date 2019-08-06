@@ -35,8 +35,16 @@ namespace pixi_spine.core {
         // Nonessential.
         color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
 
-        constructor(name: string) {
+        constructor (name: string) {
             super(name);
+        }
+
+        copy (): Attachment {
+            let copy = new ClippingAttachment(name);
+            this.copyTo(copy);
+            copy.endSlot = this.endSlot;
+            copy.color.setFromColor(this.color);
+            return copy;
         }
     }
 }

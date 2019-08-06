@@ -1,3 +1,19 @@
+declare namespace PIXI.loaders {
+    export interface IMetadata {
+        spineSkeletonScale?: number;
+        spineAtlas?: any;
+        spineAtlasSuffix?: string;
+        spineAtlasFile?: string;
+        spineMetadata?: any;
+        imageNamePrefix?: string;
+        atlasRawData?: string;
+        imageLoader?: any;
+        images?: any;
+        imageMetadata?: any;
+        image?: any;
+    }
+}
+
 namespace pixi_spine {
     function isJson(resource: PIXI.LoaderResource) {
         return resource.type === PIXI.LoaderResource.TYPE.JSON;
@@ -126,6 +142,7 @@ namespace pixi_spine {
                 }
             } else {
                 loader.add(name, url, imageOptions, (resource: PIXI.LoaderResource) => {
+                  if (!resource.error) {
                   if (!resource.error) {
                     callback(resource.texture.baseTexture);
                   } else {
