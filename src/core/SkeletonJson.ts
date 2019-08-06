@@ -360,7 +360,7 @@ namespace pixi_spine.core {
                     this.readVertices(map, mesh, uvs.length);
                     mesh.triangles = map.triangles;
                     mesh.regionUVs = new Float32Array(uvs);
-                    mesh.updateUVs();
+                    // mesh.updateUVs();
 
                     mesh.edges = this.getValue(map, "edges", null);
                     mesh.hullLength = this.getValue(map, "hull", 0) * 2;
