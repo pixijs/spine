@@ -129,6 +129,7 @@ namespace pixi_spine.core {
                     if (data.target == null) throw new Error("IK target bone not found: " + targetName);
 
                     data.mix = this.getValue(constraintMap, "mix", 1);
+                    data.softness = this.getValue(constraintMap, "softness", 0) * scale;
                     data.bendDirection = this.getValue(constraintMap, "bendPositive", true) ? 1 : -1;
                     data.compress = this.getValue(constraintMap, "compress", false);
                     data.stretch = this.getValue(constraintMap, "stretch", false);
@@ -233,7 +234,7 @@ namespace pixi_spine.core {
 
                     if (skinMap.transform) {
                         for (let ii = 0; ii < skinMap.transform.length; ii++) {
-                            let constraint = skeletonData.findIkConstraint(skinMap.transform[ii]);
+                            let constraint = skeletonData.findTransformConstraint(skinMap.transform[ii]);
                             if (constraint == null) throw new Error("Skin transform constraint not found: " + skinMap.transform[i]);
                             skin.constraints.push(constraint);
                         }
@@ -241,7 +242,7 @@ namespace pixi_spine.core {
 
                     if (skinMap.path) {
                         for (let ii = 0; ii < skinMap.path.length; ii++) {
-                            let constraint = skeletonData.findIkConstraint(skinMap.path[ii]);
+                            let constraint = skeletonData.findPathConstraint(skinMap.path[ii]);
                             if (constraint == null) throw new Error("Skin path constraint not found: " + skinMap.path[i]);
                             skin.constraints.push(constraint);
                         }
@@ -325,7 +326,7 @@ namespace pixi_spine.core {
                     let color: string = this.getValue(map, "color", null);
                     if (color != null) region.color.setFromString(color);
 
-                    //region.updateOffset();
+                    region.updateOffset();
                     return region;
                 }
                 case "boundingbox": {
@@ -359,7 +360,7 @@ namespace pixi_spine.core {
                     this.readVertices(map, mesh, uvs.length);
                     mesh.triangles = map.triangles;
                     mesh.regionUVs = new Float32Array(uvs);
-                    //mesh.updateUVs();
+                    mesh.updateUVs();
 
                     mesh.edges = this.getValue(map, "edges", null);
                     mesh.hullLength = this.getValue(map, "hull", 0) * 2;
@@ -572,7 +573,7 @@ namespace pixi_spine.core {
                     let frameIndex = 0;
                     for (let i = 0; i < constraintMap.length; i++) {
                         let valueMap = constraintMap[i];
-                        timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "mix", 1),
+                        timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "softness", 0) * scale,
                             this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
                         this.readCurve(valueMap, timeline, frameIndex);
                         frameIndex++;

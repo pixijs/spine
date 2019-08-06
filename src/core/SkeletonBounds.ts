@@ -52,6 +52,7 @@ namespace pixi_spine.core {
 
             for (let i = 0; i < slotCount; i++) {
                 let slot = slots[i];
+                if (!slot.bone.active) continue;
                 let attachment = slot.getAttachment();
                 if (attachment instanceof BoundingBoxAttachment) {
                     let boundingBox = attachment as BoundingBoxAttachment;
