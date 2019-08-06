@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -1408,9 +1411,11 @@ var pixi_spine;
                     var animationLast = current.animationLast, animationTime = current.getAnimationTime();
                     var timelineCount = current.animation.timelines.length;
                     var timelines = current.animation.timelines;
-                    if (i == 0 && (mix == 1 || blend == core.MixBlend.add)) {
-                        for (var ii = 0; ii < timelineCount; ii++)
+                    if ((i == 0 && mix == 1) || blend == core.MixBlend.add) {
+                        for (var ii = 0; ii < timelineCount; ii++) {
+                            core.Utils.webkit602BugfixHelper(mix, blend);
                             timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, core.MixDirection.in);
+                        }
                     }
                     else {
                         var timelineMode = current.timelineMode;
@@ -2304,15 +2309,11 @@ var pixi_spine;
                 var sx = this.skeleton.scaleX;
                 var sy = Bone.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
                 if (parent == null) {
-                    if (Bone.yDown) {
-                        rotation = -rotation;
-                        this.arotation = rotation;
-                    }
                     var skeleton = this.skeleton;
                     var rotationY = rotation + 90 + shearY;
                     m.a = core.MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
-                    m.c = core.MathUtils.cosDeg(rotationY) * scaleY * sy;
-                    m.b = core.MathUtils.sinDeg(rotation + shearX) * scaleX * sx;
+                    m.c = core.MathUtils.cosDeg(rotationY) * scaleY * sx;
+                    m.b = core.MathUtils.sinDeg(rotation + shearX) * scaleX * sy;
                     m.d = core.MathUtils.sinDeg(rotationY) * scaleY * sy;
                     m.tx = x * sx + skeleton.x;
                     m.ty = y * sy + skeleton.y;
