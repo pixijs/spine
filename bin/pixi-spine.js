@@ -8629,7 +8629,7 @@ var pixi_spine;
             }
             var isJsonSpineModel = isJson(resource) && !resource.data.bones;
             var isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata.spineMetadata);
-            if (!isBinarySpineModel && !isBinarySpineModel) {
+            if (!isJsonSpineModel && !isBinarySpineModel) {
                 return next();
             }
             var parser = null;
