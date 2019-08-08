@@ -8627,7 +8627,7 @@ var pixi_spine;
             if (!resource.data) {
                 return next();
             }
-            var isJsonSpineModel = isJson(resource) && !resource.data.bones;
+            var isJsonSpineModel = isJson(resource) && resource.data.bones;
             var isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata.spineMetadata);
             if (!isJsonSpineModel && !isBinarySpineModel) {
                 return next();

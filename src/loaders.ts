@@ -33,7 +33,7 @@ namespace pixi_spine {
                 return next();
             }
 
-            const isJsonSpineModel = isJson(resource) && !resource.data.bones;
+            const isJsonSpineModel = isJson(resource) && resource.data.bones;
             const isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata.spineMetadata);
 
             if (!isJsonSpineModel && !isBinarySpineModel) {
