@@ -5229,6 +5229,7 @@ var pixi_spine;
 (function (pixi_spine) {
     var core;
     (function (core) {
+        core.FAIL_ON_NON_EXISTING_SKIN = false;
         var SkeletonJson = (function () {
             function SkeletonJson(attachmentLoader) {
                 this.scale = 1;
@@ -5808,8 +5809,14 @@ var pixi_spine;
                     for (var deformName in map.deform) {
                         var deformMap = map.deform[deformName];
                         var skin = skeletonData.findSkin(deformName);
-                        if (skin == null)
-                            throw new Error("Skin not found: " + deformName);
+                        if (skin == null) {
+                            if (core.FAIL_ON_NON_EXISTING_SKIN) {
+                                throw new Error("Skin not found: " + deformName);
+                            }
+                            else {
+                                continue;
+                            }
+                        }
                         for (var slotName in deformMap) {
                             var slotMap = deformMap[slotName];
                             var slotIndex = skeletonData.findSlotIndex(slotName);

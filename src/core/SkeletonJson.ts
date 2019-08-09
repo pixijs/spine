@@ -30,6 +30,12 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
+    /**
+     * pixi-spine gives option to not fail at certain parsing errors
+     * spine-ts fails here
+     */
+    export let FAIL_ON_NON_EXISTING_SKIN = false;
+
     export class SkeletonJson {
         attachmentLoader: AttachmentLoader;
         scale = 1;
@@ -658,7 +664,13 @@ namespace pixi_spine.core {
                 for (let deformName in map.deform) {
                     let deformMap = map.deform[deformName];
                     let skin = skeletonData.findSkin(deformName);
-                    if (skin == null) throw new Error("Skin not found: " + deformName);
+                    if (skin == null) {
+                       if (FAIL_ON_NON_EXISTING_SKIN) {
+                           throw new Error("Skin not found: " + deformName);
+                       } else {
+                           continue;
+                       }
+                    }
                     for (let slotName in deformMap) {
                         let slotMap = deformMap[slotName];
                         let slotIndex = skeletonData.findSlotIndex(slotName);
