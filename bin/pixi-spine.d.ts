@@ -827,7 +827,7 @@ declare module PIXI.spine.core {
         private static deprecatedWarning1;
     }
 }
-declare module pixi_spine.core {
+declare module PIXI.spine.core {
     class SkeletonBinary {
         static AttachmentTypeValues: number[];
         static TransformModeValues: TransformMode[];
