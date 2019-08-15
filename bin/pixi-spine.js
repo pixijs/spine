@@ -4050,7 +4050,6 @@ var pixi_spine;
                         region.width = width * scale;
                         region.height = height * scale;
                         core.Color.rgba8888ToColor(region.color, color);
-                        region.updateOffset();
                         return region;
                     }
                     case core.AttachmentType.BoundingBox: {
@@ -5491,7 +5490,6 @@ var pixi_spine;
                         var color = this.getValue(map, "color", null);
                         if (color != null)
                             region.color.setFromString(color);
-                        region.updateOffset();
                         return region;
                     }
                     case "boundingbox": {
