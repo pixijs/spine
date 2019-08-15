@@ -303,7 +303,7 @@ namespace pixi_spine.core {
 				region.width = width * scale;
 				region.height = height * scale;
 				Color.rgba8888ToColor(region.color, color);
-				region.updateOffset();
+				// region.updateOffset();
 				return region;
 			}
 			case AttachmentType.BoundingBox: {
