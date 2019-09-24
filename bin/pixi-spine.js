@@ -1523,14 +1523,14 @@ var pixi_spine;
                         var alpha = 0;
                         switch (timelineMode[i] & (AnimationState.NOT_LAST - 1)) {
                             case AnimationState.SUBSEQUENT:
+                                timelineBlend = blend;
                                 if (!attachments && timeline instanceof core.AttachmentTimeline) {
                                     if ((timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST)
                                         continue;
-                                    blend = core.MixBlend.setup;
+                                    timelineBlend = core.MixBlend.setup;
                                 }
                                 if (!drawOrder && timeline instanceof core.DrawOrderTimeline)
                                     continue;
-                                timelineBlend = blend;
                                 alpha = alphaMix;
                                 break;
                             case AnimationState.FIRST:
@@ -3998,8 +3998,16 @@ var pixi_spine;
                 return skeletonData;
             };
             SkeletonBinary.prototype.readSkin = function (input, skeletonData, defaultSkin, nonessential) {
-                var skin = new core.Skin(defaultSkin ? "default" : input.readStringRef());
-                if (!defaultSkin) {
+                var skin = null;
+                var slotCount = 0;
+                if (defaultSkin) {
+                    slotCount = input.readInt(true);
+                    if (slotCount == 0)
+                        return null;
+                    skin = new core.Skin("default");
+                }
+                else {
+                    skin = new core.Skin(input.readStringRef());
                     skin.bones.length = input.readInt(true);
                     for (var i = 0, n = skin.bones.length; i < n; i++)
                         skin.bones[i] = skeletonData.bones[input.readInt(true)];
@@ -4009,8 +4017,9 @@ var pixi_spine;
                         skin.constraints.push(skeletonData.transformConstraints[input.readInt(true)]);
                     for (var i = 0, n = input.readInt(true); i < n; i++)
                         skin.constraints.push(skeletonData.pathConstraints[input.readInt(true)]);
+                    slotCount = input.readInt(true);
                 }
-                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                for (var i = 0; i < slotCount; i++) {
                     var slotIndex = input.readInt(true);
                     for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
                         var name_3 = input.readStringRef();
