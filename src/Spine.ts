@@ -512,6 +512,8 @@ namespace pixi_spine {
             }
             let texture = region.texture;
             let sprite = this.newSprite(texture);
+
+            sprite.anchor.set(0.5);
             this.setSpriteRegion(attachment, sprite, attachment.region);
 
             slot.sprites = slot.sprites || {};
