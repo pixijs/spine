@@ -8124,6 +8124,7 @@ var pixi_spine;
         function SpineSprite() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.region = null;
+            _this.attachment = null;
             return _this;
         }
         return SpineSprite;
@@ -8143,7 +8144,9 @@ var pixi_spine;
     var SpineMesh = (function (_super) {
         __extends(SpineMesh, _super);
         function SpineMesh(texture, vertices, uvs, indices, drawMode) {
-            return _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
+            var _this = _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
+            _this.attachment = null;
+            return _this;
         }
         return SpineMesh;
     }(PIXI.SimpleMesh));
@@ -8282,6 +8285,9 @@ var pixi_spine;
                             slot.currentSprite = slot.sprites[spriteName];
                             slot.currentSpriteName = spriteName;
                         }
+                        else if (slot.currentSpriteName === ar.name) {
+                            this.setSpriteRegion(attachment, slot.currentSprite, region);
+                        }
                     }
                     var transform = slotContainer.transform;
                     transform.setFromMatrix(slot.bone.matrix);
@@ -8411,8 +8417,16 @@ var pixi_spine;
         };
         ;
         Spine.prototype.setSpriteRegion = function (attachment, sprite, region) {
+            if (sprite.attachment === attachment && sprite.region === region) {
+                return;
+            }
             sprite.region = region;
+            sprite.attachment = attachment;
             sprite.texture = region.texture;
+            sprite.rotation = attachment.rotation * pixi_spine.core.MathUtils.degRad;
+            sprite.position.x = attachment.x;
+            sprite.position.y = attachment.y;
+            sprite.alpha = attachment.color.a;
             if (!region.size) {
                 sprite.scale.x = attachment.scaleX * attachment.width / region.originalWidth;
                 sprite.scale.y = -attachment.scaleY * attachment.height / region.originalHeight;
@@ -8423,7 +8437,11 @@ var pixi_spine;
             }
         };
         Spine.prototype.setMeshRegion = function (attachment, mesh, region) {
+            if (mesh.attachment === attachment && mesh.region === region) {
+                return;
+            }
             mesh.region = region;
+            mesh.attachment = attachment;
             mesh.texture = region.texture;
             region.texture.updateUvs();
             mesh.uvBuffer.update(attachment.regionUVs);
@@ -8450,13 +8468,7 @@ var pixi_spine;
             }
             var texture = region.texture;
             var sprite = this.newSprite(texture);
-            sprite.rotation = attachment.rotation * pixi_spine.core.MathUtils.degRad;
-            sprite.anchor.x = 0.5;
-            sprite.anchor.y = 0.5;
-            sprite.position.x = attachment.x;
-            sprite.position.y = attachment.y;
-            sprite.alpha = attachment.color.a;
-            sprite.region = attachment.region;
+            sprite.anchor.set(0.5);
             this.setSpriteRegion(attachment, sprite, attachment.region);
             slot.sprites = slot.sprites || {};
             slot.sprites[defName] = sprite;
