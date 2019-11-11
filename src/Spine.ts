@@ -7,9 +7,14 @@ namespace pixi_spine {
 
     let tempRgb = [0, 0, 0];
 
-    export class SpineSprite extends PIXI.Sprite {
-        region: core.TextureRegion = null;
-        attachment: core.Attachment = null;
+    export interface ISpineDisplayObject extends PIXI.DisplayObject {
+        region?: core.TextureRegion;
+        attachment?: core.Attachment;
+    }
+
+    export class SpineSprite extends PIXI.Sprite implements ISpineDisplayObject {
+        region?: core.TextureRegion = null;
+        attachment?: core.Attachment = null;
     }
 
     const gp = PIXI.GraphicsGeometry.prototype as any;
@@ -24,9 +29,9 @@ namespace pixi_spine {
         }
     }
 
-    export class SpineMesh extends PIXI.SimpleMesh {
-        region: core.TextureRegion;
-        attachment: core.Attachment = null;
+    export class SpineMesh extends PIXI.SimpleMesh implements ISpineDisplayObject {
+        region?: core.TextureRegion = null;
+        attachment?: core.Attachment = null;
 
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
             super(texture, vertices, uvs, indices, drawMode);

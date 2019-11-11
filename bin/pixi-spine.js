@@ -8145,6 +8145,7 @@ var pixi_spine;
         __extends(SpineMesh, _super);
         function SpineMesh(texture, vertices, uvs, indices, drawMode) {
             var _this = _super.call(this, texture, vertices, uvs, indices, drawMode) || this;
+            _this.region = null;
             _this.attachment = null;
             return _this;
         }
