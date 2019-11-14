@@ -9,6 +9,7 @@ namespace pixi_spine {
 
     export class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion = null;
+        attachment: core.Attachment = null;
     }
 
     const gp = PIXI.GraphicsGeometry.prototype as any;
@@ -25,6 +26,7 @@ namespace pixi_spine {
 
     export class SpineMesh extends PIXI.SimpleMesh {
         region: core.TextureRegion;
+        attachment: core.Attachment = null;
 
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
             super(texture, vertices, uvs, indices, drawMode);
@@ -245,10 +247,10 @@ namespace pixi_spine {
 
             let slots = this.skeleton.slots;
 
-
             // in case pixi has double tint
             let globalClr = (this as any).color;
             let light: ArrayLike<number> = null, dark: ArrayLike<number> = null;
+
             if (globalClr) {
                 light = globalClr.light;
                 dark = globalClr.dark;
@@ -295,6 +297,11 @@ namespace pixi_spine {
                             }
                             slot.currentSprite = slot.sprites[spriteName];
                             slot.currentSpriteName = spriteName;
+
+                        // force sprite update when attachment name is same.
+                        // issues https://github.com/pixijs/pixi-spine/issues/318
+                        } else if(slot.currentSpriteName === ar.name) {
+                            this.setSpriteRegion(attachment, slot.currentSprite, region);
                         }
                     }
 
@@ -454,8 +461,20 @@ namespace pixi_spine {
         };
 
         private setSpriteRegion(attachment: core.RegionAttachment, sprite: SpineSprite, region: core.TextureRegion) {
+            // prevent setters calling when attachment and region is same
+            if(sprite.attachment === attachment && sprite.region === region) {
+                return;
+            }
+
             sprite.region = region;
+            sprite.attachment = attachment;
+
             sprite.texture = region.texture;
+            sprite.rotation = attachment.rotation * core.MathUtils.degRad;
+            sprite.position.x = attachment.x;
+            sprite.position.y = attachment.y;
+            sprite.alpha = attachment.color.a;
+
             if (!region.size) {
                 sprite.scale.x = attachment.scaleX * attachment.width / region.originalWidth;
                 sprite.scale.y = -attachment.scaleY * attachment.height / region.originalHeight;
@@ -467,7 +486,13 @@ namespace pixi_spine {
         }
 
         private setMeshRegion(attachment: core.MeshAttachment, mesh: SpineMesh, region: core.TextureRegion) {
+
+            if(mesh.attachment === attachment && mesh.region === region) {
+                return;
+            }
+
             mesh.region = region;
+            mesh.attachment = attachment;
             mesh.texture = region.texture;
             region.texture.updateUvs();
             mesh.uvBuffer.update(attachment.regionUVs);
@@ -509,14 +534,8 @@ namespace pixi_spine {
             }
             let texture = region.texture;
             let sprite = this.newSprite(texture);
-            sprite.rotation = attachment.rotation * core.MathUtils.degRad;
-            sprite.anchor.x = 0.5;
-            sprite.anchor.y = 0.5;
-            sprite.position.x = attachment.x;
-            sprite.position.y = attachment.y;
-            sprite.alpha = attachment.color.a;
 
-            sprite.region = attachment.region;
+            sprite.anchor.set(0.5);
             this.setSpriteRegion(attachment, sprite, attachment.region);
 
             slot.sprites = slot.sprites || {};
