@@ -1362,8 +1362,11 @@ declare module PIXI.spine {
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
         localDelayLimit: number;
+        private _autoUpdate;
+        private _visible;
         constructor(spineData: core.SkeletonData);
         autoUpdate: boolean;
+        visible: boolean;
         tint: number;
         readonly delayLimit: number;
         update(dt: number): void;

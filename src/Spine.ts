@@ -57,6 +57,8 @@ namespace pixi_spine {
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
         localDelayLimit: number;
+        private _autoUpdate: boolean;
+        private _visible: boolean;
 
         constructor(spineData: core.SkeletonData) {
             super();
@@ -140,38 +142,58 @@ namespace pixi_spine {
             }
 
             /**
-             * Should the Spine object update its transforms
-             *
-             * @member {boolean}
-             */
-            this.autoUpdate = true;
-
-            /**
              * The tint applied to all spine slots. This is a [r,g,b] value. A value of [1,1,1] will remove any tint effect.
              *
              * @member {number}
              * @memberof spine.Spine#
              */
             this.tintRgb = new Float32Array([1, 1, 1]);
+
+            this.autoUpdate = true;
+            this.visible = true;
         }
 
         /**
-         * If this flag is set to true, the spine animation will be autoupdated every time
-         * the object id drawn. The down side of this approach is that the delta time is
+         * If this flag is set to true, the spine animation will be automatically updated every
+         * time the object id drawn. The down side of this approach is that the delta time is
          * automatically calculated and you could miss out on cool effects like slow motion,
          * pause, skip ahead and the sorts. Most of these effects can be achieved even with
-         * autoupdate enabled but are harder to achieve.
+         * autoUpdate enabled but are harder to achieve.
          *
          * @member {boolean}
          * @memberof spine.Spine#
          * @default true
          */
         get autoUpdate(): boolean {
-            return (this.updateTransform === Spine.prototype.autoUpdateTransform);
+            return this._autoUpdate;
         }
 
         set autoUpdate(value: boolean) {
-            this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+            if (value !== this._autoUpdate) {
+                this._autoUpdate = value;
+                this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+            }
+        }
+
+        /**
+         * The visibility of the spine object. If false the object will not be drawn,
+         * the updateTransform function will not be called, and the spine will not be automatically updated.
+         *
+         * @member {boolean}
+         * @memberof spine.Spine#
+         * @default true
+         */
+        get visible(): boolean {
+            return this._visible;
+        }
+
+        set visible(value: boolean) {
+            if (value !== this._visible) {
+                this._visible = value;
+                if (value) {
+                    this.lastTime = 0;
+                }
+            }
         }
 
         /**
