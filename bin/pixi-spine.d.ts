@@ -341,8 +341,10 @@ declare module PIXI.spine.core {
         onEnd: (trackIndex: number) => any;
         private static deprecatedWarning1;
         private static deprecatedWarning2;
-        time: number;
-        endTime: number;
+        get time(): number;
+        set time(value: number);
+        get endTime(): number;
+        set endTime(value: number);
         loopsCount(): number;
     }
     class EventQueue {
@@ -584,8 +586,8 @@ declare module PIXI.spine.core {
     class Bone implements Updatable {
         static yDown: boolean;
         matrix: PIXI.Matrix;
-        readonly worldX: number;
-        readonly worldY: number;
+        get worldX(): number;
+        get worldY(): number;
         data: BoneData;
         skeleton: Skeleton;
         parent: Bone;
@@ -820,8 +822,10 @@ declare module PIXI.spine.core {
         findPathConstraint(constraintName: string): PathConstraint;
         getBounds(offset: Vector2, size: Vector2, temp?: Array<number>): void;
         update(delta: number): void;
-        flipX: boolean;
-        flipY: boolean;
+        get flipX(): boolean;
+        set flipX(value: boolean);
+        get flipY(): boolean;
+        set flipY(value: boolean);
         private static deprecatedWarning1;
     }
 }
@@ -1049,21 +1053,21 @@ declare module PIXI.spine.core {
     class TextureRegion {
         texture: PIXI.Texture;
         size: PIXI.Rectangle;
-        readonly width: number;
-        readonly height: number;
-        readonly u: number;
-        readonly v: number;
-        readonly u2: number;
-        readonly v2: number;
-        readonly offsetX: number;
-        readonly offsetY: number;
-        readonly pixiOffsetY: number;
-        readonly spineOffsetY: number;
-        readonly originalWidth: number;
-        readonly originalHeight: number;
-        readonly x: number;
-        readonly y: number;
-        readonly rotate: boolean;
+        get width(): number;
+        get height(): number;
+        get u(): number;
+        get v(): number;
+        get u2(): number;
+        get v2(): number;
+        get offsetX(): number;
+        get offsetY(): number;
+        get pixiOffsetY(): number;
+        get spineOffsetY(): number;
+        get originalWidth(): number;
+        get originalHeight(): number;
+        get x(): number;
+        get y(): number;
+        get rotate(): boolean;
     }
 }
 declare module PIXI.spine.core {
@@ -1346,9 +1350,11 @@ interface Math {
 declare module PIXI.spine {
     class SpineSprite extends PIXI.Sprite {
         region: core.TextureRegion;
+        attachment: core.Attachment;
     }
     class SpineMesh extends PIXI.SimpleMesh {
         region: core.TextureRegion;
+        attachment: core.Attachment;
         constructor(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number);
     }
     class Spine extends PIXI.Container {
@@ -1362,13 +1368,12 @@ declare module PIXI.spine {
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
         localDelayLimit: number;
-        private _autoUpdate;
-        private _visible;
         constructor(spineData: core.SkeletonData);
-        autoUpdate: boolean;
-        visible: boolean;
-        tint: number;
-        readonly delayLimit: number;
+        get autoUpdate(): boolean;
+        set autoUpdate(value: boolean);
+        get tint(): number;
+        set tint(value: number);
+        get delayLimit(): number;
         update(dt: number): void;
         private setSpriteRegion;
         private setMeshRegion;
