@@ -626,6 +626,7 @@ namespace pixi_spine {
             }
             if (slot.currentSprite && slot.currentSprite.region != region) {
                 this.setSpriteRegion(attachment, slot.currentSprite, region);
+                attachment.region = region;
                 slot.currentSprite.region = region;
             } else if (slot.currentMesh && slot.currentMesh.region != region) {
                 this.setMeshRegion(attachment, slot.currentMesh, region);
