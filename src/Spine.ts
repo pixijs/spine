@@ -534,8 +534,6 @@ namespace pixi_spine {
             let region = attachment.region;
             if (slot.hackAttachment === attachment) {
                 region = slot.hackRegion;
-                slot.hackAttachment = null;
-                slot.hackRegion = null;
             }
             let texture = region.texture;
             let sprite = this.newSprite(texture);
@@ -628,15 +626,17 @@ namespace pixi_spine {
                 region = new core.TextureRegion();
                 region.texture = texture;
                 region.size = size;
+                slot.hackRegion = region;
+                slot.hackAttachment = attachment;
+            } else {
+                slot.hackRegion = null;
+                slot.hackAttachment = null;
             }
             if (slot.currentSprite && slot.currentSprite.region != region) {
                 this.setSpriteRegion(attachment, slot.currentSprite, region);
                 slot.currentSprite.region = region;
             } else if (slot.currentMesh && slot.currentMesh.region != region) {
                 this.setMeshRegion(attachment, slot.currentMesh, region);
-            } else {
-                slot.hackRegion = region;
-                slot.hackAttachment = attachment;
             }
             return true;
         }
