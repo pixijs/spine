@@ -992,8 +992,8 @@ declare module PIXI.spine.core {
         sprites: any;
         currentSpriteName: string;
         blendMode: number;
-        tempRegion: TextureRegion;
-        tempAttachment: Attachment;
+        hackRegion: TextureRegion;
+        hackAttachment: Attachment;
         data: SlotData;
         bone: Bone;
         color: Color;
@@ -1368,8 +1368,11 @@ declare module PIXI.spine {
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
         localDelayLimit: number;
+        private _autoUpdate;
+        private _visible;
         constructor(spineData: core.SkeletonData);
         autoUpdate: boolean;
+        visible: boolean;
         tint: number;
         readonly delayLimit: number;
         update(dt: number): void;

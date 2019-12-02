@@ -5252,6 +5252,10 @@ var pixi_spine;
                 if (skeletonMap != null) {
                     skeletonData.hash = skeletonMap.hash;
                     skeletonData.version = skeletonMap.spine;
+                    if (skeletonMap.spine.substr(0, 3) !== '3.8') {
+                        var error = "PixiJS Spine plugin supports only format for Spine 3.8. Your model has version " + skeletonMap.spine + ". Please look in pixi-spine repository README for another branch.";
+                        console.error(error);
+                    }
                     skeletonData.x = skeletonMap.x;
                     skeletonData.y = skeletonMap.y;
                     skeletonData.width = skeletonMap.width;
@@ -8198,16 +8202,35 @@ var pixi_spine;
                     continue;
                 }
             }
-            _this.autoUpdate = true;
             _this.tintRgb = new Float32Array([1, 1, 1]);
+            _this.autoUpdate = true;
+            _this.visible = true;
             return _this;
         }
         Object.defineProperty(Spine.prototype, "autoUpdate", {
             get: function () {
-                return (this.updateTransform === Spine.prototype.autoUpdateTransform);
+                return this._autoUpdate;
             },
             set: function (value) {
-                this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+                if (value !== this._autoUpdate) {
+                    this._autoUpdate = value;
+                    this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Spine.prototype, "visible", {
+            get: function () {
+                return this._visible;
+            },
+            set: function (value) {
+                if (value !== this._visible) {
+                    this._visible = value;
+                    if (value) {
+                        this.lastTime = 0;
+                    }
+                }
             },
             enumerable: true,
             configurable: true
@@ -8286,7 +8309,7 @@ var pixi_spine;
                             slot.currentSprite = slot.sprites[spriteName];
                             slot.currentSpriteName = spriteName;
                         }
-                        else if (slot.currentSpriteName === ar.name) {
+                        else if (slot.currentSpriteName === ar.name && !slot.hackRegion) {
                             this.setSpriteRegion(attachment, slot.currentSprite, region);
                         }
                     }
@@ -8462,10 +8485,10 @@ var pixi_spine;
         ;
         Spine.prototype.createSprite = function (slot, attachment, defName) {
             var region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             var texture = region.texture;
             var sprite = this.newSprite(texture);
@@ -8478,10 +8501,10 @@ var pixi_spine;
         ;
         Spine.prototype.createMesh = function (slot, attachment) {
             var region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), attachment.regionUVs, new Uint16Array(attachment.triangles), PIXI.DRAW_MODES.TRIANGLES);
             if (strip.canvasPadding) {
@@ -8537,8 +8560,8 @@ var pixi_spine;
                 this.setMeshRegion(attachment, slot.currentMesh, region);
             }
             else {
-                slot.tempRegion = region;
-                slot.tempAttachment = attachment;
+                slot.hackRegion = region;
+                slot.hackAttachment = attachment;
             }
             return true;
         };

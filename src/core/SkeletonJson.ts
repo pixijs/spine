@@ -55,6 +55,10 @@ namespace pixi_spine.core {
             if (skeletonMap != null) {
                 skeletonData.hash = skeletonMap.hash;
                 skeletonData.version = skeletonMap.spine;
+                if (skeletonMap.spine.substr(0, 3) !== '3.8') {
+                    let error = `PixiJS Spine plugin supports only format for Spine 3.8. Your model has version ${skeletonMap.spine}. Please look in pixi-spine repository README for another branch.`;
+                    console.error(error);
+                }
                 skeletonData.x = skeletonMap.x;
                 skeletonData.y = skeletonMap.y;
                 skeletonData.width = skeletonMap.width;
