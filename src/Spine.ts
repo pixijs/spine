@@ -305,7 +305,7 @@ namespace pixi_spine {
 
                         // force sprite update when attachment name is same.
                         // issues https://github.com/pixijs/pixi-spine/issues/318
-                        } else if(slot.currentSpriteName === ar.name) {
+                        } else if (slot.currentSpriteName === ar.name && !slot.hackRegion) {
                             this.setSpriteRegion(attachment, slot.currentSprite, region);
                         }
                     }
@@ -532,10 +532,10 @@ namespace pixi_spine {
          */
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string) {
             let region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             let texture = region.texture;
             let sprite = this.newSprite(texture);
@@ -556,10 +556,10 @@ namespace pixi_spine {
          */
         createMesh(slot: core.Slot, attachment: core.MeshAttachment) {
             let region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             let strip = this.newMesh(
                 region.texture,
@@ -635,8 +635,8 @@ namespace pixi_spine {
             } else if (slot.currentMesh && slot.currentMesh.region != region) {
                 this.setMeshRegion(attachment, slot.currentMesh, region);
             } else {
-                slot.tempRegion = region;
-                slot.tempAttachment = attachment;
+                slot.hackRegion = region;
+                slot.hackAttachment = attachment;
             }
             return true;
         }

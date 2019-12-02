@@ -44,8 +44,8 @@ namespace pixi_spine.core {
 
         blendMode: number;
         //assign hack region a bit later
-        tempRegion: TextureRegion;
-        tempAttachment: Attachment;
+        hackRegion: TextureRegion;
+        hackAttachment: Attachment;
 
         //this is canon
         data: SlotData;
