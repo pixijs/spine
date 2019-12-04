@@ -879,7 +879,7 @@ namespace pixi_spine.core {
         deprecateStuff() {
             if (!EventQueue.deprecatedWarning1) {
                 EventQueue.deprecatedWarning1 = true;
-                console.warn("Spine Deprecation Warning: onComplete, onStart, onEnd, onEvent art deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
+                console.warn("Spine Deprecation Warning: onComplete, onStart, onEnd, onEvent are deprecated, please use listeners from now on. 'state.addListener({ complete: function(track, event) { } })'");
             }
             return true;
         }
