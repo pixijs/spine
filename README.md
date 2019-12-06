@@ -62,6 +62,10 @@ Light-dark tint is supported with help of [pixi-heaven](https://github.com/gameo
 let spine = new PIXI.heaven.Spine(spineData);
 ```
 
+## Debug
+
+To show bones and bounds you can use [pixi-spine-debug](https://github.com/sbfkcel/pixi-spine-debug). If you want to write your own debug plugin, look at how this one [was created](https://github.com/pixijs/pixi-spine/issues/324)
+
 ## WebPack and Angular
 
 Possible webpack way: 
