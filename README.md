@@ -15,7 +15,9 @@ PixiJS v4 Spine 3.7 - [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4
 Demos:
 
 https://pixijs.io/examples/#/plugin-spine/spineboy-pro.js
+
 https://pixijs.io/examples/#/plugin-projection/runner.js
+
 https://sbfkcel.github.io/pixi-spine-debug/
 
 ## Usage
