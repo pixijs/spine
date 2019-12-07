@@ -12,6 +12,12 @@ PixiJS v4 Spine 3.8 - [pixi4-spine3.8 branch](https://github.com/pixijs/pixi-spi
 
 PixiJS v4 Spine 3.7 - [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) npm version `1.5.21` 
 
+Demos:
+
+https://pixijs.io/examples/#/plugin-spine/spineboy-pro.js
+https://pixijs.io/examples/#/plugin-projection/runner.js
+https://sbfkcel.github.io/pixi-spine-debug/
+
 ## Usage
 
 ### Prebuilt Files
@@ -65,6 +71,8 @@ let spine = new PIXI.heaven.Spine(spineData);
 ## Debug
 
 To show bones and bounds you can use [pixi-spine-debug](https://github.com/sbfkcel/pixi-spine-debug). If you want to write your own debug plugin, look at how this one [was created](https://github.com/pixijs/pixi-spine/issues/324)
+
+Demo: https://sbfkcel.github.io/pixi-spine-debug/
 
 ## WebPack and Angular
 
