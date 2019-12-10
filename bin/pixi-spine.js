@@ -23,8 +23,14 @@ var pixi_spine;
                     throw new Error("timelines cannot be null.");
                 this.name = name;
                 this.timelines = timelines;
+                this.timelineIds = [];
+                for (var i = 0; i < timelines.length; i++)
+                    this.timelineIds[timelines[i].getPropertyId()] = true;
                 this.duration = duration;
             }
+            Animation.prototype.hasTimeline = function (id) {
+                return this.timelineIds[id] == true;
+            };
             Animation.prototype.apply = function (skeleton, lastTime, time, loop, events, alpha, blend, direction) {
                 if (skeleton == null)
                     throw new Error("skeleton cannot be null.");
@@ -794,6 +800,7 @@ var pixi_spine;
                             case MixBlend.replace:
                                 for (var i_5 = 0; i_5 < vertexCount; i_5++)
                                     deform[i_5] += (lastVertices[i_5] - deform[i_5]) * alpha;
+                                break;
                             case MixBlend.add:
                                 var vertexAttachment = slotAttachment;
                                 if (vertexAttachment.bones == null) {
@@ -1345,12 +1352,12 @@ var pixi_spine;
         var AnimationState = (function () {
             function AnimationState(data) {
                 this.tracks = new Array();
+                this.timeScale = 1;
                 this.events = new Array();
                 this.listeners = new Array();
                 this.queue = new EventQueue(this);
                 this.propertyIDs = new core.IntSet();
                 this.animationsChanged = false;
-                this.timeScale = 1;
                 this.trackEntryPool = new core.Pool(function () { return new TrackEntry(); });
                 this.data = data;
             }
@@ -1376,7 +1383,7 @@ var pixi_spine;
                         var nextTime = current.trackLast - next.delay;
                         if (nextTime >= 0) {
                             next.delay = 0;
-                            next.trackTime = current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
+                            next.trackTime += current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
                             current.trackTime += currentDelta;
                             this.setCurrent(i, next, true);
                             while (next.mixingFrom != null) {
@@ -1835,6 +1842,7 @@ var pixi_spine;
                 entry.interruptAlpha = 1;
                 entry.mixTime = 0;
                 entry.mixDuration = last == null ? 0 : this.data.getMix(last.animation, animation);
+                entry.mixBlend = core.MixBlend.replace;
                 return entry;
             };
             AnimationState.prototype.disposeNext = function (entry) {
@@ -1890,12 +1898,12 @@ var pixi_spine;
                     if (!propertyIDs.add(id))
                         timelineMode[i] = AnimationState.SUBSEQUENT;
                     else if (to == null || timeline instanceof core.AttachmentTimeline || timeline instanceof core.DrawOrderTimeline
-                        || timeline instanceof core.EventTimeline || !this.hasTimeline(to, id)) {
+                        || timeline instanceof core.EventTimeline || !to.animation.hasTimeline(id)) {
                         timelineMode[i] = AnimationState.FIRST;
                     }
                     else {
                         for (var next = to.mixingTo; next != null; next = next.mixingTo) {
-                            if (this.hasTimeline(next, id))
+                            if (next.animation.hasTimeline(id))
                                 continue;
                             if (entry.mixDuration > 0) {
                                 timelineMode[i] = AnimationState.HOLD_MIX;
@@ -1920,13 +1928,6 @@ var pixi_spine;
                             timelineMode[i] |= AnimationState.NOT_LAST;
                     }
                 }
-            };
-            AnimationState.prototype.hasTimeline = function (entry, id) {
-                var timelines = entry.animation.timelines;
-                for (var i = 0, n = timelines.length; i < n; i++)
-                    if (timelines[i].getPropertyId() == id)
-                        return true;
-                return false;
             };
             AnimationState.prototype.getCurrent = function (trackIndex) {
                 if (trackIndex >= this.tracks.length)
@@ -2189,24 +2190,24 @@ var pixi_spine;
             EventType[EventType["complete"] = 4] = "complete";
             EventType[EventType["event"] = 5] = "event";
         })(EventType = core.EventType || (core.EventType = {}));
-        var AnimationStateAdapter2 = (function () {
-            function AnimationStateAdapter2() {
+        var AnimationStateAdapter = (function () {
+            function AnimationStateAdapter() {
             }
-            AnimationStateAdapter2.prototype.start = function (entry) {
+            AnimationStateAdapter.prototype.start = function (entry) {
             };
-            AnimationStateAdapter2.prototype.interrupt = function (entry) {
+            AnimationStateAdapter.prototype.interrupt = function (entry) {
             };
-            AnimationStateAdapter2.prototype.end = function (entry) {
+            AnimationStateAdapter.prototype.end = function (entry) {
             };
-            AnimationStateAdapter2.prototype.dispose = function (entry) {
+            AnimationStateAdapter.prototype.dispose = function (entry) {
             };
-            AnimationStateAdapter2.prototype.complete = function (entry) {
+            AnimationStateAdapter.prototype.complete = function (entry) {
             };
-            AnimationStateAdapter2.prototype.event = function (entry, event) {
+            AnimationStateAdapter.prototype.event = function (entry, event) {
             };
-            return AnimationStateAdapter2;
+            return AnimationStateAdapter;
         }());
-        core.AnimationStateAdapter2 = AnimationStateAdapter2;
+        core.AnimationStateAdapter = AnimationStateAdapter;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -5936,7 +5937,7 @@ var pixi_spine;
                 skeletonData.animations.push(new core.Animation(name, timelines, duration));
             };
             SkeletonJson.prototype.readCurve = function (map, timeline, frameIndex) {
-                if (!map.curve)
+                if (!map.hasOwnProperty("curve"))
                     return;
                 if (map.curve === "stepped")
                     timeline.setStepped(frameIndex);

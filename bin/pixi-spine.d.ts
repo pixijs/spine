@@ -2,8 +2,10 @@ declare module PIXI.spine.core {
     class Animation {
         name: string;
         timelines: Array<Timeline>;
+        timelineIds: Array<boolean>;
         duration: number;
         constructor(name: string, timelines: Array<Timeline>, duration: number);
+        hasTimeline(id: number): boolean;
         apply(skeleton: Skeleton, lastTime: number, time: number, loop: boolean, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
         static binarySearch(values: ArrayLike<number>, target: number, step?: number): number;
         static linearSearch(values: ArrayLike<number>, target: number, step: number): number;
@@ -251,12 +253,12 @@ declare module PIXI.spine.core {
         static NOT_LAST: number;
         data: AnimationStateData;
         tracks: TrackEntry[];
+        timeScale: number;
         events: Event[];
-        listeners: AnimationStateListener2[];
+        listeners: AnimationStateListener[];
         queue: EventQueue;
         propertyIDs: IntSet;
         animationsChanged: boolean;
-        timeScale: number;
         trackEntryPool: Pool<TrackEntry>;
         constructor(data: AnimationStateData);
         update(delta: number): void;
@@ -281,10 +283,9 @@ declare module PIXI.spine.core {
         _animationsChanged(): void;
         computeHold(entry: TrackEntry): void;
         computeNotLast(entry: TrackEntry): void;
-        hasTimeline(entry: TrackEntry, id: number): boolean;
         getCurrent(trackIndex: number): TrackEntry;
-        addListener(listener: AnimationStateListener2): void;
-        removeListener(listener: AnimationStateListener2): void;
+        addListener(listener: AnimationStateListener): void;
+        removeListener(listener: AnimationStateListener): void;
         clearListeners(): void;
         clearListenerNotifications(): void;
         onComplete: (trackIndex: number, loopCount: number) => any;
@@ -304,7 +305,7 @@ declare module PIXI.spine.core {
         next: TrackEntry;
         mixingFrom: TrackEntry;
         mixingTo: TrackEntry;
-        listener: AnimationStateListener2;
+        listener: AnimationStateListener;
         trackIndex: number;
         loop: boolean;
         holdPrevious: boolean;
@@ -369,7 +370,7 @@ declare module PIXI.spine.core {
         complete = 4,
         event = 5
     }
-    interface AnimationStateListener2 {
+    interface AnimationStateListener {
         start?(entry: TrackEntry): void;
         interrupt?(entry: TrackEntry): void;
         end?(entry: TrackEntry): void;
@@ -377,7 +378,7 @@ declare module PIXI.spine.core {
         complete?(entry: TrackEntry): void;
         event?(entry: TrackEntry, event: Event): void;
     }
-    abstract class AnimationStateAdapter2 implements AnimationStateListener2 {
+    abstract class AnimationStateAdapter implements AnimationStateListener {
         start(entry: TrackEntry): void;
         interrupt(entry: TrackEntry): void;
         end(entry: TrackEntry): void;
