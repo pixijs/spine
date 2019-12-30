@@ -181,6 +181,14 @@ namespace pixi_spine.core {
                             break;
                         }
                     }
+                } else {
+                  let attachmentName = slot.data.attachmentName;
+                      
+                  if (attachmentName != null) {
+                      let attachment = this.getAttachment(slotIndex, attachmentName);
+                      if (attachment != null)
+                          slot.setAttachment(attachment);
+                  }    
                 }
                 slotIndex++;
             }

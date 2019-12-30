@@ -6152,6 +6152,14 @@ var pixi_spine;
                             }
                         }
                     }
+                    else {
+                        var attachmentName = slot.data.attachmentName;
+                        if (attachmentName != null) {
+                            var attachment = this.getAttachment(slotIndex, attachmentName);
+                            if (attachment != null)
+                                slot.setAttachment(attachment);
+                        }
+                    }
                     slotIndex++;
                 }
             };
