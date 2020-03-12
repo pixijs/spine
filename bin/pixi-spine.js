@@ -2716,10 +2716,25 @@ var pixi_spine;
                 if (!bone.appliedValid)
                     bone.updateAppliedTransform();
                 var p = bone.parent.matrix;
-                var id = 1 / (p.a * p.d - p.b * p.c);
-                var x = targetX - p.tx, y = targetY - p.ty;
-                var tx = (x * p.d - y * p.c) * id - bone.ax, ty = (y * p.a - x * p.b) * id - bone.ay;
-                var rotationIK = Math.atan2(ty, tx) * core.MathUtils.radDeg - bone.ashearX - bone.arotation;
+                var pa = p.a, pb = p.c, pc = p.b, pd = p.d;
+                var rotationIK = -bone.ashearX - bone.arotation, tx = 0, ty = 0;
+                switch (bone.data.transformMode) {
+                    case core.TransformMode.OnlyTranslation:
+                        tx = targetX - bone.worldX;
+                        ty = targetY - bone.worldY;
+                        break;
+                    case core.TransformMode.NoRotationOrReflection:
+                        rotationIK += Math.atan2(pc, pa) * core.MathUtils.radDeg;
+                        var ps = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
+                        pb = -pc * ps;
+                        pd = pa * ps;
+                    default:
+                        var x = targetX - p.tx, y = targetY - p.ty;
+                        var d = pa * pd - pb * pc;
+                        tx = (x * pd - y * pb) / d - bone.ax;
+                        ty = (y * pa - x * pc) / d - bone.ay;
+                }
+                rotationIK += Math.atan2(ty, tx) * core.MathUtils.radDeg;
                 if (bone.ascaleX < 0)
                     rotationIK += 180;
                 if (rotationIK > 180)
@@ -2728,6 +2743,12 @@ var pixi_spine;
                     rotationIK += 360;
                 var sx = bone.ascaleX, sy = bone.ascaleY;
                 if (compress || stretch) {
+                    switch (bone.data.transformMode) {
+                        case core.TransformMode.NoScale:
+                        case core.TransformMode.NoScaleOrReflection:
+                            tx = targetX - bone.worldX;
+                            ty = targetY - bone.worldY;
+                    }
                     var b = bone.data.length * sx, dd = Math.sqrt(tx * tx + ty * ty);
                     if ((compress && dd < b) || (stretch && dd > b) && b > 0.0001) {
                         var s = (dd / b - 1) * alpha + 1;
@@ -3847,6 +3868,10 @@ var pixi_spine;
                 var input = new BinaryInput(binary);
                 skeletonData.hash = input.readString();
                 skeletonData.version = input.readString();
+                if (skeletonData.version === '3.8.75') {
+                    var error = "Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.";
+                    console.error(error);
+                }
                 skeletonData.x = input.readFloat();
                 skeletonData.y = input.readFloat();
                 skeletonData.width = input.readFloat();
@@ -5253,8 +5278,12 @@ var pixi_spine;
                 if (skeletonMap != null) {
                     skeletonData.hash = skeletonMap.hash;
                     skeletonData.version = skeletonMap.spine;
-                    if (skeletonMap.spine.substr(0, 3) !== '3.8') {
+                    if (skeletonData.version.substr(0, 3) !== '3.8') {
                         var error = "PixiJS Spine plugin supports only format for Spine 3.8. Your model has version " + skeletonMap.spine + ". Please look in pixi-spine repository README for another branch.";
+                        console.error(error);
+                    }
+                    if (skeletonData.version === '3.8.75') {
+                        var error = "Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.";
                         console.error(error);
                     }
                     skeletonData.x = skeletonMap.x;
