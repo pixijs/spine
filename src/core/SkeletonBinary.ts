@@ -71,6 +71,11 @@ namespace pixi_spine.core {
 
 			skeletonData.hash = input.readString();
 			skeletonData.version = input.readString();
+            if (skeletonData.version === '3.8.75')
+            {
+                let error = `Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.`;
+                console.error(error);
+            }
 			skeletonData.x = input.readFloat();
 			skeletonData.y = input.readFloat();
 			skeletonData.width = input.readFloat();

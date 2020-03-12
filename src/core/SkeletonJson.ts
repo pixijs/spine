@@ -55,8 +55,13 @@ namespace pixi_spine.core {
             if (skeletonMap != null) {
                 skeletonData.hash = skeletonMap.hash;
                 skeletonData.version = skeletonMap.spine;
-                if (skeletonMap.spine.substr(0, 3) !== '3.8') {
+                if (skeletonData.version.substr(0, 3) !== '3.8') {
                     let error = `PixiJS Spine plugin supports only format for Spine 3.8. Your model has version ${skeletonMap.spine}. Please look in pixi-spine repository README for another branch.`;
+                    console.error(error);
+                }
+                if (skeletonData.version === '3.8.75')
+                {
+                    let error = `Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.`;
                     console.error(error);
                 }
                 skeletonData.x = skeletonMap.x;
