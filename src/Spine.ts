@@ -45,6 +45,7 @@ namespace pixi_spine {
         slotContainers: Array<PIXI.Container>;
         tempClipContainers: Array<PIXI.Container>;
         localDelayLimit: number;
+        private _visible: boolean;
 
         constructor(spineData: core.SkeletonData) {
             super();
@@ -160,6 +161,26 @@ namespace pixi_spine {
 
         set autoUpdate(value: boolean) {
             this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
+        }
+        /**
+         * The visibility of the spine object. If false the object will not be drawn,
+         * the updateTransform function will not be called, and the spine will not be automatically updated.
+         *
+         * @member {boolean}
+         * @memberof spine.Spine#
+         * @default true
+         */
+        get visible(): boolean {
+            return this._visible;
+        }
+
+        set visible(value: boolean) {
+            if (value !== this._visible) {
+                this._visible = value;
+                if (value) {
+                    this.lastTime = 0;
+                }
+            }
         }
 
         /**
@@ -519,10 +540,8 @@ namespace pixi_spine {
          */
         createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string) {
             let region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
             }
             let texture = region.texture;
             let sprite = this.newSprite(texture);
@@ -549,10 +568,10 @@ namespace pixi_spine {
          */
         createMesh(slot: core.Slot, attachment: core.MeshAttachment) {
             let region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             let strip = this.newMesh(
                 region.texture,
@@ -619,15 +638,17 @@ namespace pixi_spine {
                 region = new core.TextureRegion();
                 region.texture = texture;
                 region.size = size;
+                slot.hackRegion = region;
+                slot.hackAttachment = attachment;
+            } else {
+                slot.hackRegion = null;
+                slot.hackAttachment = null;
             }
             if (slot.currentSprite && slot.currentSprite.region != region) {
                 this.setSpriteRegion(attachment, slot.currentSprite, region);
                 slot.currentSprite.region = region;
             } else if (slot.currentMesh && slot.currentMesh.region != region) {
                 this.setMeshRegion(attachment, slot.currentMesh, region);
-            } else {
-                slot.tempRegion = region;
-                slot.tempAttachment = attachment;
             }
             return true;
         }

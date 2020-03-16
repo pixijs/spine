@@ -71,6 +71,11 @@ namespace pixi_spine.core {
 
 			skeletonData.hash = input.readString();
 			skeletonData.version = input.readString();
+            if (skeletonData.version === '3.8.75')
+            {
+                let error = `Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.`;
+                console.error(error);
+            }
 			skeletonData.x = input.readFloat();
 			skeletonData.y = input.readFloat();
 			skeletonData.width = input.readFloat();
@@ -245,30 +250,38 @@ namespace pixi_spine.core {
 		}
 
 		private readSkin (input: BinaryInput, skeletonData: SkeletonData, defaultSkin: boolean, nonessential: boolean): Skin {
-			let skin = new Skin(defaultSkin ? "default" : input.readStringRef());
+            let skin = null;
+            let slotCount = 0;
 
-			if (!defaultSkin) {
-				skin.bones.length = input.readInt(true);
-				for (let i = 0, n = skin.bones.length; i < n; i++)
-					skin.bones[i] = skeletonData.bones[input.readInt(true)];
+            if (defaultSkin) {
+                slotCount = input.readInt(true)
+                if (slotCount == 0) return null;
+                skin = new Skin("default");
+            } else {
+                skin = new Skin(input.readStringRef());
+                skin.bones.length = input.readInt(true);
+                for (let i = 0, n = skin.bones.length; i < n; i++)
+                    skin.bones[i] = skeletonData.bones[input.readInt(true)];
 
-				for (let i = 0, n = input.readInt(true); i < n; i++)
-					skin.constraints.push(skeletonData.ikConstraints[input.readInt(true)]);
-				for (let i = 0, n = input.readInt(true); i < n; i++)
-					skin.constraints.push(skeletonData.transformConstraints[input.readInt(true)]);
-				for (let i = 0, n = input.readInt(true); i < n; i++)
-					skin.constraints.push(skeletonData.pathConstraints[input.readInt(true)]);
-			}
+                for (let i = 0, n = input.readInt(true); i < n; i++)
+                    skin.constraints.push(skeletonData.ikConstraints[input.readInt(true)]);
+                for (let i = 0, n = input.readInt(true); i < n; i++)
+                    skin.constraints.push(skeletonData.transformConstraints[input.readInt(true)]);
+                for (let i = 0, n = input.readInt(true); i < n; i++)
+                    skin.constraints.push(skeletonData.pathConstraints[input.readInt(true)]);
 
-			for (let i = 0, n = input.readInt(true); i < n; i++) {
-				let slotIndex = input.readInt(true);
-				for (let ii = 0, nn = input.readInt(true); ii < nn; ii++) {
-					let name = input.readStringRef();
-					let attachment = this.readAttachment(input, skeletonData, skin, slotIndex, name, nonessential);
-					if (attachment != null) skin.setAttachment(slotIndex, name, attachment);
-				}
-			}
-			return skin;
+                slotCount = input.readInt(true);
+            }
+
+            for (let i = 0; i < slotCount; i++) {
+                let slotIndex = input.readInt(true);
+                for (let ii = 0, nn = input.readInt(true); ii < nn; ii++) {
+                    let name = input.readStringRef();
+                    let attachment = this.readAttachment(input, skeletonData, skin, slotIndex, name, nonessential);
+                    if (attachment != null) skin.setAttachment(slotIndex, name, attachment);
+                }
+            }
+            return skin;
 		}
 
 		private readAttachment(input: BinaryInput, skeletonData: SkeletonData, skin: Skin, slotIndex: number, attachmentName: string, nonessential: boolean): Attachment {

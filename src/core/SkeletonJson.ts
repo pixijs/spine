@@ -30,6 +30,12 @@
  *****************************************************************************/
 
 namespace pixi_spine.core {
+    /**
+     * pixi-spine gives option to not fail at certain parsing errors
+     * spine-ts fails here
+     */
+    export let FAIL_ON_NON_EXISTING_SKIN = false;
+
     export class SkeletonJson {
         attachmentLoader: AttachmentLoader;
         scale = 1;
@@ -49,6 +55,15 @@ namespace pixi_spine.core {
             if (skeletonMap != null) {
                 skeletonData.hash = skeletonMap.hash;
                 skeletonData.version = skeletonMap.spine;
+                if (skeletonData.version.substr(0, 3) !== '3.8') {
+                    let error = `PixiJS Spine plugin supports only format for Spine 3.8. Your model has version ${skeletonMap.spine}. Please look in pixi-spine repository README for another branch.`;
+                    console.error(error);
+                }
+                if (skeletonData.version === '3.8.75')
+                {
+                    let error = `Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.`;
+                    console.error(error);
+                }
                 skeletonData.x = skeletonMap.x;
                 skeletonData.y = skeletonMap.y;
                 skeletonData.width = skeletonMap.width;
@@ -658,7 +673,13 @@ namespace pixi_spine.core {
                 for (let deformName in map.deform) {
                     let deformMap = map.deform[deformName];
                     let skin = skeletonData.findSkin(deformName);
-                    if (skin == null) throw new Error("Skin not found: " + deformName);
+                    if (skin == null) {
+                       if (FAIL_ON_NON_EXISTING_SKIN) {
+                           throw new Error("Skin not found: " + deformName);
+                       } else {
+                           continue;
+                       }
+                    }
                     for (let slotName in deformMap) {
                         let slotMap = deformMap[slotName];
                         let slotIndex = skeletonData.findSlotIndex(slotName);
@@ -775,7 +796,7 @@ namespace pixi_spine.core {
         }
 
         readCurve (map: any, timeline: CurveTimeline, frameIndex: number) {
-            if (!map.curve) return;
+            if (!map.hasOwnProperty("curve")) return;
             if (map.curve === "stepped")
                 timeline.setStepped(frameIndex);
             else {

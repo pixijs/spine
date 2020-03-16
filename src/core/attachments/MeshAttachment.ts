@@ -73,7 +73,6 @@ namespace pixi_spine.core {
 
             return uvs;
         }
-
         getParentMesh () {
             return this.parentMesh;
         }
