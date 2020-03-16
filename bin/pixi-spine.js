@@ -20,8 +20,14 @@ var pixi_spine;
                     throw new Error("timelines cannot be null.");
                 this.name = name;
                 this.timelines = timelines;
+                this.timelineIds = [];
+                for (var i = 0; i < timelines.length; i++)
+                    this.timelineIds[timelines[i].getPropertyId()] = true;
                 this.duration = duration;
             }
+            Animation.prototype.hasTimeline = function (id) {
+                return this.timelineIds[id] == true;
+            };
             Animation.prototype.apply = function (skeleton, lastTime, time, loop, events, alpha, blend, direction) {
                 if (skeleton == null)
                     throw new Error("skeleton cannot be null.");
@@ -791,6 +797,7 @@ var pixi_spine;
                             case MixBlend.replace:
                                 for (var i_5 = 0; i_5 < vertexCount; i_5++)
                                     deform[i_5] += (lastVertices[i_5] - deform[i_5]) * alpha;
+                                break;
                             case MixBlend.add:
                                 var vertexAttachment = slotAttachment;
                                 if (vertexAttachment.bones == null) {
@@ -1342,12 +1349,12 @@ var pixi_spine;
         var AnimationState = (function () {
             function AnimationState(data) {
                 this.tracks = new Array();
+                this.timeScale = 1;
                 this.events = new Array();
                 this.listeners = new Array();
                 this.queue = new EventQueue(this);
                 this.propertyIDs = new core.IntSet();
                 this.animationsChanged = false;
-                this.timeScale = 1;
                 this.trackEntryPool = new core.Pool(function () { return new TrackEntry(); });
                 this.data = data;
             }
@@ -1373,7 +1380,7 @@ var pixi_spine;
                         var nextTime = current.trackLast - next.delay;
                         if (nextTime >= 0) {
                             next.delay = 0;
-                            next.trackTime = current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
+                            next.trackTime += current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
                             current.trackTime += currentDelta;
                             this.setCurrent(i, next, true);
                             while (next.mixingFrom != null) {
@@ -1520,14 +1527,14 @@ var pixi_spine;
                         var alpha = 0;
                         switch (timelineMode[i] & (AnimationState.NOT_LAST - 1)) {
                             case AnimationState.SUBSEQUENT:
+                                timelineBlend = blend;
                                 if (!attachments && timeline instanceof core.AttachmentTimeline) {
                                     if ((timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST)
                                         continue;
-                                    blend = core.MixBlend.setup;
+                                    timelineBlend = core.MixBlend.setup;
                                 }
                                 if (!drawOrder && timeline instanceof core.DrawOrderTimeline)
                                     continue;
-                                timelineBlend = blend;
                                 alpha = alphaMix;
                                 break;
                             case AnimationState.FIRST:
@@ -1832,6 +1839,7 @@ var pixi_spine;
                 entry.interruptAlpha = 1;
                 entry.mixTime = 0;
                 entry.mixDuration = last == null ? 0 : this.data.getMix(last.animation, animation);
+                entry.mixBlend = core.MixBlend.replace;
                 return entry;
             };
             AnimationState.prototype.disposeNext = function (entry) {
@@ -1887,12 +1895,12 @@ var pixi_spine;
                     if (!propertyIDs.add(id))
                         timelineMode[i] = AnimationState.SUBSEQUENT;
                     else if (to == null || timeline instanceof core.AttachmentTimeline || timeline instanceof core.DrawOrderTimeline
-                        || timeline instanceof core.EventTimeline || !this.hasTimeline(to, id)) {
+                        || timeline instanceof core.EventTimeline || !to.animation.hasTimeline(id)) {
                         timelineMode[i] = AnimationState.FIRST;
                     }
                     else {
                         for (var next = to.mixingTo; next != null; next = next.mixingTo) {
-                            if (this.hasTimeline(next, id))
+                            if (next.animation.hasTimeline(id))
                                 continue;
                             if (entry.mixDuration > 0) {
                                 timelineMode[i] = AnimationState.HOLD_MIX;
@@ -1917,13 +1925,6 @@ var pixi_spine;
                             timelineMode[i] |= AnimationState.NOT_LAST;
                     }
                 }
-            };
-            AnimationState.prototype.hasTimeline = function (entry, id) {
-                var timelines = entry.animation.timelines;
-                for (var i = 0, n = timelines.length; i < n; i++)
-                    if (timelines[i].getPropertyId() == id)
-                        return true;
-                return false;
             };
             AnimationState.prototype.getCurrent = function (trackIndex) {
                 if (trackIndex >= this.tracks.length)
@@ -2186,24 +2187,24 @@ var pixi_spine;
             EventType[EventType["complete"] = 4] = "complete";
             EventType[EventType["event"] = 5] = "event";
         })(EventType = core.EventType || (core.EventType = {}));
-        var AnimationStateAdapter2 = (function () {
-            function AnimationStateAdapter2() {
+        var AnimationStateAdapter = (function () {
+            function AnimationStateAdapter() {
             }
-            AnimationStateAdapter2.prototype.start = function (entry) {
+            AnimationStateAdapter.prototype.start = function (entry) {
             };
-            AnimationStateAdapter2.prototype.interrupt = function (entry) {
+            AnimationStateAdapter.prototype.interrupt = function (entry) {
             };
-            AnimationStateAdapter2.prototype.end = function (entry) {
+            AnimationStateAdapter.prototype.end = function (entry) {
             };
-            AnimationStateAdapter2.prototype.dispose = function (entry) {
+            AnimationStateAdapter.prototype.dispose = function (entry) {
             };
-            AnimationStateAdapter2.prototype.complete = function (entry) {
+            AnimationStateAdapter.prototype.complete = function (entry) {
             };
-            AnimationStateAdapter2.prototype.event = function (entry, event) {
+            AnimationStateAdapter.prototype.event = function (entry, event) {
             };
-            return AnimationStateAdapter2;
+            return AnimationStateAdapter;
         }());
-        core.AnimationStateAdapter2 = AnimationStateAdapter2;
+        core.AnimationStateAdapter = AnimationStateAdapter;
     })(core = pixi_spine.core || (pixi_spine.core = {}));
 })(pixi_spine || (pixi_spine = {}));
 var pixi_spine;
@@ -2712,10 +2713,25 @@ var pixi_spine;
                 if (!bone.appliedValid)
                     bone.updateAppliedTransform();
                 var p = bone.parent.matrix;
-                var id = 1 / (p.a * p.d - p.b * p.c);
-                var x = targetX - p.tx, y = targetY - p.ty;
-                var tx = (x * p.d - y * p.c) * id - bone.ax, ty = (y * p.a - x * p.b) * id - bone.ay;
-                var rotationIK = Math.atan2(ty, tx) * core.MathUtils.radDeg - bone.ashearX - bone.arotation;
+                var pa = p.a, pb = p.c, pc = p.b, pd = p.d;
+                var rotationIK = -bone.ashearX - bone.arotation, tx = 0, ty = 0;
+                switch (bone.data.transformMode) {
+                    case core.TransformMode.OnlyTranslation:
+                        tx = targetX - bone.worldX;
+                        ty = targetY - bone.worldY;
+                        break;
+                    case core.TransformMode.NoRotationOrReflection:
+                        rotationIK += Math.atan2(pc, pa) * core.MathUtils.radDeg;
+                        var ps = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
+                        pb = -pc * ps;
+                        pd = pa * ps;
+                    default:
+                        var x = targetX - p.tx, y = targetY - p.ty;
+                        var d = pa * pd - pb * pc;
+                        tx = (x * pd - y * pb) / d - bone.ax;
+                        ty = (y * pa - x * pc) / d - bone.ay;
+                }
+                rotationIK += Math.atan2(ty, tx) * core.MathUtils.radDeg;
                 if (bone.ascaleX < 0)
                     rotationIK += 180;
                 if (rotationIK > 180)
@@ -2724,6 +2740,12 @@ var pixi_spine;
                     rotationIK += 360;
                 var sx = bone.ascaleX, sy = bone.ascaleY;
                 if (compress || stretch) {
+                    switch (bone.data.transformMode) {
+                        case core.TransformMode.NoScale:
+                        case core.TransformMode.NoScaleOrReflection:
+                            tx = targetX - bone.worldX;
+                            ty = targetY - bone.worldY;
+                    }
                     var b = bone.data.length * sx, dd = Math.sqrt(tx * tx + ty * ty);
                     if ((compress && dd < b) || (stretch && dd > b) && b > 0.0001) {
                         var s = (dd / b - 1) * alpha + 1;
@@ -3843,6 +3865,10 @@ var pixi_spine;
                 var input = new BinaryInput(binary);
                 skeletonData.hash = input.readString();
                 skeletonData.version = input.readString();
+                if (skeletonData.version === '3.8.75') {
+                    var error = "Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.";
+                    console.error(error);
+                }
                 skeletonData.x = input.readFloat();
                 skeletonData.y = input.readFloat();
                 skeletonData.width = input.readFloat();
@@ -3995,8 +4021,16 @@ var pixi_spine;
                 return skeletonData;
             };
             SkeletonBinary.prototype.readSkin = function (input, skeletonData, defaultSkin, nonessential) {
-                var skin = new core.Skin(defaultSkin ? "default" : input.readStringRef());
-                if (!defaultSkin) {
+                var skin = null;
+                var slotCount = 0;
+                if (defaultSkin) {
+                    slotCount = input.readInt(true);
+                    if (slotCount == 0)
+                        return null;
+                    skin = new core.Skin("default");
+                }
+                else {
+                    skin = new core.Skin(input.readStringRef());
                     skin.bones.length = input.readInt(true);
                     for (var i = 0, n = skin.bones.length; i < n; i++)
                         skin.bones[i] = skeletonData.bones[input.readInt(true)];
@@ -4006,8 +4040,9 @@ var pixi_spine;
                         skin.constraints.push(skeletonData.transformConstraints[input.readInt(true)]);
                     for (var i = 0, n = input.readInt(true); i < n; i++)
                         skin.constraints.push(skeletonData.pathConstraints[input.readInt(true)]);
+                    slotCount = input.readInt(true);
                 }
-                for (var i = 0, n = input.readInt(true); i < n; i++) {
+                for (var i = 0; i < slotCount; i++) {
                     var slotIndex = input.readInt(true);
                     for (var ii = 0, nn = input.readInt(true); ii < nn; ii++) {
                         var name_3 = input.readStringRef();
@@ -5225,6 +5260,7 @@ var pixi_spine;
 (function (pixi_spine) {
     var core;
     (function (core) {
+        core.FAIL_ON_NON_EXISTING_SKIN = false;
         var SkeletonJson = (function () {
             function SkeletonJson(attachmentLoader) {
                 this.scale = 1;
@@ -5239,6 +5275,14 @@ var pixi_spine;
                 if (skeletonMap != null) {
                     skeletonData.hash = skeletonMap.hash;
                     skeletonData.version = skeletonMap.spine;
+                    if (skeletonData.version.substr(0, 3) !== '3.8') {
+                        var error = "PixiJS Spine plugin supports only format for Spine 3.8. Your model has version " + skeletonMap.spine + ". Please look in pixi-spine repository README for another branch.";
+                        console.error(error);
+                    }
+                    if (skeletonData.version === '3.8.75') {
+                        var error = "Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.";
+                        console.error(error);
+                    }
                     skeletonData.x = skeletonMap.x;
                     skeletonData.y = skeletonMap.y;
                     skeletonData.width = skeletonMap.width;
@@ -5803,8 +5847,14 @@ var pixi_spine;
                     for (var deformName in map.deform) {
                         var deformMap = map.deform[deformName];
                         var skin = skeletonData.findSkin(deformName);
-                        if (skin == null)
-                            throw new Error("Skin not found: " + deformName);
+                        if (skin == null) {
+                            if (core.FAIL_ON_NON_EXISTING_SKIN) {
+                                throw new Error("Skin not found: " + deformName);
+                            }
+                            else {
+                                continue;
+                            }
+                        }
                         for (var slotName in deformMap) {
                             var slotMap = deformMap[slotName];
                             var slotIndex = skeletonData.findSlotIndex(slotName);
@@ -5913,7 +5963,7 @@ var pixi_spine;
                 skeletonData.animations.push(new core.Animation(name, timelines, duration));
             };
             SkeletonJson.prototype.readCurve = function (map, timeline, frameIndex) {
-                if (!map.curve)
+                if (!map.hasOwnProperty("curve"))
                     return;
                 if (map.curve === "stepped")
                     timeline.setStepped(frameIndex);
@@ -6565,7 +6615,8 @@ var pixi_spine;
                             y /= resolution;
                             width /= resolution;
                             height /= resolution;
-                            var frame = new PIXI.Rectangle(x, y, rotate ? height : width, rotate ? width : height);
+                            var swapWH = rotate % 4 != 0;
+                            var frame = new PIXI.Rectangle(x, y, swapWH ? height : width, swapWH ? width : height);
                             if (reader.readTuple(tuple) == 4) {
                                 if (reader.readTuple(tuple) == 4) {
                                     reader.readTuple(tuple);
@@ -8201,6 +8252,21 @@ var pixi_spine;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Spine.prototype, "visible", {
+            get: function () {
+                return this._visible;
+            },
+            set: function (value) {
+                if (value !== this._visible) {
+                    this._visible = value;
+                    if (value) {
+                        this.lastTime = 0;
+                    }
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Spine.prototype, "tint", {
             get: function () {
                 return PIXI.utils.rgb2hex(this.tintRgb);
@@ -8476,10 +8542,8 @@ var pixi_spine;
         ;
         Spine.prototype.createSprite = function (slot, attachment, defName) {
             var region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
             }
             var texture = region.texture;
             var sprite = this.newSprite(texture);
@@ -8498,10 +8562,10 @@ var pixi_spine;
         ;
         Spine.prototype.createMesh = function (slot, attachment) {
             var region = attachment.region;
-            if (slot.tempAttachment === attachment) {
-                region = slot.tempRegion;
-                slot.tempAttachment = null;
-                slot.tempRegion = null;
+            if (slot.hackAttachment === attachment) {
+                region = slot.hackRegion;
+                slot.hackAttachment = null;
+                slot.hackRegion = null;
             }
             var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), new Float32Array(attachment.regionUVs.length), new Uint16Array(attachment.triangles), PIXI.mesh.Mesh.DRAW_MODES.TRIANGLES);
             strip.canvasPadding = 1.5;
@@ -8546,6 +8610,12 @@ var pixi_spine;
                 region = new pixi_spine.core.TextureRegion();
                 region.texture = texture;
                 region.size = size;
+                slot.hackRegion = region;
+                slot.hackAttachment = attachment;
+            }
+            else {
+                slot.hackRegion = null;
+                slot.hackAttachment = null;
             }
             if (slot.currentSprite && slot.currentSprite.region != region) {
                 this.setSpriteRegion(attachment, slot.currentSprite, region);
@@ -8553,10 +8623,6 @@ var pixi_spine;
             }
             else if (slot.currentMesh && slot.currentMesh.region != region) {
                 this.setMeshRegion(attachment, slot.currentMesh, region);
-            }
-            else {
-                slot.tempRegion = region;
-                slot.tempAttachment = attachment;
             }
             return true;
         };
