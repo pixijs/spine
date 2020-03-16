@@ -6617,7 +6617,8 @@ var pixi_spine;
                             y /= resolution;
                             width /= resolution;
                             height /= resolution;
-                            var frame = new PIXI.Rectangle(x, y, rotate ? height : width, rotate ? width : height);
+                            var swapWH = rotate % 4 != 0;
+                            var frame = new PIXI.Rectangle(x, y, swapWH ? height : width, swapWH ? width : height);
                             if (reader.readTuple(tuple) == 4) {
                                 if (reader.readTuple(tuple) == 4) {
                                     reader.readTuple(tuple);
