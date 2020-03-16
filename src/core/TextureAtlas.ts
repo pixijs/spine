@@ -177,7 +177,8 @@ namespace pixi_spine.core {
                         width /= resolution;
                         height /= resolution;
 
-                        let frame = new PIXI.Rectangle(x, y, rotate ? height : width, rotate ? width : height);
+                        const swapWH = rotate % 4 != 0;
+                        let frame = new PIXI.Rectangle(x, y, swapWH ? height : width, swapWH ? width : height);
 
                         if (reader.readTuple(tuple) == 4) { // split is optional
                             // region.splits = new Vector.<int>(parseInt(tuple[0]), parseInt(tuple[1]), parseInt(tuple[2]), parseInt(tuple[3]));
