@@ -151,10 +151,9 @@ namespace pixi_spine {
 
             const cachedResource = loader.resources[name];
             if (cachedResource) {
-                function done() {
+                const done = () => {
                     callback(cachedResource.texture.baseTexture)
                 }
-
                 if (cachedResource.texture) {
                     done();
                 }
