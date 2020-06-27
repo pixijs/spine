@@ -2038,7 +2038,7 @@ var pixi_spine;
                     }
                     this.trackTime = value;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TrackEntry.prototype, "endTime", {
@@ -2056,7 +2056,7 @@ var pixi_spine;
                     }
                     this.trackTime = value;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             TrackEntry.prototype.loopsCount = function () {
@@ -2349,14 +2349,14 @@ var pixi_spine;
                 get: function () {
                     return this.matrix.tx;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Bone.prototype, "worldY", {
                 get: function () {
                     return this.matrix.ty;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Bone.prototype.isActive = function () {
@@ -3828,7 +3828,7 @@ var pixi_spine;
                     }
                     this.scaleX = value ? 1.0 : -1.0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Skeleton.prototype, "flipY", {
@@ -3842,7 +3842,7 @@ var pixi_spine;
                     }
                     this.scaleY = value ? 1.0 : -1.0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Skeleton.deprecatedWarning1 = false;
@@ -6350,7 +6350,7 @@ var pixi_spine;
                     }
                     return tex.orig.width;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "height", {
@@ -6364,35 +6364,35 @@ var pixi_spine;
                     }
                     return tex.orig.height;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "u", {
                 get: function () {
                     return this.texture._uvs.x0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "v", {
                 get: function () {
                     return this.texture._uvs.y0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "u2", {
                 get: function () {
                     return this.texture._uvs.x2;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "v2", {
                 get: function () {
                     return this.texture._uvs.y2;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "offsetX", {
@@ -6400,7 +6400,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return tex.trim ? tex.trim.x : 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "offsetY", {
@@ -6408,7 +6408,7 @@ var pixi_spine;
                     console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
                     return this.spineOffsetY;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "pixiOffsetY", {
@@ -6416,7 +6416,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return tex.trim ? tex.trim.y : 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "spineOffsetY", {
@@ -6424,7 +6424,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "originalWidth", {
@@ -6438,7 +6438,7 @@ var pixi_spine;
                     }
                     return tex.orig.width;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "originalHeight", {
@@ -6452,28 +6452,28 @@ var pixi_spine;
                     }
                     return tex.orig.height;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "x", {
                 get: function () {
                     return this.texture.frame.x;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "y", {
                 get: function () {
                     return this.texture.frame.y;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "rotate", {
                 get: function () {
                     return this.texture.rotate !== 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             return TextureRegion;
@@ -8248,7 +8248,7 @@ var pixi_spine;
                     this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "visible", {
@@ -8263,7 +8263,7 @@ var pixi_spine;
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "tint", {
@@ -8273,7 +8273,7 @@ var pixi_spine;
             set: function (value) {
                 this.tintRgb = PIXI.utils.hex2rgb(value, this.tintRgb);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "delayLimit", {
@@ -8282,7 +8282,7 @@ var pixi_spine;
                     this.localDelayLimit : Spine.globalDelayLimit;
                 return limit || Number.MAX_VALUE;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Spine.prototype.update = function (dt) {
@@ -8804,9 +8804,9 @@ var pixi_spine;
             var url = baseUrl + line;
             var cachedResource = loader.resources[name];
             if (cachedResource) {
-                function done() {
+                var done = function () {
                     callback(cachedResource.texture.baseTexture);
-                }
+                };
                 if (cachedResource.texture) {
                     done();
                 }
