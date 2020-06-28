@@ -443,7 +443,7 @@ namespace pixi_spine.core {
         }
 
         /** @param attachmentName May be null. */
-        setAttachment (slotName: string, attachmentName: string) {
+        setAttachment (slotName: string, attachmentName?: string) {
             if (slotName == null) throw new Error("slotName cannot be null.");
             let slots = this.slots;
             for (let i = 0, n = slots.length; i < n; i++) {
