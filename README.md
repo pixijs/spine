@@ -78,12 +78,19 @@ Demo: https://sbfkcel.github.io/pixi-spine-debug/
 
 ## WebPack and Angular
 
-Possible webpack way: 
-
+Possible webpack way - use [ProvidePlugin](https://webpack.js.org/plugins/provide-plugin/)  
+**webpack.config.js**
 ```js
-import * as PIXI from "pixi.js';
-window.PIXI = PIXI;
-import "pixi-spine";
+// ...
+module.exports = {
+    // ...
+    plugins: [
+        new webpack.ProvidePlugin({
+            'PIXI': 'pixi.js',
+       })
+    ],
+    
+};
 ```
 
 Angular:
