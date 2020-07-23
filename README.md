@@ -93,6 +93,13 @@ module.exports = {
 };
 ```
 
+then
+
+```js
+import * as PIXI from "pixi.js';
+import "pixi-spine";
+```
+
 Angular:
 
 ```ts
