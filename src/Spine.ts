@@ -659,6 +659,54 @@ namespace pixi_spine {
             return this.hackTextureBySlotIndex(index, texture, size);
         }
 
+        /**
+         * Changes texture of an attachment
+         *
+         * PIXI runtime feature, it was made to satisfy our users.
+         *
+         * @param slotName {string}
+         * @param attachmentName {string}
+         * @param [texture = null] {PIXI.Texture} If null, take default (original) texture
+         * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
+         * @returns {boolean} Success flag
+         */
+        hackTextureAttachment(slotName: string, attachmentName: string, texture, size: PIXI.Rectangle = null) {
+            // changes the texture of an attachment at the skeleton level
+            const slotIndex = this.skeleton.findSlotIndex(slotName)
+            const attachment: any = this.skeleton.getAttachmentByName(slotName, attachmentName)
+            attachment.region.texture = texture
+
+            const slot = this.skeleton.slots[slotIndex]
+            if (!slot) {
+                return false
+            }
+
+            // gets the currently active attachment in this slot
+            const currentAttachment: any = slot.getAttachment()
+            if (attachmentName === currentAttachment.name) {
+                // if the attachment we are changing is currently active, change the the live texture
+                let region: core.TextureRegion = attachment.region
+                if (texture) {
+                    region = new core.TextureRegion()
+                    region.texture = texture
+                    region.size = size
+                    slot.hackRegion = region
+                    slot.hackAttachment = currentAttachment
+                } else {
+                    slot.hackRegion = null
+                    slot.hackAttachment = null
+                }
+                if (slot.currentSprite && slot.currentSprite.region != region) {
+                    this.setSpriteRegion(currentAttachment, slot.currentSprite, region)
+                    slot.currentSprite.region = region
+                } else if (slot.currentMesh && slot.currentMesh.region != region) {
+                    this.setMeshRegion(currentAttachment, slot.currentMesh, region)
+                }
+                return true
+            }
+            return false
+        }
+
         //those methods can be overriden to spawn different classes
         newContainer() {
             return new PIXI.Container();

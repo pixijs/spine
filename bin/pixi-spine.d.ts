@@ -817,7 +817,7 @@ declare module PIXI.spine.core {
         setSkin(newSkin: Skin): void;
         getAttachmentByName(slotName: string, attachmentName: string): Attachment;
         getAttachment(slotIndex: number, attachmentName: string): Attachment;
-        setAttachment(slotName: string, attachmentName: string): void;
+        setAttachment(slotName: string, attachmentName?: string): void;
         findIkConstraint(constraintName: string): IkConstraint;
         findTransformConstraint(constraintName: string): TransformConstraint;
         findPathConstraint(constraintName: string): PathConstraint;
@@ -1395,6 +1395,7 @@ declare module PIXI.spine {
         updateGraphics(slot: core.Slot, clip: core.ClippingAttachment): void;
         hackTextureBySlotIndex(slotIndex: number, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
         hackTextureBySlotName(slotName: string, texture?: PIXI.Texture, size?: PIXI.Rectangle): boolean;
+        hackTextureAttachment(slotName: string, attachmentName: string, texture: any, size?: PIXI.Rectangle): boolean;
         newContainer(): PIXI.Container;
         newSprite(tex: PIXI.Texture): SpineSprite;
         newGraphics(): PIXI.Graphics;
