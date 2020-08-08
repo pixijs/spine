@@ -8605,6 +8605,40 @@ var pixi_spine;
             }
             return this.hackTextureBySlotIndex(index, texture, size);
         };
+        Spine.prototype.hackTextureAttachment = function (slotName, attachmentName, texture, size) {
+            if (size === void 0) { size = null; }
+            var slotIndex = this.skeleton.findSlotIndex(slotName);
+            var attachment = this.skeleton.getAttachmentByName(slotName, attachmentName);
+            attachment.region.texture = texture;
+            var slot = this.skeleton.slots[slotIndex];
+            if (!slot) {
+                return false;
+            }
+            var currentAttachment = slot.getAttachment();
+            if (attachmentName === currentAttachment.name) {
+                var region = attachment.region;
+                if (texture) {
+                    region = new pixi_spine.core.TextureRegion();
+                    region.texture = texture;
+                    region.size = size;
+                    slot.hackRegion = region;
+                    slot.hackAttachment = currentAttachment;
+                }
+                else {
+                    slot.hackRegion = null;
+                    slot.hackAttachment = null;
+                }
+                if (slot.currentSprite && slot.currentSprite.region != region) {
+                    this.setSpriteRegion(currentAttachment, slot.currentSprite, region);
+                    slot.currentSprite.region = region;
+                }
+                else if (slot.currentMesh && slot.currentMesh.region != region) {
+                    this.setMeshRegion(currentAttachment, slot.currentMesh, region);
+                }
+                return true;
+            }
+            return false;
+        };
         Spine.prototype.newContainer = function () {
             return new PIXI.Container();
         };
