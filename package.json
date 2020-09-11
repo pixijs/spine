@@ -41,7 +41,8 @@
     "README.md"
   ],
   "devDependencies": {
-    "@types/lodash": "^4.14.108",
+    "@types/lodash": "4.14.159",
+    "@types/node": "13.13.15",
     "checkpack": "^0.3",
     "del": "~2.2.0",
     "glob": "~7.1.1",
