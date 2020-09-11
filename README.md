@@ -12,6 +12,8 @@ PixiJS v4 Spine 3.8 - [pixi4-spine3.8 branch](https://github.com/pixijs/pixi-spi
 
 PixiJS v4 Spine 3.7 - [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) npm version `1.5.21` 
 
+PixiJS v3 Spine 3.8 - [pixi3-spine3.8 branch](https://github.com/pixijs/pixi-spine/tree/pixi3-spine3.8), no npm
+
 Demos:
 
 https://pixijs.io/examples/#/plugin-spine/spineboy-pro.js
