@@ -41,7 +41,9 @@
     "README.md"
   ],
   "devDependencies": {
-    "@types/lodash": "^4.14.108",
+    "@types/lodash": "4.14.159",
+    "@types/node": "13.13.15",
+    "@types/pixi.js": "^4.8.8",
     "checkpack": "^0.3",
     "del": "~2.2.0",
     "glob": "~7.1.1",
@@ -54,7 +56,5 @@
     "typedoc": "^0.9.0",
     "typescript": "^2.8.3"
   },
-  "dependencies": {
-    "@types/pixi.js": "^4.8.8"
-  }
+  "dependencies": {}
 }
