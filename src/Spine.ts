@@ -566,10 +566,8 @@ namespace pixi_spine {
                 new Uint16Array(attachment.triangles),
                 PIXI.DRAW_MODES.TRIANGLES);
 
-            // @ts-ignore
-            if (typeof strip._canvasPadding !== "undefined") {
-                // @ts-ignore
-                strip._canvasPadding = 1.5;
+            if (typeof (strip as any)._canvasPadding !== "undefined") {
+                (strip as any)._canvasPadding = 1.5;
             }
 
             strip.alpha = attachment.color.a;
