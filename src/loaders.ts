@@ -18,7 +18,11 @@ namespace pixi_spine {
     const Resource = PIXI.loaders.Resource;
 
     function isJson(resource: any) {
-        return resource.type == Resource.TYPE.JSON;
+        try {
+            return resource.type == Resource.TYPE.JSON;
+        } catch (error) {
+            return resource.isJson;
+        }
     }
 
     function isBuffer(resource: any) {
