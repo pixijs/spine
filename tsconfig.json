@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "none",
-    "outFile": "bin/pixi-spine.js",
+    "outFile": "dist/pixi-spine.js",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,

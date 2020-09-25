@@ -8536,8 +8536,8 @@ var pixi_spine;
                 slot.hackRegion = null;
             }
             var strip = this.newMesh(region.texture, new Float32Array(attachment.regionUVs.length), attachment.regionUVs, new Uint16Array(attachment.triangles), PIXI.DRAW_MODES.TRIANGLES);
-            if (strip.canvasPadding) {
-                strip.canvasPadding = 1.5;
+            if (typeof strip._canvasPadding !== "undefined") {
+                strip._canvasPadding = 1.5;
             }
             strip.alpha = attachment.color.a;
             strip.region = attachment.region;

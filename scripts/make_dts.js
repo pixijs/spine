@@ -18,7 +18,7 @@ for (var i in files) {
 var tmp = require('tmp');
 var process = require('child_process');
 
-tmp.file(function (err, filename) {
+tmp.file({postfix: '.ts'}, function (err, filename) {
   fs.writeFileSync(filename, filesCompilation);
 
   process.exec('tsc --module none --target es5 --declaration --removeComments node_modules/pixi.js/pixi.js.d.ts ' + filename, function(err, stdout, stderr) {
@@ -26,8 +26,8 @@ tmp.file(function (err, filename) {
     var dtsContent = '' + fs.readFileSync(dtsPath);
 
     fs.writeFileSync(
-      path.resolve('bin/pixi-spine.d.ts'),
+      path.resolve('dist/pixi-spine.d.ts'),
       dtsContent.replace(/namespace pixi_spine/g, 'module PIXI.spine')
     );
   });
-}, {postfix: '.ts'});
+});

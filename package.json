@@ -9,8 +9,8 @@
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
     "Yevhenii Huselietov <d46k16@gmail.com>"
   ],
-  "main": "./bin/pixi-spine.js",
-  "types": "./bin/pixi-spine.d.ts",
+  "main": "./dist/pixi-spine.js",
+  "types": "./dist/pixi-spine.d.ts",
   "homepage": "https://github.com/pixijs/pixi-spine",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
@@ -21,37 +21,28 @@
     "url": "https://github.com/pixijs/pixi-spine.git"
   },
   "scripts": {
-    "cleanup": "rimraf bin && mkdirp bin",
+    "cleanup": "rimraf dist && mkdirp dist",
     "prestart": "yarn cleanup",
     "start": "parallelshell \"yarn watch\"",
     "watch": "tsc -w",
     "prebuild": "yarn cleanup",
     "make:dts": "node scripts/make_dts.js",
-    "build": "tsc && yarn make:dts",
-    "docs": "typedoc --out ./docs/ --readme README.md ./src/",
-    "check:browserify": "yarn checkpack browserify -e test/checkpack.ts",
-    "check:webpack": "yarn checkpack webpack -e test/checkpack.ts",
-    "check:vanillajs": "yarn checkpack vanillajs -e test/checkpack.ts",
-    "check:all": "yarn build && yarn check:browserify && yarn check:webpack && yarn check:vanillajs"
+    "build": "tsc && yarn make:dts"
   },
   "files": [
-    "bin/",
+    "dist/",
     "SPINE-LICENSE",
     "package.json",
     "README.md"
   ],
   "devDependencies": {
-    "@types/lodash": "^4.14.108",
-    "checkpack": "^0.3",
     "del": "~2.2.0",
     "glob": "~7.1.1",
     "mkdirp": "~0.5.1",
     "parallelshell": "~2.0.0",
-    "pixi.js-legacy": "~5.1.1",
+    "pixi.js-legacy": "^5.3.3",
     "rimraf": "~2.5.3",
-    "tmp": "^0.0.33",
-    "ts-helpers": "~1.1.2",
-    "typedoc": "^0.9.0",
+    "tmp": "^0.2.1",
     "typescript": "^3.5.3"
   }
 }
