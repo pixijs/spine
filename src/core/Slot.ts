@@ -52,8 +52,9 @@ namespace pixi_spine.core {
         bone: Bone;
         color: Color;
         darkColor: Color;
-        private attachment: Attachment;
+        attachment: Attachment;
         private attachmentTime: number;
+        attachmentState: number;
         deform = new Array<number>();
 
         constructor (data: SlotData, bone: Bone) {
