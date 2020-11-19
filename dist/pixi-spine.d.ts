@@ -144,6 +144,7 @@ declare module PIXI.spine.core {
         getFrameCount(): number;
         setFrame(frameIndex: number, time: number, attachmentName: string): void;
         apply(skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
+        setAttachment(skeleton: Skeleton, slot: Slot, attachmentName: string): void;
     }
     class DeformTimeline extends CurveTimeline {
         slotIndex: number;
@@ -248,12 +249,15 @@ declare module PIXI.spine.core {
         static emptyAnimation: Animation;
         static SUBSEQUENT: number;
         static FIRST: number;
-        static HOLD: number;
+        static HOLD_SUBSEQUENT: number;
+        static HOLD_FIRST: number;
         static HOLD_MIX: number;
-        static NOT_LAST: number;
+        static SETUP: number;
+        static CURRENT: number;
         data: AnimationStateData;
         tracks: TrackEntry[];
         timeScale: number;
+        unkeyedState: number;
         events: Event[];
         listeners: AnimationStateListener[];
         queue: EventQueue;
@@ -265,6 +269,8 @@ declare module PIXI.spine.core {
         updateMixingFrom(to: TrackEntry, delta: number): boolean;
         apply(skeleton: Skeleton): boolean;
         applyMixingFrom(to: TrackEntry, skeleton: Skeleton, blend: MixBlend): number;
+        applyAttachmentTimeline(timeline: AttachmentTimeline, skeleton: Skeleton, time: number, blend: MixBlend, attachments: boolean): void;
+        setAttachment(skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean): void;
         applyRotateTimeline(timeline: Timeline, skeleton: Skeleton, time: number, alpha: number, blend: MixBlend, timelinesRotation: Array<number>, i: number, firstFrame: boolean): void;
         queueEvents(entry: TrackEntry, animationTime: number): void;
         clearTracks(): void;
@@ -282,7 +288,6 @@ declare module PIXI.spine.core {
         disposeNext(entry: TrackEntry): void;
         _animationsChanged(): void;
         computeHold(entry: TrackEntry): void;
-        computeNotLast(entry: TrackEntry): void;
         getCurrent(trackIndex: number): TrackEntry;
         addListener(listener: AnimationStateListener): void;
         removeListener(listener: AnimationStateListener): void;
@@ -1003,8 +1008,9 @@ declare module PIXI.spine.core {
         bone: Bone;
         color: Color;
         darkColor: Color;
-        private attachment;
+        attachment: Attachment;
         private attachmentTime;
+        attachmentState: number;
         deform: number[];
         constructor(data: SlotData, bone: Bone);
         getAttachment(): Attachment;
