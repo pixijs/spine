@@ -17,7 +17,6 @@ yarn.lock
 # project ignores
 !.gitkeep
 node_modules
-dist
 gh-pages
 build-es6
 .idea

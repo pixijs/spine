@@ -1,6 +1,8 @@
 # pixi-spine
 
-Spine 3.8 implementation for pixi v3 and pixi v4.
+Spine 3.8 implementation for pixi v3.
+
+Npm tag is `pixi3-spine3.8`
 
 Works both with `json` and binary `skel` files!
 
