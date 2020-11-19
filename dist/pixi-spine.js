@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -674,17 +677,15 @@ var pixi_spine;
                 var slot = skeleton.slots[this.slotIndex];
                 if (!slot.bone.active)
                     return;
-                if (direction == MixDirection.mixOut && blend == MixBlend.setup) {
-                    var attachmentName_1 = slot.data.attachmentName;
-                    slot.setAttachment(attachmentName_1 == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName_1));
+                if (direction == MixDirection.mixOut) {
+                    if (blend == MixBlend.setup)
+                        this.setAttachment(skeleton, slot, slot.data.attachmentName);
                     return;
                 }
                 var frames = this.frames;
                 if (time < frames[0]) {
-                    if (blend == MixBlend.setup || blend == MixBlend.first) {
-                        var attachmentName_2 = slot.data.attachmentName;
-                        slot.setAttachment(attachmentName_2 == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName_2));
-                    }
+                    if (blend == MixBlend.setup || blend == MixBlend.first)
+                        this.setAttachment(skeleton, slot, slot.data.attachmentName);
                     return;
                 }
                 var frameIndex = 0;
@@ -695,6 +696,9 @@ var pixi_spine;
                 var attachmentName = this.attachmentNames[frameIndex];
                 skeleton.slots[this.slotIndex]
                     .setAttachment(attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName));
+            };
+            AttachmentTimeline.prototype.setAttachment = function (skeleton, slot, attachmentName) {
+                slot.attachment = attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName);
             };
             return AttachmentTimeline;
         }());
@@ -1350,6 +1354,7 @@ var pixi_spine;
             function AnimationState(data) {
                 this.tracks = new Array();
                 this.timeScale = 1;
+                this.unkeyedState = 0;
                 this.events = new Array();
                 this.listeners = new Array();
                 this.queue = new EventQueue(this);
@@ -1439,12 +1444,12 @@ var pixi_spine;
                 var events = this.events;
                 var tracks = this.tracks;
                 var applied = false;
-                for (var i = 0, n = tracks.length; i < n; i++) {
-                    var current = tracks[i];
+                for (var i_16 = 0, n_1 = tracks.length; i_16 < n_1; i_16++) {
+                    var current = tracks[i_16];
                     if (current == null || current.delay > 0)
                         continue;
                     applied = true;
-                    var blend = i == 0 ? core.MixBlend.first : current.mixBlend;
+                    var blend = i_16 == 0 ? core.MixBlend.first : current.mixBlend;
                     var mix = current.alpha;
                     if (current.mixingFrom != null)
                         mix *= this.applyMixingFrom(current, skeleton, blend);
@@ -1453,10 +1458,14 @@ var pixi_spine;
                     var animationLast = current.animationLast, animationTime = current.getAnimationTime();
                     var timelineCount = current.animation.timelines.length;
                     var timelines = current.animation.timelines;
-                    if ((i == 0 && mix == 1) || blend == core.MixBlend.add) {
+                    if ((i_16 == 0 && mix == 1) || blend == core.MixBlend.add) {
                         for (var ii = 0; ii < timelineCount; ii++) {
                             core.Utils.webkit602BugfixHelper(mix, blend);
-                            timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, core.MixDirection.mixIn);
+                            var timeline = timelines[ii];
+                            if (timeline instanceof core.AttachmentTimeline)
+                                this.applyAttachmentTimeline(timeline, skeleton, animationTime, blend, true);
+                            else
+                                timeline.apply(skeleton, animationLast, animationTime, events, mix, blend, core.MixDirection.mixIn);
                         }
                     }
                     else {
@@ -1466,14 +1475,17 @@ var pixi_spine;
                             core.Utils.setArraySize(current.timelinesRotation, timelineCount << 1, null);
                         var timelinesRotation = current.timelinesRotation;
                         for (var ii = 0; ii < timelineCount; ii++) {
-                            var timeline = timelines[ii];
-                            var timelineBlend = (timelineMode[ii] & (AnimationState.NOT_LAST - 1)) == AnimationState.SUBSEQUENT ? blend : core.MixBlend.setup;
-                            if (timeline instanceof core.RotateTimeline) {
-                                this.applyRotateTimeline(timeline, skeleton, animationTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
+                            var timeline_1 = timelines[ii];
+                            var timelineBlend = timelineMode[ii] == AnimationState.SUBSEQUENT ? blend : core.MixBlend.setup;
+                            if (timeline_1 instanceof core.RotateTimeline) {
+                                this.applyRotateTimeline(timeline_1, skeleton, animationTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
+                            }
+                            else if (timeline_1 instanceof core.AttachmentTimeline) {
+                                this.applyAttachmentTimeline(timeline_1, skeleton, animationTime, blend, true);
                             }
                             else {
                                 core.Utils.webkit602BugfixHelper(mix, blend);
-                                timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, core.MixDirection.mixIn);
+                                timeline_1.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, core.MixDirection.mixIn);
                             }
                         }
                     }
@@ -1482,6 +1494,16 @@ var pixi_spine;
                     current.nextAnimationLast = animationTime;
                     current.nextTrackLast = current.trackTime;
                 }
+                var setupState = this.unkeyedState + AnimationState.SETUP;
+                var slots = skeleton.slots;
+                for (var i = 0, n = skeleton.slots.length; i < n; i++) {
+                    var slot = slots[i];
+                    if (slot.attachmentState == setupState) {
+                        var attachmentName = slot.data.attachmentName;
+                        slot.attachment = (attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
+                    }
+                }
+                this.unkeyedState += 2;
                 this.queue.drain();
                 return applied;
             };
@@ -1525,23 +1547,22 @@ var pixi_spine;
                         var direction = core.MixDirection.mixOut;
                         var timelineBlend = void 0;
                         var alpha = 0;
-                        switch (timelineMode[i] & (AnimationState.NOT_LAST - 1)) {
+                        switch (timelineMode[i]) {
                             case AnimationState.SUBSEQUENT:
-                                timelineBlend = blend;
-                                if (!attachments && timeline instanceof core.AttachmentTimeline) {
-                                    if ((timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST)
-                                        continue;
-                                    timelineBlend = core.MixBlend.setup;
-                                }
                                 if (!drawOrder && timeline instanceof core.DrawOrderTimeline)
                                     continue;
+                                timelineBlend = blend;
                                 alpha = alphaMix;
                                 break;
                             case AnimationState.FIRST:
                                 timelineBlend = core.MixBlend.setup;
                                 alpha = alphaMix;
                                 break;
-                            case AnimationState.HOLD:
+                            case AnimationState.HOLD_SUBSEQUENT:
+                                timelineBlend = blend;
+                                alpha = alphaHold;
+                                break;
+                            case AnimationState.HOLD_FIRST:
                                 timelineBlend = core.MixBlend.setup;
                                 alpha = alphaHold;
                                 break;
@@ -1554,18 +1575,12 @@ var pixi_spine;
                         from.totalAlpha += alpha;
                         if (timeline instanceof core.RotateTimeline)
                             this.applyRotateTimeline(timeline, skeleton, animationTime, alpha, timelineBlend, timelinesRotation, i << 1, firstFrame);
+                        else if (timeline instanceof core.AttachmentTimeline)
+                            this.applyAttachmentTimeline(timeline, skeleton, animationTime, timelineBlend, attachments);
                         else {
                             core.Utils.webkit602BugfixHelper(alpha, blend);
-                            if (timelineBlend == core.MixBlend.setup) {
-                                if (timeline instanceof core.AttachmentTimeline) {
-                                    if (attachments || (timelineMode[i] & AnimationState.NOT_LAST) == AnimationState.NOT_LAST)
-                                        direction = core.MixDirection.mixIn;
-                                }
-                                else if (timeline instanceof core.DrawOrderTimeline) {
-                                    if (drawOrder)
-                                        direction = core.MixDirection.mixIn;
-                                }
-                            }
+                            if (drawOrder && timeline instanceof core.DrawOrderTimeline && timelineBlend == core.MixBlend.setup)
+                                direction = core.MixDirection.mixIn;
                             timeline.apply(skeleton, animationLast, animationTime, events, alpha, timelineBlend, direction);
                         }
                     }
@@ -1576,6 +1591,31 @@ var pixi_spine;
                 from.nextAnimationLast = animationTime;
                 from.nextTrackLast = from.trackTime;
                 return mix;
+            };
+            AnimationState.prototype.applyAttachmentTimeline = function (timeline, skeleton, time, blend, attachments) {
+                var slot = skeleton.slots[timeline.slotIndex];
+                if (!slot.bone.active)
+                    return;
+                var frames = timeline.frames;
+                if (time < frames[0]) {
+                    if (blend == core.MixBlend.setup || blend == core.MixBlend.first)
+                        this.setAttachment(skeleton, slot, slot.data.attachmentName, attachments);
+                }
+                else {
+                    var frameIndex;
+                    if (time >= frames[frames.length - 1])
+                        frameIndex = frames.length - 1;
+                    else
+                        frameIndex = core.Animation.binarySearch(frames, time) - 1;
+                    this.setAttachment(skeleton, slot, timeline.attachmentNames[frameIndex], attachments);
+                }
+                if (slot.attachmentState <= this.unkeyedState)
+                    slot.attachmentState = this.unkeyedState + AnimationState.SETUP;
+            };
+            AnimationState.prototype.setAttachment = function (skeleton, slot, attachmentName, attachments) {
+                slot.attachment = attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName);
+                if (attachments)
+                    slot.attachmentState = this.unkeyedState + AnimationState.CURRENT;
             };
             AnimationState.prototype.applyRotateTimeline = function (timeline, skeleton, time, alpha, blend, timelinesRotation, i, firstFrame) {
                 if (firstFrame)
@@ -1865,14 +1905,6 @@ var pixi_spine;
                         entry = entry.mixingTo;
                     } while (entry != null);
                 }
-                this.propertyIDs.clear();
-                for (var i = this.tracks.length - 1; i >= 0; i--) {
-                    var entry = this.tracks[i];
-                    while (entry != null) {
-                        this.computeNotLast(entry);
-                        entry = entry.mixingFrom;
-                    }
-                }
             };
             AnimationState.prototype.computeHold = function (entry) {
                 var to = entry.mixingTo;
@@ -1884,8 +1916,7 @@ var pixi_spine;
                 var propertyIDs = this.propertyIDs;
                 if (to != null && to.holdPrevious) {
                     for (var i = 0; i < timelinesCount; i++) {
-                        propertyIDs.add(timelines[i].getPropertyId());
-                        timelineMode[i] = AnimationState.HOLD;
+                        timelineMode[i] = propertyIDs.add(timelines[i].getPropertyId()) ? AnimationState.HOLD_FIRST : AnimationState.HOLD_SUBSEQUENT;
                     }
                     return;
                 }
@@ -1909,20 +1940,7 @@ var pixi_spine;
                             }
                             break;
                         }
-                        timelineMode[i] = AnimationState.HOLD;
-                    }
-                }
-            };
-            AnimationState.prototype.computeNotLast = function (entry) {
-                var timelines = entry.animation.timelines;
-                var timelinesCount = entry.animation.timelines.length;
-                var timelineMode = entry.timelineMode;
-                var propertyIDs = this.propertyIDs;
-                for (var i = 0; i < timelinesCount; i++) {
-                    if (timelines[i] instanceof core.AttachmentTimeline) {
-                        var timeline = timelines[i];
-                        if (!propertyIDs.add(timeline.slotIndex))
-                            timelineMode[i] |= AnimationState.NOT_LAST;
+                        timelineMode[i] = AnimationState.HOLD_FIRST;
                     }
                 }
             };
@@ -1975,9 +1993,11 @@ var pixi_spine;
             AnimationState.emptyAnimation = new core.Animation("<empty>", [], 0);
             AnimationState.SUBSEQUENT = 0;
             AnimationState.FIRST = 1;
-            AnimationState.HOLD = 2;
-            AnimationState.HOLD_MIX = 3;
-            AnimationState.NOT_LAST = 4;
+            AnimationState.HOLD_SUBSEQUENT = 2;
+            AnimationState.HOLD_FIRST = 3;
+            AnimationState.HOLD_MIX = 4;
+            AnimationState.SETUP = 1;
+            AnimationState.CURRENT = 2;
             AnimationState.deprecatedWarning1 = false;
             AnimationState.deprecatedWarning2 = false;
             AnimationState.deprecatedWarning3 = false;
@@ -2035,7 +2055,7 @@ var pixi_spine;
                     }
                     this.trackTime = value;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TrackEntry.prototype, "endTime", {
@@ -2053,7 +2073,7 @@ var pixi_spine;
                     }
                     this.trackTime = value;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             TrackEntry.prototype.loopsCount = function () {
@@ -2346,14 +2366,14 @@ var pixi_spine;
                 get: function () {
                     return this.matrix.tx;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Bone.prototype, "worldY", {
                 get: function () {
                     return this.matrix.ty;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Bone.prototype.isActive = function () {
@@ -2417,6 +2437,8 @@ var pixi_spine;
                         var s = pa * pa + pc * pc;
                         var prx = 0;
                         if (s > 0.0001) {
+                            pa /= this.skeleton.scaleX;
+                            pc /= this.skeleton.scaleY;
                             s = Math.abs(pa * pd - pb * pc) / s;
                             pb = pc * s;
                             pd = pa * s;
@@ -2721,10 +2743,12 @@ var pixi_spine;
                         ty = targetY - bone.worldY;
                         break;
                     case core.TransformMode.NoRotationOrReflection:
-                        rotationIK += Math.atan2(pc, pa) * core.MathUtils.radDeg;
-                        var ps = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
-                        pb = -pc * ps;
-                        pd = pa * ps;
+                        var s = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
+                        var sa = pa / bone.skeleton.scaleX;
+                        var sc = pc / bone.skeleton.scaleY;
+                        pb = -sc * s * bone.skeleton.scaleX;
+                        pd = sa * s * bone.skeleton.scaleY;
+                        rotationIK += Math.atan2(sc, sa) * core.MathUtils.radDeg;
                     default:
                         var x = targetX - p.tx, y = targetY - p.ty;
                         var d = pa * pd - pb * pc;
@@ -3825,7 +3849,7 @@ var pixi_spine;
                     }
                     this.scaleX = value ? 1.0 : -1.0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Skeleton.prototype, "flipY", {
@@ -3839,7 +3863,7 @@ var pixi_spine;
                     }
                     this.scaleY = value ? 1.0 : -1.0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Skeleton.deprecatedWarning1 = false;
@@ -4860,7 +4884,7 @@ var pixi_spine;
                 var clippingPolygon = this.clippingPolygon;
                 SkeletonClipping.makeClockwise(clippingPolygon);
                 var clippingPolygons = this.clippingPolygons = this.triangulator.decompose(clippingPolygon, this.triangulator.triangulate(clippingPolygon));
-                for (var i = 0, n_1 = clippingPolygons.length; i < n_1; i++) {
+                for (var i = 0, n_2 = clippingPolygons.length; i < n_2; i++) {
                     var polygon = clippingPolygons[i];
                     SkeletonClipping.makeClockwise(polygon);
                     polygon.push(polygon[0]);
@@ -6347,7 +6371,7 @@ var pixi_spine;
                     }
                     return tex.orig.width;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "height", {
@@ -6361,35 +6385,35 @@ var pixi_spine;
                     }
                     return tex.orig.height;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "u", {
                 get: function () {
                     return this.texture._uvs.x0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "v", {
                 get: function () {
                     return this.texture._uvs.y0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "u2", {
                 get: function () {
                     return this.texture._uvs.x2;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "v2", {
                 get: function () {
                     return this.texture._uvs.y2;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "offsetX", {
@@ -6397,7 +6421,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return tex.trim ? tex.trim.x : 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "offsetY", {
@@ -6405,7 +6429,7 @@ var pixi_spine;
                     console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
                     return this.spineOffsetY;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "pixiOffsetY", {
@@ -6413,7 +6437,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return tex.trim ? tex.trim.y : 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "spineOffsetY", {
@@ -6421,7 +6445,7 @@ var pixi_spine;
                     var tex = this.texture;
                     return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "originalWidth", {
@@ -6435,7 +6459,7 @@ var pixi_spine;
                     }
                     return tex.orig.width;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "originalHeight", {
@@ -6449,28 +6473,28 @@ var pixi_spine;
                     }
                     return tex.orig.height;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "x", {
                 get: function () {
                     return this.texture.frame.x;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "y", {
                 get: function () {
                     return this.texture.frame.y;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(TextureRegion.prototype, "rotate", {
                 get: function () {
                     return this.texture.rotate !== 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             return TextureRegion;
@@ -7511,9 +7535,7 @@ var pixi_spine;
             };
             Pool.prototype.freeAll = function (items) {
                 for (var i = 0; i < items.length; i++) {
-                    if (items[i].reset)
-                        items[i].reset();
-                    this.items[i] = items[i];
+                    this.free(items[i]);
                 }
             };
             Pool.prototype.clear = function () {
@@ -8037,7 +8059,7 @@ var pixi_spine;
                 worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
             };
             RegionAttachment.prototype.copy = function () {
-                var copy = new RegionAttachment(name);
+                var copy = new RegionAttachment(this.name);
                 copy.region = this.region;
                 copy.rendererObject = this.rendererObject;
                 copy.path = this.path;
@@ -8249,7 +8271,7 @@ var pixi_spine;
             set: function (value) {
                 this.updateTransform = value ? Spine.prototype.autoUpdateTransform : PIXI.Container.prototype.updateTransform;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "visible", {
@@ -8264,7 +8286,7 @@ var pixi_spine;
                     }
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "tint", {
@@ -8274,7 +8296,7 @@ var pixi_spine;
             set: function (value) {
                 this.tintRgb = PIXI.utils.hex2rgb(value, this.tintRgb);
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(Spine.prototype, "delayLimit", {
@@ -8283,7 +8305,7 @@ var pixi_spine;
                     this.localDelayLimit : Spine.globalDelayLimit;
                 return limit || Number.MAX_VALUE;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Spine.prototype.update = function (dt) {

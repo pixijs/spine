@@ -1,6 +1,8 @@
 # pixi-spine
 
-Spine 3.8 implementation for pixi v3 and pixi v4.
+Spine 3.8 implementation for pixi v4.
+
+Npm tag is `pixi4-spine3.8`
 
 Works both with `json` and binary `skel` files!
 
@@ -53,7 +55,7 @@ check [our travis config](.travis.yml) and [checkpack](http://github.com/cursedc
 
 ## Typescript
 
-There's "bin/pixi-spine.d.ts" file, you can use it.
+There's "dist/pixi-spine.d.ts" file, you can use it.
 
 ## Spine version
 
