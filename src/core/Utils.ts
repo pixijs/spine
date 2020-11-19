@@ -315,8 +315,7 @@ namespace pixi_spine.core {
 
         freeAll (items: ArrayLike<T>) {
             for (let i = 0; i < items.length; i++) {
-                if ((items[i] as any).reset) (items[i] as any).reset();
-                this.items[i] = items[i];
+                this.free(items[i]);
             }
         }
 
