@@ -8729,7 +8729,12 @@ var pixi_spine;
 (function (pixi_spine) {
     var Resource = PIXI.loaders.Resource;
     function isJson(resource) {
-        return resource.type == Resource.TYPE.JSON;
+        try {
+            return resource.type == Resource.TYPE.JSON;
+        }
+        catch (error) {
+            return resource.isJson;
+        }
     }
     function isBuffer(resource) {
         return resource.xhrType == Resource.XHR_RESPONSE_TYPE.BUFFER;
