@@ -2437,9 +2437,9 @@ var pixi_spine;
                         var s = pa * pa + pc * pc;
                         var prx = 0;
                         if (s > 0.0001) {
+                            s = Math.abs(pa * pd - pb * pc) / s;
                             pa /= this.skeleton.scaleX;
                             pc /= this.skeleton.scaleY;
-                            s = Math.abs(pa * pd - pb * pc) / s;
                             pb = pc * s;
                             pd = pa * s;
                             prx = Math.atan2(pc, pa) * core.MathUtils.radDeg;
@@ -7774,7 +7774,7 @@ var pixi_spine;
                 return _this;
             }
             BoundingBoxAttachment.prototype.copy = function () {
-                var copy = new BoundingBoxAttachment(name);
+                var copy = new BoundingBoxAttachment(this.name);
                 this.copyTo(copy);
                 copy.color.setFromColor(this.color);
                 return copy;
@@ -7796,7 +7796,7 @@ var pixi_spine;
                 return _this;
             }
             ClippingAttachment.prototype.copy = function () {
-                var copy = new ClippingAttachment(name);
+                var copy = new ClippingAttachment(this.name);
                 this.copyTo(copy);
                 copy.endSlot = this.endSlot;
                 copy.color.setFromColor(this.color);
@@ -7885,7 +7885,7 @@ var pixi_spine;
                 return _this;
             }
             PathAttachment.prototype.copy = function () {
-                var copy = new PathAttachment(name);
+                var copy = new PathAttachment(this.name);
                 this.copyTo(copy);
                 copy.lengths = new Array(this.lengths.length);
                 core.Utils.arrayCopy(this.lengths, 0, copy.lengths, 0, this.lengths.length);
@@ -7924,7 +7924,7 @@ var pixi_spine;
                 return Math.atan2(y, x) * core.MathUtils.radDeg;
             };
             PointAttachment.prototype.copy = function () {
-                var copy = new PointAttachment(name);
+                var copy = new PointAttachment(this.name);
                 copy.x = this.x;
                 copy.y = this.y;
                 copy.rotation = this.rotation;
