@@ -53,7 +53,7 @@ namespace pixi_spine.core {
         }
 
         copy (): Attachment {
-            let copy = new PointAttachment(name);
+            let copy = new PointAttachment(this.name);
             copy.x = this.x;
             copy.y = this.y;
             copy.rotation = this.rotation;
