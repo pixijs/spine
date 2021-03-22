@@ -38,7 +38,7 @@ namespace pixi_spine.core {
         }
 
         copy (): Attachment {
-            let copy = new BoundingBoxAttachment(name);
+            let copy = new BoundingBoxAttachment(this.name);
             this.copyTo(copy);
             copy.color.setFromColor(this.color);
             return copy;
