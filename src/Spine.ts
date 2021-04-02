@@ -285,6 +285,7 @@ namespace pixi_spine {
                             slot.currentMesh.visible = false;
                             slot.currentMesh = null;
                             slot.currentMeshId = undefined;
+                            slot.currentMeshName = undefined;
                         }
                         let ar = region as core.TextureAtlasRegion;
                         if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
