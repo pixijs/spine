@@ -8421,6 +8421,9 @@ var pixi_spine;
                         slotContainer.addChild(slot.currentGraphics);
                     }
                     this.updateGraphics(slot, attachment);
+                    slotContainer.alpha = 1.0;
+                    slotContainer.visible = true;
+                    continue;
                 }
                 else {
                     slotContainer.visible = false;
