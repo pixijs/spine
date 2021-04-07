@@ -134,7 +134,7 @@ namespace pixi_spine {
                 else if (attachment instanceof core.MeshAttachment) {
                     let mesh = this.createMesh(slot, attachment);
                     slot.currentMesh = mesh;
-                    slot.currentMeshName = attachment.name;
+                    slot.currentMeshId = attachment.id;
                     slotContainer.addChild(mesh);
                 }
                 else if (attachment instanceof core.ClippingAttachment) {
@@ -284,6 +284,7 @@ namespace pixi_spine {
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                             slot.currentMesh = null;
+                            slot.currentMeshId = undefined;
                             slot.currentMeshName = undefined;
                         }
                         let ar = region as core.TextureAtlasRegion;
@@ -337,24 +338,25 @@ namespace pixi_spine {
                         (transform as any)._worldID = (slotContainer.transform as any)._worldID;
                         slotContainer.transform = transform;
                     }
-                    if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
-                        let meshName = attachment.name;
+                    if (!slot.currentMeshId || slot.currentMeshId !== attachment.id) {
+                        let meshId = attachment.id;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                         }
 
                         slot.meshes = slot.meshes || {};
 
-                        if (slot.meshes[meshName] !== undefined) {
-                            slot.meshes[meshName].visible = true;
+                        if (slot.meshes[meshId] !== undefined) {
+                            slot.meshes[meshId].visible = true;
                         }
                         else {
                             let mesh = this.createMesh(slot, attachment);
                             slotContainer.addChild(mesh);
                         }
 
-                        slot.currentMesh = slot.meshes[meshName];
-                        slot.currentMeshName = meshName;
+                        slot.currentMesh = slot.meshes[meshId];
+                        slot.currentMeshName = attachment.name;
+                        slot.currentMeshId = meshId;
                     }
                     (attachment as core.VertexAttachment).computeWorldVerticesOld(slot, slot.currentMesh.vertices);
                     if (slot.currentMesh.color) {
@@ -579,7 +581,7 @@ namespace pixi_spine {
             this.setMeshRegion(attachment, strip, region);
 
             slot.meshes = slot.meshes || {};
-            slot.meshes[attachment.name] = strip;
+            slot.meshes[attachment.id] = strip;
             return strip;
         };
 
