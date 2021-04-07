@@ -93,9 +93,6 @@ namespace pixi_spine.core {
 
         get width(): number {
             const tex = this.texture;
-            if (PIXI.VERSION[0] == '3') {
-                return (tex as any).crop.width;
-            }
             if (tex.trim) {
                 return tex.trim.width;
             }
@@ -104,9 +101,6 @@ namespace pixi_spine.core {
 
         get height(): number {
             const tex = this.texture;
-            if (PIXI.VERSION[0] == '3') {
-                return (tex as any).crop.height;
-            }
             if (tex.trim) {
                 return tex.trim.height;
             }
@@ -150,25 +144,11 @@ namespace pixi_spine.core {
         }
 
         get originalWidth(): number {
-            let tex = this.texture;
-            if (PIXI.VERSION[0] == '3') {
-                if (tex.trim) {
-                    return tex.trim.width;
-                }
-                return (tex as any).crop.width;
-            }
-            return tex.orig.width;
+            return this.texture.orig.width;
         }
 
         get originalHeight(): number {
-            const tex = this.texture;
-            if (PIXI.VERSION[0] == '3') {
-                if (tex.trim) {
-                    return tex.trim.height;
-                }
-                return (tex as any).crop.height;
-            }
-            return tex.orig.height;
+            return this.texture.orig.height;
         }
 
         get x(): number {

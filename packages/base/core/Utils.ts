@@ -274,7 +274,7 @@ namespace pixi_spine.core {
         }
 
         // This function is used to fix WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
-        static webkit602BugfixHelper (alpha: number, blend: MixBlend) {
+        static webkit602BugfixHelper (alpha: number, blend: any) {
 
         }
 
@@ -287,7 +287,7 @@ namespace pixi_spine.core {
     }
 
     export class DebugUtils {
-        static logBones(skeleton: Skeleton) {
+        static logBones(skeleton: ISkeleton) {
             for (let i = 0; i < skeleton.bones.length; i++) {
                 let bone = skeleton.bones[i];
                 let mat = bone.matrix;
