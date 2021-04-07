@@ -8240,7 +8240,7 @@ var pixi_spine;
                 else if (attachment instanceof pixi_spine.core.MeshAttachment) {
                     var mesh = _this.createMesh(slot, attachment);
                     slot.currentMesh = mesh;
-                    slot.currentMeshName = attachment.name;
+                    slot.currentMeshId = attachment.id;
                     slotContainer.addChild(mesh);
                 }
                 else if (attachment instanceof pixi_spine.core.ClippingAttachment) {
@@ -8340,6 +8340,7 @@ var pixi_spine;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                             slot.currentMesh = null;
+                            slot.currentMeshId = undefined;
                             slot.currentMeshName = undefined;
                         }
                         var ar = region;
@@ -8386,21 +8387,22 @@ var pixi_spine;
                         transform._worldID = slotContainer.transform._worldID;
                         slotContainer.transform = transform;
                     }
-                    if (!slot.currentMeshName || slot.currentMeshName !== attachment.name) {
-                        var meshName = attachment.name;
+                    if (!slot.currentMeshId || slot.currentMeshId !== attachment.id) {
+                        var meshId = attachment.id;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                         }
                         slot.meshes = slot.meshes || {};
-                        if (slot.meshes[meshName] !== undefined) {
-                            slot.meshes[meshName].visible = true;
+                        if (slot.meshes[meshId] !== undefined) {
+                            slot.meshes[meshId].visible = true;
                         }
                         else {
                             var mesh = this.createMesh(slot, attachment);
                             slotContainer.addChild(mesh);
                         }
-                        slot.currentMesh = slot.meshes[meshName];
-                        slot.currentMeshName = meshName;
+                        slot.currentMesh = slot.meshes[meshId];
+                        slot.currentMeshName = attachment.name;
+                        slot.currentMeshId = meshId;
                     }
                     attachment.computeWorldVerticesOld(slot, slot.currentMesh.vertices);
                     if (slot.currentMesh.color) {
@@ -8565,7 +8567,7 @@ var pixi_spine;
             strip.region = attachment.region;
             this.setMeshRegion(attachment, strip, region);
             slot.meshes = slot.meshes || {};
-            slot.meshes[attachment.name] = strip;
+            slot.meshes[attachment.id] = strip;
             return strip;
         };
         ;
