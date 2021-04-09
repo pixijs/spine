@@ -31,6 +31,8 @@
 
 namespace pixi_spine.core {
     export class RegionAttachment extends Attachment {
+        type = AttachmentType.REGION;
+
         static OX1 = 0;
         static OY1 = 1;
         static OX2 = 2;

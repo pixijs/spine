@@ -14,9 +14,9 @@
         "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
-            "@pixi-essentials/*": [
+            "@pixi-spine/*": [
                 "packages/*/src"
-            ],
+            ]
         },
         "outDir": "./compile",
         "declaration": true,

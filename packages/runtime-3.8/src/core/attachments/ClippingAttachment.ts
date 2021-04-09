@@ -30,6 +30,7 @@
 
 namespace pixi_spine.core {
     export class ClippingAttachment extends VertexAttachment {
+        type = AttachmentType.Clipping;
         endSlot: SlotData;
 
         // Nonessential.

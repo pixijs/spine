@@ -30,6 +30,7 @@
 
 namespace pixi_spine.core {
     export class PointAttachment extends VertexAttachment {
+        type = AttachmentType.Point;
         x: number; y: number; rotation: number;
         color = new Color(0.38, 0.94, 0, 1);
 

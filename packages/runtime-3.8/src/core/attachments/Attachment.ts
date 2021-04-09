@@ -29,10 +29,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Utils} from '@pixi-spine/base';
+import {IAttachment, AttachmentType, Utils} from '@pixi-spine/base';
 
-export abstract class Attachment {
+export abstract class Attachment implements IAttachment {
     name: string;
+    type: AttachmentType;
 
     constructor(name: string) {
         if (name == null) throw new Error("name cannot be null.");

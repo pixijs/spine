@@ -44,6 +44,6 @@
     "tslib": "~2.2.0",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
     "chai": "~4.2.0",
-    "rimraf": "3.0.2",
+    "rimraf": "3.0.2"
   }
 }

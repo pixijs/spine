@@ -1,15 +1,25 @@
+import {AttachmentType} from './core/AttachmentType';
 import {TextureRegion} from './core/TextureRegion';
 import {TextureAtlasRegion} from './core/TextureAtlas';
 import {MathUtils} from './core/Utils';
+import type {
+    IAnimationState,
+    IAnimationStateData,
+    IAttachment, IClippingAttachment, IMeshAttachment,
+    IRegionAttachment,
+    ISkeleton,
+    ISkeletonData,
+    ISlot,
+    IVertexAttachment
+} from './core/ISkeleton';
 
-import {DisplayObject, Container} from '@pixi/display';
+import {DRAW_MODES} from '@pixi/constants';
+import {Container, DisplayObject} from '@pixi/display';
 import {Sprite} from '@pixi/sprite';
 import {SimpleMesh} from '@pixi/mesh-extras';
 import {Graphics} from '@pixi/graphics'
-import {Transform, Polygon} from '@pixi/math';
+import {Rectangle, Polygon, Transform} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
-
-import type {IAttachment, ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData, ISlot} from './core/ISkeleton';
 import type {Texture} from '@pixi/core';
 
 let tempRgb = [0, 0, 0];
@@ -52,7 +62,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
     AnimationState extends IAnimationState,
     AnimationStateData extends IAnimationStateData> extends Container {
     static globalAutoUpdate: boolean = true;
-    static globalDelayLimit: number  = 0;
+    static globalDelayLimit: number = 0;
 
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;
@@ -63,7 +73,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
     tempClipContainers: Array<Container>;
     localDelayLimit: number;
     private _autoUpdate: boolean;
-    private _visible: boolean;
+    protected _visible: boolean;
 
     abstract createSkeleton(spineData: ISkeletonData): Skeleton;
 
@@ -109,26 +119,23 @@ export abstract class Spine<Skeleton extends ISkeleton,
             this.addChild(slotContainer);
             this.tempClipContainers.push(null);
 
-            if (attachment instanceof core.RegionAttachment) {
+            if (attachment.type === AttachmentType.Region) {
                 let spriteName = (attachment.region as TextureAtlasRegion).name;
-                let sprite = this.createSprite(slot, attachment, spriteName);
+                let sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
                 slot.currentSprite = sprite;
                 slot.currentSpriteName = spriteName;
                 slotContainer.addChild(sprite);
-            }
-            else if (attachment instanceof core.MeshAttachment) {
+            } else if (attachment.type === AttachmentType.Mesh) {
                 let mesh = this.createMesh(slot, attachment);
                 slot.currentMesh = mesh;
                 slot.currentMeshId = attachment.id;
                 slot.currentMeshName = attachment.name;
                 slotContainer.addChild(mesh);
-            }
-            else if (attachment instanceof core.ClippingAttachment) {
+            } else if (attachment.type === AttachmentType.Clipping) {
                 this.createGraphics(slot, attachment);
                 slotContainer.addChild(slot.clippingContainer);
                 slotContainer.addChild(slot.currentGraphics);
-            }
-            else {
+            } else {
                 continue;
             }
 
@@ -188,9 +195,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * that can be overridden with localDelayLimit
      * @return {number} - Maximum processed dt value for the update
      */
-    get delayLimit() : number {
-        let limit = typeof this.localDelayLimit !== "undefined"?
-            this.localDelayLimit: Spine.globalDelayLimit;
+    get delayLimit(): number {
+        let limit = typeof this.localDelayLimit !== "undefined" ?
+            this.localDelayLimit : Spine.globalDelayLimit;
 
         // If limit is 0, this means there is no limit for the delay
         return limit || Number.MAX_VALUE
@@ -210,7 +217,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
         this.state.apply(this.skeleton);
 
         //check we haven't been destroyed via a spine event callback in state update
-        if(!this.skeleton)
+        if (!this.skeleton)
             return;
 
         this.skeleton.updateWorldTransform();
@@ -243,112 +250,111 @@ export abstract class Spine<Skeleton extends ISkeleton,
             let spriteColor: any = null;
 
             let attColor = (attachment as any).color;
-            if (attachment instanceof core.RegionAttachment) {
-                let region = (attachment as core.RegionAttachment).region;
-                if (region) {
-                    if (slot.currentMesh) {
-                        slot.currentMesh.visible = false;
-                        slot.currentMesh = null;
-                        slot.currentMeshId = undefined;
-                        slot.currentMeshName = undefined;
-                    }
-                    let ar = region as TextureAtlasRegion;
-                    if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
-                        let spriteName = ar.name;
-                        if (slot.currentSprite) {
-                            slot.currentSprite.visible = false;
+            switch (attachment.type) {
+                case AttachmentType.Region:
+                    let region = (attachment as IRegionAttachment).region;
+                    if (region) {
+                        if (slot.currentMesh) {
+                            slot.currentMesh.visible = false;
+                            slot.currentMesh = null;
+                            slot.currentMeshId = undefined;
+                            slot.currentMeshName = undefined;
                         }
-                        slot.sprites = slot.sprites || {};
-                        if (slot.sprites[spriteName] !== undefined) {
-                            slot.sprites[spriteName].visible = true;
+                        let ar = region as TextureAtlasRegion;
+                        if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
+                            let spriteName = ar.name;
+                            if (slot.currentSprite) {
+                                slot.currentSprite.visible = false;
+                            }
+                            slot.sprites = slot.sprites || {};
+                            if (slot.sprites[spriteName] !== undefined) {
+                                slot.sprites[spriteName].visible = true;
+                            } else {
+                                let sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
+                                slotContainer.addChild(sprite);
+                            }
+                            slot.currentSprite = slot.sprites[spriteName];
+                            slot.currentSpriteName = spriteName;
+
+                            // force sprite update when attachment name is same.
+                            // issues https://github.com/pixijs/pixi-spine/issues/318
+                        } else if (slot.currentSpriteName === ar.name && !slot.hackRegion) {
+                            this.setSpriteRegion(attachment as IRegionAttachment, slot.currentSprite, region);
                         }
-                        else {
-                            let sprite = this.createSprite(slot, attachment, spriteName);
-                            slotContainer.addChild(sprite);
+                    }
+
+                    let transform = slotContainer.transform;
+                    transform.setFromMatrix(slot.bone.matrix);
+
+                    if (slot.currentSprite.color) {
+                        //YAY! double - tint!
+                        spriteColor = slot.currentSprite.color;
+                    } else {
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentSprite.tint = rgb2hex(tempRgb);
+                    }
+                    slot.currentSprite.blendMode = slot.blendMode;
+                    break;
+
+                case AttachmentType.Mesh:
+                    if (slot.currentSprite) {
+                        //TODO: refactor this thing, switch it on and off for container
+                        slot.currentSprite.visible = false;
+                        slot.currentSprite = null;
+                        slot.currentSpriteName = undefined;
+
+                        //TODO: refactor this shit
+                        const transform = new Transform();
+                        (transform as any)._parentID = -1;
+                        (transform as any)._worldID = (slotContainer.transform as any)._worldID;
+                        slotContainer.transform = transform;
+                    }
+                    if (!slot.currentMeshId || slot.currentMeshId !== attachment.id) {
+                        let meshId = attachment.id;
+                        if (slot.currentMesh) {
+                            slot.currentMesh.visible = false;
                         }
-                        slot.currentSprite = slot.sprites[spriteName];
-                        slot.currentSpriteName = spriteName;
 
-                    // force sprite update when attachment name is same.
-                    // issues https://github.com/pixijs/pixi-spine/issues/318
-                    } else if (slot.currentSpriteName === ar.name && !slot.hackRegion) {
-                        this.setSpriteRegion(attachment, slot.currentSprite, region);
+                        slot.meshes = slot.meshes || {};
+
+                        if (slot.meshes[meshId] !== undefined) {
+                            slot.meshes[meshId].visible = true;
+                        } else {
+                            let mesh = this.createMesh(slot, attachment as IMeshAttachment);
+                            slotContainer.addChild(mesh);
+                        }
+
+                        slot.currentMesh = slot.meshes[meshId];
+                        slot.currentMeshName = attachment.name;
+                        slot.currentMeshId = meshId;
                     }
-                }
-
-                let transform = slotContainer.transform;
-                transform.setFromMatrix(slot.bone.matrix);
-
-                if (slot.currentSprite.color) {
-                    //YAY! double - tint!
-                    spriteColor = slot.currentSprite.color;
-                } else {
-                    tempRgb[0] = light[0] * slot.color.r * attColor.r;
-                    tempRgb[1] = light[1] * slot.color.g * attColor.g;
-                    tempRgb[2] = light[2] * slot.color.b * attColor.b;
-                    slot.currentSprite.tint = rgb2hex(tempRgb);
-                }
-                slot.currentSprite.blendMode = slot.blendMode;
-            }
-            else if (attachment instanceof core.MeshAttachment) {
-                if (slot.currentSprite) {
-                    //TODO: refactor this thing, switch it on and off for container
-                    slot.currentSprite.visible = false;
-                    slot.currentSprite = null;
-                    slot.currentSpriteName = undefined;
-
-                    //TODO: refactor this shit
-                    const transform = new Transform();
-                    (transform as any)._parentID = -1;
-                    (transform as any)._worldID = (slotContainer.transform as any)._worldID;
-                    slotContainer.transform = transform;
-                }
-                if (!slot.currentMeshId || slot.currentMeshId !== attachment.id) {
-                    let meshId = attachment.id;
-                    if (slot.currentMesh) {
-                        slot.currentMesh.visible = false;
+                    (attachment as IVertexAttachment).computeWorldVerticesOld(slot, slot.currentMesh.vertices);
+                    if (slot.currentMesh.color) {
+                        // pixi-heaven
+                        spriteColor = slot.currentMesh.color;
+                    } else {
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentMesh.tint = rgb2hex(tempRgb);
                     }
-
-                    slot.meshes = slot.meshes || {};
-
-                    if (slot.meshes[meshId] !== undefined) {
-                        slot.meshes[meshId].visible = true;
+                    slot.currentMesh.blendMode = slot.blendMode;
+                    break;
+                case AttachmentType.Clipping:
+                    if (!slot.currentGraphics) {
+                        this.createGraphics(slot, attachment as IClippingAttachment);
+                        slotContainer.addChild(slot.clippingContainer);
+                        slotContainer.addChild(slot.currentGraphics);
                     }
-                    else {
-                        let mesh = this.createMesh(slot, attachment);
-                        slotContainer.addChild(mesh);
-                    }
-
-                    slot.currentMesh = slot.meshes[meshId];
-                    slot.currentMeshName = attachment.name;
-                    slot.currentMeshId = meshId;
-                }
-                (attachment as core.VertexAttachment).computeWorldVerticesOld(slot, slot.currentMesh.vertices);
-                if (slot.currentMesh.color) {
-                    // pixi-heaven
-                    spriteColor = slot.currentMesh.color;
-                } else {
-                    tempRgb[0] = light[0] * slot.color.r * attColor.r;
-                    tempRgb[1] = light[1] * slot.color.g * attColor.g;
-                    tempRgb[2] = light[2] * slot.color.b * attColor.b;
-                    slot.currentMesh.tint = rgb2hex(tempRgb);
-                }
-                slot.currentMesh.blendMode = slot.blendMode;
-            }
-            else if (attachment instanceof core.ClippingAttachment) {
-                if (!slot.currentGraphics) {
-                    this.createGraphics(slot, attachment);
-                    slotContainer.addChild(slot.clippingContainer);
-                    slotContainer.addChild(slot.currentGraphics);
-                }
-                this.updateGraphics(slot, attachment);
-                slotContainer.alpha = 1.0;
-                slotContainer.visible = true;
-                continue;
-            }
-            else {
-                slotContainer.visible = false;
-                continue;
+                    this.updateGraphics(slot, attachment as IClippingAttachment);
+                    slotContainer.alpha = 1.0;
+                    slotContainer.visible = true;
+                    continue;
+                default:
+                    slotContainer.visible = false;
+                    continue;
             }
             slotContainer.visible = true;
 
@@ -386,8 +392,8 @@ export abstract class Spine<Skeleton extends ISkeleton,
         //== this is clipping implementation ===
         //TODO: remove parent hacks when pixi masks allow it
         let drawOrder = this.skeleton.drawOrder;
-        let clippingAttachment: core.ClippingAttachment = null;
-        let clippingContainer: PIXI.Container = null;
+        let clippingAttachment: IClippingAttachment = null;
+        let clippingContainer: Container = null;
 
         for (let i = 0, n = drawOrder.length; i < n; i++) {
             let slot = slots[drawOrder[i].data.index];
@@ -403,11 +409,11 @@ export abstract class Spine<Skeleton extends ISkeleton,
             }
             if (slot.currentGraphics && slot.getAttachment()) {
                 clippingContainer = slot.clippingContainer;
-                clippingAttachment = slot.getAttachment() as core.ClippingAttachment;
+                clippingAttachment = slot.getAttachment() as IClippingAttachment;
                 clippingContainer.children.length = 0;
                 this.children[i] = slotContainer;
 
-                if (clippingAttachment.endSlot == slot.data) {
+                if (clippingAttachment.endSlot === slot.data) {
                     clippingAttachment.endSlot = null;
                 }
 
@@ -435,9 +441,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
         }
     };
 
-    private setSpriteRegion(attachment: core.RegionAttachment, sprite: SpineSprite, region: core.TextureRegion) {
+    private setSpriteRegion(attachment: IRegionAttachment, sprite: SpineSprite, region: TextureRegion) {
         // prevent setters calling when attachment and region is same
-        if(sprite.attachment === attachment && sprite.region === region) {
+        if (sprite.attachment === attachment && sprite.region === region) {
             return;
         }
 
@@ -460,9 +466,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
         }
     }
 
-    private setMeshRegion(attachment: core.MeshAttachment, mesh: SpineMesh, region: core.TextureRegion) {
+    private setMeshRegion(attachment: IMeshAttachment, mesh: SpineMesh, region: TextureRegion) {
 
-        if(mesh.attachment === attachment && mesh.region === region) {
+        if (mesh.attachment === attachment && mesh.region === region) {
             return;
         }
 
@@ -490,7 +496,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
             this.lastTime = 0;
         }
 
-        PIXI.Container.prototype.updateTransform.call(this);
+        Container.prototype.updateTransform.call(this);
     };
 
     /**
@@ -500,7 +506,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @param attachment {spine.RegionAttachment} The attachment that the sprite will represent
      * @private
      */
-    createSprite(slot: core.Slot, attachment: core.RegionAttachment, defName: string) {
+    createSprite(slot: ISlot, attachment: IRegionAttachment, defName: string) {
         let region = attachment.region;
         if (slot.hackAttachment === attachment) {
             region = slot.hackRegion;
@@ -522,7 +528,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @param attachment {spine.RegionAttachment} The attachment that the sprite will represent
      * @private
      */
-    createMesh(slot: core.Slot, attachment: core.MeshAttachment) {
+    createMesh(slot: ISlot, attachment: IMeshAttachment) {
         let region = attachment.region;
         if (slot.hackAttachment === attachment) {
             region = slot.hackRegion;
@@ -534,7 +540,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
             new Float32Array(attachment.regionUVs.length),
             attachment.regionUVs,
             new Uint16Array(attachment.triangles),
-            PIXI.DRAW_MODES.TRIANGLES);
+            DRAW_MODES.TRIANGLES);
 
         if (typeof (strip as any)._canvasPadding !== "undefined") {
             (strip as any)._canvasPadding = 1.5;
@@ -552,7 +558,8 @@ export abstract class Spine<Skeleton extends ISkeleton,
 
     static clippingPolygon: Array<number> = [];
 
-    createGraphics(slot: ISlot, clip: core.ClippingAttachment) {
+    //@ts-ignore
+    createGraphics(slot: ISlot, clip: IClippingAttachment) {
         let graphics = this.newGraphics();
         let poly = new Polygon([]);
         graphics.clear();
@@ -566,7 +573,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
         return graphics;
     }
 
-    updateGraphics(slot: ISlot, clip: core.ClippingAttachment) {
+    updateGraphics(slot: ISlot, clip: IClippingAttachment) {
         let geom = slot.currentGraphics.geometry;
         let vertices = (geom.graphicsData[0].shape as Polygon).points;
         let n = clip.worldVerticesLength;
@@ -585,7 +592,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
      * @returns {boolean} Success flag
      */
-    hackTextureBySlotIndex(slotIndex: number, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
+    hackTextureBySlotIndex(slotIndex: number, texture: Texture = null, size: Rectangle = null) {
         let slot = this.skeleton.slots[slotIndex];
         if (!slot) {
             return false;
@@ -621,7 +628,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
      * @returns {boolean} Success flag
      */
-    hackTextureBySlotName(slotName: string, texture: PIXI.Texture = null, size: PIXI.Rectangle = null) {
+    hackTextureBySlotName(slotName: string, texture: Texture = null, size: Rectangle = null) {
         let index = this.skeleton.findSlotIndex(slotName);
         if (index == -1) {
             return false;
@@ -640,7 +647,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @param [size = null] {PIXI.Point} sometimes we need new size for region attachment, you can pass 'texture.orig' there
      * @returns {boolean} Success flag
      */
-    hackTextureAttachment(slotName: string, attachmentName: string, texture, size: PIXI.Rectangle = null) {
+    hackTextureAttachment(slotName: string, attachmentName: string, texture, size: Rectangle = null) {
         // changes the texture of an attachment at the skeleton level
         const slotIndex = this.skeleton.findSlotIndex(slotName)
         const attachment: any = this.skeleton.getAttachmentByName(slotName, attachmentName)
@@ -713,15 +720,15 @@ export abstract class Spine<Skeleton extends ISkeleton,
             const slot = this.skeleton.slots[i];
             const name = slot.currentSpriteName || slot.currentMeshName || "";
             const target = slot.currentSprite || slot.currentMesh;
-            if(name.endsWith(nameSuffix)){
+            if (name.endsWith(nameSuffix)) {
                 target.parentGroup = group;
                 list_n.push(target);
-            }else if(outGroup && target){
+            } else if (outGroup && target) {
                 target.parentGroup = outGroup;
                 list_d.push(target);
             }
         }
-        return [list_d,list_n];
+        return [list_d, list_n];
     };
 
     destroy(options?: any): void {
@@ -761,11 +768,11 @@ export abstract class Spine<Skeleton extends ISkeleton,
  * @memberof spine.Spine#
  * @default true
  */
-Object.defineProperty(Spine.prototype, 'visible',{
-    get: function() {
+Object.defineProperty(Spine.prototype, 'visible', {
+    get: function () {
         return this._visible;
     },
-    set: function(this: any, value: boolean) {
+    set: function (this: any, value: boolean) {
         if (value !== this._visible) {
             this._visible = value;
             if (value) {

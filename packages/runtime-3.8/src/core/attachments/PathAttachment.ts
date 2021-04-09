@@ -34,6 +34,7 @@ namespace pixi_spine.core {
         lengths: Array<number>;
         closed = false; constantSpeed = false;
         color = new Color(1, 1, 1, 1);
+        type = AttachmentType.Path;
 
         constructor (name: string) {
             super(name);

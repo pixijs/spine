@@ -1,6 +1,8 @@
-import type {Matrix} from '@pixi/math';
+import {AttachmentType} from './AttachmentType';
 import type {Color} from './Utils';
 import type {TextureRegion} from './TextureRegion';
+
+import type {Matrix} from '@pixi/math';
 
 export interface IBone {
     data: { name: string };
@@ -9,11 +11,35 @@ export interface IBone {
 
 export interface IAttachment {
     id: number;
-    name: number;
+    name: string;
+    type: AttachmentType;
+}
+
+export interface IVertexAttachment<Slot extends ISlot = ISlot> extends IAttachment {
+    computeWorldVerticesOld(slot: Slot, worldVertices: ArrayLike<number>): void;
+    computeWorldVertices(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number, stride: number): void;
+    worldVerticesLength: number;
+}
+
+export interface IClippingAttachment extends IVertexAttachment {
+    endSlot?: ISlotData;
+}
+
+export interface IRegionAttachment extends IAttachment {
+    region: TextureRegion;
+    color: Color;
+    x, y, scaleX, scaleY, rotation, width, height: number;
+}
+
+export interface IMeshAttachment extends IVertexAttachment {
+    region: TextureRegion;
+    color: Color;
+    regionUVs: Float32Array,
+    triangles: number[],
 }
 
 export interface ISlotData {
-
+    index: number;
 }
 
 export interface ISlot {
@@ -41,8 +67,9 @@ export interface ISlot {
 }
 
 export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlot> {
-    bones: Array<Bone>
-    slots: Array<Slot>
+    bones: Bone[]
+    slots: Slot[]
+    drawOrder: Slot[]
     updateWorldTransform(): void;
     setToSetupPose(): void;
     findSlotIndex(slotName: string): number;

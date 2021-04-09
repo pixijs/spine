@@ -35,6 +35,7 @@ namespace pixi_spine.core {
 
         constructor (name: string) {
             super(name);
+            this.type = AttachmentType.BoundingBox;
         }
 
         copy (): Attachment {

@@ -31,6 +31,8 @@
 
 namespace pixi_spine.core {
     export class MeshAttachment extends VertexAttachment {
+        type = AttachmentType.Mesh;
+
         region: TextureRegion;
         path: string;
         regionUVs: Float32Array; uvs: ArrayLike<number>;
