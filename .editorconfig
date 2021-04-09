@@ -16,5 +16,5 @@ trim_trailing_whitespace = true
 trim_trailing_whitespace = false
 
 # Special Files
-[{package.json,.travis.yml}]
+[{package.json,rush.json,.travis.yml}]
 indent_size = 2

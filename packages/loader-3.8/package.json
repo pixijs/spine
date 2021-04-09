@@ -1,0 +1,49 @@
+{
+  "name": "@pixi-spine/loader-3.8",
+  "version": "3.0.0",
+  "description": "Pixi loader middleware for spine 3.8 models",
+  "main": "lib/loader-3.8.js",
+  "module": "lib/loader-3.8.es.js",
+  "bundle": "dist/loader-3.8.js",
+  "types": "./index.d.ts",
+  "peerDependencies": {
+    "@pixi/core": "^6.0.2",
+    "@pixi/display": "^6.0.2",
+    "@pixi/loaders": "~6.0.2",
+    "@pixi-spine/base": "~3.0.0",
+    "@pixi-spine/runtime-3.8": "~3.0.0"
+  },
+  "scripts": {
+    "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
+    "build:types": "rimraf compile && tsc && api-extractor run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixijs/pixi-spine.git"
+  },
+  "files": [
+    "lib",
+    "dist",
+    "index.d.ts"
+  ],
+  "keywords": [
+    "pixi.js",
+    "pixi",
+    "spine"
+  ],
+  "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/pixijs/pixi-spine/issues"
+  },
+  "homepage": "https://github.com/pixijs/pixi-spine/#readme",
+  "devDependencies": {
+    "rollup": "~2.33.1",
+    "@pixi-spine/eslint-config": "~1.0.0",
+    "eslint": "~7.13.0",
+    "typescript": "~4.2.3",
+    "tslib": "~2.2.0",
+    "@pixi-build-tools/rollup-configurator": "^1.0.11",
+    "chai": "~4.2.0",
+    "rimraf": "3.0.2",
+  }
+}

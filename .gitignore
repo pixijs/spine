@@ -20,3 +20,12 @@ node_modules
 gh-pages
 build-es6
 .idea
+
+# Rush temporary files
+common/config/
+common/deploy/
+common/scripts/
+common/temp/
+common/autoinstallers/*/.npmrc
+**/.rush/temp/
+**/*.build.log

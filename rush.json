@@ -1,0 +1,49 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.29.1",
+  "pnpmVersion": "4.14.4",
+  "pnpmOptions": {
+    "pnpmStore": "global",
+    "strictPeerDependencies": false,
+    "resolutionStrategy": "fast",
+  },
+  "nodeSupportedVersionRange": ">=10.0.0 <15.0.0",
+  "suppressNodeLtsWarning": true,
+  "repository": {
+    "url": "https://github.com/pixijs/pixi-spine",
+    "defaultBranch": "master",
+    "defaultRemote": "origin"
+  },
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "projects": [
+    {
+      "packageName": "@pixi-spine/base",
+      "projectFolder": "packages/base",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@pixi-spine/runtime-3.8",
+      "projectFolder": "packages/runtime-3.8",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@pixi-spine/loader-3.8",
+      "projectFolder": "packages/loader-3.8",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@pixi-spine/eslint-config",
+      "projectFolder": "tools/eslint-config",
+      "reviewCategory": "production",
+      "shouldPublish": false
+    }
+  ]
+}
