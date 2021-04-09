@@ -7,9 +7,14 @@
   "bundle": "dist/base.js",
   "types": "./index.d.ts",
   "peerDependencies": {
+    "@pixi/constants": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
-    "@pixi/mesh-extras": "~6.0.2"
+    "@pixi/graphics": "^6.0.2",
+    "@pixi/math": "^6.0.2",
+    "@pixi/mesh-extras": "~6.0.2",
+    "@pixi/sprite": "~6.0.2",
+    "@pixi/utils": "~6.0.2"
   },
   "scripts": {
     "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",

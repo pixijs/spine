@@ -8,6 +8,7 @@
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/core": "^6.0.2",
+    "@pixi/math": "^6.0.2",
     "@pixi/display": "^6.0.2",
     "@pixi-spine/base": "~3.0.0"
   },
