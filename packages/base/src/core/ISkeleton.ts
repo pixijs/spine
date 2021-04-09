@@ -12,17 +12,30 @@ export interface IAttachment {
     name: number;
 }
 
+export interface ISlotData {
+
+}
+
 export interface ISlot {
     getAttachment(): IAttachment;
-    currentMesh?: any;
+    data: ISlotData;
+    color: Color;
+    darkColor: Color;
+    blendMode: number;
+    bone: IBone;
+
+    sprites?: any;
     currentSprite?: any;
+    currentSpriteName?: string;
+
+    meshes?: any;
+    currentMesh?: any;
+    currentMeshName?: string;
+    currentMeshId?: number;
+
     currentGraphics?: any;
     clippingContainer?: any;
-    meshes?: any;
-    currentSpriteName?: string;
-    currentMeshId?: number;
-    color?: Color;
-    darkColor?: Color;
+
     hackRegion?: TextureRegion;
     hackAttachment?: IAttachment;
 }
@@ -32,6 +45,8 @@ export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlo
     slots: Array<Slot>
     updateWorldTransform(): void;
     setToSetupPose(): void;
+    findSlotIndex(slotName: string): number;
+    getAttachmentByName (slotName: string, attachmentName: string): IAttachment;
 }
 
 export interface ISkeletonData {
@@ -39,7 +54,8 @@ export interface ISkeletonData {
 }
 
 export interface IAnimationState {
-
+    update(dt: number): void;
+    apply(skeleton: ISkeleton): void;
 }
 
 export interface IAnimationStateData {

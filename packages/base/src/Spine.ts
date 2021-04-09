@@ -1,13 +1,15 @@
 import {TextureRegion} from './core/TextureRegion';
 import {TextureAtlasRegion} from './core/TextureAtlas';
+import {MathUtils} from './core/Utils';
+
 import {DisplayObject, Container} from '@pixi/display';
 import {Sprite} from '@pixi/sprite';
 import {SimpleMesh} from '@pixi/mesh-extras';
 import {Graphics} from '@pixi/graphics'
-import {Transform} from '@pixi/math';
+import {Transform, Polygon} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
 
-import type {IAttachment, ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData} from './core/ISkeleton';
+import type {IAttachment, ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData, ISlot} from './core/ISkeleton';
 import type {Texture} from '@pixi/core';
 
 let tempRgb = [0, 0, 0];
@@ -118,6 +120,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
                 let mesh = this.createMesh(slot, attachment);
                 slot.currentMesh = mesh;
                 slot.currentMeshId = attachment.id;
+                slot.currentMeshName = attachment.name;
                 slotContainer.addChild(mesh);
             }
             else if (attachment instanceof core.ClippingAttachment) {
@@ -162,27 +165,6 @@ export abstract class Spine<Skeleton extends ISkeleton,
         if (value !== this._autoUpdate) {
             this._autoUpdate = value;
             this.updateTransform = value ? Spine.prototype.autoUpdateTransform : Container.prototype.updateTransform;
-        }
-    }
-
-    /**
-     * The visibility of the spine object. If false the object will not be drawn,
-     * the updateTransform function will not be called, and the spine will not be automatically updated.
-     *
-     * @member {boolean}
-     * @memberof spine.Spine#
-     * @default true
-     */
-    get visible(): boolean {
-        return this._visible;
-    }
-
-    set visible(value: boolean) {
-        if (value !== this._visible) {
-            this._visible = value;
-            if (value) {
-                this.lastTime = 0;
-            }
         }
     }
 
@@ -246,7 +228,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
             light = this.tintRgb;
         }
 
-        let thack = false;
+        // let thack = false;
 
         for (let i = 0, n = slots.length; i < n; i++) {
             let slot = slots[i];
@@ -268,8 +250,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
                         slot.currentMesh.visible = false;
                         slot.currentMesh = null;
                         slot.currentMeshId = undefined;
+                        slot.currentMeshName = undefined;
                     }
-                    let ar = region as core.TextureAtlasRegion;
+                    let ar = region as TextureAtlasRegion;
                     if (!slot.currentSpriteName || slot.currentSpriteName !== ar.name) {
                         let spriteName = ar.name;
                         if (slot.currentSprite) {
@@ -462,7 +445,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
         sprite.attachment = attachment;
 
         sprite.texture = region.texture;
-        sprite.rotation = attachment.rotation * core.MathUtils.degRad;
+        sprite.rotation = attachment.rotation * MathUtils.degRad;
         sprite.position.x = attachment.x;
         sprite.position.y = attachment.y;
         sprite.alpha = attachment.color.a;
@@ -569,9 +552,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
 
     static clippingPolygon: Array<number> = [];
 
-    createGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
+    createGraphics(slot: ISlot, clip: core.ClippingAttachment) {
         let graphics = this.newGraphics();
-        let poly = new PIXI.Polygon([]);
+        let poly = new Polygon([]);
         graphics.clear();
         graphics.beginFill(0xffffff, 1);
         graphics.drawPolygon(poly as any);
@@ -583,9 +566,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
         return graphics;
     }
 
-    updateGraphics(slot: core.Slot, clip: core.ClippingAttachment) {
+    updateGraphics(slot: ISlot, clip: core.ClippingAttachment) {
         let geom = slot.currentGraphics.geometry;
-        let vertices = (geom.graphicsData[0].shape as PIXI.Polygon).points;
+        let vertices = (geom.graphicsData[0].shape as Polygon).points;
         let n = clip.worldVerticesLength;
         vertices.length = n;
         clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
@@ -608,9 +591,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
             return false;
         }
         let attachment: any = slot.getAttachment();
-        let region: core.TextureRegion = attachment.region;
+        let region: TextureRegion = attachment.region;
         if (texture) {
-            region = new core.TextureRegion();
+            region = new TextureRegion();
             region.texture = texture;
             region.size = size;
             slot.hackRegion = region;
@@ -672,9 +655,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
         const currentAttachment: any = slot.getAttachment()
         if (attachmentName === currentAttachment.name) {
             // if the attachment we are changing is currently active, change the the live texture
-            let region: core.TextureRegion = attachment.region
+            let region: TextureRegion = attachment.region
             if (texture) {
-                region = new core.TextureRegion()
+                region = new TextureRegion()
                 region.texture = texture
                 region.size = size
                 slot.hackRegion = region
@@ -696,10 +679,10 @@ export abstract class Spine<Skeleton extends ISkeleton,
 
     //those methods can be overriden to spawn different classes
     newContainer() {
-        return new PIXI.Container();
+        return new Container();
     }
 
-    newSprite(tex: PIXI.Texture) {
+    newSprite(tex: Texture) {
         return new SpineSprite(tex);
     }
 
@@ -707,7 +690,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
         return new Graphics();
     }
 
-    newMesh(texture: PIXI.Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
+    newMesh(texture: Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
         return new SpineMesh(texture, vertices, uvs, indices, drawMode);
     }
 
@@ -723,7 +706,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      */
     hackAttachmentGroups(nameSuffix: string, group: any, outGroup: any) {
         if (!nameSuffix) {
-            return;
+            return undefined;
         }
         const list_d = [], list_n = [];
         for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
@@ -769,16 +752,25 @@ export abstract class Spine<Skeleton extends ISkeleton,
     }
 }
 
-function SlotContainerUpdateTransformV3() {
-    let pt = this.parent.worldTransform;
-    let wt = this.worldTransform;
-    let lt = this.localTransform;
-    wt.a = lt.a * pt.a + lt.b * pt.c;
-    wt.b = lt.a * pt.b + lt.b * pt.d;
-    wt.c = lt.c * pt.a + lt.d * pt.c;
-    wt.d = lt.c * pt.b + lt.d * pt.d;
-    wt.tx = lt.tx * pt.a + lt.ty * pt.c + pt.tx;
-    wt.ty = lt.tx * pt.b + lt.ty * pt.d + pt.ty;
-    this.worldAlpha = this.alpha * this.parent.worldAlpha;
-    this._currentBounds = null;
-}
+
+/**
+ * The visibility of the spine object. If false the object will not be drawn,
+ * the updateTransform function will not be called, and the spine will not be automatically updated.
+ *
+ * @member {boolean}
+ * @memberof spine.Spine#
+ * @default true
+ */
+Object.defineProperty(Spine.prototype, 'visible',{
+    get: function() {
+        return this._visible;
+    },
+    set: function(this: any, value: boolean) {
+        if (value !== this._visible) {
+            this._visible = value;
+            if (value) {
+                this.lastTime = 0;
+            }
+        }
+    }
+})
