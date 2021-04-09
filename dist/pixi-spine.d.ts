@@ -998,6 +998,7 @@ declare module PIXI.spine.core {
         currentGraphics: any;
         clippingContainer: any;
         meshes: any;
+        currentMeshId: number;
         currentMeshName: string;
         sprites: any;
         currentSpriteName: string;

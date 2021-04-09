@@ -38,6 +38,7 @@ namespace pixi_spine.core {
         clippingContainer: any;
 
         meshes: any;
+        currentMeshId: number;
         currentMeshName: string;
         sprites: any;
         currentSpriteName: string;
