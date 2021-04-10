@@ -40,6 +40,7 @@
   },
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
+    "@microsoft/api-extractor": "7.13.4",
     "rollup": "~2.33.1",
     "@pixi-spine/eslint-config": "~1.0.0",
     "eslint": "~7.13.0",

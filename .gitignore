@@ -29,6 +29,7 @@ common/temp/
 common/autoinstallers/*/.npmrc
 **/.rush/temp/
 **/*.build.log
+compile
 
 # packages ignore
 lib
