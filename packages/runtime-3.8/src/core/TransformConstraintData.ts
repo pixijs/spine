@@ -29,17 +29,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export class TransformConstraintData extends ConstraintData {
-        bones = new Array<BoneData>();
-        target: BoneData;
-        rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
-        offsetRotation = 0; offsetX = 0; offsetY = 0; offsetScaleX = 0; offsetScaleY = 0; offsetShearY = 0;
-        relative = false;
-        local = false;
+import {BoneData} from './BoneData';
+import {ConstraintData} from './Constraint';
 
-        constructor (name: string) {
-            super(name, 0, false);
-        }
+export class TransformConstraintData extends ConstraintData {
+    bones = new Array<BoneData>();
+    target: BoneData;
+    rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
+    offsetRotation = 0; offsetX = 0; offsetY = 0; offsetScaleX = 0; offsetScaleY = 0; offsetShearY = 0;
+    relative = false;
+    local = false;
+
+    constructor (name: string) {
+        super(name, 0, false);
     }
 }

@@ -28,24 +28,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export class ClippingAttachment extends VertexAttachment {
-        type = AttachmentType.Clipping;
-        endSlot: SlotData;
+import {Attachment, VertexAttachment} from './Attachment';
+import {AttachmentType, Color, IClippingAttachment} from '@pixi-spine/base';
+import type {SlotData} from '../SlotData';
 
-        // Nonessential.
-        color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
+export class ClippingAttachment extends VertexAttachment implements IClippingAttachment {
+    type = AttachmentType.Clipping;
+    endSlot: SlotData;
 
-        constructor (name: string) {
-            super(name);
-        }
+    // Nonessential.
+    color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
 
-        copy (): Attachment {
-            let copy = new ClippingAttachment(this.name);
-            this.copyTo(copy);
-            copy.endSlot = this.endSlot;
-            copy.color.setFromColor(this.color);
-            return copy;
-        }
+    constructor (name: string) {
+        super(name);
+    }
+
+    copy (): Attachment {
+        let copy = new ClippingAttachment(this.name);
+        this.copyTo(copy);
+        copy.endSlot = this.endSlot;
+        copy.color.setFromColor(this.color);
+        return copy;
     }
 }

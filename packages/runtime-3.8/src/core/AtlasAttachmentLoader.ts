@@ -29,48 +29,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export class AtlasAttachmentLoader implements AttachmentLoader {
-        atlas: TextureAtlas;
+import {AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment,
+    PathAttachment, PointAttachment, ClippingAttachment} from './attachments';
+import type {TextureAtlas} from "@pixi-spine/base";
+import type {Skin} from "./Skin";
 
-        constructor(atlas: TextureAtlas) {
-            this.atlas = atlas;
-        }
+export class AtlasAttachmentLoader implements AttachmentLoader {
+    atlas: TextureAtlas;
 
-        /** @return May be null to not load an attachment. */
-        newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment {
-            let region = this.atlas.findRegion(path);
-            if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-            let attachment = new RegionAttachment(name);
-            attachment.region = region;
-            return attachment;
-        }
+    constructor(atlas: TextureAtlas) {
+        this.atlas = atlas;
+    }
 
-        /** @return May be null to not load an attachment. */
-        newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment {
-            let region = this.atlas.findRegion(path);
-            if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-            let attachment = new MeshAttachment(name);
-            attachment.region = region;
-            return attachment;
-        }
+    /** @return May be null to not load an attachment. */
+    // @ts-ignore
+    newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment {
+        let region = this.atlas.findRegion(path);
+        if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
+        let attachment = new RegionAttachment(name);
+        attachment.region = region;
+        return attachment;
+    }
 
-        /** @return May be null to not load an attachment. */
-        newBoundingBoxAttachment(skin: Skin, name: string): BoundingBoxAttachment {
-            return new BoundingBoxAttachment(name);
-        }
+    /** @return May be null to not load an attachment. */
+    // @ts-ignore
+    newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment {
+        let region = this.atlas.findRegion(path);
+        if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
+        let attachment = new MeshAttachment(name);
+        attachment.region = region;
+        return attachment;
+    }
 
-        /** @return May be null to not load an attachment */
-        newPathAttachment(skin: Skin, name: string): PathAttachment {
-            return new PathAttachment(name);
-        }
+    /** @return May be null to not load an attachment. */
+    // @ts-ignore
+    newBoundingBoxAttachment(skin: Skin, name: string): BoundingBoxAttachment {
+        return new BoundingBoxAttachment(name);
+    }
 
-        newPointAttachment(skin: Skin, name: string): PointAttachment {
-            return new PointAttachment(name);
-        }
+    /** @return May be null to not load an attachment */
+    // @ts-ignore
+    newPathAttachment(skin: Skin, name: string): PathAttachment {
+        return new PathAttachment(name);
+    }
 
-        newClippingAttachment(skin: Skin, name: string): ClippingAttachment {
-            return new ClippingAttachment(name);
-        }
+    // @ts-ignore
+    newPointAttachment(skin: Skin, name: string): PointAttachment {
+        return new PointAttachment(name);
+    }
+
+    // @ts-ignore
+    newClippingAttachment(skin: Skin, name: string): ClippingAttachment {
+        return new ClippingAttachment(name);
     }
 }

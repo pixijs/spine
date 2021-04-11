@@ -29,18 +29,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export class EventData {
-        name: string;
-        intValue: number;
-        floatValue: number;
-        stringValue: string;
-        audioPath: string;
-        volume: number;
-        balance: number;
+export class EventData {
+    name: string;
+    intValue: number;
+    floatValue: number;
+    stringValue: string;
+    audioPath: string;
+    volume: number;
+    balance: number;
 
-        constructor (name: string) {
-            this.name = name;
-        }
+    constructor (name: string) {
+        this.name = name;
     }
 }

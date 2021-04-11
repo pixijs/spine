@@ -29,24 +29,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export interface AttachmentLoader {
-        /** @return May be null to not load an attachment. */
-        newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
+import {Skin} from '../Skin';
+import type {RegionAttachment} from './RegionAttachment';
+import type {MeshAttachment} from './MeshAttachment';
+import type {BoundingBoxAttachment} from './BoundingBoxAttachment';
+import type {PathAttachment} from './PathAttachment';
+import type {PointAttachment} from './PointAttachment';
+import type {ClippingAttachment} from './ClippingAttachment';
 
-        /** @return May be null to not load an attachment. */
-        newMeshAttachment (skin: Skin, name: string, path: string): MeshAttachment;
+export interface AttachmentLoader {
+    /** @return May be null to not load an attachment. */
+    newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;
 
-        /** @return May be null to not load an attachment. */
-        newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment;
+    /** @return May be null to not load an attachment. */
+    newMeshAttachment (skin: Skin, name: string, path: string): MeshAttachment;
 
-        /** @return May be null to not load an attachment */
-        newPathAttachment(skin: Skin, name: string): PathAttachment;
+    /** @return May be null to not load an attachment. */
+    newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment;
 
-        /** @return May be null to not load an attachment */
-        newPointAttachment(skin: Skin, name: string): PointAttachment;
+    /** @return May be null to not load an attachment */
+    newPathAttachment(skin: Skin, name: string): PathAttachment;
 
-        /** @return May be null to not load an attachment */
-        newClippingAttachment(skin: Skin, name: string): ClippingAttachment;
-    }
+    /** @return May be null to not load an attachment */
+    newPointAttachment(skin: Skin, name: string): PointAttachment;
+
+    /** @return May be null to not load an attachment */
+    newClippingAttachment(skin: Skin, name: string): ClippingAttachment;
 }

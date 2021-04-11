@@ -7,6 +7,7 @@
   "bundle": "dist/loader-3.8.js",
   "types": "./index.d.ts",
   "peerDependencies": {
+    "@pixi/app": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
     "@pixi/loaders": "~6.0.2",

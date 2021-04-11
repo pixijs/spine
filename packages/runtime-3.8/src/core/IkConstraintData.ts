@@ -28,20 +28,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {ConstraintData} from "./Constraint";
+import {BoneData} from "./BoneData";
 
-namespace pixi_spine.core {
-    export class IkConstraintData extends ConstraintData {
-        bones = new Array<BoneData>();
-        target: BoneData;
-        bendDirection = 1;
-        compress = false;
-        stretch = false;
-        uniform = false;
-        mix = 1;
-        softness = 0;
+export class IkConstraintData extends ConstraintData {
+    bones = new Array<BoneData>();
+    target: BoneData;
+    bendDirection = 1;
+    compress = false;
+    stretch = false;
+    uniform = false;
+    mix = 1;
+    softness = 0;
 
-        constructor (name: string) {
-            super(name, 0, false);
-        }
+    constructor (name: string) {
+        super(name, 0, false);
     }
 }

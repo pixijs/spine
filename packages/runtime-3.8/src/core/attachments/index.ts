@@ -6,4 +6,3 @@ export * from './MeshAttachment';
 export * from './PathAttachment';
 export * from './PointAttachment';
 export * from './RegionAttachment';
-

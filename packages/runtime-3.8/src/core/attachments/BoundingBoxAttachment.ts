@@ -29,20 +29,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-namespace pixi_spine.core {
-    export class BoundingBoxAttachment extends VertexAttachment {
-        color = new Color(1, 1, 1, 1);
+import {Attachment, VertexAttachment} from './Attachment';
+import {AttachmentType, Color} from '@pixi-spine/base';
 
-        constructor (name: string) {
-            super(name);
-            this.type = AttachmentType.BoundingBox;
-        }
+export class BoundingBoxAttachment extends VertexAttachment {
+    color = new Color(1, 1, 1, 1);
 
-        copy (): Attachment {
-            let copy = new BoundingBoxAttachment(this.name);
-            this.copyTo(copy);
-            copy.color.setFromColor(this.color);
-            return copy;
-        }
+    constructor (name: string) {
+        super(name);
+        this.type = AttachmentType.BoundingBox;
+    }
+
+    copy (): Attachment {
+        let copy = new BoundingBoxAttachment(this.name);
+        this.copyTo(copy);
+        copy.color.setFromColor(this.color);
+        return copy;
     }
 }

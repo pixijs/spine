@@ -28,31 +28,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {ConstraintData} from "./Constraint";
+import type {SlotData} from "./SlotData";
+import type {BoneData} from "./BoneData";
 
-namespace pixi_spine.core {
-    export class PathConstraintData extends ConstraintData {
-        bones = new Array<BoneData>();
-        target: SlotData;
-        positionMode: PositionMode;
-        spacingMode: SpacingMode;
-        rotateMode: RotateMode;
-        offsetRotation: number;
-        position: number; spacing: number; rotateMix: number; translateMix: number;
+export class PathConstraintData extends ConstraintData {
+    bones = new Array<BoneData>();
+    target: SlotData;
+    positionMode: PositionMode;
+    spacingMode: SpacingMode;
+    rotateMode: RotateMode;
+    offsetRotation: number;
+    position: number; spacing: number; rotateMix: number; translateMix: number;
 
-        constructor (name: string) {
-            super(name, 0, false);
-        }
+    constructor (name: string) {
+        super(name, 0, false);
     }
+}
 
-    export enum PositionMode {
-        Fixed, Percent
-    }
+export enum PositionMode {
+    Fixed, Percent
+}
 
-    export enum SpacingMode {
-        Length, Fixed, Percent
-    }
+export enum SpacingMode {
+    Length, Fixed, Percent
+}
 
-    export enum RotateMode {
-        Tangent, Chain, ChainScale
-    }
+export enum RotateMode {
+    Tangent, Chain, ChainScale
 }

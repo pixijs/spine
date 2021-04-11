@@ -29,13 +29,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Color} from '@pixi-spine/base';
+import {Color, ISlot} from '@pixi-spine/base';
 
 import type {Attachment} from './attachments/Attachment';
 import type {Bone} from './Bone';
 import type {SlotData} from './SlotData';
 
-export class Slot {
+export class Slot implements ISlot {
     //this is canon
     blendMode: number;
     data: SlotData;

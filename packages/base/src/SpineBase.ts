@@ -21,6 +21,7 @@ import {Graphics} from '@pixi/graphics'
 import {Rectangle, Polygon, Transform} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
 import type {Texture} from '@pixi/core';
+import {settings} from "./settings";
 
 let tempRgb = [0, 0, 0];
 
@@ -57,12 +58,10 @@ export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
  * @memberof spine
  * @param spineData {object} The spine data loaded from a spine atlas.
  */
-export abstract class Spine<Skeleton extends ISkeleton,
+export abstract class SpineBase<Skeleton extends ISkeleton,
     SkeletonData extends ISkeletonData,
     AnimationState extends IAnimationState,
     AnimationStateData extends IAnimationStateData> extends Container {
-    static globalAutoUpdate: boolean = true;
-    static globalDelayLimit: number = 0;
 
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;
@@ -75,7 +74,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
     private _autoUpdate: boolean;
     protected _visible: boolean;
 
-    abstract createSkeleton(spineData: ISkeletonData): Skeleton;
+    abstract createSkeleton(spineData: ISkeletonData);
 
     constructor(spineData: SkeletonData) {
         super();
@@ -171,7 +170,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
     set autoUpdate(value: boolean) {
         if (value !== this._autoUpdate) {
             this._autoUpdate = value;
-            this.updateTransform = value ? Spine.prototype.autoUpdateTransform : Container.prototype.updateTransform;
+            this.updateTransform = value ? SpineBase.prototype.autoUpdateTransform : Container.prototype.updateTransform;
         }
     }
 
@@ -197,7 +196,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      */
     get delayLimit(): number {
         let limit = typeof this.localDelayLimit !== "undefined" ?
-            this.localDelayLimit : Spine.globalDelayLimit;
+            this.localDelayLimit : settings.GLOBAL_DELAY_LIMIT;
 
         // If limit is 0, this means there is no limit for the delay
         return limit || Number.MAX_VALUE
@@ -311,8 +310,9 @@ export abstract class Spine<Skeleton extends ISkeleton,
                         (transform as any)._worldID = (slotContainer.transform as any)._worldID;
                         slotContainer.transform = transform;
                     }
-                    if (!slot.currentMeshId || slot.currentMeshId !== attachment.id) {
-                        let meshId = attachment.id;
+                    const id = (attachment as IVertexAttachment).id;
+                    if (!slot.currentMeshId || slot.currentMeshId !== id) {
+                        let meshId = id;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                         }
@@ -487,7 +487,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
      * @private
      */
     autoUpdateTransform() {
-        if (Spine.globalAutoUpdate) {
+        if (settings.GLOBAL_AUTO_UPDATE) {
             this.lastTime = this.lastTime || Date.now();
             let timeDelta = (Date.now() - this.lastTime) * 0.001;
             this.lastTime = Date.now();
@@ -768,7 +768,7 @@ export abstract class Spine<Skeleton extends ISkeleton,
  * @memberof spine.Spine#
  * @default true
  */
-Object.defineProperty(Spine.prototype, 'visible', {
+Object.defineProperty(SpineBase.prototype, 'visible', {
     get: function () {
         return this._visible;
     },

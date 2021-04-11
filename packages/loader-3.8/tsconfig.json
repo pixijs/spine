@@ -1,7 +1,14 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "compile"
+        "outDir": "compile",
+        "esModuleInterop": true,
+        // Loaders needs this to use the more strict mini-signal types
+        "paths": {
+            "mini-signals": [
+                "node_modules/resource-loader/typings/mini-signals.d.ts"
+            ]
+        }
     },
     "include": [
         "src/*.ts"

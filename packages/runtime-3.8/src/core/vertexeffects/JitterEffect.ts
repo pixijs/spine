@@ -27,26 +27,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {VertexEffect} from "../VertexEffect";
+import type {Skeleton} from "../Skeleton";
+import {Color, MathUtils, Vector2} from "@pixi-spine/base";
 
-namespace pixi_spine.core {
-	export class JitterEffect implements VertexEffect {
-		jitterX = 0;
-		jitterY = 0;
+export class JitterEffect implements VertexEffect {
+    jitterX = 0;
+    jitterY = 0;
 
-		constructor (jitterX: number, jitterY: number) {
-			this.jitterX = jitterX;
-			this.jitterY = jitterY;
-		}
+    constructor (jitterX: number, jitterY: number) {
+        this.jitterX = jitterX;
+        this.jitterY = jitterY;
+    }
 
-		begin(skeleton: Skeleton): void {
-		}
+    //@ts-ignore
+    begin(skeleton: Skeleton): void {
+    }
 
-		transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
-			position.x += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
-			position.y += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
-		}
+    //@ts-ignore
+    transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
+        position.x += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+        position.y += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+    }
 
-		end(): void {
-		}
-	}
+    end(): void {
+    }
 }

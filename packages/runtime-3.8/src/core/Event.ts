@@ -28,22 +28,21 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {EventData} from "./EventData";
 
-namespace pixi_spine.core {
-    export class Event {
-        data: EventData;
-        intValue: number;
-        floatValue: number;
-        stringValue: string;
-        time: number;
-        volume: number;
-        balance: number;
+export class Event {
+    data: EventData;
+    intValue: number;
+    floatValue: number;
+    stringValue: string;
+    time: number;
+    volume: number;
+    balance: number;
 
 
-        constructor(time: number, data: EventData) {
-            if (data == null) throw new Error("data cannot be null.");
-            this.time = time;
-            this.data = data;
-        }
+    constructor(time: number, data: EventData) {
+        if (data == null) throw new Error("data cannot be null.");
+        this.time = time;
+        this.data = data;
     }
 }

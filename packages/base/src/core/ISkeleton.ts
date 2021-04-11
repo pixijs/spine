@@ -10,12 +10,12 @@ export interface IBone {
 }
 
 export interface IAttachment {
-    id: number;
     name: string;
     type: AttachmentType;
 }
 
 export interface IVertexAttachment<Slot extends ISlot = ISlot> extends IAttachment {
+    id: number;
     computeWorldVerticesOld(slot: Slot, worldVertices: ArrayLike<number>): void;
     computeWorldVertices(slot: Slot, start: number, count: number, worldVertices: ArrayLike<number>, offset: number, stride: number): void;
     worldVerticesLength: number;
