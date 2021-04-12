@@ -5,7 +5,8 @@
         "skipLibCheck": true
     },
     "include": [
-        "src/*.ts"
+        "src/*.ts",
+        "global.d.ts"
     ],
     "exclude": [
         "node_modules"

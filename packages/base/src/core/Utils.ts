@@ -29,6 +29,15 @@
  *****************************************************************************/
 import {ISkeleton} from "./ISkeleton";
 
+
+let fround_polyfill = (function(array) {
+    return function(x: number) {
+        return array[0] = x, array[0];
+    };
+})(new Float32Array(1));
+
+let fround: (value: number) => number =
+    (Math as any).fround || fround_polyfill;
 /**
  * @public
  */
@@ -300,7 +309,7 @@ export class Utils {
     }
 
     static toSinglePrecision (value: number) {
-        return Utils.SUPPORTS_TYPED_ARRAYS ? (Math as any).fround(value) : value;
+        return Utils.SUPPORTS_TYPED_ARRAYS ? fround(value) : value;
     }
 
     // This function is used to fix WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
@@ -316,6 +325,8 @@ export class Utils {
         }
         return false;
     }
+
+    fround
 }
 
 /**

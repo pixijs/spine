@@ -14,7 +14,8 @@
     "prepare": "rush install",
     "build:compile": "rush build",
     "build:types": "rush build:types",
-    "build": "npm run build:compile && npm run build:types",
+    "build:types-mixins": "rush build:types",
+    "build": "npm run build:compile && npm run build:types && npm run build:types-mixins",
     "prepublishOnly": "npm run build",
     "test": "cd ./tools/unit-tests && pnpm test && cd ../.."
   },
@@ -34,5 +35,9 @@
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "dependencies": {
     "d-path-parser": "^1.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "typescript": "~4.2.3"
   }
 }

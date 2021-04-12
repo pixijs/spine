@@ -1,4 +1,4 @@
-import {Loader, ILoaderResource, LoaderResource} from "@pixi/loaders";
+import {Loader, ILoaderResource, LoaderResource, IResourceMetadata} from "@pixi/loaders";
 import {AtlasAttachmentLoader, SkeletonBinary, SkeletonData, SkeletonJson} from "@pixi-spine/runtime-3.8";
 import {BaseTexture, Texture} from "@pixi/core";
 import {TextureAtlas} from "@pixi-spine/base";
@@ -17,25 +17,25 @@ LoaderResource.setExtensionXhrType('skel', LoaderResource.XHR_RESPONSE_TYPE.BUFF
  * @public
  */
 export interface ISpine38ResourceMetadata {
-    spineSkeletonScale?: number;
-    spineAtlas?: any;
-    spineAtlasSuffix?: string;
-    spineAtlasFile?: string;
-    spineMetadata?: any;
-    imageNamePrefix?: string;
-    atlasRawData?: string;
-    imageLoader?: any;
-    images?: any;
-    imageMetadata?: any;
-    image?: any;
+    spineSkeletonScale: number;
+    spineAtlas: any;
+    spineAtlasSuffix: string;
+    spineAtlasFile: string;
+    spineMetadata: any;
+    imageNamePrefix: string;
+    atlasRawData: string;
+    imageLoader: any;
+    images: any;
+    imageMetadata: any;
+    image: any;
 }
 
 /**
  * @public
  */
 export interface ISpine38LoaderResource {
-    spineData?: SkeletonData;
-    textureAtlas?: TextureAtlas;
+    spineData: SkeletonData;
+    textureAtlas: TextureAtlas;
 }
 
 /**
@@ -68,7 +68,7 @@ export class SpineParser {
             }
         }
 
-        const metadata = (resource.metadata || {}) as ISpine38ResourceMetadata;
+        const metadata = (resource.metadata || {}) as IResourceMetadata;
         const metadataSkeletonScale = metadata ? (metadata as any).spineSkeletonScale : null;
 
         if (metadataSkeletonScale) {
