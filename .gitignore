@@ -9,6 +9,7 @@ Desktop.ini
 
 # Tool temp files
 npm-debug.log
+.pnpm-debug.log
 *.sw*
 *~
 \#*#
@@ -33,4 +34,5 @@ compile
 
 # packages ignore
 lib
+bundles/*/index.d.ts
 packages/*/index.d.ts

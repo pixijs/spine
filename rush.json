@@ -41,7 +41,7 @@
     },
     {
       "packageName": "@pixi/spine",
-      "projectFolder": "packages/all",
+      "projectFolder": "bundles/pixi-spine",
       "reviewCategory": "production",
       "shouldPublish": true
     },
