@@ -18,7 +18,8 @@
   },
   "scripts": {
     "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
-    "build:types": "rimraf compile && tsc && api-extractor run"
+    "build:types": "rimraf compile && tsc && api-extractor run",
+    "build:mixins": "node scripts/injectGlobalMixins"
   },
   "repository": {
     "type": "git",
@@ -47,6 +48,7 @@
     "tslib": "~2.2.0",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
     "chai": "~4.2.0",
+    "prepend": "=1.0.2",
     "rimraf": "3.0.2"
   }
 }

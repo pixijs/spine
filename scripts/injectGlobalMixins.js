@@ -1,3 +1,5 @@
+// The File is not used for now!
+
 const { RushConfiguration } = require('@microsoft/rush-lib');
 const path = require('path');
 const fs = require('fs');
