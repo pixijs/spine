@@ -6,13 +6,15 @@
   "module": "lib/loader-3.8.es.js",
   "bundle": "dist/loader-3.8.js",
   "types": "./index.d.ts",
+  "namespace": "PIXI.spine",
   "peerDependencies": {
     "@pixi/app": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
     "@pixi/loaders": "~6.0.2",
     "@pixi-spine/base": "~3.0.0",
-    "@pixi-spine/runtime-3.8": "~3.0.0"
+    "@pixi-spine/runtime-3.8": "~3.0.0",
+    "resource-loader": "~3.0.1"
   },
   "scripts": {
     "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",

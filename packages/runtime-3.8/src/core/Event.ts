@@ -30,6 +30,9 @@
  *****************************************************************************/
 import {EventData} from "./EventData";
 
+/**
+ * @public
+ */
 export class Event {
     data: EventData;
     intValue: number;

@@ -32,6 +32,9 @@
 import {Attachment, VertexAttachment} from './Attachment';
 import {AttachmentType, Color} from '@pixi-spine/base';
 
+/**
+ * @public
+ */
 export class BoundingBoxAttachment extends VertexAttachment {
     color = new Color(1, 1, 1, 1);
 

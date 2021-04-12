@@ -35,6 +35,9 @@ import {Skeleton} from "./Skeleton";
 import {TransformMode} from "./BoneData";
 import {MathUtils} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class IkConstraint implements Updatable {
     data: IkConstraintData;
     bones: Array<Bone>;

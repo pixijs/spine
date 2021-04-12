@@ -36,10 +36,16 @@ import {Skeleton} from "./Skeleton";
 
 import type {Map} from '@pixi-spine/base';
 
+/**
+ * @public
+ */
 export class SkinEntry {
     constructor(public slotIndex: number, public name: string, public attachment: Attachment) { }
 }
 
+/**
+ * @public
+ */
 export class Skin {
     name: string;
     attachments = new Array<Map<Attachment>>();

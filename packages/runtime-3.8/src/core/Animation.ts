@@ -36,6 +36,9 @@ import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
 /** A simple container for a list of timelines and a name. */
+/**
+ * @public
+ */
 export class Animation {
     /** The animation's name, which is unique across all animations in the skeleton. */
     name: string;
@@ -103,6 +106,9 @@ export class Animation {
 }
 
 /** The interface for all timelines. */
+/**
+ * @public
+ */
 export interface Timeline {
     /** Applies this timeline to the skeleton.
      * @param skeleton The skeleton the timeline is being applied to. This provides access to the bones, slots, and other
@@ -131,6 +137,9 @@ export interface Timeline {
  * < 1.
  *
  * See Timeline {@link Timeline#apply(Skeleton, float, float, Array, float, MixBlend, MixDirection)}. */
+/**
+ * @public
+ */
 export enum MixBlend {
     /** Transitions from the setup value to the timeline value (the current value is not used). Before the first key, the setup
      * value is set. */
@@ -159,10 +168,16 @@ export enum MixBlend {
  * mixing in toward 1 (the timeline's value).
  *
  * See Timeline {@link Timeline#apply(Skeleton, float, float, Array, float, MixBlend, MixDirection)}. */
+/**
+ * @public
+ */
 export enum MixDirection {
     mixIn, mixOut
 }
 
+/**
+ * @public
+ */
 export enum TimelineType {
     rotate, translate, scale, shear,
     attachment, color, deform,
@@ -173,6 +188,9 @@ export enum TimelineType {
 }
 
 /** The base class for timelines that use interpolation between key frame values. */
+/**
+ * @public
+ */
 export abstract class CurveTimeline implements Timeline {
     static LINEAR = 0; static STEPPED = 1; static BEZIER = 2;
     static BEZIER_SIZE = 10 * 2 - 1;
@@ -270,6 +288,9 @@ export abstract class CurveTimeline implements Timeline {
 }
 
 /** Changes a bone's local {@link Bone#rotation}. */
+/**
+ * @public
+ */
 export class RotateTimeline extends CurveTimeline {
     static ENTRIES = 2;
     static PREV_TIME = -2; static PREV_ROTATION = -1;
@@ -354,6 +375,9 @@ export class RotateTimeline extends CurveTimeline {
 }
 
 /** Changes a bone's local {@link Bone#x} and {@link Bone#y}. */
+/**
+ * @public
+ */
 export class TranslateTimeline extends CurveTimeline {
     static ENTRIES = 3;
     static PREV_TIME = -3; static PREV_X = -2; static PREV_Y = -1;
@@ -435,6 +459,9 @@ export class TranslateTimeline extends CurveTimeline {
 }
 
 /** Changes a bone's local {@link Bone#scaleX)} and {@link Bone#scaleY}. */
+/**
+ * @public
+ */
 export class ScaleTimeline extends TranslateTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -537,6 +564,9 @@ export class ScaleTimeline extends TranslateTimeline {
 }
 
 /** Changes a bone's local {@link Bone#shearX} and {@link Bone#shearY}. */
+/**
+ * @public
+ */
 export class ShearTimeline extends TranslateTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -599,6 +629,9 @@ export class ShearTimeline extends TranslateTimeline {
 }
 
 /** Changes a slot's {@link Slot#color}. */
+/**
+ * @public
+ */
 export class ColorTimeline extends CurveTimeline {
     static ENTRIES = 5;
     static PREV_TIME = -5; static PREV_R = -4; static PREV_G = -3; static PREV_B = -2; static PREV_A = -1;
@@ -681,6 +714,9 @@ export class ColorTimeline extends CurveTimeline {
 }
 
 /** Changes a slot's {@link Slot#color} and {@link Slot#darkColor} for two color tinting. */
+/**
+ * @public
+ */
 export class TwoColorTimeline extends CurveTimeline {
     static ENTRIES = 8;
     static PREV_TIME = -8; static PREV_R = -7; static PREV_G = -6; static PREV_B = -5; static PREV_A = -4;
@@ -785,6 +821,9 @@ export class TwoColorTimeline extends CurveTimeline {
 }
 
 /** Changes a slot's {@link Slot#attachment}. */
+/**
+ * @public
+ */
 export class AttachmentTimeline implements Timeline {
     /** The index of the slot in {@link Skeleton#slots} that will be changed. */
     slotIndex: number;
@@ -850,6 +889,9 @@ export class AttachmentTimeline implements Timeline {
 let zeros : ArrayLike<number> = null;
 
 /** Changes a slot's {@link Slot#deform} to deform a {@link VertexAttachment}. */
+/**
+ * @public
+ */
 export class DeformTimeline extends CurveTimeline {
     /** The index of the slot in {@link Skeleton#getSlots()} that will be changed. */
     slotIndex: number;
@@ -1062,6 +1104,9 @@ export class DeformTimeline extends CurveTimeline {
 }
 
 /** Fires an {@link Event} when specific animation times are reached. */
+/**
+ * @public
+ */
 export class EventTimeline implements Timeline {
     /** The time in seconds for each key frame. */
     frames: ArrayLike<number>; // time, ...
@@ -1119,6 +1164,9 @@ export class EventTimeline implements Timeline {
 }
 
 /** Changes a skeleton's {@link Skeleton#drawOrder}. */
+/**
+ * @public
+ */
 export class DrawOrderTimeline implements Timeline {
     /** The time in seconds for each key frame. */
     frames: ArrayLike<number>; // time, ...
@@ -1181,6 +1229,9 @@ export class DrawOrderTimeline implements Timeline {
 
 /** Changes an IK constraint's {@link IkConstraint#mix}, {@link IkConstraint#softness},
  * {@link IkConstraint#bendDirection}, {@link IkConstraint#stretch}, and {@link IkConstraint#compress}. */
+/**
+ * @public
+ */
 export class IkConstraintTimeline extends CurveTimeline {
     static ENTRIES = 6;
     static PREV_TIME = -6; static PREV_MIX = -5; static PREV_SOFTNESS = -4; static PREV_BEND_DIRECTION = -3; static PREV_COMPRESS = -2; static PREV_STRETCH = -1;
@@ -1297,6 +1348,9 @@ export class IkConstraintTimeline extends CurveTimeline {
 
 /** Changes a transform constraint's {@link TransformConstraint#rotateMix}, {@link TransformConstraint#translateMix},
  * {@link TransformConstraint#scaleMix}, and {@link TransformConstraint#shearMix}. */
+/**
+ * @public
+ */
 export class TransformConstraintTimeline extends CurveTimeline {
     static ENTRIES = 5;
     static PREV_TIME = -5; static PREV_ROTATE = -4; static PREV_TRANSLATE = -3; static PREV_SCALE = -2; static PREV_SHEAR = -1;
@@ -1390,6 +1444,9 @@ export class TransformConstraintTimeline extends CurveTimeline {
 }
 
 /** Changes a path constraint's {@link PathConstraint#position}. */
+/**
+ * @public
+ */
 export class PathConstraintPositionTimeline extends CurveTimeline {
     static ENTRIES = 2;
     static PREV_TIME = -2; static PREV_VALUE = -1;
@@ -1454,6 +1511,9 @@ export class PathConstraintPositionTimeline extends CurveTimeline {
 }
 
 /** Changes a path constraint's {@link PathConstraint#spacing}. */
+/**
+ * @public
+ */
 export class PathConstraintSpacingTimeline extends PathConstraintPositionTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -1502,6 +1562,9 @@ export class PathConstraintSpacingTimeline extends PathConstraintPositionTimelin
 
 /** Changes a transform constraint's {@link PathConstraint#rotateMix} and
  * {@link TransformConstraint#translateMix}. */
+/**
+ * @public
+ */
 export class PathConstraintMixTimeline extends CurveTimeline {
     static ENTRIES = 3;
     static PREV_TIME = -3; static PREV_ROTATE = -2; static PREV_TRANSLATE = -1;

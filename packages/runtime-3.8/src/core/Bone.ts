@@ -35,6 +35,9 @@ import {BoneData, TransformMode} from "./BoneData";
 import {Skeleton} from "./Skeleton";
 import {MathUtils, Vector2} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class Bone implements Updatable {
     static yDown: boolean = false;
     //be careful! Spine b,c is c,b in pixi matrix

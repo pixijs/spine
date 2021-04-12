@@ -5,6 +5,7 @@
   "main": "lib/base.js",
   "module": "lib/base.es.js",
   "bundle": "dist/base.js",
+  "namespace": "PIXI.spine.base",
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/constants": "^6.0.2",

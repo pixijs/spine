@@ -25,16 +25,25 @@ import {settings} from "./settings";
 
 let tempRgb = [0, 0, 0];
 
+/**
+ * @public
+ */
 export interface ISpineDisplayObject extends DisplayObject {
     region?: TextureRegion;
     attachment?: IAttachment;
 }
 
+/**
+ * @public
+ */
 export class SpineSprite extends Sprite implements ISpineDisplayObject {
     region?: TextureRegion = null;
     attachment?: IAttachment = null;
 }
 
+/**
+ * @public
+ */
 export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
     region?: TextureRegion = null;
     attachment?: IAttachment = null;
@@ -53,6 +62,7 @@ export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
  * let spineAnimation = new spine(spineData);
  * ```
  *
+ * @public
  * @class
  * @extends Container
  * @memberof spine

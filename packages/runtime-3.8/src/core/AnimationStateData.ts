@@ -32,6 +32,9 @@ import {SkeletonData} from "./SkeletonData";
 import {IAnimationStateData, Map} from '@pixi-spine/base';
 import type {Animation} from './Animation';
 
+/**
+ * @public
+ */
 export class AnimationStateData implements IAnimationStateData {
     skeletonData: SkeletonData;
     animationToMixTime: Map<number> = {};

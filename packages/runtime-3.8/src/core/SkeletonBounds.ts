@@ -32,6 +32,9 @@ import {BoundingBoxAttachment} from "./attachments";
 import {Pool, Utils} from "@pixi-spine/base";
 import type {Skeleton} from "./Skeleton";
 
+/**
+ * @public
+ */
 export class SkeletonBounds {
     minX = 0; minY = 0; maxX = 0; maxY = 0;
     boundingBoxes = new Array<BoundingBoxAttachment>();

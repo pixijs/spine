@@ -56,6 +56,9 @@ import {
 import {AttachmentType, Color, Utils} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 
+/**
+ * @public
+ */
 export class SkeletonBinary {
     static AttachmentTypeValues = [ 0 /*AttachmentType.Region*/, 1/*AttachmentType.BoundingBox*/, 2/*AttachmentType.Mesh*/, 3/*AttachmentType.LinkedMesh*/, 4/*AttachmentType.Path*/, 5/*AttachmentType.Point*/, 6/*AttachmentType.Clipping*/ ];
     static TransformModeValues = [TransformMode.Normal, TransformMode.OnlyTranslation, TransformMode.NoRotationOrReflection, TransformMode.NoScale, TransformMode.NoScaleOrReflection];

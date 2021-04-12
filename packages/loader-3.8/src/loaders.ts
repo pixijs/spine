@@ -13,6 +13,9 @@ function isBuffer(resource: ILoaderResource) {
 
 LoaderResource.setExtensionXhrType('skel', LoaderResource.XHR_RESPONSE_TYPE.BUFFER);
 
+/**
+ * @public
+ */
 export interface ISpine38ResourceMetadata {
     spineSkeletonScale?: number;
     spineAtlas?: any;
@@ -27,11 +30,17 @@ export interface ISpine38ResourceMetadata {
     image?: any;
 }
 
+/**
+ * @public
+ */
 export interface ISpine38LoaderResource {
     spineData?: SkeletonData;
     textureAtlas?: TextureAtlas;
 }
 
+/**
+ * @public
+ */
 export class SpineParser {
     static use(this: Loader, resource: ILoaderResource, next: () => any) {
         // skip if no data, its not json, or it isn't atlas data
@@ -148,6 +157,9 @@ export class SpineParser {
     }
 }
 
+/**
+ * @public
+ */
 export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any) {
     if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
         baseUrl += '/';
@@ -179,6 +191,9 @@ export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, i
     }
 }
 
+/**
+ * @public
+ */
 export function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any) {
     if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
         baseUrl += '/';
@@ -188,6 +203,9 @@ export function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any) {
     }
 }
 
+/**
+ * @public
+ */
 export function staticImageLoader(pages: { [key: string]: (BaseTexture | Texture) }) {
     return function (line: any, callback: any) {
         let page = pages[line] || pages['default'] as any;

@@ -31,6 +31,9 @@ import {VertexEffect} from "../VertexEffect";
 import type {Skeleton} from "../Skeleton";
 import {Color, MathUtils, Vector2} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class JitterEffect implements VertexEffect {
     jitterX = 0;
     jitterY = 0;

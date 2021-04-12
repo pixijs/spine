@@ -36,6 +36,9 @@ import {Map, Disposable} from './Utils';
 
 import type {BaseTexture} from '@pixi/core';
 
+/**
+ * @public
+ */
 export class TextureAtlas implements Disposable {
     pages = new Array<TextureAtlasPage>();
     regions = new Array<TextureAtlasRegion>();
@@ -233,6 +236,9 @@ export class TextureAtlas implements Disposable {
     }
 }
 
+/**
+ * @public
+ */
 class TextureAtlasReader {
     lines: Array<string>;
     index: number = 0;
@@ -272,6 +278,9 @@ class TextureAtlasReader {
     }
 }
 
+/**
+ * @public
+ */
 export class TextureAtlasPage {
     name: string;
     minFilter: TextureFilter;
@@ -300,6 +309,9 @@ export class TextureAtlasPage {
     }
 }
 
+/**
+ * @public
+ */
 export class TextureAtlasRegion extends TextureRegion {
     page: TextureAtlasPage;
     name: string;

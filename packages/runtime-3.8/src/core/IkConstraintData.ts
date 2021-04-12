@@ -31,6 +31,9 @@
 import {ConstraintData} from "./Constraint";
 import {BoneData} from "./BoneData";
 
+/**
+ * @public
+ */
 export class IkConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
     target: BoneData;

@@ -32,6 +32,9 @@ import {ConstraintData} from "./Constraint";
 import type {SlotData} from "./SlotData";
 import type {BoneData} from "./BoneData";
 
+/**
+ * @public
+ */
 export class PathConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
     target: SlotData;
@@ -45,15 +48,21 @@ export class PathConstraintData extends ConstraintData {
         super(name, 0, false);
     }
 }
-
+/**
+ * @public
+ */
 export enum PositionMode {
     Fixed, Percent
 }
-
+/**
+ * @public
+ */
 export enum SpacingMode {
     Length, Fixed, Percent
 }
-
+/**
+ * @public
+ */
 export enum RotateMode {
     Tangent, Chain, ChainScale
 }

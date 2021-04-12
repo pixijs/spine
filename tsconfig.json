@@ -20,7 +20,8 @@
         },
         "outDir": "./compile",
         "declaration": true,
-        "declarationMap": true
+        "declarationMap": true,
+        "allowSyntheticDefaultImports": true
     },
     "exclude": [
         "node_modules",

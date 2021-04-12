@@ -32,6 +32,9 @@
 import {BoneData} from './BoneData';
 import {ConstraintData} from './Constraint';
 
+/**
+ * @public
+ */
 export class TransformConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
     target: BoneData;

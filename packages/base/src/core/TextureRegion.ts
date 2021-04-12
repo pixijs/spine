@@ -32,6 +32,9 @@
 import { Texture } from '@pixi/core';
 import { Rectangle } from '@pixi/math';
 
+/**
+ * @public
+ */
 export function filterFromString (text: string): TextureFilter {
     switch (text.toLowerCase()) {
         case "nearest": return TextureFilter.Nearest;
@@ -45,6 +48,9 @@ export function filterFromString (text: string): TextureFilter {
     }
 }
 
+/**
+ * @public
+ */
 export function wrapFromString (text: string): TextureWrap {
     switch (text.toLowerCase()) {
         case "mirroredtepeat": return TextureWrap.MirroredRepeat;
@@ -54,6 +60,9 @@ export function wrapFromString (text: string): TextureWrap {
     }
 }
 
+/**
+ * @public
+ */
 export enum TextureFilter {
     Nearest = 9728, // WebGLRenderingContext.NEAREST
     Linear = 9729, // WebGLRenderingContext.LINEAR
@@ -64,12 +73,18 @@ export enum TextureFilter {
     MipMapLinearLinear = 9987 // WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
 }
 
+/**
+ * @public
+ */
 export enum TextureWrap {
     MirroredRepeat = 33648, // WebGLRenderingContext.MIRRORED_REPEAT
     ClampToEdge = 33071, // WebGLRenderingContext.CLAMP_TO_EDGE
     Repeat = 10497 // WebGLRenderingContext.REPEAT
 }
 
+/**
+ * @public
+ */
 export class TextureRegion {
     texture: Texture;
 

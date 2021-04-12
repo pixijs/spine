@@ -33,3 +33,4 @@ compile
 
 # packages ignore
 lib
+packages/*/index.d.ts

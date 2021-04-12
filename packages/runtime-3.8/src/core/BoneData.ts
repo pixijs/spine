@@ -31,6 +31,9 @@
 
 import {Color} from '@pixi-spine/base';
 
+/**
+ * @public
+ */
 export class BoneData {
     index: number;
     name: string;
@@ -57,6 +60,9 @@ export class BoneData {
     }
 }
 
+/**
+ * @public
+ */
 export enum TransformMode {
     Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection
 }

@@ -29,10 +29,16 @@
  *****************************************************************************/
 import {ISkeleton} from "./ISkeleton";
 
+/**
+ * @public
+ */
 export interface Map<T> {
     [key: string]: T;
 }
 
+/**
+ * @public
+ */
 export class IntSet {
     array = new Array<number>();
 
@@ -55,14 +61,23 @@ export class IntSet {
     }
 }
 
+/**
+ * @public
+ */
 export interface Disposable {
     dispose (): void;
 }
 
+/**
+ * @public
+ */
 export interface Restorable {
     restore (): void;
 }
 
+/**
+ * @public
+ */
 export class Color {
     public static WHITE = new Color(1, 1, 1, 1);
     public static RED = new Color(1, 0, 0, 1);
@@ -137,6 +152,9 @@ export class Color {
     }
 }
 
+/**
+ * @public
+ */
 export class MathUtils {
     static PI = 3.1415927;
     static PI2 = MathUtils.PI * 2;
@@ -184,6 +202,9 @@ export class MathUtils {
     }
 }
 
+/**
+ * @public
+ */
 export abstract class Interpolation {
     protected abstract applyInternal (a: number): number;
     apply(start: number, end: number, a: number): number {
@@ -191,6 +212,9 @@ export abstract class Interpolation {
     }
 }
 
+/**
+ * @public
+ */
 export class Pow extends Interpolation {
     protected power = 2;
 
@@ -205,6 +229,9 @@ export class Pow extends Interpolation {
     }
 }
 
+/**
+ * @public
+ */
 export class PowOut extends Pow {
     constructor (power: number) {
         super(power);
@@ -215,6 +242,9 @@ export class PowOut extends Pow {
     }
 }
 
+/**
+ * @public
+ */
 export class Utils {
     static SUPPORTS_TYPED_ARRAYS = typeof(Float32Array) !== "undefined";
 
@@ -288,6 +318,9 @@ export class Utils {
     }
 }
 
+/**
+ * @public
+ */
 export class DebugUtils {
     static logBones(skeleton: ISkeleton) {
         for (let i = 0; i < skeleton.bones.length; i++) {
@@ -298,6 +331,9 @@ export class DebugUtils {
     }
 }
 
+/**
+ * @public
+ */
 export class Pool<T> {
     private items = new Array<T>();
     private instantiator: () => T;
@@ -326,6 +362,9 @@ export class Pool<T> {
     }
 }
 
+/**
+ * @public
+ */
 export class Vector2 {
     constructor (public x = 0, public y = 0) {
     }
@@ -352,6 +391,9 @@ export class Vector2 {
     }
 }
 
+/**
+ * @public
+ */
 export class TimeKeeper {
     maxDelta = 0.064;
     framesPerSecond = 0;
@@ -379,11 +421,17 @@ export class TimeKeeper {
     }
 }
 
+/**
+ * @public
+ */
 export interface ArrayLike<T> {
     length: number;
     [n: number]: T;
 }
 
+/**
+ * @public
+ */
 export class WindowedMean {
     values: Array<number>;
     addedValues = 0;

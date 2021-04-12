@@ -32,6 +32,9 @@ import {Attachment, VertexAttachment} from './Attachment';
 import {AttachmentType, Color, MathUtils, Vector2} from "@pixi-spine/base";
 import type {Bone} from '../Bone';
 
+/**
+ * @public
+ */
 export class PointAttachment extends VertexAttachment {
     type = AttachmentType.Point;
     x: number; y: number; rotation: number;

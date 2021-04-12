@@ -4,6 +4,9 @@ import {SkeletonData} from "./core/SkeletonData";
 import {AnimationState} from "./core/AnimationState";
 import {AnimationStateData} from "./core/AnimationStateData";
 
+/**
+ * @public
+ */
 export class Spine extends SpineBase<Skeleton, SkeletonData, AnimationState, AnimationStateData> {
     createSkeleton(spineData: SkeletonData) {
         this.skeleton = new Skeleton(spineData);

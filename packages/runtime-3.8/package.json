@@ -5,6 +5,7 @@
   "main": "lib/runtime-3.8.js",
   "module": "lib/runtime-3.8.es.js",
   "bundle": "dist/runtime-3.8.js",
+  "namespace": "PIXI.spine",
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/core": "^6.0.2",

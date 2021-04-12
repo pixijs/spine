@@ -47,6 +47,9 @@ import type {Slot} from "./Slot";
  * multiple animations on top of each other (layering).
  *
  * See [Applying Animations](http://esotericsoftware.com/spine-applying-animations/) in the Spine Runtimes Guide. */
+/**
+ * @public
+ */
 export class AnimationState implements IAnimationState {
     static emptyAnimation = new Animation("<empty>", [], 0);
 
@@ -885,6 +888,9 @@ export class AnimationState implements IAnimationState {
 /** Stores settings and other state for the playback of an animation on an {@link AnimationState} track.
  *
  * References to a track entry must not be kept after the {@link AnimationStateListener#dispose()} event occurs. */
+/**
+ * @public
+ */
 export class TrackEntry {
     /** The animation to apply for this track entry. */
     animation: Animation;
@@ -1128,6 +1134,9 @@ export class TrackEntry {
     }
 }
 
+/**
+ * @public
+ */
 export class EventQueue {
     objects: Array<any> = [];
     drainDisabled = false;
@@ -1249,10 +1258,16 @@ export class EventQueue {
     }
 }
 
+/**
+ * @public
+ */
 export enum EventType {
     start, interrupt, end, dispose, complete, event
 }
 
+/**
+ * @public
+ */
 export interface AnimationStateListener {
     /** Invoked when this entry has been set as the current entry. */
     start? (entry: TrackEntry): void;
@@ -1275,6 +1290,9 @@ export interface AnimationStateListener {
     event? (entry: TrackEntry, event: Event): void;
 }
 
+/**
+ * @public
+ */
 export abstract class AnimationStateAdapter implements AnimationStateListener {
     //@ts-ignore
     start (entry: TrackEntry) {

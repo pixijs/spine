@@ -37,6 +37,9 @@ import type {PathAttachment} from './PathAttachment';
 import type {PointAttachment} from './PointAttachment';
 import type {ClippingAttachment} from './ClippingAttachment';
 
+/**
+ * @public
+ */
 export interface AttachmentLoader {
     /** @return May be null to not load an attachment. */
     newRegionAttachment (skin: Skin, name: string, path: string): RegionAttachment;

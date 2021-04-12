@@ -35,6 +35,9 @@ import type {Attachment} from './attachments/Attachment';
 import type {Bone} from './Bone';
 import type {SlotData} from './SlotData';
 
+/**
+ * @public
+ */
 export class Slot implements ISlot {
     //this is canon
     blendMode: number;

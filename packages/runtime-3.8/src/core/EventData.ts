@@ -29,6 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
+/**
+ * @public
+ */
 export class EventData {
     name: string;
     intValue: number;

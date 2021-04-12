@@ -34,6 +34,9 @@ import type {IAttachment, ArrayLike} from '@pixi-spine/base';
 
 import type {Slot} from '../Slot';
 
+/**
+ * @public
+ */
 export abstract class Attachment implements IAttachment {
     name: string;
     type: AttachmentType;
@@ -46,6 +49,9 @@ export abstract class Attachment implements IAttachment {
     abstract copy (): Attachment;
 }
 
+/**
+ * @public
+ */
 export abstract class VertexAttachment extends Attachment {
     private static nextID = 0;
 
