@@ -14,8 +14,7 @@
     "prepare": "rush install",
     "build:compile": "rush build",
     "build:types": "rush build:types",
-    "build:mixins": "rush build:mixins",
-    "build": "npm run build:compile && npm run build:types && npm run build:mixins",
+    "build": "npm run build:compile && npm run build:types",
     "prepublishOnly": "npm run build",
     "test": "cd ./tools/unit-tests && pnpm test && cd ../.."
   },

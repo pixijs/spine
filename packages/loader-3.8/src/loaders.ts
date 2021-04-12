@@ -155,6 +155,10 @@ export class SpineParser {
             });
         }
     }
+
+    static registerLoaderPlugin() {
+        Loader.registerPlugin(SpineParser);
+    }
 }
 
 /**
@@ -215,5 +219,3 @@ export function staticImageLoader(pages: { [key: string]: (BaseTexture | Texture
             callback(page);
     }
 }
-
-// Loader.registerPlugin(SpineParser);
