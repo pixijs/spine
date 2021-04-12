@@ -23,7 +23,7 @@ build-es6
 .idea
 
 # Rush temporary files
-common/config/
+common/config/pnpm-lock.yaml
 common/deploy/
 common/scripts/
 common/temp/
