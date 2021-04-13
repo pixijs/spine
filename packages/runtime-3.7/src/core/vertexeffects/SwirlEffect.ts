@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -29,24 +28,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {VertexEffect} from "../VertexEffect";
+import type {Skeleton} from "../Skeleton";
+import {Color, MathUtils, PowOut, Vector2} from "@pixi-spine/base";
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class SwirlEffect implements VertexEffect {
+    static interpolation = new PowOut(2);
+    centerX = 0;
+    centerY = 0;
+    radius = 0;
+    angle = 0;
+    private worldX = 0;
+    private worldY = 0;
 
-    constructor (name: string) {
-        super(name);
+    constructor (radius: number) {
+        this.radius = radius;
     }
 
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+    begin(skeleton: Skeleton): void {
+        this.worldX = skeleton.x + this.centerX;
+        this.worldY = skeleton.y + this.centerY;
+    }
+
+    //@ts-ignore
+    transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
+        let radAngle = this.angle * MathUtils.degreesToRadians;
+        let x = position.x - this.worldX;
+        let y = position.y - this.worldY;
+        let dist = Math.sqrt(x * x + y * y);
+        if (dist < this.radius) {
+            let theta = SwirlEffect.interpolation.apply(0, radAngle, (this.radius - dist) / this.radius);
+            let cos = Math.cos(theta);
+            let sin = Math.sin(theta);
+            position.x = cos * x - sin * y + this.worldX;
+            position.y = sin * x + cos * y + this.worldY;
+        }
+    }
+
+    end(): void {
     }
 }

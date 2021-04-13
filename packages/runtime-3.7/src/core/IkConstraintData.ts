@@ -28,25 +28,20 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {BoneData} from "./BoneData";
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
-
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class IkConstraintData {
+    name: string;
+    order = 0;
+    bones = new Array<BoneData>();
+    target: BoneData;
+    bendDirection = 1;
+    compress = false;
+    stretch = false;
+    uniform = false;
+    mix = 1;
 
     constructor (name: string) {
-        super(name);
-    }
-
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+        this.name = name;
     }
 }

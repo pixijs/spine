@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -29,24 +28,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {VertexAttachment} from './Attachment';
+import {AttachmentType, Color, IClippingAttachment} from '@pixi-spine/base';
+import type {SlotData} from '../SlotData';
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class ClippingAttachment extends VertexAttachment implements IClippingAttachment {
+    type = AttachmentType.Clipping;
+    endSlot: SlotData;
 
-    constructor (name: string) {
+    // Nonessential.
+    color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
+
+    constructor(name: string) {
         super(name);
-    }
-
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
     }
 }

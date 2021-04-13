@@ -29,24 +29,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {BoneData} from './BoneData';
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class TransformConstraintData {
+    name: string;
+    order = 0;
+    bones = new Array<BoneData>();
+    target: BoneData;
+    rotateMix = 0; translateMix = 0; scaleMix = 0; shearMix = 0;
+    offsetRotation = 0; offsetX = 0; offsetY = 0; offsetScaleX = 0; offsetScaleY = 0; offsetShearY = 0;
+    relative = false;
+    local = false;
 
     constructor (name: string) {
-        super(name);
-    }
-
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+        if (name == null) throw new Error("name cannot be null.");
+        this.name = name;
     }
 }

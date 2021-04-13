@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -29,24 +28,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {VertexAttachment} from './Attachment';
+import {AttachmentType, Color, MathUtils, Vector2} from "@pixi-spine/base";
+import type {Bone} from '../Bone';
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class PointAttachment extends VertexAttachment {
+    type = AttachmentType.Point;
+    x: number;
+    y: number;
+    rotation: number;
+    color = new Color(0.38, 0.94, 0, 1);
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name);
     }
 
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+    computeWorldPosition(bone: Bone, point: Vector2) {
+        const mat = bone.matrix;
+        point.x = this.x * mat.a + this.y * mat.c + bone.worldX;
+        point.y = this.x * mat.b + this.y * mat.d + bone.worldY;
+        return point;
+    }
+
+    computeWorldRotation(bone: Bone) {
+        const mat = bone.matrix;
+        let cos = MathUtils.cosDeg(this.rotation), sin = MathUtils.sinDeg(this.rotation);
+        let x = cos * mat.a + sin * mat.c;
+        let y = cos * mat.b + sin * mat.d;
+        return Math.atan2(y, x) * MathUtils.radDeg;
     }
 }

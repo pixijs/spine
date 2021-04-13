@@ -29,24 +29,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {EventData} from "./EventData";
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class Event {
+    data: EventData;
+    intValue: number;
+    floatValue: number;
+    stringValue: string;
+    time: number;
+    volume: number;
+    balance: number;
 
-    constructor (name: string) {
-        super(name);
-    }
 
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+    constructor(time: number, data: EventData) {
+        if (data == null) throw new Error("data cannot be null.");
+        this.time = time;
+        this.data = data;
     }
 }

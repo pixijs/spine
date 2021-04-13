@@ -29,24 +29,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {Color} from '@pixi-spine/base';
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
+import type {ISlotData} from '@pixi-spine/base';
+import type {BLEND_MODES} from '@pixi/constants';
+import {BoneData} from "./BoneData";
+
+export class SlotData implements ISlotData {
+    index: number;
+    name: string;
+    boneData: BoneData;
     color = new Color(1, 1, 1, 1);
+    darkColor: Color;
+    attachmentName: string;
+    blendMode: BLEND_MODES;
 
-    constructor (name: string) {
-        super(name);
-    }
-
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+    constructor (index: number, name: string, boneData: BoneData) {
+        if (index < 0) throw new Error("index must be >= 0.");
+        if (name == null) throw new Error("name cannot be null.");
+        if (boneData == null) throw new Error("boneData cannot be null.");
+        this.index = index;
+        this.name = name;
+        this.boneData = boneData;
     }
 }

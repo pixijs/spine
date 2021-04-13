@@ -1,10 +1,10 @@
 {
-  "name": "@pixi-spine/runtime-3.8",
+  "name": "@pixi-spine/runtime-3.7",
   "version": "3.0.0",
-  "description": "Pixi runtime for spine 3.8 models",
-  "main": "lib/runtime-3.8.js",
-  "module": "lib/runtime-3.8.es.js",
-  "bundle": "dist/runtime-3.8.js",
+  "description": "Pixi runtime for spine 3.7 models",
+  "main": "lib/runtime-3.7.js",
+  "module": "lib/runtime-3.7.es.js",
+  "bundle": "dist/runtime-3.7.js",
   "namespace": "PIXI.spine",
   "types": "./index.d.ts",
   "peerDependencies": {

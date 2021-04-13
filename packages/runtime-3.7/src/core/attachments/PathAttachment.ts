@@ -29,24 +29,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import {VertexAttachment} from "./Attachment";
+import {AttachmentType, Color} from "@pixi-spine/base";
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
+export class PathAttachment extends VertexAttachment {
+    type = AttachmentType.Path;
+    lengths: Array<number>;
+    closed = false;
+    constantSpeed = false;
     color = new Color(1, 1, 1, 1);
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name);
-    }
-
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
     }
 }

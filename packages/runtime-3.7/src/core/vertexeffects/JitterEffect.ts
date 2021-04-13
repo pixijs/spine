@@ -1,6 +1,5 @@
 /******************************************************************************
- * Spine Runtimes Software License
- * Version 2.5
+ * Spine Runtimes Software License v2.5
  *
  * Copyright (c) 2013-2016, Esoteric Software
  * All rights reserved.
@@ -28,25 +27,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
+import {VertexEffect} from "../VertexEffect";
+import type {Skeleton} from "../Skeleton";
+import {Color, MathUtils, Vector2} from "@pixi-spine/base";
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+export class JitterEffect implements VertexEffect {
+    jitterX = 0;
+    jitterY = 0;
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
-
-    constructor (name: string) {
-        super(name);
+    constructor (jitterX: number, jitterY: number) {
+        this.jitterX = jitterX;
+        this.jitterY = jitterY;
     }
 
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
+    //@ts-ignore
+    begin(skeleton: Skeleton): void {
+    }
+
+    //@ts-ignore
+    transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
+        position.x += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+        position.y += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
+    }
+
+    end(): void {
     }
 }

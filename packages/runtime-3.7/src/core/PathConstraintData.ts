@@ -29,24 +29,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color} from '@pixi-spine/base';
+import type {SlotData} from "./SlotData";
+import type {BoneData} from "./BoneData";
 
-/**
- * @public
- */
-export class BoundingBoxAttachment extends VertexAttachment {
-    type = AttachmentType.BoundingBox;
-    color = new Color(1, 1, 1, 1);
+export class PathConstraintData {
+    name: string;
+    order = 0;
+    bones = new Array<BoneData>();
+    target: SlotData;
+    positionMode: PositionMode;
+    spacingMode: SpacingMode;
+    rotateMode: RotateMode;
+    offsetRotation: number;
+    position: number;
+    spacing: number;
+    rotateMix: number;
+    translateMix: number;
 
-    constructor (name: string) {
-        super(name);
+    constructor(name: string) {
+        this.name = name;
     }
+}
 
-    copy (): Attachment {
-        let copy = new BoundingBoxAttachment(this.name);
-        this.copyTo(copy);
-        copy.color.setFromColor(this.color);
-        return copy;
-    }
+export enum PositionMode {
+    Fixed, Percent
+}
+
+export enum SpacingMode {
+    Length, Fixed, Percent
+}
+
+export enum RotateMode {
+    Tangent, Chain, ChainScale
 }
