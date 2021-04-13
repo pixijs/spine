@@ -62,9 +62,7 @@ Navigate `pixi-spine` npm package, take `dist/pixi-spine.umd.js` file.
 const animation = new PIXI.spine.Spine(resources.spineCharacter.spineData);
 ```
 
-Unfortunately, we did not figure out how to add typescript support for this build, yet.
-
-You can try use typings from [v5.x branch](https://github.com/pixijs/pixi-spine/blob/master/dist/pixi-spine.d.ts), it should work.
+Unfortunately, there are no typescript definitions for vanilla build on both `pixi` v6 and `pixi-spine`
 
 ### Custom bundle
 
