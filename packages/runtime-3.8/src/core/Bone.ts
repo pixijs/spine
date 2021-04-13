@@ -33,13 +33,12 @@ import {Matrix} from '@pixi/math';
 import {Updatable} from "./Updatable";
 import {BoneData, TransformMode} from "./BoneData";
 import {Skeleton} from "./Skeleton";
-import {MathUtils, Vector2} from "@pixi-spine/base";
+import {MathUtils, settings, Vector2} from "@pixi-spine/base";
 
 /**
  * @public
  */
 export class Bone implements Updatable {
-    static yDown: boolean = false;
     //be careful! Spine b,c is c,b in pixi matrix
     matrix = new Matrix();
 
@@ -113,7 +112,7 @@ export class Bone implements Updatable {
         let m = this.matrix;
 
         let sx = this.skeleton.scaleX;
-        let sy = Bone.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
+        let sy = settings.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
 
         if (parent == null) { // Root bone.
             let skeleton = this.skeleton;
@@ -191,7 +190,7 @@ export class Bone implements Updatable {
                 s = Math.sqrt(za * za + zc * zc);
                 if (
                     this.data.transformMode == TransformMode.NoScale
-                    && (pa * pd - pb * pc < 0) != (Bone.yDown?
+                    && (pa * pd - pb * pc < 0) != (settings.yDown?
                     (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
                         (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0))
                 ) s = -s;

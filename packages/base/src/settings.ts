@@ -2,7 +2,7 @@
  * @public
  */
 export let settings = {
-    yDown: false,
+    yDown: true,
     /**
      * pixi-spine gives option to not fail at certain parsing errors
      * spine-ts fails here

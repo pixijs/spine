@@ -782,7 +782,7 @@ Object.defineProperty(SpineBase.prototype, 'visible', {
     get: function () {
         return this._visible;
     },
-    set: function (this: any, value: boolean) {
+    set: function (value: boolean) {
         if (value !== this._visible) {
             this._visible = value;
             if (value) {
