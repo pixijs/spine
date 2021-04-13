@@ -128,6 +128,9 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             this.addChild(slotContainer);
             this.tempClipContainers.push(null);
 
+            if (!attachment) {
+                continue;
+            }
             if (attachment.type === AttachmentType.Region) {
                 let spriteName = (attachment.region as TextureAtlasRegion).name;
                 let sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
@@ -144,10 +147,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 this.createGraphics(slot, attachment);
                 slotContainer.addChild(slot.clippingContainer);
                 slotContainer.addChild(slot.currentGraphics);
-            } else {
-                continue;
             }
-
         }
 
         /**
