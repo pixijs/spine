@@ -1,5 +1,5 @@
 {
-  "name": "@pixi/spine",
+  "name": "pixi-spine",
   "version": "3.0.0",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
   "main": "lib/all.js",
@@ -8,12 +8,12 @@
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "peerDependencies": {
-    "@pixi-spine/base": "~3.0.0",
-    "@pixi-spine/runtime-3.8": "~3.0.0",
-    "@pixi-spine/loader-3.8": "~3.0.0"
+    "@pixi-spine/base": "=3.0.0",
+    "@pixi-spine/runtime-3.8": "=3.0.0",
+    "@pixi-spine/loader-3.8": "=3.0.0"
   },
   "scripts": {
-    "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
+    "build": "rollup -c rollup.config.js --silent",
     "build:types": "rimraf compile && tsc && api-extractor run"
   },
   "repository": {

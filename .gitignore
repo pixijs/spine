@@ -34,5 +34,6 @@ compile
 
 # packages ignore
 lib
+dist
 bundles/*/index.d.ts
 packages/*/index.d.ts

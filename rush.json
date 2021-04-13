@@ -40,7 +40,7 @@
       "shouldPublish": true
     },
     {
-      "packageName": "@pixi/spine",
+      "packageName": "pixi-spine",
       "projectFolder": "bundles/pixi-spine",
       "reviewCategory": "production",
       "shouldPublish": true

@@ -15,7 +15,7 @@
     "@pixi-spine/base": "~3.0.0"
   },
   "scripts": {
-    "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
+    "build": "rollup -c rollup.config.js --silent",
     "build:types": "rimraf compile && tsc && api-extractor run"
   },
   "repository": {

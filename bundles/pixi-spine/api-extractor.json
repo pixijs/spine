@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
   "mainEntryPointFilePath": "<projectFolder>/compile/bundles/pixi-spine/src/index.d.ts",
   "bundledPackages": [
-    "@pixi/spine"
+    "pixi-spine"
   ],
   "compiler": {
     "tsconfigFilePath": "<projectFolder>/tsconfig.json"
