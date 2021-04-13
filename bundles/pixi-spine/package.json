@@ -4,7 +4,7 @@
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
   "main": "lib/all.js",
   "module": "lib/all.es.js",
-  "bundle": "dist/pixi-spine.js",
+  "bundle": "dist/pixi-spine.umd.js",
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "peerDependencies": {
