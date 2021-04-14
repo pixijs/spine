@@ -32,6 +32,9 @@
 import type {SlotData} from "./SlotData";
 import type {BoneData} from "./BoneData";
 
+/**
+ * @public
+ */
 export class PathConstraintData {
     name: string;
     order = 0;
@@ -51,14 +54,23 @@ export class PathConstraintData {
     }
 }
 
+/**
+ * @public
+ */
 export enum PositionMode {
     Fixed, Percent
 }
 
+/**
+ * @public
+ */
 export enum SpacingMode {
     Length, Fixed, Percent
 }
 
+/**
+ * @public
+ */
 export enum RotateMode {
     Tangent, Chain, ChainScale
 }

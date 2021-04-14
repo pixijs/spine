@@ -29,6 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
+/**
+ * @public
+ */
 export interface Updatable {
     update(): void;
 }

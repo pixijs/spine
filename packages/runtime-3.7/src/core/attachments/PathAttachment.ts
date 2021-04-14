@@ -32,6 +32,9 @@
 import {VertexAttachment} from "./Attachment";
 import {AttachmentType, Color} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class PathAttachment extends VertexAttachment {
     type = AttachmentType.Path;
     lengths: Array<number>;

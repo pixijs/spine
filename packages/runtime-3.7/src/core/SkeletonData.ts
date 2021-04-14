@@ -38,6 +38,9 @@ import {EventData} from "./EventData";
 import {TransformConstraintData} from "./TransformConstraintData";
 import {PathConstraintData} from "./PathConstraintData";
 
+/**
+ * @public
+ */
 export class SkeletonData {
     name: string;
     bones = new Array<BoneData>(); // Ordered parents first.

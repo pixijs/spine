@@ -34,6 +34,9 @@ import {AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachmen
 import type {TextureAtlas} from "@pixi-spine/base";
 import type {Skin} from "./Skin";
 
+/**
+ * @public
+ */
 export class AtlasAttachmentLoader implements AttachmentLoader {
     atlas: TextureAtlas;
 

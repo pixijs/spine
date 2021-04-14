@@ -31,6 +31,9 @@
 
 import {BoneData} from './BoneData';
 
+/**
+ * @public
+ */
 export class TransformConstraintData {
     name: string;
     order = 0;

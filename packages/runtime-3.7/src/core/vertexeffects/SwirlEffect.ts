@@ -32,6 +32,9 @@ import {VertexEffect} from "../VertexEffect";
 import type {Skeleton} from "../Skeleton";
 import {Color, MathUtils, PowOut, Vector2} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class SwirlEffect implements VertexEffect {
     static interpolation = new PowOut(2);
     centerX = 0;

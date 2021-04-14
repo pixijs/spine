@@ -58,6 +58,9 @@ import {
 import {ArrayLike, Color, Utils, settings} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 
+/**
+ * @public
+ */
 export class SkeletonJson {
     attachmentLoader: AttachmentLoader;
     scale = 1;

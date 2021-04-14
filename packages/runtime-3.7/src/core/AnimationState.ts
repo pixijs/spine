@@ -41,6 +41,9 @@ import {AnimationStateData} from "./AnimationStateData";
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 
+/**
+ * @public
+ */
 export class AnimationState implements IAnimationState {
     static emptyAnimation = new Animation("<empty>", [], 0);
     static SUBSEQUENT = 0;
@@ -719,6 +722,9 @@ export class AnimationState implements IAnimationState {
     }
 }
 
+/**
+ * @public
+ */
 export class TrackEntry {
     animation: Animation;
     next: TrackEntry; mixingFrom: TrackEntry; mixingTo: TrackEntry;
@@ -814,6 +820,9 @@ export class TrackEntry {
     }
 }
 
+/**
+ * @public
+ */
 export class EventQueue {
     objects: Array<any> = [];
     drainDisabled = false;
@@ -935,10 +944,16 @@ export class EventQueue {
     }
 }
 
+/**
+ * @public
+ */
 export enum EventType {
     start, interrupt, end, dispose, complete, event
 }
 
+/**
+ * @public
+ */
 export interface AnimationStateListener2 {
     /** Invoked when this entry has been set as the current entry. */
     start? (entry: TrackEntry): void;
@@ -961,6 +976,9 @@ export interface AnimationStateListener2 {
     event? (entry: TrackEntry, event: Event): void;
 }
 
+/**
+ * @public
+ */
 export abstract class AnimationStateAdapter2 implements AnimationStateListener2 {
     //@ts-ignore
     start (entry: TrackEntry) {

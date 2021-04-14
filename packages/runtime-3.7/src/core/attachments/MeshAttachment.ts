@@ -32,6 +32,9 @@
 import {VertexAttachment} from './Attachment';
 import {AttachmentType, Color, IMeshAttachment, TextureRegion} from '@pixi-spine/base';
 
+/**
+ * @public
+ */
 export class MeshAttachment extends VertexAttachment implements IMeshAttachment {
     type = AttachmentType.Mesh;
 

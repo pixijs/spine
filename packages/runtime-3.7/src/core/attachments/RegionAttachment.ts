@@ -34,6 +34,9 @@ import {AttachmentType, ArrayLike, Color, TextureRegion, Utils, IRegionAttachmen
 
 import type {Bone} from '../Bone';
 
+/**
+ * @public
+ */
 export class RegionAttachment extends Attachment implements IRegionAttachment {
     type = AttachmentType.Region;
 

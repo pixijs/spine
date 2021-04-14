@@ -30,6 +30,9 @@
  *****************************************************************************/
 import {BoneData} from "./BoneData";
 
+/**
+ * @public
+ */
 export class IkConstraintData {
     name: string;
     order = 0;

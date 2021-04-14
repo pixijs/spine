@@ -35,6 +35,9 @@ import type {ISlotData} from '@pixi-spine/base';
 import type {BLEND_MODES} from '@pixi/constants';
 import {BoneData} from "./BoneData";
 
+/**
+ * @public
+ */
 export class SlotData implements ISlotData {
     index: number;
     name: string;

@@ -29,6 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
+/**
+ * @public
+ */
 export class BoneData {
     index: number;
     name: string;
@@ -52,6 +55,9 @@ export class BoneData {
     }
 }
 
+/**
+ * @public
+ */
 export enum TransformMode {
     Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection
 }

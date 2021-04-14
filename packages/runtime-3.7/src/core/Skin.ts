@@ -34,6 +34,9 @@ import {Skeleton} from "./Skeleton";
 
 import type {Map} from '@pixi-spine/base';
 
+/**
+ * @public
+ */
 export class Skin {
     name: string;
     attachments = new Array<Map<Attachment>>();

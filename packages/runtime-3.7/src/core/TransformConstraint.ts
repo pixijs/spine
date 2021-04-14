@@ -35,6 +35,9 @@ import {Bone} from "./Bone";
 import {MathUtils, Vector2} from "@pixi-spine/base";
 import {Skeleton} from "./Skeleton";
 
+/**
+ * @public
+ */
 export class TransformConstraint implements Constraint {
     data: TransformConstraintData;
     bones: Array<Bone>;

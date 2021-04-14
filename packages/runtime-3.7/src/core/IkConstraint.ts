@@ -35,6 +35,9 @@ import {Bone} from "./Bone";
 import {Skeleton} from "./Skeleton";
 import {MathUtils} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class IkConstraint implements Constraint {
     data: IkConstraintData;
     bones: Array<Bone>;

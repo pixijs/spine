@@ -40,6 +40,9 @@ import {PathConstraint} from "./PathConstraint";
 import {Skin} from "./Skin";
 import {Color, Utils, Vector2} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class Skeleton {
     data: SkeletonData;
     bones: Array<Bone>;

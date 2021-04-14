@@ -36,6 +36,9 @@ import {Slot} from "./Slot";
 import {Skeleton} from "./Skeleton";
 import {MathUtils, Utils} from "@pixi-spine/base";
 
+/**
+ * @public
+ */
 export class PathConstraint implements Constraint {
     static NONE = -1; static BEFORE = -2; static AFTER = -3;
     static epsilon = 0.00001;

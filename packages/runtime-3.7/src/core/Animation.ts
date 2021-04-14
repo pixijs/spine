@@ -37,6 +37,9 @@ import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
 
+/**
+ * @public
+ */
 export class Animation {
     name: string;
     timelines: Array<Timeline>;
@@ -85,11 +88,17 @@ export class Animation {
     }
 }
 
+/**
+ * @public
+ */
 export interface Timeline {
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
     getPropertyId (): number;
 }
 
+/**
+ * @public
+ */
 export enum MixBlend {
     setup,
     first,
@@ -97,10 +106,16 @@ export enum MixBlend {
     add
 }
 
+/**
+ * @public
+ */
 export enum MixDirection {
     in, out
 }
 
+/**
+ * @public
+ */
 export enum TimelineType {
     rotate, translate, scale, shear,
     attachment, color, deform,
@@ -110,6 +125,9 @@ export enum TimelineType {
     twoColor
 }
 
+/**
+ * @public
+ */
 export abstract class CurveTimeline implements Timeline {
     static LINEAR = 0; static STEPPED = 1; static BEZIER = 2;
     static BEZIER_SIZE = 10 * 2 - 1;
@@ -200,6 +218,9 @@ export abstract class CurveTimeline implements Timeline {
     abstract apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
 }
 
+/**
+ * @public
+ */
 export class RotateTimeline extends CurveTimeline {
     static ENTRIES = 2;
     static PREV_TIME = -2; static PREV_ROTATION = -1;
@@ -279,6 +300,9 @@ export class RotateTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class TranslateTimeline extends CurveTimeline {
     static ENTRIES = 3;
     static PREV_TIME = -3; static PREV_X = -2; static PREV_Y = -1;
@@ -355,6 +379,9 @@ export class TranslateTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class ScaleTimeline extends TranslateTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -455,6 +482,9 @@ export class ScaleTimeline extends TranslateTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class ShearTimeline extends TranslateTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -515,6 +545,9 @@ export class ShearTimeline extends TranslateTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class ColorTimeline extends CurveTimeline {
     static ENTRIES = 5;
     static PREV_TIME = -5; static PREV_R = -4; static PREV_G = -3; static PREV_B = -2; static PREV_A = -1;
@@ -592,6 +625,9 @@ export class ColorTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class TwoColorTimeline extends CurveTimeline {
     static ENTRIES = 8;
     static PREV_TIME = -8; static PREV_R = -7; static PREV_G = -6; static PREV_B = -5; static PREV_A = -4;
@@ -689,6 +725,9 @@ export class TwoColorTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class AttachmentTimeline implements Timeline {
     slotIndex: number;
     frames: ArrayLike<number> // time, ...
@@ -745,6 +784,9 @@ export class AttachmentTimeline implements Timeline {
 
 let zeros : ArrayLike<number> = null;
 
+/**
+ * @public
+ */
 export class DeformTimeline extends CurveTimeline {
     slotIndex: number;
     attachment: VertexAttachment;
@@ -946,6 +988,9 @@ export class DeformTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class EventTimeline implements Timeline {
     frames: ArrayLike<number>; // time, ...
     events: Array<Event>;
@@ -998,6 +1043,9 @@ export class EventTimeline implements Timeline {
     }
 }
 
+/**
+ * @public
+ */
 export class DrawOrderTimeline implements Timeline {
     frames: ArrayLike<number>; // time, ...
     drawOrders: Array<Array<number>>;
@@ -1053,6 +1101,9 @@ export class DrawOrderTimeline implements Timeline {
     }
 }
 
+/**
+ * @public
+ */
 export class IkConstraintTimeline extends CurveTimeline {
     static ENTRIES = 5;
     static PREV_TIME = -5; static PREV_MIX = -4; static PREV_BEND_DIRECTION = -3; static PREV_COMPRESS = -2; static PREV_STRETCH = -1;
@@ -1153,6 +1204,9 @@ export class IkConstraintTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class TransformConstraintTimeline extends CurveTimeline {
     static ENTRIES = 5;
     static PREV_TIME = -5; static PREV_ROTATE = -4; static PREV_TRANSLATE = -3; static PREV_SCALE = -2; static PREV_SHEAR = -1;
@@ -1241,6 +1295,9 @@ export class TransformConstraintTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class PathConstraintPositionTimeline extends CurveTimeline {
     static ENTRIES = 2;
     static PREV_TIME = -2; static PREV_VALUE = -1;
@@ -1301,6 +1358,9 @@ export class PathConstraintPositionTimeline extends CurveTimeline {
     }
 }
 
+/**
+ * @public
+ */
 export class PathConstraintSpacingTimeline extends PathConstraintPositionTimeline {
     constructor (frameCount: number) {
         super(frameCount);
@@ -1346,6 +1406,9 @@ export class PathConstraintSpacingTimeline extends PathConstraintPositionTimelin
     }
 }
 
+/**
+ * @public
+ */
 export class PathConstraintMixTimeline extends CurveTimeline {
     static ENTRIES = 3;
     static PREV_TIME = -3; static PREV_ROTATE = -2; static PREV_TRANSLATE = -1;
