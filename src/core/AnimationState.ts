@@ -260,7 +260,7 @@ namespace pixi_spine.core {
                 var slot = slots[i];
                 if (slot.attachmentState == setupState) {
                     var attachmentName = slot.data.attachmentName;
-                    slot.attachment = (attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
+                    slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
                 }
             }
             this.unkeyedState += 2; // Increasing after each use avoids the need to reset attachmentState for every slot.
@@ -378,7 +378,7 @@ namespace pixi_spine.core {
         }
 
         setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean) {
-            slot.attachment = attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName);
+            slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
             if (attachments) slot.attachmentState = this.unkeyedState + AnimationState.CURRENT;
         }
 
