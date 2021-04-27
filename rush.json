@@ -46,6 +46,12 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@pixi-spine/runtime-4.0",
+      "projectFolder": "packages/runtime-4.0",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@pixi-spine/loader-3.8",
       "projectFolder": "packages/loader-3.8",
       "reviewCategory": "production",

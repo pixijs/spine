@@ -1,19 +1,16 @@
 {
-  "name": "pixi-spine",
+  "name": "@pixi-spine/runtime-4.0",
   "version": "3.0.0",
-  "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
-  "main": "lib/all.js",
-  "module": "lib/all.es.js",
-  "bundle": "dist/pixi-spine.umd.js",
-  "types": "./index.d.ts",
+  "description": "Pixi runtime for spine 4.0 models",
+  "main": "lib/runtime-4.0.js",
+  "module": "lib/runtime-4.0.es.js",
+  "bundle": "dist/runtime-4.0.js",
   "namespace": "PIXI.spine",
+  "types": "./index.d.ts",
   "peerDependencies": {
-    "@pixi-spine/base": "=3.0.0",
-    "@pixi-spine/runtime-3.8": "=3.0.0",
-    "@pixi-spine/runtime-3.7": "=3.0.0",
-    "@pixi-spine/runtime-4.0": "=3.0.0",
-    "@pixi-spine/loader-base": "=3.0.0",
-    "@pixi-spine/loader-uni": "=3.0.0"
+    "@pixi/constants": "^6.0.2",
+    "@pixi/math": "^6.0.2",
+    "@pixi-spine/base": "~3.0.0"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
@@ -26,14 +23,14 @@
   "files": [
     "lib",
     "dist",
-    "*.d.ts"
+    "index.d.ts"
   ],
   "keywords": [
     "pixi.js",
     "pixi",
     "spine"
   ],
-  "author": "Mat Groves",
+  "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },
@@ -46,7 +43,6 @@
     "tslib": "~2.2.0",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
     "chai": "~4.2.0",
-    "prepend": "=1.0.2",
     "rimraf": "3.0.2"
   }
 }
