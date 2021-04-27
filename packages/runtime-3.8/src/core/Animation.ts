@@ -318,7 +318,6 @@ export class RotateTimeline extends CurveTimeline {
         this.frames[frameIndex + RotateTimeline.ROTATION] = degrees;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
 
@@ -406,8 +405,7 @@ export class TranslateTimeline extends CurveTimeline {
         this.frames[frameIndex + TranslateTimeline.Y] = y;
     }
 
-    //@ts-ignore
-    apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
+        apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
 
         let bone = skeleton.bones[this.boneIndex];
@@ -471,8 +469,7 @@ export class ScaleTimeline extends TranslateTimeline {
         return (TimelineType.scale << 24) + this.boneIndex;
     }
 
-    //@ts-ignore
-    apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
+        apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
 
         let bone = skeleton.bones[this.boneIndex];
@@ -576,7 +573,6 @@ export class ShearTimeline extends TranslateTimeline {
         return (TimelineType.shear << 24) + this.boneIndex;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
 
@@ -662,7 +658,6 @@ export class ColorTimeline extends CurveTimeline {
         this.frames[frameIndex + ColorTimeline.A] = a;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let slot = skeleton.slots[this.slotIndex];
         if (!slot.bone.active) return;
@@ -740,7 +735,6 @@ export class TwoColorTimeline extends CurveTimeline {
     }
 
     /** Sets the time in seconds, light, and dark colors for the specified key frame. */
-    //@ts-ignore
     setFrame (frameIndex: number, time: number, r: number, g: number, b: number, a: number, r2: number, g2: number, b2: number) {
         frameIndex *= TwoColorTimeline.ENTRIES;
         this.frames[frameIndex] = time;
@@ -753,7 +747,6 @@ export class TwoColorTimeline extends CurveTimeline {
         this.frames[frameIndex + TwoColorTimeline.B2] = b2;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let slot = skeleton.slots[this.slotIndex];
         if (!slot.bone.active) return;
@@ -854,7 +847,6 @@ export class AttachmentTimeline implements Timeline {
         this.attachmentNames[frameIndex] = attachmentName;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let slot = skeleton.slots[this.slotIndex];
         if (!slot.bone.active) return;
@@ -923,7 +915,6 @@ export class DeformTimeline extends CurveTimeline {
         this.frameVertices[frameIndex] = vertices;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let slot: Slot = skeleton.slots[this.slotIndex];
         if (!slot.bone.active) return;
@@ -1196,7 +1187,6 @@ export class DrawOrderTimeline implements Timeline {
         this.drawOrders[frameIndex] = drawOrder;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let drawOrder: Array<Slot> = skeleton.drawOrder;
         let slots: Array<Slot> = skeleton.slots;
@@ -1263,7 +1253,6 @@ export class IkConstraintTimeline extends CurveTimeline {
         this.frames[frameIndex + IkConstraintTimeline.STRETCH] = stretch ? 1 : 0;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
         let constraint: IkConstraint = skeleton.ikConstraints[this.ikConstraintIndex];
@@ -1381,7 +1370,6 @@ export class TransformConstraintTimeline extends CurveTimeline {
         this.frames[frameIndex + TransformConstraintTimeline.SHEAR] = shearMix;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
 
@@ -1474,7 +1462,6 @@ export class PathConstraintPositionTimeline extends CurveTimeline {
         this.frames[frameIndex + PathConstraintPositionTimeline.VALUE] = value;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
         let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];
@@ -1523,7 +1510,6 @@ export class PathConstraintSpacingTimeline extends PathConstraintPositionTimelin
         return (TimelineType.pathConstraintSpacing << 24) + this.pathConstraintIndex;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
         let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];
@@ -1593,7 +1579,6 @@ export class PathConstraintMixTimeline extends CurveTimeline {
         this.frames[frameIndex + PathConstraintMixTimeline.TRANSLATE] = translateMix;
     }
 
-    //@ts-ignore
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let frames = this.frames;
         let constraint: PathConstraint = skeleton.pathConstraints[this.pathConstraintIndex];

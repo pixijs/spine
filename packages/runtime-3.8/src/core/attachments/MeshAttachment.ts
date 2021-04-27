@@ -39,7 +39,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
 
     region: TextureRegion;
     path: string;
-    regionUVs: Float32Array; uvs: ArrayLike<number>;
+    regionUVs: Float32Array;
     triangles: Array<number>;
     color = new Color(1, 1, 1, 1);
     width: number;
@@ -82,8 +82,6 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         this.copyTo(copy);
         copy.regionUVs = new Float32Array(this.regionUVs.length);
         Utils.arrayCopy(this.regionUVs, 0, copy.regionUVs, 0, this.regionUVs.length);
-        copy.uvs = new Array<number>(this.uvs.length);
-        Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, this.uvs.length);
         copy.triangles = new Array<number>(this.triangles.length);
         Utils.arrayCopy(this.triangles, 0, copy.triangles, 0, this.triangles.length);
         copy.hullLength = this.hullLength;

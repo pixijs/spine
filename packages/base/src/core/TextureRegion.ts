@@ -162,4 +162,8 @@ export class TextureRegion {
     get rotate(): boolean {
         return this.texture.rotate !== 0;
     }
+
+    get degrees() {
+        return (360 - this.texture.rotate * 45) % 360;
+    }
 }

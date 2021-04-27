@@ -53,7 +53,6 @@ export class SwirlEffect implements VertexEffect {
         this.worldY = skeleton.y + this.centerY;
     }
 
-    //@ts-ignore
     transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
         let radAngle = this.angle * MathUtils.degreesToRadians;
         let x = position.x - this.worldX;

@@ -7,7 +7,7 @@
         "strict": true,
         "noImplicitAny": false,
         "noUnusedLocals": true,
-        "noUnusedParameters": true,
+        "noUnusedParameters": false,
         "noImplicitReturns": true,
         "strictNullChecks": false,
         "esModuleInterop": true,

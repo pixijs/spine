@@ -43,11 +43,9 @@ export class JitterEffect implements VertexEffect {
         this.jitterY = jitterY;
     }
 
-    //@ts-ignore
     begin(skeleton: Skeleton): void {
     }
 
-    //@ts-ignore
     transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
         position.x += MathUtils.randomTriangular(-this.jitterX, this.jitterY);
         position.y += MathUtils.randomTriangular(-this.jitterX, this.jitterY);

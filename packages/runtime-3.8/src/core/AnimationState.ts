@@ -1294,27 +1294,21 @@ export interface AnimationStateListener {
  * @public
  */
 export abstract class AnimationStateAdapter implements AnimationStateListener {
-    //@ts-ignore
     start (entry: TrackEntry) {
     }
 
-    //@ts-ignore
     interrupt (entry: TrackEntry) {
     }
 
-    //@ts-ignore
     end (entry: TrackEntry) {
     }
 
-    //@ts-ignore
     dispose (entry: TrackEntry) {
     }
 
-    //@ts-ignore
     complete (entry: TrackEntry) {
     }
 
-    //@ts-ignore
     event (entry: TrackEntry, event: Event) {
     }
 }

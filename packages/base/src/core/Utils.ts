@@ -73,6 +73,39 @@ export class IntSet {
 /**
  * @public
  */
+export class StringSet {
+    entries: Map<boolean> = {};
+    size = 0;
+
+    add (value: string): boolean {
+        let contains = this.entries[value];
+        this.entries[value] = true;
+        if (!contains) this.size++;
+        return contains != true;
+    }
+
+    addAll (values: string[]): boolean {
+        let oldSize = this.size;
+        for (var i = 0, n = values.length; i < n; i++) {
+            this.add(values[i]);
+        }
+        return oldSize != this.size;
+    }
+
+    contains (value: string) {
+        let contains = this.entries[value];
+        return contains == true;
+    }
+
+    clear () {
+        this.entries = {};
+        this.size = 0;
+    }
+}
+
+/**
+ * @public
+ */
 export interface Disposable {
     dispose (): void;
 }
@@ -313,12 +346,10 @@ export class Utils {
     }
 
     // This function is used to fix WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
-    // @ts-ignore
     static webkit602BugfixHelper (alpha: number, blend: any) {
 
     }
 
-    // @ts-ignore
     static contains<T> (array: Array<T>, element: T, identity = true) {
         for (let i = 0; i < array.length; i++) {
             if (array[i] == element) return true;
