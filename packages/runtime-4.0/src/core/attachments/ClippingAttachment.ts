@@ -40,6 +40,8 @@ export class ClippingAttachment extends VertexAttachment implements IClippingAtt
     endSlot: SlotData;
 
     // Nonessential.
+    /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons
+     * are not usually rendered at runtime. */
     color = new Color(0.2275, 0.2275, 0.8078, 1); // ce3a3aff
 
     constructor (name: string) {

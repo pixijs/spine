@@ -80,7 +80,7 @@ export class SkeletonJson {
             skeletonData.hash = skeletonMap.hash;
             skeletonData.version = skeletonMap.spine;
             if (skeletonData.version.substr(0, 3) !== '3.8') {
-                let error = `PixiJS Spine plugin supports only format for Spine 3.8. Your model has version ${skeletonMap.spine}. Please look in pixi-spine repository README for another branch.`;
+                let error = `Spine 3.8 loader cant load version ${skeletonMap.spine}. Please configure your pixi-spine bundle`;
                 console.error(error);
             }
             if (skeletonData.version === '3.8.75')

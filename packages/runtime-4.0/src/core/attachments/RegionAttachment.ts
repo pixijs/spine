@@ -85,29 +85,52 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
     static U4 = 30;
     static V4 = 31;
 
+    /** The local x translation. */
     x = 0;
+
+    /** The local y translation. */
     y = 0;
+
+    /** The local scaleX. */
     scaleX = 1;
+
+    /** The local scaleY. */
     scaleY = 1;
+
+    /** The local rotation. */
     rotation = 0;
+
+    /** The width of the region attachment in Spine. */
     width = 0;
+
+    /** The height of the region attachment in Spine. */
     height = 0;
+
+    /** The color to tint the region attachment. */
     color = new Color(1, 1, 1, 1);
 
+    /** The name of the texture region for this attachment. */
     path: string;
+
     rendererObject: any;
     region: TextureRegion;
 
+    /** For each of the 4 vertices, a pair of <code>x,y</code> values that is the local position of the vertex.
+     *
+     * See {@link #updateOffset()}. */
     offset = Utils.newFloatArray(8);
+
+
     uvs = Utils.newFloatArray(8);
 
     tempColor = new Color(1, 1, 1, 1);
 
-    constructor(name: string) {
+    constructor (name:string) {
         super(name);
     }
 
-    updateOffset(): void {
+    /** Calculates the {@link #offset} using the region settings. Must be called after changing region settings. */
+    updateOffset () : void {
         let regionScaleX = this.width / this.region.originalWidth * this.scaleX;
         let regionScaleY = this.height / this.region.originalHeight * this.scaleY;
         let localX = -this.width / 2 * this.scaleX + this.region.offsetX * regionScaleX;
@@ -136,10 +159,10 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
         offset[RegionAttachment.OY4] = localYCos + localX2Sin;
     }
 
-    setRegion(region: TextureRegion): void {
+    setRegion (region: TextureRegion) : void {
         this.region = region;
         let uvs = this.uvs;
-        if (region.rotate) {
+        if (region.degrees == 90) {
             uvs[2] = region.u;
             uvs[3] = region.v2;
             uvs[4] = region.u;
@@ -160,7 +183,14 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
         }
     }
 
-    computeWorldVertices(bone: Bone, worldVertices: ArrayLike<number>, offset: number, stride: number) {
+    /** Transforms the attachment's four vertices to world coordinates.
+     *
+     * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
+     * Runtimes Guide.
+     * @param worldVertices The output world vertices. Must have a length >= `offset` + 8.
+     * @param offset The `worldVertices` index to begin writing values.
+     * @param stride The number of `worldVertices` entries between the value pairs written. */
+    computeWorldVertices (bone: Bone, worldVertices: ArrayLike<number>, offset: number, stride: number) {
         let vertexOffset = this.offset;
         let mat = bone.matrix;
         let x = mat.tx, y = mat.ty;

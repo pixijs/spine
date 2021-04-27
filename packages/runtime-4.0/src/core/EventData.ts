@@ -29,9 +29,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-/**
+/** Stores the setup pose values for an {@link Event}.
+ *
+ * See [Events](http://esotericsoftware.com/spine-events) in the Spine User Guide.
  * @public
- */
+ * */
 export class EventData {
     name: string;
     intValue: number;

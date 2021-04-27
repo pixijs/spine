@@ -33,12 +33,12 @@ import {Matrix} from '@pixi/math';
 import {Updatable} from "./Updatable";
 import {BoneData, TransformMode} from "./BoneData";
 import {Skeleton} from "./Skeleton";
-import {MathUtils, settings, Vector2} from "@pixi-spine/base";
+import {IBone, MathUtils, settings, Vector2} from "@pixi-spine/base";
 
 /**
  * @public
  */
-export class Bone implements Updatable {
+export class Bone implements Updatable, IBone {
     //be careful! Spine b,c is c,b in pixi matrix
     matrix = new Matrix();
 

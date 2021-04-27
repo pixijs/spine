@@ -7,7 +7,7 @@ export * from './core/AnimationStateData';
 export * from './core/AtlasAttachmentLoader';
 export * from './core/Bone';
 export * from './core/BoneData';
-export * from './core/Constraint';
+export * from './core/ConstraintData';
 export * from './core/Event';
 export * from './core/EventData';
 export * from './core/IkConstraint';

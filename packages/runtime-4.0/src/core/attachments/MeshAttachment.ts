@@ -38,14 +38,32 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     type = AttachmentType.Mesh;
 
     region: TextureRegion;
+
+    /** The name of the texture region for this attachment. */
     path: string;
-    regionUVs: Float32Array; uvs: ArrayLike<number>;
+
+    /** The UV pair for each vertex, normalized within the texture region. */
+    regionUVs: Float32Array;
+
+    /** Triplets of vertex indices which describe the mesh's triangulation. */
     triangles: Array<number>;
+
+    /** The color to tint the mesh. */
     color = new Color(1, 1, 1, 1);
+
+    /** The width of the mesh's image. Available only when nonessential data was exported. */
     width: number;
+
+    /** The height of the mesh's image. Available only when nonessential data was exported. */
     height: number;
+
+    /** The number of entries at the beginning of {@link #vertices} that make up the mesh hull. */
     hullLength: number;
+
+    /** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
+     * nonessential data was exported. Triangulation is not performed at runtime. */
     edges: Array<number>;
+
     private parentMesh: MeshAttachment;
     tempColor = new Color(0, 0, 0, 0);
 
@@ -53,6 +71,9 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         super(name);
     }
 
+    /** The parent mesh if this is a linked mesh, else null. A linked mesh shares the {@link #bones}, {@link #vertices},
+     * {@link #regionUVs}, {@link #triangles}, {@link #hullLength}, {@link #edges}, {@link #width}, and {@link #height} with the
+     * parent mesh, but may have a different {@link #name} or {@link #path} (and therefore a different texture). */
     getParentMesh () {
         return this.parentMesh;
     }
@@ -82,8 +103,6 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         this.copyTo(copy);
         copy.regionUVs = new Float32Array(this.regionUVs.length);
         Utils.arrayCopy(this.regionUVs, 0, copy.regionUVs, 0, this.regionUVs.length);
-        copy.uvs = new Array<number>(this.uvs.length);
-        Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, this.uvs.length);
         copy.triangles = new Array<number>(this.triangles.length);
         Utils.arrayCopy(this.triangles, 0, copy.triangles, 0, this.triangles.length);
         copy.hullLength = this.hullLength;
@@ -99,6 +118,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         return copy;
     }
 
+    /** Returns a new mesh with the {@link #parentMesh} set to this mesh's parent mesh, if any, else to this mesh. **/
     newLinkedMesh (): MeshAttachment {
         let copy = new MeshAttachment(this.name);
         copy.region = this.region;
