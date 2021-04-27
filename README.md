@@ -1,6 +1,6 @@
 # pixi-spine
 
-Spine 3.8 implementation for PixiJS v6.
+Spine 3.7, 3.8, 4.0 implementation for PixiJS v6. For spine < 3.7, use on your own risk.
 
 PixiJS v5 and before - please refer to [README in v5.x](https://github.com/pixijs/pixi-spine/tree/v5.x/#readme) 
 
@@ -52,6 +52,7 @@ app.loader
 
 All pixiJS v6 plugins has special `umd` build suited for vanilla.   
 Navigate `pixi-spine` npm package, take `dist/pixi-spine.umd.js` file.
+Alternatively, you can look in `@pixi-spine/all-3.8` npm package.
 
 ```html
 <script src='lib/pixi.js'></script>
@@ -66,9 +67,15 @@ Unfortunately, there are no typescript definitions for vanilla build on both `pi
 
 ### Custom bundle
 
-The same way you can make your `PIXI` bundle with [pixi-customize](https://pixijs.io/customize/)
+Main bundle `pixi-spine` weights more than 1 MB.
 
-Take contents of `pixi-spine` bundle and put it in your local `pixi-spine.js` file
+Bundle `@pixi-spine/all-3.8` weights about 400 KB.
+
+If you want to use different version (3.7, 4.0) please look how modules `loader-3.8` and `pixi-spine-3.8` are made.
+
+Basically, you have to copy its code in a separate file in your project, and alter imports to corresonding version. 
+
+For example, here's bundle for 3.8:
 
 ```js
 import {SpineParser} from '@pixi-spine/loader-3.8';
@@ -79,7 +86,7 @@ export * from '@pixi-spine/base';
 SpineParser.registerLoaderPlugin();
 ```
 
-Now that you re-exported everything, you can use it in the project by importing things from local `pixi-spine.js` file
+There's no guarantee that `loader-3.7` or `loader-4.0` exist, but you can do the same trick with them, just look in sources.
 
 ## Want to go advanced?
 
