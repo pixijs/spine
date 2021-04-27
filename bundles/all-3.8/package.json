@@ -32,6 +32,13 @@
     "spine"
   ],
   "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
+  "contributors": [
+    "Mat Groves",
+    "Chad Engler <chad@pantherdev.com>",
+    "Richard Davey <rdavey@gmail.com>",
+    "Shukant K. Pal <shukantpal@outlook.com>",
+    "Yevhenii Huselietov <d46k16@gmail.com>"
+  ],
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },

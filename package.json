@@ -1,14 +1,7 @@
 {
-  "name": "pixi-spine",
+  "name": "pixi-spine-parent",
   "version": "3.0.0",
-  "description": "Spine implementation for pixi v^5",
-  "author": "Mat Groves",
-  "contributors": [
-    "Chad Engler <chad@pantherdev.com>",
-    "Richard Davey <rdavey@gmail.com>",
-    "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
-    "Yevhenii Huselietov <d46k16@gmail.com>"
-  ],
+  "description": "Parent package for pixi-spine",
   "main": "index.js",
   "scripts": {
     "prepare": "rush install",
@@ -18,18 +11,5 @@
     "prepublishOnly": "npm run build",
     "test": "cd ./tools/unit-tests && pnpm test && cd ../.."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SukantPal/pixi-essentials.git"
-  },
-  "keywords": [
-    "pixi.js",
-    "pixi",
-    "spine"
-  ],
-  "license": "SEE SPINE-LICENSE",
-  "bugs": {
-    "url": "https://github.com/pixijs/pixi-spine/issues"
-  },
-  "homepage": "https://github.com/pixijs/pixi-spine/#readme"
+  "license": "SEE SPINE-LICENSE"
 }
