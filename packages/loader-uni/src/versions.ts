@@ -21,6 +21,9 @@ export function detectSpineVersion(version: string): SPINE_VERSION {
     if (ver3 === '3.8') {
         return SPINE_VERSION.VER38;
     }
+    if (ver3 === '4.0') {
+        return SPINE_VERSION.VER40;
+    }
     // try parse old versions with 3.7
     if (verNum < SPINE_VERSION.VER37) {
         return SPINE_VERSION.VER37;

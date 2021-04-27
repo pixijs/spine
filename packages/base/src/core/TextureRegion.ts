@@ -91,6 +91,9 @@ export class TextureRegion {
     //thats for overrides
     size: Rectangle = null;
 
+    names: string[] = null;
+    values: number[][] = null;
+
     get width(): number {
         const tex = this.texture;
         if (tex.trim) {

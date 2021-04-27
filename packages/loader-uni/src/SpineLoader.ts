@@ -11,15 +11,21 @@ class UniBinaryParser implements ISkeletonParser {
     scale = 1;
 
     readSkeletonData(atlas: TextureAtlas, dataToParse: Uint8Array): ISkeletonData {
-        const input = new BinaryInput(dataToParse);
+        let input = new BinaryInput(dataToParse);
         input.readString();
-        const version = input.readString();
-        const ver = detectSpineVersion(version);
+        let version = input.readString();
+        let ver = detectSpineVersion(version);
         let parser: any = null;
 
         if (ver === SPINE_VERSION.VER38) {
             parser = new spine38.SkeletonBinary(new spine38.AtlasAttachmentLoader(atlas));
         }
+
+        input = new BinaryInput(dataToParse);
+        input.readInt32();
+        input.readInt32();
+        version = input.readString();
+        ver = detectSpineVersion(version);
         if (ver === SPINE_VERSION.VER40) {
             parser = new spine40.SkeletonBinary(new spine40.AtlasAttachmentLoader(atlas));
         }
