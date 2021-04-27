@@ -36,6 +36,7 @@
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },
+  "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
     "rollup": "~2.33.1",

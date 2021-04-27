@@ -27,7 +27,7 @@
     "pixi",
     "spine"
   ],
-  "license": "MIT",
+  "license": "SEE SPINE-LICENSE",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },
