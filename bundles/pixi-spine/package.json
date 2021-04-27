@@ -33,7 +33,7 @@
     "pixi",
     "spine"
   ],
-  "author": "Mat Groves",
+  "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },

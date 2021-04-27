@@ -86,7 +86,7 @@ export * from '@pixi-spine/base';
 SpineParser.registerLoaderPlugin();
 ```
 
-There's no guarantee that `loader-3.7` or `loader-4.0` exist, but you can do the same trick with them, just look in sources.
+In case author was too lazy to publish`loader-3.7` or `loader-4.0`, you can do the same trick with them, just look in sources of `loader-3.8`.
 
 ## Want to go advanced?
 
