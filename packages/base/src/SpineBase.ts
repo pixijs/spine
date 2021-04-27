@@ -71,7 +71,8 @@ export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
 export abstract class SpineBase<Skeleton extends ISkeleton,
     SkeletonData extends ISkeletonData,
     AnimationState extends IAnimationState,
-    AnimationStateData extends IAnimationStateData> extends Container {
+    AnimationStateData extends IAnimationStateData>
+    extends Container implements GlobalMixins.Spine {
 
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;

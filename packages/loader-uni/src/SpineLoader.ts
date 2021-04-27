@@ -1,4 +1,3 @@
-/// <reference path="../global.d.ts" />
 import {AbstractSpineParser} from '@pixi-spine/loader-base';
 import {BinaryInput, ISkeletonData, ISkeletonParser, TextureAtlas} from "@pixi-spine/base";
 import {ILoaderResource, Loader} from "@pixi/loaders";

@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
-    "build:types": "rimraf compile && tsc && api-extractor run"
+    "build:types": "rimraf compile && tsc && api-extractor run && node scripts/injectGlobalMixins"
   },
   "repository": {
     "type": "git",

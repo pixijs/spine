@@ -1,3 +1,4 @@
+/// <reference path="../global.d.ts" />
 export * from './core/AttachmentType';
 export * from './core/BinaryInput';
 export * from './core/ISkeleton';
