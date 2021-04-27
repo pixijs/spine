@@ -79,7 +79,6 @@ export class Slot implements ISlot {
         this.darkColor = data.darkColor == null ? null : new Color();
         this.setToSetupPose();
 
-        //TODO: check it in 3.8
         this.blendMode = this.data.blendMode;
     }
 
