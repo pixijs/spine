@@ -9,7 +9,9 @@
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/constants": "^6.0.2",
-    "@pixi/math": "^6.0.2",
+    "@pixi/math": "^6.0.2"
+  },
+  "dependencies": {
     "@pixi-spine/base": "~3.0.0"
   },
   "scripts": {

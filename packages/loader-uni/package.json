@@ -7,12 +7,14 @@
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "peerDependencies": {
-    "@pixi-spine/base": "=3.0.0",
-    "@pixi-spine/runtime-3.8": "=3.0.0",
-    "@pixi-spine/runtime-3.7": "=3.0.0",
-    "@pixi-spine/runtime-4.0": "=3.0.0",
-    "@pixi-spine/loader-base": "=3.0.0",
     "@pixi/loaders": "~6.0.2"
+  },
+  "dependencies": {
+    "@pixi-spine/base": "~3.0.0",
+    "@pixi-spine/runtime-3.8": "~3.0.0",
+    "@pixi-spine/runtime-3.7": "~3.0.0",
+    "@pixi-spine/runtime-4.0": "~3.0.0",
+    "@pixi-spine/loader-base": "~3.0.0"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
