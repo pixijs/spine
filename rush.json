@@ -28,6 +28,12 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@pixi-spine/loader-base",
+      "projectFolder": "packages/loader-base",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@pixi-spine/runtime-3.8",
       "projectFolder": "packages/runtime-3.8",
       "reviewCategory": "production",
@@ -46,8 +52,20 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@pixi-spine/loader-uni",
+      "projectFolder": "packages/loader-uni",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
       "packageName": "pixi-spine",
       "projectFolder": "bundles/pixi-spine",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@pixi-spine/all-3.8",
+      "projectFolder": "bundles/all-3.8",
       "reviewCategory": "production",
       "shouldPublish": true
     },

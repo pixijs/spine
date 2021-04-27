@@ -106,8 +106,17 @@ export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlo
 /**
  * @public
  */
-export interface ISkeletonData {
+export interface ISkeletonParser {
+    scale: number;
+}
 
+/**
+ * @public
+ */
+export interface ISkeletonData {
+    name: string;
+    version: string;
+    hash: string;
 }
 
 /**
