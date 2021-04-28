@@ -1489,7 +1489,7 @@ export class AttachmentTimeline extends Timeline implements SlotTimeline {
     }
 
     setAttachment(skeleton: Skeleton, slot: Slot, attachmentName: string) {
-        slot.attachment = attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName);
+        slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName));
     }
 }
 
