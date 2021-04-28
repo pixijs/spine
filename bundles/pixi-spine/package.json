@@ -26,7 +26,8 @@
   "files": [
     "lib",
     "dist",
-    "*.d.ts"
+    "*.d.ts",
+    "SPINE-LICENSE"
   ],
   "keywords": [
     "pixi.js",
