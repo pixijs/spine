@@ -1,3 +1,5 @@
+# Change Log - @pixi-spine
+
 ## 3.0.0
 
 _Initial release_
