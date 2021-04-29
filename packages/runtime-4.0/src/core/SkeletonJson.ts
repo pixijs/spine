@@ -341,7 +341,7 @@ export class SkeletonJson {
                 let color: string = this.getValue(map, "color", null);
                 if (color != null) region.color.setFromString(color);
 
-                region.updateOffset();
+                // region.updateOffset();
                 return region;
             }
             case "boundingbox": {
