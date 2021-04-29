@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc && api-extractor run && node scripts/injectGlobalMixins"
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
   },
   "repository": {
     "type": "git",

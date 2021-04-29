@@ -5,7 +5,7 @@
     "@pixi-spine/runtime-4.0"
   ],
   "compiler": {
-    "tsconfigFilePath": "<projectFolder>/tsconfig.json"
+    "tsconfigFilePath": "<projectFolder>/tsconfig-api.json"
   },
   "apiReport": {
     "enabled": false

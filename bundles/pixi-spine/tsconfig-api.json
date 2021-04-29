@@ -2,11 +2,7 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "outDir": "compile",
-        "paths": {
-            "@pixi-spine/*": [
-                "packages/*/src"
-            ]
-        }
+        "skipLibCheck": true
     },
     "include": [
         "src/*.ts"

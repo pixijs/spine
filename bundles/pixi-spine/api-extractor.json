@@ -5,7 +5,7 @@
     "pixi-spine"
   ],
   "compiler": {
-    "tsconfigFilePath": "<projectFolder>/tsconfig.json"
+    "tsconfigFilePath": "<projectFolder>/tsconfig-api.json"
   },
   "apiReport": {
     "enabled": false
