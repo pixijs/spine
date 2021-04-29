@@ -1,8 +1,12 @@
 # pixi-spine
 
-Spine 3.7, 3.8, 4.0 implementation for PixiJS v6. For spine < 3.7, use on your own risk.
+Spine 3.7, 3.8, 4.0 implementation for PixiJS v5 & v6. 
 
-PixiJS v5 and before - please refer to [README in v5.x](https://github.com/pixijs/pixi-spine/tree/v5.x/#readme) 
+Typescript definitions are up-to-date with PixiJS v6.
+
+For spine < 3.7 support is limited, but accepting PR's for `runtime-3.7` package.
+
+For previous versions of pixi & typescript definitions - please refer to [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
 
 Demos:
 
@@ -47,6 +51,8 @@ app.loader
         app.start();
     });
 ```
+
+Alternatively, you may use `@pixi-spine/all-3.8` package. 
 
 ### Vanilla JS, UMD build
 
