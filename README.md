@@ -4,15 +4,15 @@ Spine 3.8 implementation for PixiJS v5.
 
 Supports both `json` and `skel` formats.
 
-PixiJS v5 Spine 3.8 - this branch, latest npm
+PixiJS v5 Spine 3.8 - this branch, npm `2.1.14`
 
 PixiJS v5 Spine 3.7 - [pixi5-spine3.7 branch](https://github.com/pixijs/pixi-spine/tree/pixi5-spine3.7) npm `2.0.5`
 
-PixiJS v4 Spine 3.8 - [pixi4-spine3.8 branch](https://github.com/pixijs/pixi-spine/tree/pixi4-spine3.8) , no npm 
+PixiJS v4 Spine 3.8 - [pixi4-spine3.8 branch](https://github.com/pixijs/pixi-spine/tree/pixi4-spine3.8) , npm `pixi4-spine3.8`
 
-PixiJS v4 Spine 3.7 - [v4.x branch](https://github.com/pixijs/pixi-spine/tree/v4.x) npm version `1.5.21` 
+PixiJS v4 Spine 3.7 - [pixi4 branch](https://github.com/pixijs/pixi-spine/tree/pixi4) npm `1.5.21` 
 
-PixiJS v3 Spine 3.8 - [pixi3-spine3.8 branch](https://github.com/pixijs/pixi-spine/tree/pixi3-spine3.8), no npm
+PixiJS v3 Spine 3.8 - [pixi3-spine3.8 branch](https://github.com/pixijs/pixi-spine/tree/pixi3-spine3.8), npm `pixi4-spine3.8`
 
 Demos:
 
