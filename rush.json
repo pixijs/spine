@@ -42,7 +42,8 @@
     {
       "packageName": "@pixi-spine/runtime-3.7",
       "projectFolder": "packages/runtime-3.7",
-      "reviewCategory": "production"
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/runtime-4.0",
