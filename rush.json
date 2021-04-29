@@ -25,55 +25,54 @@
       "packageName": "@pixi-spine/base",
       "projectFolder": "packages/base",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/loader-base",
       "projectFolder": "packages/loader-base",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/runtime-3.8",
       "projectFolder": "packages/runtime-3.8",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/runtime-3.7",
       "projectFolder": "packages/runtime-3.7",
-      "reviewCategory": "production",
-      "shouldPublish": true
+      "reviewCategory": "production"
     },
     {
       "packageName": "@pixi-spine/runtime-4.0",
       "projectFolder": "packages/runtime-4.0",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/loader-3.8",
       "projectFolder": "packages/loader-3.8",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/loader-uni",
       "projectFolder": "packages/loader-uni",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "pixi-spine",
       "projectFolder": "bundles/pixi-spine",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/all-3.8",
       "projectFolder": "bundles/all-3.8",
       "reviewCategory": "production",
-      "shouldPublish": true
+      "versionPolicyName": "PixiSpine"
     },
     {
       "packageName": "@pixi-spine/eslint-config",

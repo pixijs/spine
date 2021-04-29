@@ -9,9 +9,9 @@
   "namespace": "PIXI.spine",
   "dependencies": {
     "@pixi-spine/base": "~3.0.0",
-    "@pixi-spine/runtime-3.8": "~3.0.0",
+    "@pixi-spine/loader-3.8": "~3.0.0",
     "@pixi-spine/loader-base": "~3.0.0",
-    "@pixi-spine/loader-3.8": "~3.0.0"
+    "@pixi-spine/runtime-3.8": "~3.0.0"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
@@ -46,14 +46,14 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "rollup": "~2.33.1",
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "eslint": "~7.13.0",
-    "typescript": "~4.2.3",
-    "tslib": "~2.2.0",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
+    "@pixi-spine/eslint-config": "~1.0.0",
     "chai": "~4.2.0",
+    "eslint": "~7.13.0",
     "prepend": "=1.0.2",
-    "rimraf": "3.0.2"
+    "rimraf": "3.0.2",
+    "rollup": "~2.33.1",
+    "tslib": "~2.2.0",
+    "typescript": "~4.2.3"
   }
 }
