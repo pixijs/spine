@@ -13,11 +13,6 @@
         "esModuleInterop": true,
         "moduleResolution": "node",
         "baseUrl": "./",
-        "paths": {
-            "@pixi-spine/*": [
-                "packages/*/src"
-            ]
-        },
         "outDir": "./compile",
         "declaration": true,
         "declarationMap": true,

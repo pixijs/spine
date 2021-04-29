@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  "mainEntryPointFilePath": "<projectFolder>/compile/runtime-4.0/src/index.d.ts",
+  "mainEntryPointFilePath": "<projectFolder>/compile/index.d.ts",
   "bundledPackages": [
     "@pixi-spine/runtime-4.0"
   ],
