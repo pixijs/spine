@@ -1,4 +1,4 @@
-import {IAnimationState, ITrackEntry, MathUtils, Pool, Utils} from "@pixi-spine/base";
+import {IAnimationState, ITrackEntry, MathUtils, IntSet, Pool, Utils} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,

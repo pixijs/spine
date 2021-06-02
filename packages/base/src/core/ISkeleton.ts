@@ -158,5 +158,4 @@ export interface IAnimationState {
 export interface IAnimationStateData {
     defaultMix: number;
     setMix (fromName: string, toName: string, duration: number): void;
-    getMix (from: Animation, to: Animation): number;
 }
