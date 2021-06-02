@@ -1,6 +1,6 @@
 {
   "name": "@pixi-spine/runtime-3.7",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "description": "Pixi runtime for spine 3.7 models",
   "main": "lib/runtime-3.7.js",
   "module": "lib/runtime-3.7.es.js",
@@ -12,7 +12,7 @@
     "@pixi/math": "^6.0.2"
   },
   "dependencies": {
-    "@pixi-spine/base": "~3.0.1"
+    "@pixi-spine/base": "~3.0.3"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
@@ -39,13 +39,13 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "rollup": "~2.33.1",
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "eslint": "~7.13.0",
-    "typescript": "~4.2.3",
-    "tslib": "~2.2.0",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
+    "@pixi-spine/eslint-config": "~1.0.0",
     "chai": "~4.2.0",
-    "rimraf": "3.0.2"
+    "eslint": "~7.13.0",
+    "rimraf": "3.0.2",
+    "rollup": "~2.33.1",
+    "tslib": "~2.2.0",
+    "typescript": "~4.2.3"
   }
 }
