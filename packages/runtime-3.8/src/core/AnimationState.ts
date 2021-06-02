@@ -1,4 +1,4 @@
-import {IAnimationState, IntSet, MathUtils, Pool, Utils} from "@pixi-spine/base";
+import {IAnimationState, ITrackEntry, MathUtils, Pool, Utils} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,
@@ -861,7 +861,7 @@ export class AnimationState implements IAnimationState {
 /**
  * @public
  */
-export class TrackEntry {
+export class TrackEntry implements ITrackEntry {
     /** The animation to apply for this track entry. */
     animation: Animation;
 

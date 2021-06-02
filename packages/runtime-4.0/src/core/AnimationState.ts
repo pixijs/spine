@@ -1,4 +1,4 @@
-import {IAnimationState, MathUtils, Pool, StringSet, Utils} from "@pixi-spine/base";
+import {IAnimationState, ITrackEntry, MathUtils, Pool, StringSet, Utils} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,
@@ -853,7 +853,7 @@ export class AnimationState implements IAnimationState {
  * References to a track entry must not be kept after the {@link AnimationStateListener#dispose()} event occurs.
  * @public
  * */
-export class TrackEntry {
+export class TrackEntry implements ITrackEntry {
     /** The animation to apply for this track entry. */
     animation: Animation;
 

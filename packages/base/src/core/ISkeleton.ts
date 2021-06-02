@@ -1,5 +1,5 @@
 import {AttachmentType} from './AttachmentType';
-import type {Color} from './Utils';
+import type {Color, Vector2} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
@@ -97,10 +97,18 @@ export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlo
     bones: Bone[]
     slots: Slot[]
     drawOrder: Slot[]
-    updateWorldTransform(): void;
-    setToSetupPose(): void;
-    findSlotIndex(slotName: string): number;
+    updateWorldTransform (): void;
+    setToSetupPose (): void;
+    findSlotIndex (slotName: string): number;
     getAttachmentByName (slotName: string, attachmentName: string): IAttachment;
+
+    setBonesToSetupPose (): void;
+    setSlotsToSetupPose (): void;
+    findBoneIndex (boneName: string): number;
+    findSlotIndex (slotName: string): number;
+    setSkinByName (skinName: string): void;
+    setAttachment (slotName: string, attachmentName: string): void;
+    getBounds (offset: Vector2, size: Vector2, temp: Array<number>): void;
 }
 
 /**
@@ -122,14 +130,33 @@ export interface ISkeletonData {
 /**
  * @public
  */
+export interface ITrackEntry {
+    trackIndex: number;
+    loop: boolean;
+
+    delay: number; trackTime: number; trackLast: number; nextTrackLast: number; trackEnd: number; timeScale: number;
+    alpha: number; mixTime: number; mixDuration: number; interruptAlpha: number; totalAlpha: number;
+}
+
+/**
+ * @public
+ */
 export interface IAnimationState {
     update(dt: number): void;
     apply(skeleton: ISkeleton): void;
+
+    setAnimation (trackIndex: number, animationName: string, loop: boolean): ITrackEntry;
+    addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number): ITrackEntry;
+    addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number): ITrackEntry;
+    setEmptyAnimations (mixDuration: number): void;
+    hasAnimation(animationName: string): boolean;
 }
 
 /**
  * @public
  */
 export interface IAnimationStateData {
-
+    defaultMix: number;
+    setMix (fromName: string, toName: string, duration: number): void;
+    getMix (from: Animation, to: Animation): number;
 }

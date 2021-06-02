@@ -52,7 +52,15 @@ app.loader
     });
 ```
 
-Alternatively, you may use `@pixi-spine/all-3.8` package. 
+Alternatively, you may use `@pixi-spine/all-3.8` package.
+
+### Where are spine core classes?
+
+Classes like `AttachmentType`, `TextureAtlas`, `TextureRegion` and `Utils` are shared across all spine versions, and re-exported by all bundles. But if you want to see them directly, they are in `@pixi-spine-base`.
+
+Base also contains unified interfaces, `ISkeleton`, `ISkeletonData`, `IAnimationData` and so on, see `ISkeleton.ts` file. 
+
+Most of classes are spine-version-dependant, including `Skeleton`, `SkeletonData`, they are stored in corresponding packages `@pixi-spine/runtime-3.8` and so on.
 
 ### Vanilla JS, UMD build
 
