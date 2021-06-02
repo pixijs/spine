@@ -2,6 +2,30 @@
   "name": "pixi-spine",
   "entries": [
     {
+      "version": "3.0.3",
+      "tag": "pixi-spine_v3.0.3",
+      "date": "Wed, 02 Jun 2021 17:04:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Derpfix IntSet not found"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.2",
+      "tag": "pixi-spine_v3.0.2",
+      "date": "Wed, 02 Jun 2021 16:49:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix \"Cannot redefine property: Spine\" error by removing re-export from main pixi-spine bundle. Improved interfaces should work for people who use it a bit, everyone else should either import `@pixi-spine/runtime-3.8`, OR swap `pixi-spine` to `@pixi-spine/all-3.8` bundle (that's easier)."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.0.1",
       "tag": "pixi-spine_v3.0.1",
       "date": "Thu, 29 Apr 2021 14:01:08 GMT",
