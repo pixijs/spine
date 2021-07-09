@@ -20,50 +20,10 @@ import type {Slot} from "./Slot";
  * @public
  * */
 export class AnimationState implements IAnimationState {
-    private static _emptyAnimation: Animation = null;
-
-    private static emptyAnimation(): Animation {
-        if (AnimationState._emptyAnimation == null) AnimationState._emptyAnimation = new Animation("<empty>", [], 0);
-        return AnimationState._emptyAnimation;
+    private static emptyAnimation (): Animation {
+        if (!_emptyAnimation) _emptyAnimation = new Animation("<empty>", [], 0);
+        return _emptyAnimation;
     }
-
-    /** 1. A previously applied timeline has set this property.
-     *
-     * Result: Mix from the current pose to the timeline pose. */
-    static SUBSEQUENT = 0;
-    /** 1. This is the first timeline to set this property.
-     * 2. The next track entry applied after this one does not have a timeline to set this property.
-     *
-     * Result: Mix from the setup pose to the timeline pose. */
-    static FIRST = 1;
-    /** 1) A previously applied timeline has set this property.<br>
-     * 2) The next track entry to be applied does have a timeline to set this property.<br>
-     * 3) The next track entry after that one does not have a timeline to set this property.<br>
-     * Result: Mix from the current pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading
-     * animations that key the same property. A subsequent timeline will set this property using a mix. */
-    static HOLD_SUBSEQUENT = 2;
-    /** 1) This is the first timeline to set this property.<br>
-     * 2) The next track entry to be applied does have a timeline to set this property.<br>
-     * 3) The next track entry after that one does not have a timeline to set this property.<br>
-     * Result: Mix from the setup pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading animations
-     * that key the same property. A subsequent timeline will set this property using a mix. */
-    static HOLD_FIRST = 3;
-    /** 1. This is the first timeline to set this property.
-     * 2. The next track entry to be applied does have a timeline to set this property.
-     * 3. The next track entry after that one does have a timeline to set this property.
-     * 4. timelineHoldMix stores the first subsequent track entry that does not have a timeline to set this property.
-     *
-     * Result: The same as HOLD except the mix percentage from the timelineHoldMix track entry is used. This handles when more than
-     * 2 track entries in a row have a timeline that sets the same property.
-     *
-     * Eg, A -> B -> C -> D where A, B, and C have a timeline setting same property, but D does not. When A is applied, to avoid
-     * "dipping" A is not mixed out, however D (the first entry that doesn't set the property) mixing in is used to mix out A
-     * (which affects B and C). Without using D to mix out, A would be applied fully until mixing completes, then snap into
-     * place. */
-    static HOLD_MIX = 4;
-
-    static SETUP = 1;
-    static CURRENT = 2;
 
     /** The AnimationStateData to look up mix durations. */
     data: AnimationStateData;
@@ -96,7 +56,7 @@ export class AnimationState implements IAnimationState {
         let tracks = this.tracks;
         for (let i = 0, n = tracks.length; i < n; i++) {
             let current = tracks[i];
-            if (current == null) continue;
+            if (!current) continue;
 
             current.animationLast = current.nextAnimationLast;
             current.trackLast = current.nextTrackLast;
@@ -111,7 +71,7 @@ export class AnimationState implements IAnimationState {
             }
 
             let next = current.next;
-            if (next != null) {
+            if (next) {
                 // When the next entry's delay is passed, change to the next entry, preserving leftover time.
                 let nextTime = current.trackLast - next.delay;
                 if (nextTime >= 0) {
@@ -119,24 +79,24 @@ export class AnimationState implements IAnimationState {
                     next.trackTime += current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
                     current.trackTime += currentDelta;
                     this.setCurrent(i, next, true);
-                    while (next.mixingFrom != null) {
+                    while (next.mixingFrom) {
                         next.mixTime += delta;
                         next = next.mixingFrom;
                     }
                     continue;
                 }
-            } else if (current.trackLast >= current.trackEnd && current.mixingFrom == null) {
+            } else if (current.trackLast >= current.trackEnd && !current.mixingFrom) {
                 tracks[i] = null;
                 this.queue.end(current);
-                this.disposeNext(current);
+                this.clearNext(current);
                 continue;
             }
-            if (current.mixingFrom != null && this.updateMixingFrom(current, delta)) {
+            if (current.mixingFrom && this.updateMixingFrom(current, delta)) {
                 // End mixing from entries once all have completed.
                 let from = current.mixingFrom;
                 current.mixingFrom = null;
-                if (from != null) from.mixingTo = null;
-                while (from != null) {
+                if (from) from.mixingTo = null;
+                while (from) {
                     this.queue.end(from);
                     from = from.mixingFrom;
                 }
@@ -151,7 +111,7 @@ export class AnimationState implements IAnimationState {
     /** Returns true when all mixing from entries are complete. */
     updateMixingFrom (to: TrackEntry, delta: number): boolean {
         let from = to.mixingFrom;
-        if (from == null) return true;
+        if (!from) return true;
 
         let finished = this.updateMixingFrom(from, delta);
 
@@ -163,7 +123,7 @@ export class AnimationState implements IAnimationState {
             // Require totalAlpha == 0 to ensure mixing is complete, unless mixDuration == 0 (the transition is a single frame).
             if (from.totalAlpha == 0 || to.mixDuration == 0) {
                 to.mixingFrom = from.mixingFrom;
-                if (from.mixingFrom != null) from.mixingFrom.mixingTo = to;
+                if (from.mixingFrom) from.mixingFrom.mixingTo = to;
                 to.interruptAlpha = from.interruptAlpha;
                 this.queue.end(from);
             }
@@ -179,7 +139,7 @@ export class AnimationState implements IAnimationState {
      * animation state can be applied to multiple skeletons to pose them identically.
      * @returns True if any animations were applied. */
     apply (skeleton: Skeleton) : boolean {
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         if (this.animationsChanged) this._animationsChanged();
 
         let events = this.events;
@@ -188,15 +148,15 @@ export class AnimationState implements IAnimationState {
 
         for (let i = 0, n = tracks.length; i < n; i++) {
             let current = tracks[i];
-            if (current == null || current.delay > 0) continue;
+            if (!current || current.delay > 0) continue;
             applied = true;
             let blend: MixBlend = i == 0 ? MixBlend.first : current.mixBlend;
 
             // Apply mixing from entries first.
             let mix = current.alpha;
-            if (current.mixingFrom != null)
+            if (current.mixingFrom)
                 mix *= this.applyMixingFrom(current, skeleton, blend);
-            else if (current.trackTime >= current.trackEnd && current.next == null)
+            else if (current.trackTime >= current.trackEnd && !current.next)
                 mix = 0;
 
             // Apply current entry.
@@ -206,8 +166,8 @@ export class AnimationState implements IAnimationState {
                 applyTime = current.animation.duration - applyTime;
                 applyEvents = null;
             }
-            let timelineCount = current.animation.timelines.length;
             let timelines = current.animation.timelines;
+            let timelineCount = timelines.length;
             if ((i == 0 && mix == 1) || blend == MixBlend.add) {
                 for (let ii = 0; ii < timelineCount; ii++) {
                     // Fixes issue #302 on IOS9 where mix, blend sometimes became undefined and caused assets
@@ -223,15 +183,14 @@ export class AnimationState implements IAnimationState {
             } else {
                 let timelineMode = current.timelineMode;
 
-                let firstFrame = current.timelinesRotation.length == 0;
-                if (firstFrame) Utils.setArraySize(current.timelinesRotation, timelineCount << 1, null);
-                let timelinesRotation = current.timelinesRotation;
+                let firstFrame = current.timelinesRotation.length != timelineCount << 1;
+                if (firstFrame) current.timelinesRotation.length = timelineCount << 1;
 
                 for (let ii = 0; ii < timelineCount; ii++) {
                     let timeline = timelines[ii];
-                    let timelineBlend = timelineMode[ii]  == AnimationState.SUBSEQUENT ? blend : MixBlend.setup;
+                    let timelineBlend = timelineMode[ii] == SUBSEQUENT ? blend : MixBlend.setup;
                     if (timeline instanceof RotateTimeline) {
-                        this.applyRotateTimeline(timeline, skeleton, applyTime, mix, timelineBlend, timelinesRotation, ii << 1, firstFrame);
+                        this.applyRotateTimeline(timeline, skeleton, applyTime, mix, timelineBlend, current.timelinesRotation, ii << 1, firstFrame);
                     } else if (timeline instanceof AttachmentTimeline) {
                         this.applyAttachmentTimeline(timeline, skeleton, applyTime, blend, true);
                     } else {
@@ -250,13 +209,13 @@ export class AnimationState implements IAnimationState {
         // Set slots attachments to the setup pose, if needed. This occurs if an animation that is mixing out sets attachments so
         // subsequent timelines see any deform, but the subsequent timelines don't set an attachment (eg they are also mixing out or
         // the time is before the first key).
-        var setupState = this.unkeyedState + AnimationState.SETUP;
+        var setupState = this.unkeyedState + SETUP;
         var slots = skeleton.slots;
         for (var i = 0, n = skeleton.slots.length; i < n; i++) {
             var slot = slots[i];
             if (slot.attachmentState == setupState) {
                 var attachmentName = slot.data.attachmentName;
-                slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
+                slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(slot.data.index, attachmentName));
             }
         }
         this.unkeyedState += 2; // Increasing after each use avoids the need to reset attachmentState for every slot.
@@ -267,7 +226,7 @@ export class AnimationState implements IAnimationState {
 
     applyMixingFrom (to: TrackEntry, skeleton: Skeleton, blend: MixBlend) {
         let from = to.mixingFrom;
-        if (from.mixingFrom != null) this.applyMixingFrom(from, skeleton, blend);
+        if (from.mixingFrom) this.applyMixingFrom(from, skeleton, blend);
 
         let mix = 0;
         if (to.mixDuration == 0) { // Single frame mix to undo mixingFrom changes.
@@ -279,19 +238,16 @@ export class AnimationState implements IAnimationState {
             if (blend != MixBlend.first) blend = from.mixBlend;
         }
 
-
         let attachments = mix < from.attachmentThreshold, drawOrder = mix < from.drawOrderThreshold;
-        let timelineCount = from.animation.timelines.length;
         let timelines = from.animation.timelines;
+        let timelineCount = timelines.length;
         let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
         let animationLast = from.animationLast, animationTime = from.getAnimationTime(), applyTime = animationTime;
         let events = null;
-        // let events = mix < from.eventThreshold ? this.events : null;
-        if (from.reverse) {
+        if (from.reverse)
             applyTime = from.animation.duration - applyTime;
-        } else {
-            if  (mix < from.eventThreshold) events = this.events;
-        }
+        else if (mix < from.eventThreshold)
+            events = this.events;
 
         if (blend == MixBlend.add) {
             for (let i = 0; i < timelineCount; i++)
@@ -300,9 +256,8 @@ export class AnimationState implements IAnimationState {
             let timelineMode = from.timelineMode;
             let timelineHoldMix = from.timelineHoldMix;
 
-            let firstFrame = from.timelinesRotation.length == 0;
-            if (firstFrame) Utils.setArraySize(from.timelinesRotation, timelineCount << 1, null);
-            let timelinesRotation = from.timelinesRotation;
+            let firstFrame = from.timelinesRotation.length != timelineCount << 1;
+            if (firstFrame) from.timelinesRotation.length = timelineCount << 1;
 
             from.totalAlpha = 0;
             for (let i = 0; i < timelineCount; i++) {
@@ -311,20 +266,20 @@ export class AnimationState implements IAnimationState {
                 let timelineBlend: MixBlend;
                 let alpha = 0;
                 switch (timelineMode[i]) {
-                    case AnimationState.SUBSEQUENT:
+                    case SUBSEQUENT:
                         if (!drawOrder && timeline instanceof DrawOrderTimeline) continue;
                         timelineBlend = blend;
                         alpha = alphaMix;
                         break;
-                    case AnimationState.FIRST:
+                    case FIRST:
                         timelineBlend = MixBlend.setup;
                         alpha = alphaMix;
                         break;
-                    case AnimationState.HOLD_SUBSEQUENT:
+                    case HOLD_SUBSEQUENT:
                         timelineBlend = blend;
                         alpha = alphaHold;
                         break;
-                    case AnimationState.HOLD_FIRST:
+                    case HOLD_FIRST:
                         timelineBlend = MixBlend.setup;
                         alpha = alphaHold;
                         break;
@@ -337,7 +292,7 @@ export class AnimationState implements IAnimationState {
                 from.totalAlpha += alpha;
 
                 if (timeline instanceof RotateTimeline)
-                    this.applyRotateTimeline(timeline, skeleton, applyTime, alpha, timelineBlend, timelinesRotation, i << 1, firstFrame);
+                    this.applyRotateTimeline(timeline, skeleton, applyTime, alpha, timelineBlend, from.timelinesRotation, i << 1, firstFrame);
                 else if (timeline instanceof AttachmentTimeline)
                     this.applyAttachmentTimeline(timeline, skeleton, applyTime, timelineBlend, attachments);
                 else {
@@ -359,29 +314,25 @@ export class AnimationState implements IAnimationState {
     }
 
     applyAttachmentTimeline (timeline: AttachmentTimeline, skeleton: Skeleton, time: number, blend: MixBlend, attachments: boolean) {
-
         var slot = skeleton.slots[timeline.slotIndex];
         if (!slot.bone.active) return;
 
-        var frames = timeline.frames;
-        if (time < frames[0]) { // Time is before first frame.
+        if (time < timeline.frames[0]) { // Time is before first frame.
             if (blend == MixBlend.setup || blend == MixBlend.first)
                 this.setAttachment(skeleton, slot, slot.data.attachmentName, attachments);
-        }
-        else
-            this.setAttachment(skeleton, slot, timeline.attachmentNames[Animation.search(frames, time)], attachments);
+        } else
+            this.setAttachment(skeleton, slot, timeline.attachmentNames[Timeline.search1(timeline.frames, time)], attachments);
 
         // If an attachment wasn't set (ie before the first frame or attachments is false), set the setup attachment later.
-        if (slot.attachmentState <= this.unkeyedState) slot.attachmentState = this.unkeyedState + AnimationState.SETUP;
+        if (slot.attachmentState <= this.unkeyedState) slot.attachmentState = this.unkeyedState + SETUP;
     }
 
     setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean) {
-        slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(slot.data.index, attachmentName));
-        if (attachments) slot.attachmentState = this.unkeyedState + AnimationState.CURRENT;
+        slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(slot.data.index, attachmentName));
+        if (attachments) slot.attachmentState = this.unkeyedState + CURRENT;
     }
 
-
-    applyRotateTimeline (timeline: Timeline, skeleton: Skeleton, time: number, alpha: number, blend: MixBlend,
+    applyRotateTimeline (timeline: RotateTimeline, skeleton: Skeleton, time: number, alpha: number, blend: MixBlend,
                          timelinesRotation: Array<number>, i: number, firstFrame: boolean) {
 
         if (firstFrame) timelinesRotation[i] = 0;
@@ -391,10 +342,9 @@ export class AnimationState implements IAnimationState {
             return;
         }
 
-        let rotateTimeline = timeline as RotateTimeline;
-        let bone = skeleton.bones[rotateTimeline.boneIndex];
+        let bone = skeleton.bones[timeline.boneIndex];
         if (!bone.active) return;
-        let frames = rotateTimeline.frames;
+        let frames = timeline.frames;
         let r1 = 0, r2 = 0;
         if (time < frames[0]) {
             switch (blend) {
@@ -408,7 +358,7 @@ export class AnimationState implements IAnimationState {
             }
         } else {
             r1 = blend == MixBlend.setup ? bone.data.rotation : bone.rotation;
-            r2 = bone.data.rotation + rotateTimeline.getCurveValue(time);
+            r2 = bone.data.rotation + timeline.getCurveValue(time);
         }
 
         // Mix between rotations using the direction of the shortest route on the first frame while detecting crosses.
@@ -492,16 +442,16 @@ export class AnimationState implements IAnimationState {
     clearTrack (trackIndex: number) {
         if (trackIndex >= this.tracks.length) return;
         let current = this.tracks[trackIndex];
-        if (current == null) return;
+        if (!current) return;
 
         this.queue.end(current);
 
-        this.disposeNext(current);
+        this.clearNext(current);
 
         let entry = current;
         while (true) {
             let from = entry.mixingFrom;
-            if (from == null) break;
+            if (!from) break;
             this.queue.end(from);
             entry.mixingFrom = null;
             entry.mixingTo = null;
@@ -513,24 +463,19 @@ export class AnimationState implements IAnimationState {
         this.queue.drain();
     }
 
-    /** Removes the {@link TrackEntry#getNext() next entry} and all entries after it for the specified entry. */
-    clearNext(entry: TrackEntry) {
-        this.disposeNext(entry.next);
-    }
-
     setCurrent (index: number, current: TrackEntry, interrupt: boolean) {
         let from = this.expandToIndex(index);
         this.tracks[index] = current;
         current.previous = null;
 
-        if (from != null) {
+        if (from) {
             if (interrupt) this.queue.interrupt(from);
             current.mixingFrom = from;
             from.mixingTo = current;
             current.mixTime = 0;
 
             // Store the interrupted mix percentage.
-            if (from.mixingFrom != null && from.mixDuration > 0)
+            if (from.mixingFrom && from.mixDuration > 0)
                 current.interruptAlpha *= Math.min(1, from.mixTime / from.mixDuration);
 
             from.timelinesRotation.length = 0; // Reset rotation for mixing out, in case entry was mixed in.
@@ -541,10 +486,10 @@ export class AnimationState implements IAnimationState {
 
     /** Sets an animation by name.
      *
-     * {@link #setAnimationWith(}. */
-    setAnimation (trackIndex: number, animationName: string, loop: boolean) {
+     * See {@link #setAnimationWith()}. */
+    setAnimation (trackIndex: number, animationName: string, loop: boolean = false) {
         let animation = this.data.skeletonData.findAnimation(animationName);
-        if (animation == null) throw new Error("Animation not found: " + animationName);
+        if (!animation) throw new Error("Animation not found: " + animationName);
         return this.setAnimationWith(trackIndex, animation, loop);
     }
 
@@ -554,21 +499,21 @@ export class AnimationState implements IAnimationState {
      *           duration. In either case {@link TrackEntry#trackEnd} determines when the track is cleared.
      * @returns A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    setAnimationWith (trackIndex: number, animation: Animation, loop: boolean) {
-        if (animation == null) throw new Error("animation cannot be null.");
+    setAnimationWith (trackIndex: number, animation: Animation, loop: boolean = false) {
+        if (!animation) throw new Error("animation cannot be null.");
         let interrupt = true;
         let current = this.expandToIndex(trackIndex);
-        if (current != null) {
+        if (current) {
             if (current.nextTrackLast == -1) {
                 // Don't mix from an entry that was never applied.
                 this.tracks[trackIndex] = current.mixingFrom;
                 this.queue.interrupt(current);
                 this.queue.end(current);
-                this.disposeNext(current);
+                this.clearNext(current);
                 current = current.mixingFrom;
                 interrupt = false;
             } else
-                this.disposeNext(current);
+                this.clearNext(current);
         }
         let entry = this.trackEntry(trackIndex, animation, loop, current);
         this.setCurrent(trackIndex, entry, interrupt);
@@ -579,9 +524,9 @@ export class AnimationState implements IAnimationState {
     /** Queues an animation by name.
      *
      * See {@link #addAnimationWith()}. */
-    addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number) {
+    addAnimation (trackIndex: number, animationName: string, loop: boolean = false, delay: number = 0) {
         let animation = this.data.skeletonData.findAnimation(animationName);
-        if (animation == null) throw new Error("Animation not found: " + animationName);
+        if (!animation) throw new Error("Animation not found: " + animationName);
         return this.addAnimationWith(trackIndex, animation, loop, delay);
     }
 
@@ -593,18 +538,18 @@ export class AnimationState implements IAnimationState {
      *           previous entry is looping, its next loop completion is used instead of its duration.
      * @returns A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    addAnimationWith (trackIndex: number, animation: Animation, loop: boolean, delay: number) {
-        if (animation == null) throw new Error("animation cannot be null.");
+    addAnimationWith (trackIndex: number, animation: Animation, loop: boolean = false, delay: number = 0) {
+        if (!animation) throw new Error("animation cannot be null.");
 
         let last = this.expandToIndex(trackIndex);
-        if (last != null) {
-            while (last.next != null)
+        if (last) {
+            while (last.next)
                 last = last.next;
         }
 
         let entry = this.trackEntry(trackIndex, animation, loop, last);
 
-        if (last == null) {
+        if (!last) {
             this.setCurrent(trackIndex, entry, true);
             this.queue.drain();
         } else {
@@ -631,7 +576,7 @@ export class AnimationState implements IAnimationState {
      * {@link TrackEntry#setMixDuration()}. Mixing from an empty animation causes the new animation to be applied more and
      * more over the mix duration. Properties keyed in the new animation transition from the value from lower tracks or from the
      * setup pose value if no lower tracks key the property to the value keyed in the new animation. */
-    setEmptyAnimation (trackIndex: number, mixDuration: number) {
+    setEmptyAnimation (trackIndex: number, mixDuration: number = 0) {
         let entry = this.setAnimationWith(trackIndex, AnimationState.emptyAnimation(), false);
         entry.mixDuration = mixDuration;
         entry.trackEnd = mixDuration;
@@ -649,22 +594,22 @@ export class AnimationState implements IAnimationState {
      *           loop completion is used instead of its duration.
      * @return A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number) {
+    addEmptyAnimation (trackIndex: number, mixDuration: number = 0, delay: number = 0) {
         let entry = this.addAnimationWith(trackIndex, AnimationState.emptyAnimation(), false, delay <= 0 ? 1 : delay);
         entry.mixDuration = mixDuration;
         entry.trackEnd = mixDuration;
-        if (delay <= 0 && entry.previous != null) entry.delay = entry.previous.getTrackComplete() - entry.mixDuration;
+        if (delay <= 0 && entry.previous) entry.delay = entry.previous.getTrackComplete() - entry.mixDuration + delay;
         return entry;
     }
 
     /** Sets an empty animation for every track, discarding any queued animations, and mixes to it over the specified mix
      * duration. */
-    setEmptyAnimations (mixDuration: number) {
+    setEmptyAnimations (mixDuration: number = 0) {
         let oldDrainDisabled = this.queue.drainDisabled;
         this.queue.drainDisabled = true;
         for (let i = 0, n = this.tracks.length; i < n; i++) {
             let current = this.tracks[i];
-            if (current != null) this.setEmptyAnimation(current.trackIndex, mixDuration);
+            if (current) this.setEmptyAnimation(current.trackIndex, mixDuration);
         }
         this.queue.drainDisabled = oldDrainDisabled;
         this.queue.drain();
@@ -704,14 +649,15 @@ export class AnimationState implements IAnimationState {
         entry.alpha = 1;
         entry.interruptAlpha = 1;
         entry.mixTime = 0;
-        entry.mixDuration = last == null ? 0 : this.data.getMix(last.animation, animation);
+        entry.mixDuration = !last ? 0 : this.data.getMix(last.animation, animation);
         entry.mixBlend = MixBlend.replace;
         return entry;
     }
 
-    disposeNext (entry: TrackEntry) {
+    /** Removes the {@link TrackEntry#getNext() next entry} and all entries after it for the specified entry. */
+    clearNext (entry: TrackEntry) {
         let next = entry.next;
-        while (next != null) {
+        while (next) {
             this.queue.dispose(next);
             next = next.next;
         }
@@ -722,17 +668,16 @@ export class AnimationState implements IAnimationState {
         this.animationsChanged = false;
 
         this.propertyIDs.clear();
-
-        for (let i = 0, n = this.tracks.length; i < n; i++) {
-            let entry = this.tracks[i];
-            if (entry == null) continue;
-            while (entry.mixingFrom != null)
+        let tracks = this.tracks;
+        for (let i = 0, n = tracks.length; i < n; i++) {
+            let entry = tracks[i];
+            if (!entry) continue;
+            while (entry.mixingFrom)
                 entry = entry.mixingFrom;
-
             do {
-                if (entry.mixingFrom == null || entry.mixBlend != MixBlend.add) this.computeHold(entry);
+                if (!entry.mixingTo || entry.mixBlend != MixBlend.add) this.computeHold(entry);
                 entry = entry.mixingTo;
-            } while (entry != null)
+            } while (entry);
         }
     }
 
@@ -740,15 +685,15 @@ export class AnimationState implements IAnimationState {
         let to = entry.mixingTo;
         let timelines = entry.animation.timelines;
         let timelinesCount = entry.animation.timelines.length;
-        let timelineMode = Utils.setArraySize(entry.timelineMode, timelinesCount);
-        entry.timelineHoldMix.length = 0;
-        let timelineDipMix = Utils.setArraySize(entry.timelineHoldMix, timelinesCount);
+        let timelineMode = entry.timelineMode;
+        timelineMode.length = timelinesCount;
+        let timelineHoldMix = entry.timelineHoldMix;
+        timelineHoldMix.length = 0;
         let propertyIDs = this.propertyIDs;
 
-        if (to != null && to.holdPrevious) {
-            for (let i = 0; i < timelinesCount; i++) {
-                timelineMode[i] = propertyIDs.addAll(timelines[i].getPropertyIds()) ? AnimationState.HOLD_FIRST : AnimationState.HOLD_SUBSEQUENT;
-            }
+        if (to && to.holdPrevious) {
+            for (let i = 0; i < timelinesCount; i++)
+                timelineMode[i] = propertyIDs.addAll(timelines[i].getPropertyIds()) ? HOLD_FIRST : HOLD_SUBSEQUENT;
             return;
         }
 
@@ -757,21 +702,21 @@ export class AnimationState implements IAnimationState {
                 let timeline = timelines[i];
                 let ids = timeline.getPropertyIds();
                 if (!propertyIDs.addAll(ids))
-                    timelineMode[i] = AnimationState.SUBSEQUENT;
-                else if (to == null || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
+                    timelineMode[i] = SUBSEQUENT;
+                else if (!to || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
                     || timeline instanceof EventTimeline || !to.animation.hasTimeline(ids)) {
-                    timelineMode[i] = AnimationState.FIRST;
+                    timelineMode[i] = FIRST;
                 } else {
-                    for (let next = to.mixingTo; next != null; next = next.mixingTo) {
+                    for (let next = to.mixingTo; next; next = next.mixingTo) {
                         if (next.animation.hasTimeline(ids)) continue;
                         if (entry.mixDuration > 0) {
-                            timelineMode[i] = AnimationState.HOLD_MIX;
-                            timelineDipMix[i] = next;
+                            timelineMode[i] = HOLD_MIX;
+                            timelineHoldMix[i] = next;
                             continue outer;
                         }
                         break;
                     }
-                    timelineMode[i] = AnimationState.HOLD_FIRST;
+                    timelineMode[i] = HOLD_FIRST;
                 }
             }
     }
@@ -784,7 +729,7 @@ export class AnimationState implements IAnimationState {
 
     /** Adds a listener to receive events for all track entries. */
     addListener (listener: AnimationStateListener) {
-        if (listener == null) throw new Error("listener cannot be null.");
+        if (!listener) throw new Error("listener cannot be null.");
         this.listeners.push(listener);
     }
 
@@ -1268,3 +1213,43 @@ export abstract class AnimationStateAdapter implements AnimationStateListener {
     event (entry: TrackEntry, event: Event) {
     }
 }
+
+/** 1. A previously applied timeline has set this property.
+ *
+ * Result: Mix from the current pose to the timeline pose. */
+const SUBSEQUENT = 0;
+/** 1. This is the first timeline to set this property.
+ * 2. The next track entry applied after this one does not have a timeline to set this property.
+ *
+ * Result: Mix from the setup pose to the timeline pose. */
+const FIRST = 1;
+/** 1) A previously applied timeline has set this property.<br>
+ * 2) The next track entry to be applied does have a timeline to set this property.<br>
+ * 3) The next track entry after that one does not have a timeline to set this property.<br>
+ * Result: Mix from the current pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading
+ * animations that key the same property. A subsequent timeline will set this property using a mix. */
+const HOLD_SUBSEQUENT = 2;
+/** 1) This is the first timeline to set this property.<br>
+ * 2) The next track entry to be applied does have a timeline to set this property.<br>
+ * 3) The next track entry after that one does not have a timeline to set this property.<br>
+ * Result: Mix from the setup pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading animations
+ * that key the same property. A subsequent timeline will set this property using a mix. */
+const HOLD_FIRST = 3;
+/** 1. This is the first timeline to set this property.
+ * 2. The next track entry to be applied does have a timeline to set this property.
+ * 3. The next track entry after that one does have a timeline to set this property.
+ * 4. timelineHoldMix stores the first subsequent track entry that does not have a timeline to set this property.
+ *
+ * Result: The same as HOLD except the mix percentage from the timelineHoldMix track entry is used. This handles when more than
+ * 2 track entries in a row have a timeline that sets the same property.
+ *
+ * Eg, A -> B -> C -> D where A, B, and C have a timeline setting same property, but D does not. When A is applied, to avoid
+ * "dipping" A is not mixed out, however D (the first entry that doesn't set the property) mixing in is used to mix out A
+ * (which affects B and C). Without using D to mix out, A would be applied fully until mixing completes, then snap into
+ * place. */
+const HOLD_MIX = 4;
+
+const SETUP = 1;
+const CURRENT = 2;
+
+let _emptyAnimation: Animation = null;

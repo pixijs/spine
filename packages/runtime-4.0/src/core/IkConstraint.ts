@@ -39,8 +39,8 @@ export class IkConstraint implements Updatable {
     active = false;
 
     constructor (data: IkConstraintData, skeleton: Skeleton) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+        if (!data) throw new Error("data cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
         this.mix = data.mix;
         this.softness = data.softness;
@@ -67,14 +67,13 @@ export class IkConstraint implements Updatable {
                 this.apply1(bones[0], target.worldX, target.worldY, this.compress, this.stretch, this.data.uniform, this.mix);
                 break;
             case 2:
-                this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.softness, this.mix);
+                this.apply2(bones[0], bones[1], target.worldX, target.worldY, this.bendDirection, this.stretch, this.data.uniform, this.softness, this.mix);
                 break;
         }
     }
 
     /** Applies 1 bone IK. The target is specified in the world coordinate system. */
     apply1 (bone: Bone, targetX: number, targetY: number, compress: boolean, stretch: boolean, uniform: boolean, alpha: number) {
-        if (!bone.appliedValid) bone.updateAppliedTransform();
         let p = bone.parent.matrix;
 
         let pa = p.a, pb = p.c, pc = p.b, pd = p.d;
@@ -103,7 +102,8 @@ export class IkConstraint implements Updatable {
         if (bone.ascaleX < 0) rotationIK += 180;
         if (rotationIK > 180)
             rotationIK -= 360;
-        else if (rotationIK < -180) rotationIK += 360;
+        else if (rotationIK < -180)
+            rotationIK += 360;
         let sx = bone.ascaleX, sy = bone.ascaleY;
         if (compress || stretch) {
             switch (bone.data.transformMode) {
@@ -125,10 +125,8 @@ export class IkConstraint implements Updatable {
 
     /** Applies 2 bone IK. The target is specified in the world coordinate system.
      * @param child A direct descendant of the parent bone. */
-    apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, stretch: boolean, softness: number, alpha: number) {
-        if (!parent.appliedValid) parent.updateAppliedTransform();
-        if (!child.appliedValid) child.updateAppliedTransform();
-        let px = parent.ax, py = parent.ay, psx = parent.ascaleX, sx = psx, psy = parent.ascaleY, csx = child.ascaleX;
+    apply2 (parent: Bone, child: Bone, targetX: number, targetY: number, bendDir: number, stretch: boolean, uniform: boolean, softness: number, alpha: number) {
+        let px = parent.ax, py = parent.ay, psx = parent.ascaleX, psy = parent.ascaleY, sx = psx, sy = psy, csx = child.ascaleX;
         let pmat = parent.matrix;
         let os1 = 0, os2 = 0, s2 = 0;
         if (psx < 0) {
@@ -150,7 +148,7 @@ export class IkConstraint implements Updatable {
             os2 = 0;
         let cx = child.ax, cy = 0, cwx = 0, cwy = 0, a = pmat.a, b = pmat.c, c = pmat.b, d = pmat.d;
         let u = Math.abs(psx - psy) <= 0.0001;
-        if (!u) {
+        if (!u || stretch) {
             cy = 0;
             cwx = a * cx + pmat.tx;
             cwy = c * cx + pmat.ty;
@@ -177,7 +175,7 @@ export class IkConstraint implements Updatable {
         let tx = (x * d - y * b) * id - px, ty = (y * a - x * c) * id - py;
         let dd = tx * tx + ty * ty;
         if (softness != 0) {
-            softness *= psx * (csx + 1) / 2;
+            softness *= psx * (csx + 1) * 0.5;
             let td = Math.sqrt(dd), sd = td - l1 - l2 * psx + softness;
             if (sd > 0) {
                 let p = Math.min(1, sd / (softness * 2)) - 1;
@@ -191,13 +189,19 @@ export class IkConstraint implements Updatable {
             if (u) {
                 l2 *= psx;
                 let cos = (dd - l1 * l1 - l2 * l2) / (2 * l1 * l2);
-                if (cos < -1)
+                if (cos < -1) {
                     cos = -1;
-                else if (cos > 1) {
+                    a2 = Math.PI * bendDir;
+                } else if (cos > 1) {
                     cos = 1;
-                    if (stretch) sx *= (Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
-                }
-                a2 = Math.acos(cos) * bendDir;
+                    a2 = 0;
+                    if (stretch) {
+                        a = (Math.sqrt(dd) / (l1 + l2) - 1) * alpha + 1;
+                        sx *= a;
+                        if (uniform) sy *= a;
+                    }
+                } else
+                    a2 = Math.acos(cos) * bendDir;
                 a = l1 + l2 * cos;
                 b = l2 * Math.sin(a2);
                 a1 = Math.atan2(ty * a - tx * b, tx * a + ty * b);
@@ -211,7 +215,7 @@ export class IkConstraint implements Updatable {
                 if (d >= 0) {
                     let q = Math.sqrt(d);
                     if (c1 < 0) q = -q;
-                    q = -(c1 + q) / 2;
+                    q = -(c1 + q) * 0.5;
                     let r0 = q / c2, r1 = c / q;
                     let r = Math.abs(r0) < Math.abs(r1) ? r0 : r1;
                     if (r * r <= dd) {
@@ -242,7 +246,7 @@ export class IkConstraint implements Updatable {
                         maxY = y;
                     }
                 }
-                if (dd <= (minDist + maxDist) / 2) {
+                if (dd <= (minDist + maxDist) * 0.5) {
                     a1 = ta - Math.atan2(minY * bendDir, minX);
                     a2 = minAngle * bendDir;
                 } else {
@@ -255,13 +259,15 @@ export class IkConstraint implements Updatable {
         a1 = (a1 - os) * MathUtils.radDeg + os1 - rotation;
         if (a1 > 180)
             a1 -= 360;
-        else if (a1 < -180) a1 += 360;
-        parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, sx, parent.ascaleY, 0, 0);
+        else if (a1 < -180) //
+            a1 += 360;
+        parent.updateWorldTransformWith(px, py, rotation + a1 * alpha, sx, sy, 0, 0);
         rotation = child.arotation;
         a2 = ((a2 + os) * MathUtils.radDeg - child.ashearX) * s2 + os2 - rotation;
         if (a2 > 180)
             a2 -= 360;
-        else if (a2 < -180) a2 += 360;
+        else if (a2 < -180) //
+            a2 += 360;
         child.updateWorldTransformWith(cx, cy, rotation + a2 * alpha, child.ascaleX, child.ascaleY, child.ashearX, child.ashearY);
     }
 }

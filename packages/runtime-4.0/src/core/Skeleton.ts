@@ -65,14 +65,14 @@ export class Skeleton {
     y = 0;
 
     constructor (data: SkeletonData) {
-        if (data == null) throw new Error("data cannot be null.");
+        if (!data) throw new Error("data cannot be null.");
         this.data = data;
 
         this.bones = new Array<Bone>();
         for (let i = 0; i < data.bones.length; i++) {
             let boneData = data.bones[i];
             let bone: Bone;
-            if (boneData.parent == null)
+            if (!boneData.parent)
                 bone = new Bone(boneData, this, null);
             else {
                 let parent = this.bones[boneData.parent.index];
@@ -127,7 +127,7 @@ export class Skeleton {
             bone.active = !bone.sorted;
         }
 
-        if (this.skin != null) {
+        if (this.skin) {
             let skinBones = this.skin.bones;
             for (let i = 0, n = this.skin.bones.length; i < n; i++) {
                 let bone = this.bones[skinBones[i].index];
@@ -135,7 +135,7 @@ export class Skeleton {
                     bone.sorted = false;
                     bone.active = true;
                     bone = bone.parent;
-                } while (bone != null);
+                } while (bone);
             }
         }
 
@@ -176,7 +176,7 @@ export class Skeleton {
     }
 
     sortIkConstraint (constraint: IkConstraint) {
-        constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+        constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin && Utils.contains(this.skin.constraints, constraint.data, true)));
         if (!constraint.active) return;
 
         let target = constraint.target;
@@ -201,14 +201,14 @@ export class Skeleton {
     }
 
     sortPathConstraint (constraint: PathConstraint) {
-        constraint.active = constraint.target.bone.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+        constraint.active = constraint.target.bone.isActive() && (!constraint.data.skinRequired || (this.skin && Utils.contains(this.skin.constraints, constraint.data, true)));
         if (!constraint.active) return;
 
         let slot = constraint.target;
         let slotIndex = slot.data.index;
         let slotBone = slot.bone;
-        if (this.skin != null) this.sortPathConstraintAttachment(this.skin, slotIndex, slotBone);
-        if (this.data.defaultSkin != null && this.data.defaultSkin != this.skin)
+        if (this.skin) this.sortPathConstraintAttachment(this.skin, slotIndex, slotBone);
+        if (this.data.defaultSkin && this.data.defaultSkin != this.skin)
             this.sortPathConstraintAttachment(this.data.defaultSkin, slotIndex, slotBone);
         for (let i = 0, n = this.data.skins.length; i < n; i++)
             this.sortPathConstraintAttachment(this.data.skins[i], slotIndex, slotBone);
@@ -230,7 +230,7 @@ export class Skeleton {
     }
 
     sortTransformConstraint (constraint: TransformConstraint) {
-        constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin != null && Utils.contains(this.skin.constraints, constraint.data, true)));
+        constraint.active = constraint.target.isActive() && (!constraint.data.skinRequired || (this.skin && Utils.contains(this.skin.constraints, constraint.data, true)));
         if (!constraint.active) return;
 
         this.sortBone(constraint.target);
@@ -268,7 +268,7 @@ export class Skeleton {
     sortPathConstraintAttachmentWith (attachment: Attachment, slotBone: Bone) {
         if (!(attachment instanceof PathAttachment)) return;
         let pathBones = (<PathAttachment>attachment).bones;
-        if (pathBones == null)
+        if (!pathBones)
             this.sortBone(slotBone);
         else {
             let bones = this.bones;
@@ -284,7 +284,7 @@ export class Skeleton {
     sortBone (bone: Bone) {
         if (bone.sorted) return;
         let parent = bone.parent;
-        if (parent != null) this.sortBone(parent);
+        if (parent) this.sortBone(parent);
         bone.sorted = true;
         this._updateCache.push(bone);
     }
@@ -303,6 +303,18 @@ export class Skeleton {
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide. */
     updateWorldTransform () {
+        let bones = this.bones;
+        for (let i = 0, n = bones.length; i < n; i++) {
+            let bone = bones[i];
+            bone.ax = bone.x;
+            bone.ay = bone.y;
+            bone.arotation = bone.rotation;
+            bone.ascaleX = bone.scaleX;
+            bone.ascaleY = bone.scaleY;
+            bone.ashearX = bone.shearX;
+            bone.ashearY = bone.shearY;
+        }
+
         let updateCache = this._updateCache;
         for (let i = 0, n = updateCache.length; i < n; i++)
             updateCache[i].update();
@@ -398,7 +410,7 @@ export class Skeleton {
 
     /** @returns May be null. */
     findBone (boneName: string) {
-        if (boneName == null) throw new Error("boneName cannot be null.");
+        if (!boneName) throw new Error("boneName cannot be null.");
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
@@ -409,7 +421,7 @@ export class Skeleton {
 
     /** @returns -1 if the bone was not found. */
     findBoneIndex (boneName: string) {
-        if (boneName == null) throw new Error("boneName cannot be null.");
+        if (!boneName) throw new Error("boneName cannot be null.");
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++)
             if (bones[i].data.name == boneName) return i;
@@ -420,7 +432,7 @@ export class Skeleton {
      * repeatedly.
      * @returns May be null. */
     findSlot (slotName: string) {
-        if (slotName == null) throw new Error("slotName cannot be null.");
+        if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
         for (let i = 0, n = slots.length; i < n; i++) {
             let slot = slots[i];
@@ -431,7 +443,7 @@ export class Skeleton {
 
     /** @returns -1 if the bone was not found. */
     findSlotIndex (slotName: string) {
-        if (slotName == null) throw new Error("slotName cannot be null.");
+        if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
         for (let i = 0, n = slots.length; i < n; i++)
             if (slots[i].data.name == slotName) return i;
@@ -443,7 +455,7 @@ export class Skeleton {
      * See {@link #setSkin()}. */
     setSkinByName (skinName: string) {
         let skin = this.data.findSkin(skinName);
-        if (skin == null) throw new Error("Skin not found: " + skinName);
+        if (!skin) throw new Error("Skin not found: " + skinName);
         this.setSkin(skin);
     }
 
@@ -459,17 +471,17 @@ export class Skeleton {
      * @param newSkin May be null. */
     setSkin (newSkin: Skin) {
         if (newSkin == this.skin) return;
-        if (newSkin != null) {
-            if (this.skin != null)
+        if (newSkin) {
+            if (this.skin)
                 newSkin.attachAll(this, this.skin);
             else {
                 let slots = this.slots;
                 for (let i = 0, n = slots.length; i < n; i++) {
                     let slot = slots[i];
                     let name = slot.data.attachmentName;
-                    if (name != null) {
+                    if (name) {
                         let attachment: Attachment = newSkin.getAttachment(i, name);
-                        if (attachment != null) slot.setAttachment(attachment);
+                        if (attachment) slot.setAttachment(attachment);
                     }
                 }
             }
@@ -494,12 +506,12 @@ export class Skeleton {
      * See [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.
      * @returns May be null. */
     getAttachment (slotIndex: number, attachmentName: string): Attachment {
-        if (attachmentName == null) throw new Error("attachmentName cannot be null.");
-        if (this.skin != null) {
+        if (!attachmentName) throw new Error("attachmentName cannot be null.");
+        if (this.skin) {
             let attachment: Attachment = this.skin.getAttachment(slotIndex, attachmentName);
-            if (attachment != null) return attachment;
+            if (attachment) return attachment;
         }
-        if (this.data.defaultSkin != null) return this.data.defaultSkin.getAttachment(slotIndex, attachmentName);
+        if (this.data.defaultSkin) return this.data.defaultSkin.getAttachment(slotIndex, attachmentName);
         return null;
     }
 
@@ -507,16 +519,15 @@ export class Skeleton {
      * {@link #getAttachment()}, then setting the slot's {@link Slot#attachment}.
      * @param attachmentName May be null to clear the slot's attachment. */
     setAttachment (slotName: string, attachmentName: string) {
-        if (slotName == null) throw new Error("slotName cannot be null.");
+        if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
         for (let i = 0, n = slots.length; i < n; i++) {
             let slot = slots[i];
             if (slot.data.name == slotName) {
                 let attachment: Attachment = null;
-                if (attachmentName != null) {
+                if (attachmentName) {
                     attachment = this.getAttachment(i, attachmentName);
-                    if (attachment == null)
-                        throw new Error("Attachment not found: " + attachmentName + ", for slot: " + slotName);
+                    if (!attachment) throw new Error("Attachment not found: " + attachmentName + ", for slot: " + slotName);
                 }
                 slot.setAttachment(attachment);
                 return;
@@ -530,7 +541,7 @@ export class Skeleton {
      * than to call it repeatedly.
      * @return May be null. */
     findIkConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let ikConstraints = this.ikConstraints;
         for (let i = 0, n = ikConstraints.length; i < n; i++) {
             let ikConstraint = ikConstraints[i];
@@ -543,7 +554,7 @@ export class Skeleton {
      * this method than to call it repeatedly.
      * @return May be null. */
     findTransformConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let transformConstraints = this.transformConstraints;
         for (let i = 0, n = transformConstraints.length; i < n; i++) {
             let constraint = transformConstraints[i];
@@ -556,7 +567,7 @@ export class Skeleton {
      * than to call it repeatedly.
      * @return May be null. */
     findPathConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let pathConstraints = this.pathConstraints;
         for (let i = 0, n = pathConstraints.length; i < n; i++) {
             let constraint = pathConstraints[i];
@@ -570,8 +581,8 @@ export class Skeleton {
      * @param size An output value, the width and height of the AABB.
      * @param temp Working memory to temporarily store attachments' computed world vertices. */
     getBounds (offset: Vector2, size: Vector2, temp: Array<number> = new Array<number>(2)) {
-        if (offset == null) throw new Error("offset cannot be null.");
-        if (size == null) throw new Error("size cannot be null.");
+        if (!offset) throw new Error("offset cannot be null.");
+        if (!size) throw new Error("size cannot be null.");
         let drawOrder = this.drawOrder;
         let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY, maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY;
         for (let i = 0, n = drawOrder.length; i < n; i++) {
@@ -590,7 +601,7 @@ export class Skeleton {
                 vertices = Utils.setArraySize(temp, verticesLength, 0);
                 mesh.computeWorldVertices(slot, 0, verticesLength, vertices, 0, 2);
             }
-            if (vertices != null) {
+            if (vertices) {
                 for (let ii = 0, nn = vertices.length; ii < nn; ii += 2) {
                     let x = vertices[ii], y = vertices[ii + 1];
                     minX = Math.min(minX, x);

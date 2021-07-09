@@ -77,17 +77,13 @@ export class Bone implements Updatable, IBone {
     /** The applied local shearY. */
     ashearY = 0;
 
-    /** If true, the applied transform matches the world transform. If false, the world transform has been modified since it was
-     * computed and {@link #updateAppliedTransform()} must be called before accessing the applied transform. */
-    appliedValid = false;
-
     sorted = false;
     active = false;
 
     /** @param parent May be null. */
     constructor (data: BoneData, skeleton: Skeleton, parent: Bone) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+        if (!data) throw new Error("data cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
         this.skeleton = skeleton;
         this.parent = parent;
@@ -100,9 +96,9 @@ export class Bone implements Updatable, IBone {
         return this.active;
     }
 
-    /** Same as {@link #updateWorldTransform()}. This method exists for Bone to implement {@link Updatable}. */
+    /** Computes the world transform using the parent bone and this bone's local applied transform. */
     update () {
-        this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
+        this.updateWorldTransformWith(this.ax, this.ay, this.arotation, this.ascaleX, this.ascaleY, this.ashearX, this.ashearY);
     }
 
     /** Computes the world transform using the parent bone and this bone's local transform.
@@ -112,7 +108,8 @@ export class Bone implements Updatable, IBone {
         this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
     }
 
-    /** Computes the world transform using the parent bone and the specified local transform. Child bones are not updated.
+    /** Computes the world transform using the parent bone and the specified local transform. The applied transform is set to the
+     * specified local transform. Child bones are not updated.
      *
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide. */
@@ -124,7 +121,6 @@ export class Bone implements Updatable, IBone {
         this.ascaleY = scaleY;
         this.ashearX = shearX;
         this.ashearY = shearY;
-        this.appliedValid = true;
 
         let parent = this.parent;
         let m = this.matrix;
@@ -257,13 +253,13 @@ export class Bone implements Updatable, IBone {
     /** The magnitude (always positive) of the world scale X, calculated using {@link #a} and {@link #c}. */
     getWorldScaleX () {
         let m = this.matrix;
-        return Math.sqrt(m.a * m.a + m.c * m.c);
+        return Math.sqrt(m.a * m.a + m.b * m.b);
     }
 
     /** The magnitude (always positive) of the world scale Y, calculated using {@link #b} and {@link #d}. */
     getWorldScaleY () {
         let m = this.matrix;
-        return Math.sqrt(m.b * m.b + m.d * m.d);
+        return Math.sqrt(m.c * m.c + m.d * m.d);
     }
 
     /** Computes the applied transform values from the world transform. This allows the applied transform to be accessed after the
@@ -275,7 +271,6 @@ export class Bone implements Updatable, IBone {
      * Some information is ambiguous in the world transform, such as -1,-1 scale versus 180 rotation. The applied transform after
      * calling this method is equivalent to the local tranform used to compute the world transform, but may not be identical. */
     updateAppliedTransform () {
-        this.appliedValid = true;
         let parent = this.parent;
         let m = this.matrix;
         if (parent == null) {
@@ -352,8 +347,10 @@ export class Bone implements Updatable, IBone {
         return Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) * MathUtils.radDeg;
     }
 
-    /** Rotates the world transform the specified amount and sets {@link #appliedValid} to false.
-     * {@link #updateWorldTransform()} will need to be called on any child bones, recursively, and any constraints reapplied. */
+    /** Rotates the world transform the specified amount.
+     * <p>
+     * After changes are made to the world transform, {@link #updateAppliedTransform()} should be called and {@link #update()} will
+     * need to be called on any child bones, recursively. */
     rotateWorld (degrees: number) {
         let mat = this.matrix;
         let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
@@ -362,6 +359,5 @@ export class Bone implements Updatable, IBone {
         mat.c = cos * b - sin * d;
         mat.b = sin * a + cos * c;
         mat.d = sin * b + cos * d;
-        this.appliedValid = false;
     }
 }

@@ -94,7 +94,7 @@ export class PathConstraint implements Updatable {
                 break;
             case SpacingMode.Proportional:
                 let sum = 0;
-                for (let i = 0; i < boneCount;) {
+                for (let i = 0, n = spacesCount - 1; i < n;) {
                     let bone = bones[i];
                     let setupLength = bone.data.length;
                     if (setupLength < PathConstraint.epsilon) {
@@ -157,7 +157,7 @@ export class PathConstraint implements Updatable {
             }
             boneX = x;
             boneY = y;
-            if (mixRotate) {
+            if (mixRotate > 0) {
                 let a = mat.a, b = mat.c, c = mat.b, d = mat.d, r = 0, cos = 0, sin = 0;
                 if (tangents)
                     r = positions[p - 1];
@@ -187,7 +187,7 @@ export class PathConstraint implements Updatable {
                 mat.b = sin * a + cos * c;
                 mat.d = sin * b + cos * d;
             }
-            bone.appliedValid = false;
+            bone.updateAppliedTransform();
         }
     }
 

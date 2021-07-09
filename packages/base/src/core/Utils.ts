@@ -51,21 +51,22 @@ export class StringSet {
     add (value: string): boolean {
         let contains = this.entries[value];
         this.entries[value] = true;
-        if (!contains) this.size++;
-        return contains != true;
+        if (!contains) {
+            this.size++;
+            return true;
+        }
+        return false;
     }
 
     addAll (values: string[]): boolean {
         let oldSize = this.size;
-        for (var i = 0, n = values.length; i < n; i++) {
+        for (var i = 0, n = values.length; i < n; i++)
             this.add(values[i]);
-        }
         return oldSize != this.size;
     }
 
     contains (value: string) {
-        let contains = this.entries[value];
-        return contains == true;
+        return this.entries[value];
     }
 
     clear () {
@@ -106,8 +107,7 @@ export class Color {
         this.g = g;
         this.b = b;
         this.a = a;
-        this.clamp();
-        return this;
+        return this.clamp();
     }
 
     setFromColor (c: Color) {
@@ -120,10 +120,10 @@ export class Color {
 
     setFromString (hex: string) {
         hex = hex.charAt(0) == '#' ? hex.substr(1) : hex;
-        this.r = parseInt(hex.substr(0, 2), 16) / 255.0;
-        this.g = parseInt(hex.substr(2, 2), 16) / 255.0;
-        this.b = parseInt(hex.substr(4, 2), 16) / 255.0;
-        this.a = (hex.length != 8 ? 255 : parseInt(hex.substr(6, 2), 16)) / 255.0;
+        this.r = parseInt(hex.substr(0, 2), 16) / 255;
+        this.g = parseInt(hex.substr(2, 2), 16) / 255;
+        this.b = parseInt(hex.substr(4, 2), 16) / 255;
+        this.a = hex.length != 8 ? 1 : parseInt(hex.substr(6, 2), 16) / 255;
         return this;
     }
 
@@ -132,8 +132,7 @@ export class Color {
         this.g += g;
         this.b += b;
         this.a += a;
-        this.clamp();
-        return this;
+        return this.clamp();
     }
 
     clamp () {
@@ -162,6 +161,10 @@ export class Color {
         color.r = ((value & 0x00ff0000) >>> 16) / 255;
         color.g = ((value & 0x0000ff00) >>> 8) / 255;
         color.b = ((value & 0x000000ff)) / 255;
+    }
+
+    static fromString (hex : string) : Color {
+        return new Color().setFromString(hex);
     }
 }
 
@@ -294,9 +297,9 @@ export class Utils {
     }
 
     static newFloatArray (size: number): ArrayLike<number> {
-        if (Utils.SUPPORTS_TYPED_ARRAYS) {
+        if (Utils.SUPPORTS_TYPED_ARRAYS)
             return new Float32Array(size)
-        } else {
+        else {
             let array = new Array<number>(size);
             for (let i = 0; i < array.length; i++) array[i] = 0;
             return array;
@@ -304,9 +307,9 @@ export class Utils {
     }
 
     static newShortArray (size: number): ArrayLike<number> {
-        if (Utils.SUPPORTS_TYPED_ARRAYS) {
+        if (Utils.SUPPORTS_TYPED_ARRAYS)
             return new Int16Array(size)
-        } else {
+        else {
             let array = new Array<number>(size);
             for (let i = 0; i < array.length; i++) array[i] = 0;
             return array;
@@ -327,13 +330,14 @@ export class Utils {
     }
 
     static contains<T> (array: Array<T>, element: T, identity = true) {
-        for (let i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++)
             if (array[i] == element) return true;
-        }
         return false;
     }
 
-    fround
+    static enumValue (type: any, name: string) {
+        return type[name[0].toUpperCase() + name.slice(1)];
+    }
 }
 
 /**
@@ -370,9 +374,8 @@ export class Pool<T> {
     }
 
     freeAll (items: ArrayLike<T>) {
-        for (let i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++)
             this.free(items[i]);
-        }
     }
 
     clear () {
@@ -466,8 +469,7 @@ export class WindowedMean {
     }
 
     addValue (value: number) {
-        if (this.addedValues < this.values.length)
-            this.addedValues++;
+        if (this.addedValues < this.values.length) this.addedValues++;
         this.values[this.lastValue++] = value;
         if (this.lastValue > this.values.length - 1) this.lastValue = 0;
         this.dirty = true;
@@ -477,15 +479,13 @@ export class WindowedMean {
         if (this.hasEnoughData()) {
             if (this.dirty) {
                 let mean = 0;
-                for (let i = 0; i < this.values.length; i++) {
+                for (let i = 0; i < this.values.length; i++)
                     mean += this.values[i];
-                }
                 this.mean = mean / this.values.length;
                 this.dirty = false;
             }
             return this.mean;
-        } else {
-            return 0;
         }
+        return 0;
     }
 }

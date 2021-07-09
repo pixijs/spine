@@ -78,7 +78,7 @@ export class SkeletonData {
      * multiple times.
      * @returns May be null. */
     findBone (boneName: string) {
-        if (boneName == null) throw new Error("boneName cannot be null.");
+        if (!boneName) throw new Error("boneName cannot be null.");
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
@@ -88,7 +88,7 @@ export class SkeletonData {
     }
 
     findBoneIndex (boneName: string) {
-        if (boneName == null) throw new Error("boneName cannot be null.");
+        if (!boneName) throw new Error("boneName cannot be null.");
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++)
             if (bones[i].name == boneName) return i;
@@ -99,7 +99,7 @@ export class SkeletonData {
      * multiple times.
      * @returns May be null. */
     findSlot (slotName: string) {
-        if (slotName == null) throw new Error("slotName cannot be null.");
+        if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
         for (let i = 0, n = slots.length; i < n; i++) {
             let slot = slots[i];
@@ -109,7 +109,7 @@ export class SkeletonData {
     }
 
     findSlotIndex (slotName: string) {
-        if (slotName == null) throw new Error("slotName cannot be null.");
+        if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
         for (let i = 0, n = slots.length; i < n; i++)
             if (slots[i].name == slotName) return i;
@@ -120,7 +120,7 @@ export class SkeletonData {
      * multiple times.
      * @returns May be null. */
     findSkin (skinName: string) {
-        if (skinName == null) throw new Error("skinName cannot be null.");
+        if (!skinName) throw new Error("skinName cannot be null.");
         let skins = this.skins;
         for (let i = 0, n = skins.length; i < n; i++) {
             let skin = skins[i];
@@ -133,7 +133,7 @@ export class SkeletonData {
      * multiple times.
      * @returns May be null. */
     findEvent (eventDataName: string) {
-        if (eventDataName == null) throw new Error("eventDataName cannot be null.");
+        if (!eventDataName) throw new Error("eventDataName cannot be null.");
         let events = this.events;
         for (let i = 0, n = events.length; i < n; i++) {
             let event = events[i];
@@ -146,7 +146,7 @@ export class SkeletonData {
      * call it multiple times.
      * @returns May be null. */
     findAnimation (animationName: string) {
-        if (animationName == null) throw new Error("animationName cannot be null.");
+        if (!animationName) throw new Error("animationName cannot be null.");
         let animations = this.animations;
         for (let i = 0, n = animations.length; i < n; i++) {
             let animation = animations[i];
@@ -159,7 +159,7 @@ export class SkeletonData {
      * than to call it multiple times.
      * @return May be null. */
     findIkConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let ikConstraints = this.ikConstraints;
         for (let i = 0, n = ikConstraints.length; i < n; i++) {
             let constraint = ikConstraints[i];
@@ -172,7 +172,7 @@ export class SkeletonData {
      * this method than to call it multiple times.
      * @return May be null. */
     findTransformConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let transformConstraints = this.transformConstraints;
         for (let i = 0, n = transformConstraints.length; i < n; i++) {
             let constraint = transformConstraints[i];
@@ -185,7 +185,7 @@ export class SkeletonData {
      * than to call it multiple times.
      * @return May be null. */
     findPathConstraint (constraintName: string) {
-        if (constraintName == null) throw new Error("constraintName cannot be null.");
+        if (!constraintName) throw new Error("constraintName cannot be null.");
         let pathConstraints = this.pathConstraints;
         for (let i = 0, n = pathConstraints.length; i < n; i++) {
             let constraint = pathConstraints[i];

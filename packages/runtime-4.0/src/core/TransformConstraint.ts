@@ -27,8 +27,8 @@ export class TransformConstraint implements Updatable {
     active = false;
 
     constructor (data: TransformConstraintData, skeleton: Skeleton) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+        if (!data) throw new Error("data cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
         this.mixRotate = data.mixRotate;
         this.mixX = data.mixX;
@@ -54,7 +54,6 @@ export class TransformConstraint implements Updatable {
                 this.applyRelativeLocal();
             else
                 this.applyAbsoluteLocal();
-
         } else {
             if (this.data.relative)
                 this.applyRelativeWorld();
@@ -67,6 +66,7 @@ export class TransformConstraint implements Updatable {
         let mixRotate = this.mixRotate, mixX = this.mixX, mixY = this.mixY, mixScaleX = this.mixScaleX,
             mixScaleY = this.mixScaleY, mixShearY = this.mixShearY;
         let translate = mixX != 0 || mixY != 0;
+
         let target = this.target;
         const targetMat = target.matrix;
         let ta = targetMat.a, tb = targetMat.c, tc = targetMat.b, td = targetMat.d;
@@ -130,7 +130,7 @@ export class TransformConstraint implements Updatable {
 
             }
 
-            bone.appliedValid = false;
+            bone.updateAppliedTransform();
         }
     }
 
@@ -196,7 +196,7 @@ export class TransformConstraint implements Updatable {
                 mat.d = Math.sin(r) * s;
             }
 
-            bone.appliedValid = false;
+            bone.updateAppliedTransform();
         }
     }
 
@@ -205,12 +205,10 @@ export class TransformConstraint implements Updatable {
             mixScaleY = this.mixScaleY, mixShearY = this.mixShearY;
 
         let target = this.target;
-        if (!target.appliedValid) target.updateAppliedTransform();
 
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
-            if (!bone.appliedValid) bone.updateAppliedTransform();
 
             let rotation = bone.arotation;
             if (mixRotate != 0) {
@@ -233,7 +231,6 @@ export class TransformConstraint implements Updatable {
             if (mixShearY != 0) {
                 let r = target.ashearY - shearY + this.data.offsetShearY;
                 r -= (16384 - ((16384.499999999996 - r / 360) | 0)) * 360;
-                // TODO: check this place in 3.8
                 shearY += r * mixShearY;
             }
 
@@ -246,11 +243,10 @@ export class TransformConstraint implements Updatable {
             mixScaleY = this.mixScaleY, mixShearY = this.mixShearY;
 
         let target = this.target;
-        if (!target.appliedValid) target.updateAppliedTransform();
+
         let bones = this.bones;
         for (let i = 0, n = bones.length; i < n; i++) {
             let bone = bones[i];
-            if (!bone.appliedValid) bone.updateAppliedTransform();
 
             let rotation = bone.arotation + (target.arotation + this.data.offsetRotation) * mixRotate;
             let x = bone.ax + (target.ax + this.data.offsetX) * mixX;
