@@ -127,7 +127,7 @@ export class Bone implements Updatable, IBone {
 
         let sx = this.skeleton.scaleX;
         let sy = settings.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
-        if (parent == null) { // Root bone.
+        if (!parent) { // Root bone.
             let skeleton = this.skeleton;
             let rotationY = rotation + 90 + shearY;
             m.a = MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
@@ -262,18 +262,18 @@ export class Bone implements Updatable, IBone {
         return Math.sqrt(m.c * m.c + m.d * m.d);
     }
 
-    /** Computes the applied transform values from the world transform. This allows the applied transform to be accessed after the
-     * world transform has been modified (by a constraint, {@link #rotateWorld()}, etc).
+    /** Computes the applied transform values from the world transform.
      *
-     * If {@link #updateWorldTransform()} has been called for a bone and {@link #appliedValid} is false, then
-     * {@link #updateAppliedTransform()} must be called before accessing the applied transform.
+     * If the world transform is modified (by a constraint, {@link #rotateWorld(float)}, etc) then this method should be called so
+     * the applied transform matches the world transform. The applied transform may be needed by other code (eg to apply other
+     * constraints).
      *
      * Some information is ambiguous in the world transform, such as -1,-1 scale versus 180 rotation. The applied transform after
-     * calling this method is equivalent to the local tranform used to compute the world transform, but may not be identical. */
+     * calling this method is equivalent to the local transform used to compute the world transform, but may not be identical. */
     updateAppliedTransform () {
         let parent = this.parent;
         let m = this.matrix;
-        if (parent == null) {
+        if (!parent) {
             this.ax = m.tx;
             this.ay = m.ty;
             this.arotation = Math.atan2(m.b, m.a) * MathUtils.radDeg;
@@ -340,7 +340,6 @@ export class Bone implements Updatable, IBone {
 
     /** Transforms a local rotation to a world rotation. */
     localToWorldRotation (localRotation: number) {
-        //TODO: check same place in 3.8
         localRotation -= this.rotation - this.shearX;
         let sin = MathUtils.sinDeg(localRotation), cos = MathUtils.cosDeg(localRotation);
         let mat = this.matrix;

@@ -143,7 +143,7 @@ export interface ITrackEntry {
  */
 export interface IAnimationState {
     update(dt: number): void;
-    apply(skeleton: ISkeleton): void;
+    apply(skeleton: ISkeleton): boolean;
 
     setAnimation (trackIndex: number, animationName: string, loop: boolean): ITrackEntry;
     addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number): ITrackEntry;

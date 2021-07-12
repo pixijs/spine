@@ -7,12 +7,12 @@ import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
 import {Skin} from "./Skin";
-import {Color, Utils, Vector2} from "@pixi-spine/base";
+import {Color, Utils, Vector2, ISkeleton} from "@pixi-spine/base";
 
 /**
  * @public
  */
-export class Skeleton {
+export class Skeleton implements ISkeleton<Bone, Slot> {
     data: SkeletonData;
     bones: Array<Bone>;
     slots: Array<Slot>;

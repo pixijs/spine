@@ -5,7 +5,7 @@
   "main": "lib/runtime-3.7.js",
   "module": "lib/runtime-3.7.es.js",
   "bundle": "dist/runtime-3.7.js",
-  "namespace": "PIXI.spine",
+  "namespace": "PIXI.spine37",
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/constants": "^6.0.2",

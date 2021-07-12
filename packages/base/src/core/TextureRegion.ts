@@ -102,7 +102,7 @@ export class TextureRegion {
     }
 
     get offsetY(): number {
-        console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
+        // console.warn("Deprecation Warning: @Hackerham: I guess, if you are using PIXI-SPINE ATLAS region.offsetY, you want a texture, right? Use region.texture from now on.");
         return this.spineOffsetY;
     }
 

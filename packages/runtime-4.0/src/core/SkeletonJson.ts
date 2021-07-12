@@ -928,7 +928,6 @@ export class SkeletonJson {
         let duration = 0;
         for (let i = 0, n = timelines.length; i < n; i++)
             duration = Math.max(duration, timelines[i].getDuration());
-
         if (isNaN(duration)) {
             throw new Error("Error while parsing animation, duration is NaN");
         }

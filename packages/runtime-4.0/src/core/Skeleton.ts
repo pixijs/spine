@@ -7,14 +7,14 @@ import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
 import {Skin} from "./Skin";
-import {Color, MathUtils, settings, Utils, Vector2} from "@pixi-spine/base";
+import {Color, MathUtils, settings, Utils, Vector2, ISkeleton} from "@pixi-spine/base";
 
 /** Stores the current pose for a skeleton.
  *
  * See [Instance objects](http://esotericsoftware.com/spine-runtime-architecture#Instance-objects) in the Spine Runtimes Guide.
  * @public
  * */
-export class Skeleton {
+export class Skeleton implements ISkeleton<Bone, Slot> {
     /** The skeleton's setup pose data. */
     data: SkeletonData;
 

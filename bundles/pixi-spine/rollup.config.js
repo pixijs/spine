@@ -3,7 +3,9 @@ const { main } = require('@pixi-build-tools/rollup-configurator/main');
 const results = main({
     globals: {
         '@pixi-spine/base': 'PIXI.spine',
-        '@pixi-spine/runtime-3.8': 'PIXI.spine',
+        '@pixi-spine/runtime-3.7': 'PIXI.spine37',
+        '@pixi-spine/runtime-3.8': 'PIXI.spine38',
+        '@pixi-spine/runtime-4.0': 'PIXI.spine40',
         '@pixi-spine/loader-base': 'PIXI.spine',
         '@pixi-spine/loader-uni': 'PIXI.spine',
     },

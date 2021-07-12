@@ -51,7 +51,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     /** @param parentMesh May be null. */
     setParentMesh (parentMesh: MeshAttachment) {
         this.parentMesh = parentMesh;
-        if (parentMesh != null) {
+        if (parentMesh) {
             this.bones = parentMesh.bones;
             this.vertices = parentMesh.vertices;
             this.worldVerticesLength = parentMesh.worldVerticesLength;
@@ -63,7 +63,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     }
 
     copy (): Attachment {
-        if (this.parentMesh != null) return this.newLinkedMesh();
+        if (this.parentMesh) return this.newLinkedMesh();
 
         let copy = new MeshAttachment(this.name);
         copy.region = this.region;
@@ -78,7 +78,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         copy.hullLength = this.hullLength;
 
         // Nonessential.
-        if (this.edges != null) {
+        if (this.edges) {
             copy.edges = new Array<number>(this.edges.length);
             Utils.arrayCopy(this.edges, 0, copy.edges, 0, this.edges.length);
         }
@@ -95,7 +95,7 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         copy.path = this.path;
         copy.color.setFromColor(this.color);
         copy.deformAttachment = this.deformAttachment;
-        copy.setParentMesh(this.parentMesh != null ? this.parentMesh : this);
+        copy.setParentMesh(this.parentMesh ? this.parentMesh : this);
         // copy.updateUVs();
         return copy;
     }

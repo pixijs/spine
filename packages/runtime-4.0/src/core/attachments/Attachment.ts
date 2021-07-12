@@ -4,6 +4,7 @@ import type {IAttachment, ArrayLike} from '@pixi-spine/base';
 import type {Slot} from '../Slot';
 
 /**
+ * The base class for all attachments.
  * @public
  */
 export abstract class Attachment implements IAttachment {
@@ -11,7 +12,7 @@ export abstract class Attachment implements IAttachment {
     type: AttachmentType;
 
     constructor (name: string) {
-        if (name == null) throw new Error("name cannot be null.");
+        if (!name) throw new Error("name cannot be null.");
         this.name = name;
     }
 
@@ -53,7 +54,6 @@ export abstract class VertexAttachment extends Attachment {
     computeWorldVerticesOld(slot: Slot, worldVertices: ArrayLike<number>) {
         this.computeWorldVertices(slot, 0, this.worldVerticesLength, worldVertices, 0, 2);
     }
-
     /** Transforms the attachment's local {@link #vertices} to world coordinates. If the slot's {@link Slot#deform} is
      * not empty, it is used to deform the vertices.
      *
@@ -71,7 +71,7 @@ export abstract class VertexAttachment extends Attachment {
         let deformArray = slot.deform;
         let vertices = this.vertices;
         let bones = this.bones;
-        if (bones == null) {
+        if (!bones) {
             if (deformArray.length > 0) vertices = deformArray;
             let mat = slot.bone.matrix;
             let x = mat.tx;
@@ -125,13 +125,13 @@ export abstract class VertexAttachment extends Attachment {
 
     /** Does not copy id (generated) or name (set on construction). **/
     copyTo (attachment: VertexAttachment) {
-        if (this.bones != null) {
+        if (this.bones) {
             attachment.bones = new Array<number>(this.bones.length);
             Utils.arrayCopy(this.bones, 0, attachment.bones, 0, this.bones.length);
         } else
             attachment.bones = null;
 
-        if (this.vertices != null) {
+        if (this.vertices) {
             attachment.vertices = Utils.newFloatArray(this.vertices.length);
             Utils.arrayCopy(this.vertices, 0, attachment.vertices, 0, this.vertices.length);
         } else
