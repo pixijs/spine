@@ -336,8 +336,8 @@ export class Skeleton implements ISkeleton<Bone, Slot> {
         const sx = this.scaleX;
         const sy = settings.yDown? -this.scaleY : this.scaleY;
         rootBone.matrix.a = (pa * la + pb * lc) * sx;
-        rootBone.matrix.b = (pa * lb + pb * ld) * sx;
-        rootBone.matrix.c = (pc * la + pd * lc) * sy;
+        rootBone.matrix.c = (pa * lb + pb * ld) * sx;
+        rootBone.matrix.b = (pc * la + pd * lc) * sy;
         rootBone.matrix.d = (pc * lb + pd * ld) * sy;
 
         // Update everything except root bone.
