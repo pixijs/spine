@@ -98,7 +98,7 @@ export class TransformConstraint implements Updatable {
                 let temp = this.temp;
                 target.localToWorld(temp.set(this.data.offsetX, this.data.offsetY));
                 mat.tx += (temp.x - mat.tx) * mixX;
-                mat.ty += (temp.y - mat.tx) * mixY;
+                mat.ty += (temp.y - mat.ty) * mixY;
             }
 
             if (mixScaleX != 0) {
