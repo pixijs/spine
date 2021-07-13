@@ -2,6 +2,12 @@
   "name": "pixi-spine",
   "entries": [
     {
+      "version": "3.0.5",
+      "tag": "pixi-spine_v3.0.5",
+      "date": "Tue, 13 Jul 2021 13:56:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.0.4",
       "tag": "pixi-spine_v3.0.4",
       "date": "Mon, 07 Jun 2021 21:56:43 GMT",
