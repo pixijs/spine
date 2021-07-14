@@ -1,0 +1,60 @@
+{
+  "name": "@pixi-spine/all-4.0",
+  "version": "3.0.5",
+  "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 3.8",
+  "main": "lib/all-4.0.js",
+  "module": "lib/all-4.0.es.js",
+  "bundle": "dist/pixi-spine-4.0.umd.js",
+  "types": "./index.d.ts",
+  "namespace": "PIXI.spine",
+  "dependencies": {
+    "@pixi-spine/base": "~3.0.5",
+    "@pixi-spine/loader-4.0": "~3.0.5",
+    "@pixi-spine/loader-base": "~3.0.5",
+    "@pixi-spine/runtime-4.0": "~3.0.5"
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.js --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixijs/pixi-spine.git"
+  },
+  "files": [
+    "lib",
+    "dist",
+    "*.d.ts",
+    "SPINE-LICENSE"
+  ],
+  "keywords": [
+    "pixi.js",
+    "pixi",
+    "spine",
+    "SPINE-LICENSE"
+  ],
+  "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
+  "contributors": [
+    "Mat Groves",
+    "Chad Engler <chad@pantherdev.com>",
+    "Richard Davey <rdavey@gmail.com>",
+    "Shukant K. Pal <shukantpal@outlook.com>",
+    "Yevhenii Huselietov <d46k16@gmail.com>"
+  ],
+  "bugs": {
+    "url": "https://github.com/pixijs/pixi-spine/issues"
+  },
+  "license": "SEE SPINE-LICENSE",
+  "homepage": "https://github.com/pixijs/pixi-spine/#readme",
+  "devDependencies": {
+    "@pixi-build-tools/rollup-configurator": "^1.0.11",
+    "@pixi-spine/eslint-config": "~1.0.0",
+    "chai": "~4.2.0",
+    "eslint": "~7.13.0",
+    "prepend": "=1.0.2",
+    "rimraf": "3.0.2",
+    "rollup": "~2.33.1",
+    "tslib": "~2.2.0",
+    "typescript": "~4.2.3"
+  }
+}

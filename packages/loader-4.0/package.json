@@ -1,24 +1,26 @@
 {
-  "name": "@pixi-spine/base",
+  "name": "@pixi-spine/loader-4.0",
   "version": "3.0.5",
-  "description": "Base of pixi-spine integration, common files for spine runtimes of different versions",
-  "main": "lib/base.js",
-  "module": "lib/base.es.js",
-  "bundle": "dist/base.js",
-  "namespace": "PIXI.spine",
+  "description": "Pixi loader middleware for spine 4.0 models",
+  "main": "lib/loader-4.0.js",
+  "module": "lib/loader-4.0.es.js",
+  "bundle": "dist/loader-4.0.js",
   "types": "./index.d.ts",
+  "namespace": "PIXI.spine",
   "peerDependencies": {
-    "@pixi/constants": "^6.0.2",
+    "@pixi/app": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
-    "@pixi/graphics": "^6.0.2",
-    "@pixi/math": "^6.0.2",
-    "@pixi/mesh-extras": "~6.0.2",
-    "@pixi/sprite": "~6.0.2",
-    "@pixi/utils": "~6.0.2"
+    "@pixi/loaders": "~6.0.2",
+    "resource-loader": "~3.0.1"
+  },
+  "dependencies": {
+    "@pixi-spine/base": "~3.0.5",
+    "@pixi-spine/loader-base": "~3.0.5",
+    "@pixi-spine/runtime-4.0": "~3.0.5"
   },
   "scripts": {
-    "build": "rollup -c node_modules/@pixi-build-tools/rollup-configurator/index.js --silent",
+    "build": "rollup -c rollup.config.js --silent",
     "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
   },
   "repository": {
@@ -41,7 +43,6 @@
   },
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@microsoft/api-extractor": "7.13.5",
     "@pixi-build-tools/rollup-configurator": "^1.0.11",
     "@pixi-spine/eslint-config": "~1.0.0",
     "chai": "~4.2.0",

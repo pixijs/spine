@@ -58,6 +58,12 @@
       "versionPolicyName": "PixiSpine"
     },
     {
+      "packageName": "@pixi-spine/loader-4.0",
+      "projectFolder": "packages/loader-4.0",
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
+    },
+    {
       "packageName": "@pixi-spine/loader-uni",
       "projectFolder": "packages/loader-uni",
       "reviewCategory": "production",
@@ -72,6 +78,12 @@
     {
       "packageName": "@pixi-spine/all-3.8",
       "projectFolder": "bundles/all-3.8",
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
+    },
+    {
+      "packageName": "@pixi-spine/all-4.0",
+      "projectFolder": "bundles/all-4.0",
       "reviewCategory": "production",
       "versionPolicyName": "PixiSpine"
     },
