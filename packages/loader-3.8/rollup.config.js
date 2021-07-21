@@ -1,4 +1,4 @@
-const { main } = require('@pixi-build-tools/rollup-configurator/main');
+const {main} = require('@pixi-spine/rollup-config/main');
 
 module.exports = main({
     globals: {
@@ -7,3 +7,6 @@ module.exports = main({
         '@pixi-spine/loader-base': 'PIXI.spine',
     },
 });
+
+
+
