@@ -39,12 +39,12 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-build-tools/rollup-configurator": "^1.0.11",
+    "@pixi-spine/rollup-config": "~1.0.0",
     "@pixi-spine/eslint-config": "~1.0.0",
     "chai": "~4.2.0",
     "eslint": "~7.13.0",
     "rimraf": "3.0.2",
-    "rollup": "~2.33.1",
+    "rollup": "^2.53.3",
     "tslib": "~2.2.0",
     "typescript": "~4.2.3"
   }
