@@ -10,6 +10,7 @@ import {
 import {AnimationStateData} from "./AnimationStateData";
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
+import {IAnimationStateListener} from "@pixi-spine/base/compile";
 
 /**
  * @public
@@ -24,7 +25,7 @@ export class AnimationState implements IAnimationState {
     data: AnimationStateData;
     tracks = new Array<TrackEntry>();
     events = new Array<Event>();
-    listeners = new Array<AnimationStateListener2>();
+    listeners = new Array<AnimationStateListener>();
     queue = new EventQueue(this);
     propertyIDs = new IntSet();
     animationsChanged = false;
@@ -631,13 +632,13 @@ export class AnimationState implements IAnimationState {
         return this.tracks[trackIndex];
     }
 
-    addListener (listener: AnimationStateListener2) {
+    addListener (listener: AnimationStateListener) {
         if (listener == null) throw new Error("listener cannot be null.");
         this.listeners.push(listener);
     }
 
     /** Removes the listener added with {@link #addListener(AnimationStateListener)}. */
-    removeListener (listener: AnimationStateListener2) {
+    removeListener (listener: AnimationStateListener) {
         let index = this.listeners.indexOf(listener);
         if (index >= 0) this.listeners.splice(index, 1);
     }
@@ -698,7 +699,7 @@ export class AnimationState implements IAnimationState {
 export class TrackEntry implements ITrackEntry {
     animation: Animation;
     next: TrackEntry; mixingFrom: TrackEntry; mixingTo: TrackEntry;
-    listener: AnimationStateListener2;
+    listener: AnimationStateListener;
     trackIndex: number;
     loop: boolean;
     holdPrevious: boolean;
@@ -924,7 +925,7 @@ export enum EventType {
 /**
  * @public
  */
-export interface AnimationStateListener2 {
+export interface AnimationStateListener extends IAnimationStateListener {
     /** Invoked when this entry has been set as the current entry. */
     start? (entry: TrackEntry): void;
 
@@ -949,7 +950,7 @@ export interface AnimationStateListener2 {
 /**
  * @public
  */
-export abstract class AnimationStateAdapter2 implements AnimationStateListener2 {
+export abstract class AnimationStateAdapter2 implements AnimationStateListener {
     start (entry: TrackEntry) {
     }
 

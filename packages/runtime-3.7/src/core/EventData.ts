@@ -1,8 +1,9 @@
+import {IEventData} from "@pixi-spine/base";
 
 /**
  * @public
  */
-export class EventData {
+export class EventData implements IEventData {
     name: string;
     intValue: number;
     floatValue: number;

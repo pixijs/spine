@@ -162,13 +162,24 @@ export interface IAnimationStateData {
     setMix (fromName: string, toName: string, duration: number): void;
 }
 
+/**
+ * @public
+ */
 export interface IEventData {
     name: string;
 }
+
+/**
+ * @public
+ */
 export interface IEvent {
     time: number;
     data: IEventData;
 }
+
+/**
+ * @public
+ */
 export interface IAnimationStateListener {
     start? (entry: ITrackEntry): void;
     interrupt? (entry: ITrackEntry): void;

@@ -12,6 +12,7 @@ import {AnimationStateData} from "./AnimationStateData";
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import type {Slot} from "./Slot";
+import {IAnimationStateListener} from "@pixi-spine/base/compile";
 
 /** Applies animations over time, queues animations for later playback, mixes (crossfading) between animations, and applies
  * multiple animations on top of each other (layering).
@@ -1238,7 +1239,7 @@ export enum EventType {
 /**
  * @public
  */
-export interface AnimationStateListener {
+export interface AnimationStateListener extends IAnimationStateListener {
     /** Invoked when this entry has been set as the current entry. */
     start? (entry: TrackEntry): void;
 

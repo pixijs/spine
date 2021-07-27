@@ -1,4 +1,12 @@
-import {IAnimationState, ITrackEntry, MathUtils, Pool, StringSet, Utils} from "@pixi-spine/base";
+import {
+    IAnimationState,
+    IAnimationStateListener,
+    ITrackEntry,
+    MathUtils,
+    Pool,
+    StringSet,
+    Utils
+} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,
@@ -1169,7 +1177,7 @@ export enum EventType {
  * {@link AnimationState#addListener()}.
  * @public
  * */
-export interface AnimationStateListener {
+export interface AnimationStateListener extends IAnimationStateListener {
     /** Invoked when this entry has been set as the current entry. */
     start (entry: TrackEntry): void;
 
