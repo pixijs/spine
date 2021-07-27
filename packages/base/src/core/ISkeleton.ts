@@ -150,6 +150,8 @@ export interface IAnimationState {
     addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number): ITrackEntry;
     setEmptyAnimations (mixDuration: number): void;
     hasAnimation(animationName: string): boolean;
+    addListener (listener: IAnimationStateListener);
+    removeListener (listener: IAnimationStateListener);
 }
 
 /**
@@ -158,4 +160,20 @@ export interface IAnimationState {
 export interface IAnimationStateData {
     defaultMix: number;
     setMix (fromName: string, toName: string, duration: number): void;
+}
+
+export interface IEventData {
+    name: string;
+}
+export interface IEvent {
+    time: number;
+    data: IEventData;
+}
+export interface IAnimationStateListener {
+    start? (entry: ITrackEntry): void;
+    interrupt? (entry: ITrackEntry): void;
+    end? (entry: ITrackEntry): void;
+    dispose? (entry: ITrackEntry): void;
+    complete? (entry: ITrackEntry): void;
+    event? (entry: ITrackEntry, event: IEvent): void;
 }
