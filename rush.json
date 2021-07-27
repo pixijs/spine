@@ -92,6 +92,12 @@
       "projectFolder": "tools/eslint-config",
       "reviewCategory": "production",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@pixi-spine/rollup-config",
+      "projectFolder": "tools/rollup-config",
+      "reviewCategory": "production",
+      "shouldPublish": false
     }
   ]
 }
