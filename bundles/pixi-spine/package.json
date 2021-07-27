@@ -48,8 +48,8 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/rollup-config": "~1.0.0",
     "@pixi-spine/eslint-config": "~1.0.0",
+    "@pixi-spine/rollup-config": "~1.0.0",
     "chai": "~4.2.0",
     "eslint": "~7.13.0",
     "prepend": "=1.0.2",
