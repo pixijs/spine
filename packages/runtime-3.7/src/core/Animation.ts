@@ -832,7 +832,7 @@ export class DeformTimeline extends CurveTimeline {
                 } else {
                     Utils.arrayCopy(lastVertices, 0, vertices, 0, vertexCount);
                 }
-            } else {
+            } else {
                 switch (blend) {
                     case MixBlend.setup: {
                         let vertexAttachment = slotAttachment as VertexAttachment;

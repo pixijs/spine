@@ -768,7 +768,7 @@ export class AnimationState implements IAnimationState {
                 else if (to == null || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
                     || timeline instanceof EventTimeline || !to.animation.hasTimeline(id)) {
                     timelineMode[i] = AnimationState.FIRST;
-                } else {
+                } else {
                     for (let next = to.mixingTo; next != null; next = next.mixingTo) {
                         if (next.animation.hasTimeline(id)) continue;
                         if (entry.mixDuration > 0) {
