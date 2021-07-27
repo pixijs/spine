@@ -1110,7 +1110,7 @@ export class RGBTimeline extends CurveTimeline implements SlotTimeline {
             color.r = r;
             color.g = g;
             color.b = b;
-        } else {
+        } else {
             if (blend == MixBlend.setup) {
                 let setup = slot.data.color;
                 color.r = setup.r;
@@ -1592,7 +1592,7 @@ export class DeformTimeline extends CurveTimeline implements SlotTimeline {
                     }
                 } else
                     Utils.arrayCopy(lastVertices, 0, deform, 0, vertexCount);
-            } else {
+            } else {
                 switch (blend) {
                     case MixBlend.setup: {
                         let vertexAttachment = slotAttachment as VertexAttachment;
