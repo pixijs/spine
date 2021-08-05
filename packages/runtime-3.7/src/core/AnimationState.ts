@@ -1,4 +1,12 @@
-import {IAnimationState, ITrackEntry, IntSet, MathUtils, Pool, Utils} from "@pixi-spine/base";
+import {
+    IAnimationState,
+    IAnimationStateListener,
+    ITrackEntry,
+    MathUtils,
+    Pool,
+    IntSet,
+    Utils
+} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,
@@ -10,7 +18,6 @@ import {
 import {AnimationStateData} from "./AnimationStateData";
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
-import {IAnimationStateListener} from "@pixi-spine/base/compile";
 
 /**
  * @public

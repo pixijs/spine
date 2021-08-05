@@ -12,7 +12,7 @@
     "@pixi/constants": "^6.0.2",
     "@pixi/core": "^6.0.2",
     "@pixi/display": "^6.0.2",
-    "@pixi/loaders": "~6.0.2",
+    "@pixi/loaders": "^6.0.2",
     "resource-loader": "~3.0.1"
   },
   "dependencies": {

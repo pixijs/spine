@@ -1,4 +1,12 @@
-import {IAnimationState, ITrackEntry, MathUtils, IntSet, Pool, Utils} from "@pixi-spine/base";
+import {
+    IAnimationState,
+    IAnimationStateListener,
+    ITrackEntry,
+    MathUtils,
+    Pool,
+    IntSet,
+    Utils
+} from "@pixi-spine/base";
 import {
     Animation,
     AttachmentTimeline,
@@ -12,7 +20,6 @@ import {AnimationStateData} from "./AnimationStateData";
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import type {Slot} from "./Slot";
-import {IAnimationStateListener} from "@pixi-spine/base/compile";
 
 /** Applies animations over time, queues animations for later playback, mixes (crossfading) between animations, and applies
  * multiple animations on top of each other (layering).
