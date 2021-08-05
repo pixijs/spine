@@ -8,8 +8,8 @@
 	"namespace": "PIXI.spine38",
 	"types": "./index.d.ts",
 	"peerDependencies": {
-		"@pixi/constants": "^6.0.2",
-		"@pixi/math": "^6.0.2"
+		"@pixi/constants": "^6.1.0",
+		"@pixi/math": "^6.1.0"
 	},
 	"dependencies": {
 		"@pixi-spine/base": "~3.0.7"

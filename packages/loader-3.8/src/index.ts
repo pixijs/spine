@@ -1,7 +1,7 @@
 /// <reference path="../global.d.ts" />
 import {AbstractSpineParser} from '@pixi-spine/loader-base';
 import {ISkeletonParser, TextureAtlas} from '@pixi-spine/base';
-import {ILoaderResource, Loader} from "@pixi/loaders";
+import {LoaderResource, Loader} from "@pixi/loaders";
 import {AtlasAttachmentLoader, SkeletonBinary, SkeletonJson} from "@pixi-spine/runtime-3.8";
 
 /**
@@ -16,7 +16,7 @@ export class SpineParser extends AbstractSpineParser {
         return new SkeletonJson(null);
     }
 
-    parseData(resource: ILoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
+    parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
         const parserCast = parser as SkeletonBinary | SkeletonJson;
 
         parserCast.attachmentLoader = new AtlasAttachmentLoader(atlas);

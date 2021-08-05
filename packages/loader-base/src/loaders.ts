@@ -1,13 +1,13 @@
-import {ILoaderResource, IResourceMetadata, Loader, LoaderResource} from "@pixi/loaders";
+import {IResourceMetadata, Loader, LoaderResource} from "@pixi/loaders";
 import {BaseTexture, Texture} from "@pixi/core";
 import {ISkeletonParser, TextureAtlas} from "@pixi-spine/base";
 import {ALPHA_MODES} from "@pixi/constants";
 
-function isJson(resource: ILoaderResource) {
+function isJson(resource: LoaderResource) {
     return resource.type === LoaderResource.TYPE.JSON;
 }
 
-function isBuffer(resource: ILoaderResource) {
+function isBuffer(resource: LoaderResource) {
     return resource.xhrType === (LoaderResource as any).XHR_RESPONSE_TYPE.BUFFER;
 }
 
@@ -21,13 +21,13 @@ export abstract class AbstractSpineParser {
 
     abstract createBinaryParser(): ISkeletonParser;
 
-    abstract parseData(resource: ILoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void;
+    abstract parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void;
 
     genMiddleware() {
         const self = this;
 
         return {
-            use(this: Loader, resource: ILoaderResource, next: () => any) {
+            use(this: Loader, resource: LoaderResource, next: () => any) {
                 // skip if no data, its not json, or it isn't atlas data
                 if (!resource.data) {
                     return next();
@@ -160,7 +160,7 @@ export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, i
                 cachedResource.onAfterMiddleware.add(done);
             }
         } else {
-            loader.add(name, url, imageOptions, (resource: ILoaderResource) => {
+            loader.add(name, url, imageOptions, (resource: LoaderResource) => {
                 if (!resource.error) {
                     if (line.indexOf('-pma.') >= 0) {
                         resource.texture.baseTexture.alphaMode = ALPHA_MODES.PMA;

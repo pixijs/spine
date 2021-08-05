@@ -14,7 +14,7 @@ declare namespace GlobalMixins
         image?: any;
     }
 
-    interface ILoaderResource {
+    interface LoaderResource {
         spineAtlas?: import('@pixi-spine/base').TextureAtlas;
     }
 }
