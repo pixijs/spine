@@ -19,9 +19,9 @@ export interface ISkin {
     name: string;
     attachments: Array<Map<IAttachment>>;
 
-    setAttachment(slotIndex: number, name: string, attachment: IAttachment): void;
-    getAttachment(slotIndex: number, name: string): IAttachment | null;
-    attachAll(skeleton: ISkeleton, oldSkin: ISkin): void;
+    setAttachment (slotIndex: number, name: string, attachment: IAttachment): void;
+    getAttachment (slotIndex: number, name: string): IAttachment | null;
+    attachAll (skeleton: ISkeleton, oldSkin: ISkin): void;
 }
 
 /**
@@ -144,7 +144,7 @@ export interface ISkeletonData {
     width: number;
     height: number;
 
-    findSkin(skinName: string): ISkin | null;
+    findSkin (skinName: string): ISkin | null;
 }
 
 /**
@@ -179,8 +179,8 @@ export interface IAnimationState {
     addListener (listener: IAnimationStateListener): void;
     removeListener (listener: IAnimationStateListener): void;
     clearListeners (): void;
-    clearTracks(): void;
-    clearTrack(index: number): void;
+    clearTracks (): void;
+    clearTrack (index: number): void;
 }
 
 /**
