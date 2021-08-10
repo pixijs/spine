@@ -1,5 +1,5 @@
 import {AttachmentType} from './AttachmentType';
-import type {Color, Vector2} from './Utils';
+import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
@@ -10,6 +10,18 @@ import type {Matrix} from '@pixi/math';
 export interface IBone {
     data: { name: string };
     matrix: Matrix;
+}
+
+/**
+ * @public
+ */
+export interface ISkin {
+    name: string;
+    attachments: Array<Map<IAttachment>>;
+
+    setAttachment(slotIndex: number, name: string, attachment: IAttachment): void;
+    getAttachment(slotIndex: number, name: string): IAttachment | null;
+    attachAll(skeleton: ISkeleton, oldSkin: ISkin): void;
 }
 
 /**
@@ -93,10 +105,12 @@ export interface ISlot {
 /**
  * @public
  */
-export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlot> {
+export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlot, Skin extends ISkin = ISkin> {
     bones: Bone[]
     slots: Slot[]
     drawOrder: Slot[]
+    skin: Skin;
+    data: ISkeletonData;
     updateWorldTransform (): void;
     setToSetupPose (): void;
     findSlotIndex (slotName: string): number;
@@ -104,6 +118,8 @@ export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlo
 
     setBonesToSetupPose (): void;
     setSlotsToSetupPose (): void;
+    findBone (boneName: string): Bone;
+    findSlot (slotName: string): Slot;
     findBoneIndex (boneName: string): number;
     findSlotIndex (slotName: string): number;
     setSkinByName (skinName: string): void;
@@ -125,6 +141,10 @@ export interface ISkeletonData {
     name: string;
     version: string;
     hash: string;
+    width: number;
+    height: number;
+
+    findSkin(skinName: string): ISkin | null;
 }
 
 /**
@@ -133,6 +153,8 @@ export interface ISkeletonData {
 export interface ITrackEntry {
     trackIndex: number;
     loop: boolean;
+    animationEnd: number;
+    listener: IAnimationStateListener;
 
     delay: number; trackTime: number; trackLast: number; nextTrackLast: number; trackEnd: number; timeScale: number;
     alpha: number; mixTime: number; mixDuration: number; interruptAlpha: number; totalAlpha: number;
@@ -142,16 +164,23 @@ export interface ITrackEntry {
  * @public
  */
 export interface IAnimationState {
+    tracks: ITrackEntry;
+    timeScale: number;
+
     update(dt: number): void;
     apply(skeleton: ISkeleton): boolean;
 
     setAnimation (trackIndex: number, animationName: string, loop: boolean): ITrackEntry;
     addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number): ITrackEntry;
     addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number): ITrackEntry;
+    setEmptyAnimation (trackIndex: number, mixDuration: number): ITrackEntry;
     setEmptyAnimations (mixDuration: number): void;
     hasAnimation(animationName: string): boolean;
-    addListener (listener: IAnimationStateListener);
-    removeListener (listener: IAnimationStateListener);
+    addListener (listener: IAnimationStateListener): void;
+    removeListener (listener: IAnimationStateListener): void;
+    clearListeners (): void;
+    clearTracks(): void;
+    clearTrack(index: number): void;
 }
 
 /**
