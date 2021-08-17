@@ -1,4 +1,5 @@
 import {AttachmentType} from './AttachmentType';
+import {IIkConstraint, IPathConstraint, ITransformConstraint} from './IConstraint';
 import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
@@ -139,12 +140,19 @@ export interface ISkeletonParser {
  */
 export interface ISkeletonData {
     name: string;
+    ikConstraints: IIkConstraint[];
+    transformConstraints: ITransformConstraint[];
+    pathConstraints: IPathConstraint[];
     version: string;
     hash: string;
     width: number;
     height: number;
 
     findSkin (skinName: string): ISkin | null;
+
+    findIkConstraint (constraintName: string): IIkConstraint | null;
+    findTransformConstraint (constraintName: string): ITransformConstraint | null;
+    findPathConstraint (constraintName: string): IPathConstraint | null;
 }
 
 /**
