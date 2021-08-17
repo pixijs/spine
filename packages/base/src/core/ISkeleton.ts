@@ -3,16 +3,7 @@ import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
-
-/**
- * @public
- */
- export enum BlendMode {
-    Normal,
-    Additive,
-    Multiply,
-    Screen
-}
+import {BLEND_MODES} from '@pixi/constants';
 
 /**
  * @public
@@ -135,7 +126,7 @@ export interface ISlotData {
     color: Color;
     darkColor: Color;
     attachmentName: string;
-    blendMode: BlendMode;
+    blendMode: BLEND_MODES;
 }
 
 /**
