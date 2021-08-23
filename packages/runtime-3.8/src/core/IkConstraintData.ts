@@ -1,10 +1,11 @@
 import {ConstraintData} from "./Constraint";
 import {BoneData} from "./BoneData";
+import {IIkConstraintData} from "@pixi-spine/base";
 
 /**
  * @public
  */
-export class IkConstraintData extends ConstraintData {
+export class IkConstraintData extends ConstraintData implements IIkConstraintData {
     bones = new Array<BoneData>();
     target: BoneData;
     bendDirection = 1;

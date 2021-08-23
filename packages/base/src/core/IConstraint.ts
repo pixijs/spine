@@ -29,7 +29,8 @@ export interface IIkConstraint {
     data: IIkConstraintData;
     bones: IBone[];
     target: IBone;
-    bendDirection: -1 | 0 | 1;
+    /** -1 | 0 | 1 */
+    bendDirection: number;
     compress: boolean;
     stretch: boolean;
 
@@ -43,7 +44,8 @@ export interface IIkConstraint {
 export interface IIkConstraintData extends IConstraintData {
     bones: IBoneData[];
     target: IBoneData;
-    bendDirection: -1 | 0 | 1;
+    /** -1 | 0 | 1 */
+    bendDirection: number;
     compress: boolean;
     stretch: boolean;
     uniform: boolean;

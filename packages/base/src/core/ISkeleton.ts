@@ -1,28 +1,11 @@
 import {AttachmentType} from './AttachmentType';
-import {IIkConstraint, IPathConstraint, ITransformConstraint} from './IConstraint';
+import {IAnimation} from "./IAnimation";
+import {IIkConstraintData, IPathConstraintData, ITransformConstraintData} from './IConstraint';
 import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
 import {BLEND_MODES} from '@pixi/constants';
-
-/**
- * @public
- */
- export enum MixBlend {
-    setup,
-    first,
-    replace,
-    add
-}
-
-/**
- * @public
- */
- export enum MixDirection {
-    mixIn,
-    mixOut
-}
 
 /**
  * @public
@@ -52,25 +35,7 @@ export interface ISkin {
 
     setAttachment (slotIndex: number, name: string, attachment: IAttachment): void;
     getAttachment (slotIndex: number, name: string): IAttachment | null;
-    attachAll (skeleton: ISkeleton, oldSkin: ISkin): void;
-}
-
-/**
- * @public
- */
-export interface IAnimation {
-    name: string;
-    timelines: ITimeline[];
-    duration: number;
-
-    apply (skeleton: ISkeleton, lastTime: number, time: number, loop: boolean, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
-}
-
-/**
- * @public
- */
-export interface ITimeline {
-    apply (skeleton: ISkeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
+    // attachAll (skeleton: ISkeleton, oldSkin: ISkin): void;
 }
 
 /**
@@ -212,9 +177,9 @@ export interface ISkeletonParser {
  */
 export interface ISkeletonData {
     name: string;
-    ikConstraints: IIkConstraint[];
-    transformConstraints: ITransformConstraint[];
-    pathConstraints: IPathConstraint[];
+    ikConstraints: IIkConstraintData[];
+    transformConstraints: ITransformConstraintData[];
+    pathConstraints: IPathConstraintData[];
     bones: IBoneData[];
     slots: ISlotData[];
     skins: ISkin[];
@@ -232,9 +197,9 @@ export interface ISkeletonData {
     findSlotIndex (slotName: string): number;
     findSkin (skinName: string): ISkin | null;
 
-    findIkConstraint (constraintName: string): IIkConstraint | null;
-    findTransformConstraint (constraintName: string): ITransformConstraint | null;
-    findPathConstraint (constraintName: string): IPathConstraint | null;
+    findIkConstraint (constraintName: string): IIkConstraintData | null;
+    findTransformConstraint (constraintName: string): ITransformConstraintData | null;
+    findPathConstraint (constraintName: string): IPathConstraintData | null;
     findEvent (eventDataName: string): IEventData | null;
     findAnimation (animationName: string): IAnimation | null;
 }

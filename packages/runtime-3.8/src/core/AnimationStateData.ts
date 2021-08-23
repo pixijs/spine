@@ -1,6 +1,5 @@
 import {SkeletonData} from "./SkeletonData";
-import {IAnimationStateData, Map} from '@pixi-spine/base';
-import type {Animation} from './Animation';
+import {IAnimation, IAnimationStateData, Map} from '@pixi-spine/base';
 
 /**
  * @public
@@ -33,14 +32,14 @@ export class AnimationStateData implements IAnimationStateData {
         this.setMix(fromName, toName, duration);
     }
 
-    setMixWith(from: Animation, to: Animation, duration: number) {
+    setMixWith(from: IAnimation, to: IAnimation, duration: number) {
         if (from == null) throw new Error("from cannot be null.");
         if (to == null) throw new Error("to cannot be null.");
         let key = from.name + "." + to.name;
         this.animationToMixTime[key] = duration;
     }
 
-    getMix(from: Animation, to: Animation) {
+    getMix(from: IAnimation, to: IAnimation) {
         let key = from.name + "." + to.name;
         let value = this.animationToMixTime[key];
         return value === undefined ? this.defaultMix : value;
