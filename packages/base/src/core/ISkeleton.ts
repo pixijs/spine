@@ -3,6 +3,36 @@ import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
+import {BLEND_MODES} from '@pixi/constants';
+
+/**
+ * @public
+ */
+ export enum MixBlend {
+    setup,
+    first,
+    replace,
+    add
+}
+
+/**
+ * @public
+ */
+ export enum MixDirection {
+    mixIn,
+    mixOut
+}
+
+/**
+ * @public
+ */
+ export enum TransformMode {
+    Normal,
+    OnlyTranslation,
+    NoRotationOrReflection,
+    NoScale,
+    NoScaleOrReflection
+}
 
 /**
  * @public
@@ -22,6 +52,24 @@ export interface ISkin {
     setAttachment (slotIndex: number, name: string, attachment: IAttachment): void;
     getAttachment (slotIndex: number, name: string): IAttachment | null;
     attachAll (skeleton: ISkeleton, oldSkin: ISkin): void;
+}
+
+/**
+ * @public
+ */
+export interface IAnimation {
+    name: string;
+    timelines: ITimeline[];
+    duration: number;
+
+    apply (skeleton: ISkeleton, lastTime: number, time: number, loop: boolean, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
+}
+
+/**
+ * @public
+ */
+export interface ITimeline {
+    apply (skeleton: ISkeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
 }
 
 /**
@@ -73,6 +121,30 @@ export interface IMeshAttachment extends IVertexAttachment {
  */
 export interface ISlotData {
     index: number;
+    name: string;
+    boneData: IBoneData;
+    color: Color;
+    darkColor: Color;
+    attachmentName: string;
+    blendMode: BLEND_MODES;
+}
+
+/**
+ * @public
+ */
+export interface IBoneData {
+    index: number;
+    name: string;
+    parent: IBoneData;
+    length: number;
+    x: number;
+    y: number;
+    rotation: number;
+    scaleX: number;
+    scaleY: number;
+    shearX: number;
+    shearY: number;
+    transformMode: TransformMode;
 }
 
 /**
@@ -139,12 +211,24 @@ export interface ISkeletonParser {
  */
 export interface ISkeletonData {
     name: string;
+    bones: IBoneData[];
+    slots: ISlotData[];
+    skins: ISkin[];
+    defaultSkin: ISkin;
+    events: IEventData[];
+    animations: IAnimation[];
     version: string;
     hash: string;
     width: number;
     height: number;
 
+    findBone(boneName: string): IBone | null;
+    findBoneIndex(boneName: string): number;
+    findSlot(slotName: string): ISlot | null;
+    findSlotIndex (slotName: string): number;
     findSkin (skinName: string): ISkin | null;
+    findEvent (eventDataName: string): IEventData | null;
+    findAnimation (animationName: string): IAnimation | null;
 }
 
 /**
@@ -164,7 +248,9 @@ export interface ITrackEntry {
  * @public
  */
 export interface IAnimationState {
-    tracks: ITrackEntry;
+    data: IAnimationStateData;
+    tracks: ITrackEntry[];
+    listeners: IAnimationStateListener[];
     timeScale: number;
 
     update(dt: number): void;
@@ -187,8 +273,12 @@ export interface IAnimationState {
  * @public
  */
 export interface IAnimationStateData {
+    skeletonData: ISkeletonData;
+    animationToMixTime: Map<number>;
     defaultMix: number;
     setMix (fromName: string, toName: string, duration: number): void;
+    setMixWith (from: Animation, to: Animation, duration: number): void;
+    getMix (from: Animation, to: Animation): number;
 }
 
 /**
