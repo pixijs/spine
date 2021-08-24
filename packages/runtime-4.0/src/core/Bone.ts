@@ -1,8 +1,8 @@
 import {Matrix} from '@pixi/math';
 import {Updatable} from "./Updatable";
-import {BoneData, TransformMode} from "./BoneData";
+import {BoneData} from "./BoneData";
 import {Skeleton} from "./Skeleton";
-import {IBone, MathUtils, settings, Vector2} from "@pixi-spine/base";
+import {IBone, MathUtils, settings, TransformMode, Vector2} from "@pixi-spine/base";
 
 /** Stores a bone's current pose.
  *

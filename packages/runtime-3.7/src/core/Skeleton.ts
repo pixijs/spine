@@ -12,7 +12,7 @@ import {Color, Utils, Vector2, ISkeleton} from "@pixi-spine/base";
 /**
  * @public
  */
-export class Skeleton implements ISkeleton<Bone, Slot> {
+export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
     data: SkeletonData;
     bones: Array<Bone>;
     slots: Array<Slot>;

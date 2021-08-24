@@ -1,15 +1,20 @@
-import {IBone, IBoneData, ISlot, ISlotData} from './ISkeleton';
 
-/**
+// These enums were moved from PathConstraintData.ts of spine 3.7, 3.8 and 4.0
+
+/** Controls how the first bone is positioned along the path.
+ *
+ * See [Position mode](http://esotericsoftware.com/spine-path-constraints#Position-mode) in the Spine User Guide.
  * @public
- */
+ * */
 export enum PositionMode {
     Fixed, Percent
 }
 
-/**
+/** Controls how bones are rotated, translated, and scaled to match the path.
+ *
+ * [Rotate mode](http://esotericsoftware.com/spine-path-constraints#Rotate-mod) in the Spine User Guide.
  * @public
- */
+ * */
 export enum RotateMode {
     Tangent, Chain, ChainScale
 }
@@ -27,8 +32,6 @@ export interface IConstraintData {
  */
 export interface IIkConstraint {
     data: IIkConstraintData;
-    bones: IBone[];
-    target: IBone;
     /** -1 | 0 | 1 */
     bendDirection: number;
     compress: boolean;
@@ -42,8 +45,6 @@ export interface IIkConstraint {
  * @public
  */
 export interface IIkConstraintData extends IConstraintData {
-    bones: IBoneData[];
-    target: IBoneData;
     /** -1 | 0 | 1 */
     bendDirection: number;
     compress: boolean;
@@ -59,8 +60,6 @@ export interface IIkConstraintData extends IConstraintData {
  */
 export interface IPathConstraint {
     data: IPathConstraintData;
-    bones: IBone[];
-    target: ISlot;
     position: number;
     spacing: number;
 
@@ -76,8 +75,6 @@ export interface IPathConstraint {
  * @public
  */
 export interface IPathConstraintData extends IConstraintData {
-    bones: IBoneData;
-    target: ISlotData;
     positionMode: PositionMode;
     rotateMode: RotateMode;
     offsetRotation: number;
@@ -90,16 +87,12 @@ export interface IPathConstraintData extends IConstraintData {
  */
 export interface ITransformConstraint {
     data: ITransformConstraintData;
-    bones: IBone[];
-    target: IBone;
 }
 
 /**
  * @public
  */
 export interface ITransformConstraintData extends IConstraintData {
-    bones: IBoneData[];
-    target: IBoneData;
     offsetRotation: number;
     offsetX: number;
     offsetY: number;

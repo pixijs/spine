@@ -1,10 +1,11 @@
 import {SkeletonData} from "./SkeletonData";
 import {IAnimation, IAnimationStateData, Map} from '@pixi-spine/base';
+import type { Animation } from "./Animation";
 
 /**
  * @public
  */
-export class AnimationStateData implements IAnimationStateData {
+export class AnimationStateData implements IAnimationStateData<SkeletonData, Animation> {
     skeletonData: SkeletonData;
     animationToMixTime: Map<number> = {};
     defaultMix = 0;

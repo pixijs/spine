@@ -1,3 +1,6 @@
+import {ISkeleton, ISkeletonData} from './ISkeleton';
+import type {Map} from './Utils';
+
 // Those enums were moved from Animation.ts of spine 3.8 and 4.0
 
 /** Controls how a timeline value is mixed with the setup pose value or current pose value when a timeline's `alpha`
@@ -43,17 +46,91 @@ export enum MixDirection {
 /**
  * @public
  */
-export interface IAnimation {
+export interface IAnimation<Timeline extends ITimeline = ITimeline> {
     name: string;
-    timelines: ITimeline[];
+    timelines: Timeline[];
     duration: number;
+}
 
-    // apply (skeleton: ISkeleton, lastTime: number, time: number, loop: boolean, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
+/**
+ * @public
+ */
+ export interface IAnimationState<AnimationStateData extends IAnimationStateData = IAnimationStateData> {
+    data: AnimationStateData;
+    tracks: ITrackEntry[];
+    listeners: IAnimationStateListener[];
+    timeScale: number;
+
+    update(dt: number): void;
+    apply(skeleton: ISkeleton): boolean;
+
+    setAnimation (trackIndex: number, animationName: string, loop: boolean): ITrackEntry;
+    addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number): ITrackEntry;
+    addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number): ITrackEntry;
+    setEmptyAnimation (trackIndex: number, mixDuration: number): ITrackEntry;
+    setEmptyAnimations (mixDuration: number): void;
+    hasAnimation(animationName: string): boolean;
+    addListener (listener: IAnimationStateListener): void;
+    removeListener (listener: IAnimationStateListener): void;
+    clearListeners (): void;
+    clearTracks (): void;
+    clearTrack (index: number): void;
+}
+
+/**
+ * @public
+ */
+ export interface IAnimationStateData<SkeletonData extends ISkeletonData = ISkeletonData, Animation extends IAnimation = IAnimation> {
+    skeletonData: SkeletonData;
+    animationToMixTime: Map<number>;
+    defaultMix: number;
+    setMix (fromName: string, toName: string, duration: number): void;
+    setMixWith (from: Animation, to: Animation, duration: number): void;
+    getMix (from: Animation, to: Animation): number;
+}
+
+/**
+ * @public
+ */
+ export interface IAnimationStateListener {
+    start? (entry: ITrackEntry): void;
+    interrupt? (entry: ITrackEntry): void;
+    end? (entry: ITrackEntry): void;
+    dispose? (entry: ITrackEntry): void;
+    complete? (entry: ITrackEntry): void;
+    event? (entry: ITrackEntry, event: IEvent): void;
 }
 
 /**
  * @public
  */
 export interface ITimeline {
-    // apply (skeleton: ISkeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
+}
+
+/**
+ * @public
+ */
+ export interface ITrackEntry {
+    trackIndex: number;
+    loop: boolean;
+    animationEnd: number;
+    listener: IAnimationStateListener;
+
+    delay: number; trackTime: number; trackLast: number; nextTrackLast: number; trackEnd: number; timeScale: number;
+    alpha: number; mixTime: number; mixDuration: number; interruptAlpha: number; totalAlpha: number;
+}
+
+/**
+ * @public
+ */
+export interface IEventData {
+    name: string;
+}
+
+/**
+ * @public
+ */
+export interface IEvent {
+    time: number;
+    data: IEventData;
 }

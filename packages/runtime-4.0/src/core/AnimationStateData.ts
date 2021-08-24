@@ -5,7 +5,7 @@ import type {Animation} from './Animation';
 /** Stores mix (crossfade) durations to be applied when {@link AnimationState} animations are changed.
  * @public
  * */
-export class AnimationStateData implements IAnimationStateData {
+export class AnimationStateData implements IAnimationStateData<SkeletonData, Animation> {
     /** The SkeletonData to look up animations when they are specified by name. */
     skeletonData: SkeletonData;
 

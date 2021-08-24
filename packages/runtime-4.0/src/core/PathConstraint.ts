@@ -1,10 +1,10 @@
 import {PathAttachment} from "./attachments";
 import {Updatable} from "./Updatable";
-import {PathConstraintData, PositionMode, RotateMode, SpacingMode} from "./PathConstraintData";
+import {PathConstraintData, SpacingMode} from "./PathConstraintData";
 import {Bone} from "./Bone";
 import {Slot} from "./Slot";
 import {Skeleton} from "./Skeleton";
-import {MathUtils, Utils} from "@pixi-spine/base";
+import {MathUtils, PositionMode, RotateMode, Utils} from "@pixi-spine/base";
 /** Stores the current pose for a path constraint. A path constraint adjusts the rotation, translation, and scale of the
  * constrained bones so they follow a {@link PathAttachment}.
  *
