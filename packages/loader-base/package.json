@@ -1,6 +1,6 @@
 {
   "name": "@pixi-spine/loader-base",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "description": "Pixi loader middleware base",
   "main": "lib/loader-base.js",
   "module": "lib/loader-base.es.js",
@@ -16,7 +16,7 @@
     "resource-loader": "~3.0.1"
   },
   "dependencies": {
-    "@pixi-spine/base": "~3.0.8"
+    "@pixi-spine/base": "~3.0.9"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
