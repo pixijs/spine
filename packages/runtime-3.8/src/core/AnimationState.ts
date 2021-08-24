@@ -2,6 +2,8 @@ import {
     IAnimationState,
     IAnimationStateListener,
     ITrackEntry,
+    MixBlend,
+    MixDirection,
     MathUtils,
     Pool,
     IntSet,
@@ -12,8 +14,6 @@ import {
     AttachmentTimeline,
     DrawOrderTimeline,
     EventTimeline,
-    MixBlend,
-    MixDirection,
     RotateTimeline, Timeline
 } from './Animation';
 import {AnimationStateData} from "./AnimationStateData";

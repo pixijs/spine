@@ -3,7 +3,7 @@ import {BoneData} from "./BoneData";
 import {ConstraintData} from "./Constraint";
 import {Skeleton} from "./Skeleton";
 
-import type {Map} from '@pixi-spine/base';
+import type {Map, ISkin} from '@pixi-spine/base';
 
 /**
  * @public
@@ -15,7 +15,7 @@ export class SkinEntry {
 /**
  * @public
  */
-export class Skin {
+export class Skin implements ISkin {
     name: string;
     attachments = new Array<Map<Attachment>>();
     bones = Array<BoneData>();

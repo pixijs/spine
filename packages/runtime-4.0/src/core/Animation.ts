@@ -1,7 +1,7 @@
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import {Attachment, VertexAttachment} from "./attachments";
-import {ArrayLike, MathUtils, StringSet, Utils} from '@pixi-spine/base';
+import {ArrayLike, IAnimation, ITimeline, MathUtils, StringSet, Utils} from '@pixi-spine/base';
 import {Slot} from "./Slot";
 import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
@@ -10,7 +10,7 @@ import {PathConstraint} from "./PathConstraint";
  * A simple container for a list of timelines and a name.
  * @public
  * */
-export class Animation {
+export class Animation implements IAnimation {
     /** The animation's name, which is unique across all animations in the skeleton. */
     name: string;
     timelines: Array<Timeline>;
@@ -129,7 +129,7 @@ const Property = {
 /** The interface for all timelines.
  * @public
  * */
-export abstract class Timeline {
+export abstract class Timeline implements ITimeline {
     propertyIds: string[];
     frames: ArrayLike<number>;
 
