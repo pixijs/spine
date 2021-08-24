@@ -1,16 +1,17 @@
+import type {ISkeletonData} from '@pixi-spine/base';
 import type {Animation} from "./Animation";
 import {BoneData} from "./BoneData";
 import {SlotData} from "./SlotData";
 import {Skin} from "./Skin";
-import {IkConstraintData} from "./IkConstraintData";
 import {EventData} from "./EventData";
+import {IkConstraintData} from "./IkConstraintData";
 import {TransformConstraintData} from "./TransformConstraintData";
 import {PathConstraintData} from "./PathConstraintData";
 
 /**
  * @public
  */
-export class SkeletonData {
+export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Animation, EventData, IkConstraintData, TransformConstraintData, PathConstraintData> {
     name: string;
     bones = new Array<BoneData>(); // Ordered parents first.
     slots = new Array<SlotData>(); // Setup pose draw order.

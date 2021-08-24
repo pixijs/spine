@@ -19,10 +19,10 @@ import {SlotData} from './SlotData';
 import {BoneData} from './BoneData';
 import {IkConstraintData} from './IkConstraintData';
 import {TransformConstraintData} from './TransformConstraintData';
-import {PathConstraintData, PositionMode, SpacingMode} from './PathConstraintData';
+import {PathConstraintData, SpacingMode} from './PathConstraintData';
 import {Skin} from './Skin';
 import {EventData} from './EventData';
-import {AttachmentType, BinaryInput, Color, Utils} from '@pixi-spine/base';
+import {AttachmentType, BinaryInput, Color, PositionMode, Utils} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 
 /** Loads skeleton data in the Spine binary format.

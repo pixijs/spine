@@ -1,4 +1,4 @@
-import {Color} from '@pixi-spine/base';
+import {Color, TransformMode} from '@pixi-spine/base';
 
 /** Stores the setup pose for a {@link Bone}.
  * @public
@@ -56,11 +56,4 @@ export class BoneData {
         this.name = name;
         this.parent = parent;
     }
-}
-
-/** Determines how a bone inherits world transforms from parent bones.
- * @public
- * */
-export enum TransformMode {
-    Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection
 }

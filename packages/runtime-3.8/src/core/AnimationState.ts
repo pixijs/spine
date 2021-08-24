@@ -2,6 +2,8 @@ import {
     IAnimationState,
     IAnimationStateListener,
     ITrackEntry,
+    MixBlend,
+    MixDirection,
     MathUtils,
     Pool,
     IntSet,
@@ -12,8 +14,6 @@ import {
     AttachmentTimeline,
     DrawOrderTimeline,
     EventTimeline,
-    MixBlend,
-    MixDirection,
     RotateTimeline, Timeline
 } from './Animation';
 import {AnimationStateData} from "./AnimationStateData";
@@ -28,7 +28,7 @@ import type {Slot} from "./Slot";
 /**
  * @public
  */
-export class AnimationState implements IAnimationState {
+export class AnimationState implements IAnimationState<AnimationStateData> {
     static emptyAnimation = new Animation("<empty>", [], 0);
 
     /** 1. A previously applied timeline has set this property.

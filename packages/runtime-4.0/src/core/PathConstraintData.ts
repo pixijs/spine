@@ -1,6 +1,7 @@
 import {ConstraintData} from "./ConstraintData";
 import type {SlotData} from "./SlotData";
 import type {BoneData} from "./BoneData";
+import { PositionMode, RotateMode } from "@pixi-spine/base";
 
 /** Stores the setup pose for a {@link PathConstraint}.
  *
@@ -42,15 +43,6 @@ export class PathConstraintData extends ConstraintData {
     }
 }
 
-/** Controls how the first bone is positioned along the path.
- *
- * See [Position mode](http://esotericsoftware.com/spine-path-constraints#Position-mode) in the Spine User Guide.
- * @public
- * */
-export enum PositionMode {
-    Fixed, Percent
-}
-
 /** Controls how bones after the first bone are positioned along the path.
  *
  * [Spacing mode](http://esotericsoftware.com/spine-path-constraints#Spacing-mode) in the Spine User Guide.
@@ -58,13 +50,4 @@ export enum PositionMode {
  * */
 export enum SpacingMode {
     Length, Fixed, Percent, Proportional
-}
-
-/** Controls how bones are rotated, translated, and scaled to match the path.
- *
- * [Rotate mode](http://esotericsoftware.com/spine-path-constraints#Rotate-mod) in the Spine User Guide.
- * @public
- * */
-export enum RotateMode {
-    Tangent, Chain, ChainScale
 }

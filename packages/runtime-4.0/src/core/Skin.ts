@@ -3,7 +3,7 @@ import {BoneData} from "./BoneData";
 import {ConstraintData} from "./ConstraintData";
 import {Skeleton} from "./Skeleton";
 
-import type {Map} from '@pixi-spine/base';
+import type {Map, ISkin} from '@pixi-spine/base';
 
 /** Stores an entry in the skin consisting of the slot index, name, and attachment
  * @public
@@ -18,7 +18,7 @@ export class SkinEntry {
  * [Runtime skins](http://esotericsoftware.com/spine-runtime-skins) in the Spine Runtimes Guide.
  * @public
  * */
-export class Skin {
+export class Skin implements ISkin {
     /** The skin's name, which is unique across all skins in the skeleton. */
     name: string;
 

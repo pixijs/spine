@@ -4,7 +4,9 @@ import {TextureAtlasRegion} from './core/TextureAtlas';
 import {MathUtils} from './core/Utils';
 import type {
     IAnimationState,
-    IAnimationStateData,
+    IAnimationStateData
+} from './core/IAnimation';
+import type {
     IAttachment, IClippingAttachment, IMeshAttachment,
     IRegionAttachment,
     ISkeleton,

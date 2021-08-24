@@ -1,7 +1,7 @@
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import {Attachment, VertexAttachment} from "./attachments";
-import {ArrayLike, MathUtils, Utils} from '@pixi-spine/base';
+import {ArrayLike, MathUtils, Utils, MixBlend, MixDirection, IAnimation, ITimeline} from '@pixi-spine/base';
 import {Slot} from "./Slot";
 import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
@@ -10,7 +10,7 @@ import {PathConstraint} from "./PathConstraint";
 /**
  * @public
  */
-export class Animation {
+export class Animation implements IAnimation<Timeline> {
     name: string;
     timelines: Array<Timeline>;
     duration: number;
@@ -61,26 +61,9 @@ export class Animation {
 /**
  * @public
  */
-export interface Timeline {
+export interface Timeline extends ITimeline {
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
     getPropertyId (): number;
-}
-
-/**
- * @public
- */
-export enum MixBlend {
-    setup,
-    first,
-    replace,
-    add
-}
-
-/**
- * @public
- */
-export enum MixDirection {
-    in, out
 }
 
 /**
@@ -402,7 +385,7 @@ export class ScaleTimeline extends TranslateTimeline {
             }
         } else {
             let bx = 0, by = 0;
-            if (direction == MixDirection.out) {
+            if (direction == MixDirection.mixOut) {
                 switch (blend) {
                     case MixBlend.setup:
                         bx = bone.data.scaleX;
@@ -718,7 +701,7 @@ export class AttachmentTimeline implements Timeline {
 
     apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let slot = skeleton.slots[this.slotIndex];
-        if (direction == MixDirection.out && blend == MixBlend.setup) {
+        if (direction == MixDirection.mixOut && blend == MixBlend.setup) {
             let attachmentName = slot.data.attachmentName;
             slot.setAttachment(attachmentName == null ? null : skeleton.getAttachment(this.slotIndex, attachmentName));
             return;
@@ -1035,7 +1018,7 @@ export class DrawOrderTimeline implements Timeline {
     apply (skeleton: Skeleton, lastTime: number, time: number, firedEvents: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection) {
         let drawOrder: Array<Slot> = skeleton.drawOrder;
         let slots: Array<Slot> = skeleton.slots;
-        if (direction == MixDirection.out && blend == MixBlend.setup) {
+        if (direction == MixDirection.mixOut && blend == MixBlend.setup) {
             Utils.arrayCopy(skeleton.slots, 0, skeleton.drawOrder, 0, skeleton.slots.length);
             return;
         }
@@ -1115,7 +1098,7 @@ export class IkConstraintTimeline extends CurveTimeline {
         if (time >= frames[frames.length - IkConstraintTimeline.ENTRIES]) { // Time is after last frame.
             if (blend == MixBlend.setup) {
                 constraint.mix = constraint.data.mix + (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.data.mix) * alpha;
-                if (direction == MixDirection.out) {
+                if (direction == MixDirection.mixOut) {
                     constraint.bendDirection = constraint.data.bendDirection;
                     constraint.compress = constraint.data.compress;
                     constraint.stretch = constraint.data.stretch;
@@ -1126,7 +1109,7 @@ export class IkConstraintTimeline extends CurveTimeline {
                 }
             } else {
                 constraint.mix += (frames[frames.length + IkConstraintTimeline.PREV_MIX] - constraint.mix) * alpha;
-                if (direction == MixDirection.in) {
+                if (direction == MixDirection.mixIn) {
                     constraint.bendDirection = frames[frames.length + IkConstraintTimeline.PREV_BEND_DIRECTION];
                     constraint.compress = frames[frames.length + IkConstraintTimeline.PREV_COMPRESS] != 0;
                     constraint.stretch = frames[frames.length + IkConstraintTimeline.PREV_STRETCH] != 0;
@@ -1144,7 +1127,7 @@ export class IkConstraintTimeline extends CurveTimeline {
 
         if (blend == MixBlend.setup) {
             constraint.mix = constraint.data.mix + (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.data.mix) * alpha;
-            if (direction == MixDirection.out) {
+            if (direction == MixDirection.mixOut) {
                 constraint.bendDirection = constraint.data.bendDirection;
                 constraint.compress = constraint.data.compress;
                 constraint.stretch = constraint.data.stretch;
@@ -1155,7 +1138,7 @@ export class IkConstraintTimeline extends CurveTimeline {
             }
         } else {
             constraint.mix += (mix + (frames[frame + IkConstraintTimeline.MIX] - mix) * percent - constraint.mix) * alpha;
-            if (direction == MixDirection.in) {
+            if (direction == MixDirection.mixIn) {
                 constraint.bendDirection = frames[frame + IkConstraintTimeline.PREV_BEND_DIRECTION];
                 constraint.compress = frames[frame + IkConstraintTimeline.PREV_COMPRESS] != 0;
                 constraint.stretch = frames[frame + IkConstraintTimeline.PREV_STRETCH] != 0;

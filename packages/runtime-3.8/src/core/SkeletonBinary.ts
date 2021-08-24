@@ -3,10 +3,10 @@ import {Animation} from './Animation';
 import {Event} from './Event';
 import {SkeletonData} from './SkeletonData';
 import {SlotData} from './SlotData';
-import {BoneData, TransformMode} from './BoneData';
+import {BoneData} from './BoneData';
 import {IkConstraintData} from './IkConstraintData';
 import {TransformConstraintData} from './TransformConstraintData';
-import {PathConstraintData, PositionMode, RotateMode, SpacingMode} from './PathConstraintData';
+import {PathConstraintData, SpacingMode} from './PathConstraintData';
 import {Skin} from './Skin';
 import {EventData} from './EventData';
 import {
@@ -24,7 +24,7 @@ import {
     TranslateTimeline,
     TwoColorTimeline
 } from './Animation';
-import {AttachmentType, BinaryInput, Color, Utils} from '@pixi-spine/base';
+import {AttachmentType, BinaryInput, Color, PositionMode, RotateMode, TransformMode, Utils} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 
 /**

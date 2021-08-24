@@ -2,13 +2,12 @@ import {Updatable} from "./Updatable";
 import {IkConstraintData} from "./IkConstraintData";
 import {Bone} from "./Bone";
 import {Skeleton} from "./Skeleton";
-import {TransformMode} from "./BoneData";
-import {MathUtils} from "@pixi-spine/base";
+import {IIkConstraint, MathUtils, TransformMode} from "@pixi-spine/base";
 
 /**
  * @public
  */
-export class IkConstraint implements Updatable {
+export class IkConstraint implements IIkConstraint, Updatable {
     data: IkConstraintData;
     bones: Array<Bone>;
     target: Bone;

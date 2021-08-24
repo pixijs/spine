@@ -3,6 +3,8 @@ import {
     IAnimationStateListener,
     ITrackEntry,
     MathUtils,
+    MixBlend,
+    MixDirection,
     Pool,
     StringSet,
     Utils
@@ -12,8 +14,6 @@ import {
     AttachmentTimeline,
     DrawOrderTimeline,
     EventTimeline,
-    MixBlend,
-    MixDirection,
     RotateTimeline, Timeline
 } from './Animation';
 import {AnimationStateData} from "./AnimationStateData";
@@ -27,7 +27,7 @@ import type {Slot} from "./Slot";
  * See [Applying Animations](http://esotericsoftware.com/spine-applying-animations/) in the Spine Runtimes Guide.
  * @public
  * */
-export class AnimationState implements IAnimationState {
+export class AnimationState implements IAnimationState<AnimationStateData> {
     private static emptyAnimation (): Animation {
         if (!_emptyAnimation) _emptyAnimation = new Animation("<empty>", [], 0);
         return _emptyAnimation;

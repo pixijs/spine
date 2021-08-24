@@ -3,6 +3,8 @@ import {
     IAnimationStateListener,
     ITrackEntry,
     MathUtils,
+    MixBlend,
+    MixDirection,
     Pool,
     IntSet,
     Utils
@@ -11,8 +13,6 @@ import {
     Animation,
     AttachmentTimeline,
     DrawOrderTimeline,
-    MixBlend,
-    MixDirection,
     RotateTimeline, Timeline
 } from './Animation';
 import {AnimationStateData} from "./AnimationStateData";
@@ -22,7 +22,7 @@ import type {Skeleton} from "./Skeleton";
 /**
  * @public
  */
-export class AnimationState implements IAnimationState {
+export class AnimationState implements IAnimationState<AnimationStateData> {
     static emptyAnimation = new Animation("<empty>", [], 0);
     static SUBSEQUENT = 0;
     static FIRST = 1;
@@ -158,7 +158,7 @@ export class AnimationState implements IAnimationState {
                     // to sometimes stop rendering when using color correction, as their RGBA values become NaN.
                     // (https://github.com/pixijs/pixi-spine/issues/302)
                     Utils.webkit602BugfixHelper(mix, blend);
-                    timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.in);
+                    timelines[ii].apply(skeleton, animationLast, animationTime, events, mix, blend, MixDirection.mixIn);
                 }
             } else {
                 let timelineMode = current.timelineMode;
@@ -175,7 +175,7 @@ export class AnimationState implements IAnimationState {
                     } else {
                         // This fixes the WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
                         Utils.webkit602BugfixHelper(mix, blend);
-                        timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, MixDirection.in);
+                        timeline.apply(skeleton, animationLast, animationTime, events, mix, timelineBlend, MixDirection.mixIn);
                     }
                 }
             }
@@ -211,7 +211,7 @@ export class AnimationState implements IAnimationState {
         let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
         if (blend == MixBlend.add) {
             for (let i = 0; i < timelineCount; i++)
-                timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.out);
+                timelines[i].apply(skeleton, animationLast, animationTime, events, alphaMix, blend, MixDirection.mixOut);
         } else {
             let timelineMode = from.timelineMode;
             let timelineHoldMix = from.timelineHoldMix;
@@ -223,7 +223,7 @@ export class AnimationState implements IAnimationState {
             from.totalAlpha = 0;
             for (let i = 0; i < timelineCount; i++) {
                 let timeline = timelines[i];
-                let direction = MixDirection.out;
+                let direction = MixDirection.mixOut;
                 let timelineBlend: MixBlend;
                 let alpha = 0;
                 switch (timelineMode[i]) {
@@ -255,9 +255,9 @@ export class AnimationState implements IAnimationState {
                     Utils.webkit602BugfixHelper(alpha, blend);
                     if (timelineBlend == MixBlend.setup) {
                         if (timeline instanceof AttachmentTimeline) {
-                            if (attachments) direction = MixDirection.out;
+                            if (attachments) direction = MixDirection.mixOut;
                         } else if (timeline instanceof DrawOrderTimeline) {
-                            if (drawOrder) direction = MixDirection.out;
+                            if (drawOrder) direction = MixDirection.mixOut;
                         }
                     }
                     timeline.apply(skeleton, animationLast, animationTime, events, alpha, timelineBlend, direction);
@@ -279,7 +279,7 @@ export class AnimationState implements IAnimationState {
         if (firstFrame) timelinesRotation[i] = 0;
 
         if (alpha == 1) {
-            timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.in);
+            timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.mixIn);
             return;
         }
 

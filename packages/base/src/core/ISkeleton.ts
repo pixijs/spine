@@ -1,31 +1,17 @@
 import {AttachmentType} from './AttachmentType';
+import {IAnimation, IEventData} from "./IAnimation";
+import {IIkConstraintData, IPathConstraintData, ITransformConstraintData} from './IConstraint';
 import type {Color, Vector2, Map} from './Utils';
 import type {TextureRegion} from './TextureRegion';
 
 import type {Matrix} from '@pixi/math';
 import {BLEND_MODES} from '@pixi/constants';
 
-/**
- * @public
- */
- export enum MixBlend {
-    setup,
-    first,
-    replace,
-    add
-}
+// This enum was moved from BoneData.ts of spine 3.7, 3.8 and 4.0
 
-/**
+/** Determines how a bone inherits world transforms from parent bones.
  * @public
- */
- export enum MixDirection {
-    mixIn,
-    mixOut
-}
-
-/**
- * @public
- */
+ * */
  export enum TransformMode {
     Normal,
     OnlyTranslation,
@@ -49,27 +35,7 @@ export interface ISkin {
     name: string;
     attachments: Array<Map<IAttachment>>;
 
-    setAttachment (slotIndex: number, name: string, attachment: IAttachment): void;
     getAttachment (slotIndex: number, name: string): IAttachment | null;
-    attachAll (skeleton: ISkeleton, oldSkin: ISkin): void;
-}
-
-/**
- * @public
- */
-export interface IAnimation {
-    name: string;
-    timelines: ITimeline[];
-    duration: number;
-
-    apply (skeleton: ISkeleton, lastTime: number, time: number, loop: boolean, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
-}
-
-/**
- * @public
- */
-export interface ITimeline {
-    apply (skeleton: ISkeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
 }
 
 /**
@@ -177,12 +143,15 @@ export interface ISlot {
 /**
  * @public
  */
-export interface ISkeleton<Bone extends IBone = IBone, Slot extends ISlot = ISlot, Skin extends ISkin = ISkin> {
+export interface ISkeleton<SkeletonData extends ISkeletonData = ISkeletonData,
+                           Bone extends IBone = IBone,
+                           Slot extends ISlot = ISlot,
+                           Skin extends ISkin = ISkin> {
     bones: Bone[]
     slots: Slot[]
     drawOrder: Slot[]
     skin: Skin;
-    data: ISkeletonData;
+    data: SkeletonData;
     updateWorldTransform (): void;
     setToSetupPose (): void;
     findSlotIndex (slotName: string): number;
@@ -209,101 +178,38 @@ export interface ISkeletonParser {
 /**
  * @public
  */
-export interface ISkeletonData {
+export interface ISkeletonData<BoneData extends IBoneData = IBoneData,
+                               SlotData extends ISlotData = ISlotData,
+                               Skin extends ISkin = ISkin,
+                               Animation extends IAnimation = IAnimation,
+                               EventData extends IEventData = IEventData,
+                               IkConstraintData extends IIkConstraintData = IIkConstraintData,
+                               TransformConstraintData extends ITransformConstraintData = ITransformConstraintData,
+                               PathConstraintData extends IPathConstraintData = IPathConstraintData> {
     name: string;
-    bones: IBoneData[];
-    slots: ISlotData[];
-    skins: ISkin[];
-    defaultSkin: ISkin;
-    events: IEventData[];
-    animations: IAnimation[];
+    bones: BoneData[];
+    slots: SlotData[];
+    skins: Skin[];
+    defaultSkin: Skin;
+    events: EventData[];
+    animations: Animation[];
     version: string;
     hash: string;
     width: number;
     height: number;
+    ikConstraints: IkConstraintData[];
+    transformConstraints: TransformConstraintData[];
+    pathConstraints: PathConstraintData[];
 
-    findBone(boneName: string): IBone | null;
+    findBone(boneName: string): BoneData | null;
     findBoneIndex(boneName: string): number;
-    findSlot(slotName: string): ISlot | null;
+    findSlot(slotName: string): SlotData | null;
     findSlotIndex (slotName: string): number;
-    findSkin (skinName: string): ISkin | null;
-    findEvent (eventDataName: string): IEventData | null;
-    findAnimation (animationName: string): IAnimation | null;
-}
+    findSkin (skinName: string): Skin | null;
 
-/**
- * @public
- */
-export interface ITrackEntry {
-    trackIndex: number;
-    loop: boolean;
-    animationEnd: number;
-    listener: IAnimationStateListener;
-
-    delay: number; trackTime: number; trackLast: number; nextTrackLast: number; trackEnd: number; timeScale: number;
-    alpha: number; mixTime: number; mixDuration: number; interruptAlpha: number; totalAlpha: number;
-}
-
-/**
- * @public
- */
-export interface IAnimationState {
-    data: IAnimationStateData;
-    tracks: ITrackEntry[];
-    listeners: IAnimationStateListener[];
-    timeScale: number;
-
-    update(dt: number): void;
-    apply(skeleton: ISkeleton): boolean;
-
-    setAnimation (trackIndex: number, animationName: string, loop: boolean): ITrackEntry;
-    addAnimation (trackIndex: number, animationName: string, loop: boolean, delay: number): ITrackEntry;
-    addEmptyAnimation (trackIndex: number, mixDuration: number, delay: number): ITrackEntry;
-    setEmptyAnimation (trackIndex: number, mixDuration: number): ITrackEntry;
-    setEmptyAnimations (mixDuration: number): void;
-    hasAnimation(animationName: string): boolean;
-    addListener (listener: IAnimationStateListener): void;
-    removeListener (listener: IAnimationStateListener): void;
-    clearListeners (): void;
-    clearTracks (): void;
-    clearTrack (index: number): void;
-}
-
-/**
- * @public
- */
-export interface IAnimationStateData {
-    skeletonData: ISkeletonData;
-    animationToMixTime: Map<number>;
-    defaultMix: number;
-    setMix (fromName: string, toName: string, duration: number): void;
-    setMixWith (from: Animation, to: Animation, duration: number): void;
-    getMix (from: Animation, to: Animation): number;
-}
-
-/**
- * @public
- */
-export interface IEventData {
-    name: string;
-}
-
-/**
- * @public
- */
-export interface IEvent {
-    time: number;
-    data: IEventData;
-}
-
-/**
- * @public
- */
-export interface IAnimationStateListener {
-    start? (entry: ITrackEntry): void;
-    interrupt? (entry: ITrackEntry): void;
-    end? (entry: ITrackEntry): void;
-    dispose? (entry: ITrackEntry): void;
-    complete? (entry: ITrackEntry): void;
-    event? (entry: ITrackEntry, event: IEvent): void;
+    findEvent (eventDataName: string): EventData | null;
+    findAnimation (animationName: string): Animation | null;
+    findIkConstraint (constraintName: string): IkConstraintData | null;
+    findTransformConstraint (constraintName: string): TransformConstraintData | null;
+    findPathConstraint (constraintName: string): PathConstraintData | null;
 }

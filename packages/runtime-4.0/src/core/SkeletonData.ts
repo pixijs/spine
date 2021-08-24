@@ -1,9 +1,10 @@
+import type {ISkeletonData} from "@pixi-spine/base";
 import type {Animation} from "./Animation";
 import {BoneData} from "./BoneData";
 import {SlotData} from "./SlotData";
 import {Skin} from "./Skin";
-import {IkConstraintData} from "./IkConstraintData";
 import {EventData} from "./EventData";
+import {IkConstraintData} from "./IkConstraintData";
 import {TransformConstraintData} from "./TransformConstraintData";
 import {PathConstraintData} from "./PathConstraintData";
 
@@ -13,7 +14,7 @@ import {PathConstraintData} from "./PathConstraintData";
  * Guide.
  * @public
  * */
-export class SkeletonData {
+export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Animation, EventData, IkConstraintData, TransformConstraintData, PathConstraintData> {
 
     /** The skeleton's name, which by default is the name of the skeleton data file, if possible. May be null. */
     name: string;

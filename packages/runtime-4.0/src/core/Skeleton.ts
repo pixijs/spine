@@ -14,7 +14,7 @@ import {Color, MathUtils, settings, Utils, Vector2, ISkeleton} from "@pixi-spine
  * See [Instance objects](http://esotericsoftware.com/spine-runtime-architecture#Instance-objects) in the Spine Runtimes Guide.
  * @public
  * */
-export class Skeleton implements ISkeleton<Bone, Slot> {
+export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
     /** The skeleton's setup pose data. */
     data: SkeletonData;
 

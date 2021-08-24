@@ -1,6 +1,7 @@
 import {ConstraintData} from "./Constraint";
 import type {SlotData} from "./SlotData";
 import type {BoneData} from "./BoneData";
+import { RotateMode, PositionMode } from "@pixi-spine/base";
 
 /**
  * @public
@@ -21,18 +22,6 @@ export class PathConstraintData extends ConstraintData {
 /**
  * @public
  */
-export enum PositionMode {
-    Fixed, Percent
-}
-/**
- * @public
- */
 export enum SpacingMode {
     Length, Fixed, Percent
-}
-/**
- * @public
- */
-export enum RotateMode {
-    Tangent, Chain, ChainScale
 }

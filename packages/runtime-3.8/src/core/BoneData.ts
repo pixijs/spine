@@ -1,4 +1,4 @@
-import {Color} from '@pixi-spine/base';
+import {Color, TransformMode} from '@pixi-spine/base';
 
 /**
  * @public
@@ -27,11 +27,4 @@ export class BoneData {
         this.name = name;
         this.parent = parent;
     }
-}
-
-/**
- * @public
- */
-export enum TransformMode {
-    Normal, OnlyTranslation, NoRotationOrReflection, NoScale, NoScaleOrReflection
 }
