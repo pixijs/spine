@@ -15,6 +15,8 @@
     "@pixi/math": "^6.1.0",
     "@pixi/mesh": "^6.1.0",
     "@pixi/mesh-extras": "^6.1.0",
+    "@pixi/runner": "^6.1.0",
+    "@pixi/settings": "^6.1.0",
     "@pixi/sprite": "^6.1.0",
     "@pixi/utils": "^6.1.0"
   },
