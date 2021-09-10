@@ -771,7 +771,7 @@ export class SkeletonJson {
                         let timeline = new PathConstraintSpacingTimeline(timelineMap.length, timelineMap.length, constraintIndex);
                         timelines.push(readTimeline1(timelineMap, timeline, 0, constraint.spacingMode == SpacingMode.Length || constraint.spacingMode == SpacingMode.Fixed ? scale : 1));
                     } else if (timelineName === "mix") {
-                        let timeline = new PathConstraintMixTimeline(timelineMap.size, timelineMap.size * 3, constraintIndex);
+                        let timeline = new PathConstraintMixTimeline(timelineMap.length, timelineMap.length * 3, constraintIndex);
                         let time = getValue(keyMap, "time", 0);
                         let mixRotate = getValue(keyMap, "mixRotate", 1);
                         let mixX = getValue(keyMap, "mixX", 1);
