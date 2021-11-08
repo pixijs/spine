@@ -12,7 +12,7 @@ export enum SPINE_VERSION {
  * @public
  */
 export function detectSpineVersion(version: string): SPINE_VERSION {
-    const ver3 = version.substr(0, 3);
+    const ver3 = version?.substring(0, 3);
     const verNum = Math.floor(+ver3 * 10 + 1e-3);
 
     if (ver3 === '3.7') {
