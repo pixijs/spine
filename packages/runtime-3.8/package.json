@@ -1,6 +1,6 @@
 {
 	"name": "@pixi-spine/runtime-3.8",
-	"version": "3.0.13",
+	"version": "3.0.14",
 	"description": "Pixi runtime for spine 3.8 models",
 	"main": "lib/runtime-3.8.js",
 	"module": "lib/runtime-3.8.es.js",
@@ -12,7 +12,7 @@
 		"@pixi/math": "^6.1.0"
 	},
 	"dependencies": {
-		"@pixi-spine/base": "~3.0.13"
+		"@pixi-spine/base": "~3.0.14"
 	},
 	"scripts": {
 		"build": "rollup -c rollup.config.js --silent",

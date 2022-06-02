@@ -1,6 +1,6 @@
 {
   "name": "@pixi-spine/all-3.8",
-  "version": "3.0.13",
+  "version": "3.0.14",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 3.8",
   "main": "lib/all-3.8.js",
   "module": "lib/all-3.8.es.js",
@@ -8,10 +8,10 @@
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "dependencies": {
-    "@pixi-spine/base": "~3.0.13",
-    "@pixi-spine/loader-3.8": "~3.0.13",
-    "@pixi-spine/loader-base": "~3.0.13",
-    "@pixi-spine/runtime-3.8": "~3.0.13"
+    "@pixi-spine/base": "~3.0.14",
+    "@pixi-spine/loader-3.8": "~3.0.14",
+    "@pixi-spine/loader-base": "~3.0.14",
+    "@pixi-spine/runtime-3.8": "~3.0.14"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
