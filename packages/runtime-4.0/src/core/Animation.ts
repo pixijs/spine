@@ -1,7 +1,7 @@
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import {Attachment, VertexAttachment} from "./attachments";
-import {ArrayLike, IAnimation, ITimeline, MathUtils, MixBlend, StringSet, Utils, MixDirection} from '@pixi-spine/base';
+import {NumberArrayLike, IAnimation, ITimeline, MathUtils, MixBlend, StringSet, Utils, MixDirection} from '@pixi-spine/base';
 import {Slot} from "./Slot";
 import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
@@ -13,8 +13,8 @@ import {PathConstraint} from "./PathConstraint";
 export class Animation implements IAnimation<Timeline> {
     /** The animation's name, which is unique across all animations in the skeleton. */
     name: string;
-    timelines: Array<Timeline>;
-    timelineIds: StringSet;
+    timelines: Array<Timeline> = null;
+    timelineIds: StringSet = null;
 
     /** The duration of the animation in seconds, which is the highest time of all keys in the timeline. */
     duration: number;
@@ -26,7 +26,7 @@ export class Animation implements IAnimation<Timeline> {
         this.duration = duration;
     }
 
-    setTimelines(timelines: Array<Timeline>) {
+    setTimelines (timelines: Array<Timeline>) {
         if (!timelines) throw new Error("timelines cannot be null.");
         this.timelines = timelines;
         this.timelineIds = new StringSet();
@@ -34,7 +34,7 @@ export class Animation implements IAnimation<Timeline> {
             this.timelineIds.addAll(timelines[i].getPropertyIds());
     }
 
-    hasTimeline(ids: string[]) : boolean {
+    hasTimeline (ids: string[]): boolean {
         for (let i = 0; i < ids.length; i++)
             if (this.timelineIds.contains(ids[i])) return true;
         return false;
@@ -90,10 +90,10 @@ const Property = {
  * @public
  * */
 export abstract class Timeline implements ITimeline {
-    propertyIds: string[];
-    frames: ArrayLike<number>;
+    propertyIds: string[] = null;
+    frames: NumberArrayLike = null;
 
-    constructor(frameCount: number, propertyIds: string[]) {
+    constructor (frameCount: number, propertyIds: string[]) {
         this.propertyIds = propertyIds;
         this.frames = Utils.newFloatArray(frameCount * this.getFrameEntries());
     }
@@ -116,14 +116,14 @@ export abstract class Timeline implements ITimeline {
 
     abstract apply (skeleton: Skeleton, lastTime: number, time: number, events: Array<Event>, alpha: number, blend: MixBlend, direction: MixDirection): void;
 
-    static search1 (frames: ArrayLike<number>, time: number) {
+    static search1 (frames: NumberArrayLike, time: number) {
         let n = frames.length;
         for (let i = 1; i < n; i++)
             if (frames[i] > time) return i - 1;
         return n - 1;
     }
 
-    static search (frames: ArrayLike<number>, time: number, step: number) {
+    static search (frames: NumberArrayLike, time: number, step: number) {
         let n = frames.length;
         for (let i = step; i < n; i += step)
             if (frames[i] > time) return i - step;
@@ -151,7 +151,7 @@ export interface SlotTimeline {
  * @public
  * */
 export abstract class CurveTimeline extends Timeline {
-    protected curves: ArrayLike<number>; // type, x, y, ...
+    protected curves: NumberArrayLike = null; // type, x, y, ...
 
     constructor (frameCount: number, bezierCount: number, propertyIds: string[]) {
         super(frameCount, propertyIds);
@@ -242,8 +242,8 @@ export abstract class CurveTimeline extends Timeline {
  * @public
  */
 export abstract class CurveTimeline1 extends CurveTimeline {
-    constructor(frameCount: number, bezierCount: number, propertyId: string) {
-        super(frameCount, bezierCount, [ propertyId ]);
+    constructor (frameCount: number, bezierCount: number, propertyId: string) {
+        super(frameCount, bezierCount, [propertyId]);
     }
 
     getFrameEntries () {
@@ -289,7 +289,7 @@ export abstract class CurveTimeline2 extends CurveTimeline {
     /** @param bezierCount The maximum number of Bezier curves. See {@link #shrink(int)}.
      * @param propertyIds Unique identifiers for the properties the timeline modifies. */
     constructor (frameCount: number, bezierCount: number, propertyId1: string, propertyId2: string) {
-        super(frameCount, bezierCount, [ propertyId1, propertyId2 ]);
+        super(frameCount, bezierCount, [propertyId1, propertyId2]);
     }
 
     getFrameEntries () {
@@ -583,10 +583,8 @@ export class ScaleTimeline extends CurveTimeline2 implements BoneTimeline {
                         bone.scaleY = by + (Math.abs(y) * MathUtils.signum(by) - by) * alpha;
                         break;
                     case MixBlend.add:
-                        bx = bone.scaleX;
-                        by = bone.scaleY;
-                        bone.scaleX = bx + (Math.abs(x) * MathUtils.signum(bx) - bone.data.scaleX) * alpha;
-                        bone.scaleY = by + (Math.abs(y) * MathUtils.signum(by) - bone.data.scaleY) * alpha;
+                        bone.scaleX += (x - bone.data.scaleX) * alpha;
+                        bone.scaleY += (y - bone.data.scaleY) * alpha;
                 }
             } else {
                 switch (blend) {
@@ -604,10 +602,8 @@ export class ScaleTimeline extends CurveTimeline2 implements BoneTimeline {
                         bone.scaleY = by + (y - by) * alpha;
                         break;
                     case MixBlend.add:
-                        bx = MathUtils.signum(x);
-                        by = MathUtils.signum(y);
-                        bone.scaleX = Math.abs(bone.scaleX) * bx + (x - Math.abs(bone.data.scaleX) * bx) * alpha;
-                        bone.scaleY = Math.abs(bone.scaleY) * by + (y - Math.abs(bone.data.scaleY) * by) * alpha;
+                        bone.scaleX += (x - bone.data.scaleX) * alpha;
+                        bone.scaleY += (y - bone.data.scaleY) * alpha;
                 }
             }
         }
@@ -662,8 +658,7 @@ export class ScaleXTimeline extends CurveTimeline1 implements BoneTimeline {
                         bone.scaleX = bx + (Math.abs(x) * MathUtils.signum(bx) - bx) * alpha;
                         break;
                     case MixBlend.add:
-                        bx = bone.scaleX;
-                        bone.scaleX = bx + (Math.abs(x) * MathUtils.signum(bx) - bone.data.scaleX) * alpha;
+                        bone.scaleX += (x - bone.data.scaleX) * alpha;
                 }
             } else {
                 switch (blend) {
@@ -677,8 +672,7 @@ export class ScaleXTimeline extends CurveTimeline1 implements BoneTimeline {
                         bone.scaleX = bx + (x - bx) * alpha;
                         break;
                     case MixBlend.add:
-                        bx = MathUtils.signum(x);
-                        bone.scaleX = Math.abs(bone.scaleX) * bx + (x - Math.abs(bone.data.scaleX) * bx) * alpha;
+                        bone.scaleX += (x - bone.data.scaleX) * alpha;
                 }
             }
         }
@@ -733,8 +727,7 @@ export class ScaleYTimeline extends CurveTimeline1 implements BoneTimeline {
                         bone.scaleY = by + (Math.abs(y) * MathUtils.signum(by) - by) * alpha;
                         break;
                     case MixBlend.add:
-                        by = bone.scaleY;
-                        bone.scaleY = by + (Math.abs(y) * MathUtils.signum(by) - bone.data.scaleY) * alpha;
+                        bone.scaleY += (y - bone.data.scaleY) * alpha;
                 }
             } else {
                 switch (blend) {
@@ -748,8 +741,7 @@ export class ScaleYTimeline extends CurveTimeline1 implements BoneTimeline {
                         bone.scaleY = by + (y - by) * alpha;
                         break;
                     case MixBlend.add:
-                        by = MathUtils.signum(y);
-                        bone.scaleY = Math.abs(bone.scaleY) * by + (y - Math.abs(bone.data.scaleY) * by) * alpha;
+                        bone.scaleY += (y - bone.data.scaleY) * alpha;
                 }
             }
         }
@@ -1407,7 +1399,7 @@ export class AttachmentTimeline extends Timeline implements SlotTimeline {
         this.setAttachment(skeleton, slot, this.attachmentNames[Timeline.search1(this.frames, time)]);
     }
 
-    setAttachment(skeleton: Skeleton, slot: Slot, attachmentName: string) {
+    setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string) {
         slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(this.slotIndex, attachmentName));
     }
 }
@@ -1419,10 +1411,10 @@ export class DeformTimeline extends CurveTimeline implements SlotTimeline {
     slotIndex = 0;
 
     /** The attachment that will be deformed. */
-    attachment: VertexAttachment;
+    attachment: VertexAttachment = null;
 
     /** The vertices for each key frame. */
-    vertices: Array<ArrayLike<number>>;
+    vertices: Array<NumberArrayLike> = null;
 
     constructor (frameCount: number, bezierCount: number, slotIndex: number, attachment: VertexAttachment) {
         super(frameCount, bezierCount, [
@@ -1430,7 +1422,7 @@ export class DeformTimeline extends CurveTimeline implements SlotTimeline {
         ]);
         this.slotIndex = slotIndex;
         this.attachment = attachment;
-        this.vertices = new Array<ArrayLike<number>>(frameCount);
+        this.vertices = new Array<NumberArrayLike>(frameCount);
     }
 
     getFrameCount () {
@@ -1439,7 +1431,7 @@ export class DeformTimeline extends CurveTimeline implements SlotTimeline {
 
     /** Sets the time in seconds and the vertices for the specified key frame.
      * @param vertices Vertex positions for an unweighted VertexAttachment, or deform offsets if it has weights. */
-    setFrame (frame: number, time: number, vertices: ArrayLike<number>) {
+    setFrame (frame: number, time: number, vertices: NumberArrayLike) {
         this.frames[frame] = time;
         this.vertices[frame] = vertices;
     }
@@ -1673,10 +1665,10 @@ export class DeformTimeline extends CurveTimeline implements SlotTimeline {
  * @public
  * */
 export class EventTimeline extends Timeline {
-    static propertyIds = [ "" + Property.event ];
+    static propertyIds = ["" + Property.event];
 
     /** The event for each key frame. */
-    events: Array<Event>;
+    events: Array<Event> = null;
 
     constructor (frameCount: number) {
         super(frameCount, EventTimeline.propertyIds);
@@ -1728,10 +1720,10 @@ export class EventTimeline extends Timeline {
  * @public
  * */
 export class DrawOrderTimeline extends Timeline {
-    static propertyIds = [ "" + Property.drawOrder ];
+    static propertyIds = ["" + Property.drawOrder];
 
     /** The draw order for each key frame. See {@link #setFrame(int, float, int[])}. */
-    drawOrders: Array<Array<number>>;
+    drawOrders: Array<Array<number>> = null;
 
     constructor (frameCount: number) {
         super(frameCount, DrawOrderTimeline.propertyIds);
@@ -1779,7 +1771,7 @@ export class DrawOrderTimeline extends Timeline {
  * */
 export class IkConstraintTimeline extends CurveTimeline {
     /** The index of the IK constraint slot in {@link Skeleton#ikConstraints} that will be changed. */
-    ikConstraintIndex: number;
+    ikConstraintIndex: number = 0;
 
     constructor (frameCount: number, bezierCount: number, ikConstraintIndex: number) {
         super(frameCount, bezierCount, [
@@ -1879,7 +1871,7 @@ export class IkConstraintTimeline extends CurveTimeline {
  * */
 export class TransformConstraintTimeline extends CurveTimeline {
     /** The index of the transform constraint slot in {@link Skeleton#transformConstraints} that will be changed. */
-    transformConstraintIndex: number;
+    transformConstraintIndex: number = 0;
 
     constructor (frameCount: number, bezierCount: number, transformConstraintIndex: number) {
         super(frameCount, bezierCount, [
@@ -1994,7 +1986,7 @@ export class TransformConstraintTimeline extends CurveTimeline {
  * */
 export class PathConstraintPositionTimeline extends CurveTimeline1 {
     /** The index of the path constraint slot in {@link Skeleton#pathConstraints} that will be changed. */
-    pathConstraintIndex: number;
+    pathConstraintIndex: number = 0;
 
     constructor (frameCount: number, bezierCount: number, pathConstraintIndex: number) {
         super(frameCount, bezierCount, Property.pathConstraintPosition + "|" + pathConstraintIndex);

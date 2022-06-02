@@ -17,7 +17,7 @@ import {PathConstraintData} from "./PathConstraintData";
 export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Animation, EventData, IkConstraintData, TransformConstraintData, PathConstraintData> {
 
     /** The skeleton's name, which by default is the name of the skeleton data file, if possible. May be null. */
-    name: string;
+    name: string = null;
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
     bones = new Array<BoneData>(); // Ordered parents first.
@@ -30,7 +30,7 @@ export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Ani
      *
      * See {@link Skeleton#getAttachmentByName()}.
      * May be null. */
-    defaultSkin: Skin;
+    defaultSkin: Skin = null;
 
     /** The skeleton's events. */
     events = new Array<EventData>();
@@ -48,32 +48,32 @@ export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Ani
     pathConstraints = new Array<PathConstraintData>();
 
     /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-    x: number;
+    x: number = 0;
 
     /** The Y coordinate of the skeleton's axis aligned bounding box in the setup pose. */
-    y: number;
+    y: number = 0;
 
     /** The width of the skeleton's axis aligned bounding box in the setup pose. */
-    width: number;
+    width: number = 0;
 
     /** The height of the skeleton's axis aligned bounding box in the setup pose. */
-    height: number;
+    height: number = 0;
 
     /** The Spine version used to export the skeleton data, or null. */
-    version: string;
+    version: string = null;
 
     /** The skeleton data hash. This value will change if any of the skeleton data has changed. May be null. */
-    hash: string;
+    hash: string = null;
 
     // Nonessential
     /** The dopesheet FPS in Spine. Available only when nonessential data was exported. */
     fps = 0;
 
     /** The path to the images directory as defined in Spine. Available only when nonessential data was exported. May be null. */
-    imagesPath: string;
+    imagesPath: string = null;
 
     /** The path to the audio directory as defined in Spine. Available only when nonessential data was exported. May be null. */
-    audioPath: string;
+    audioPath: string = null;
 
     /** Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it
      * multiple times.
@@ -88,6 +88,7 @@ export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Ani
         return null;
     }
 
+/** removed from spine-ts runtime **/
     findBoneIndex (boneName: string) {
         if (!boneName) throw new Error("boneName cannot be null.");
         let bones = this.bones;
@@ -109,6 +110,7 @@ export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Ani
         return null;
     }
 
+/** removed from spine-ts runtime **/
     findSlotIndex (slotName: string) {
         if (!slotName) throw new Error("slotName cannot be null.");
         let slots = this.slots;
@@ -195,7 +197,7 @@ export class SkeletonData implements ISkeletonData<BoneData, SlotData, Skin, Ani
         return null;
     }
 
-    findPathConstraintIndex (pathConstraintName: string) {
+/** removed from spine-ts runtime **/    findPathConstraintIndex (pathConstraintName: string) {
         if (pathConstraintName == null) throw new Error("pathConstraintName cannot be null.");
         let pathConstraints = this.pathConstraints;
         for (let i = 0, n = pathConstraints.length; i < n; i++)

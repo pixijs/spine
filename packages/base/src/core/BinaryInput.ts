@@ -2,31 +2,30 @@
  * @public
  */
 export class BinaryInput {
-    constructor(data: Uint8Array, public strings = new Array<string>(), private index: number = 0, private buffer = new DataView(data.buffer)) {
-
+    constructor (data: Uint8Array, public strings = new Array<string>(), private index: number = 0, private buffer = new DataView(data.buffer)) {
     }
 
-    readByte(): number {
+    readByte (): number {
         return this.buffer.getInt8(this.index++);
     }
 
-    readUnsignedByte(): number {
+    readUnsignedByte (): number {
         return this.buffer.getUint8(this.index++);
     }
 
-    readShort(): number {
+    readShort (): number {
         let value = this.buffer.getInt16(this.index);
         this.index += 2;
         return value;
     }
 
-    readInt32(): number {
+    readInt32 (): number {
         let value = this.buffer.getInt32(this.index)
         this.index += 4;
         return value;
     }
 
-    readInt(optimizePositive: boolean) {
+    readInt (optimizePositive: boolean) {
         let b = this.readByte();
         let result = b & 0x7F;
         if ((b & 0x80) != 0) {
@@ -64,7 +63,7 @@ export class BinaryInput {
         byteCount--;
         let chars = "";
         for (let i = 0; i < byteCount;) {
-            let b = this.readByte();
+            let b = this.readUnsignedByte();
             switch (b >> 4) {
                 case 12:
                 case 13:

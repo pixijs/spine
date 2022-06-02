@@ -7,7 +7,7 @@ import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
 import {Skin} from "./Skin";
-import {Color, MathUtils, settings, Utils, Vector2, ISkeleton} from "@pixi-spine/base";
+import {Color, MathUtils, NumberArrayLike, settings, Utils, Vector2, ISkeleton} from "@pixi-spine/base";
 
 /** Stores the current pose for a skeleton.
  *
@@ -16,34 +16,34 @@ import {Color, MathUtils, settings, Utils, Vector2, ISkeleton} from "@pixi-spine
  * */
 export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
     /** The skeleton's setup pose data. */
-    data: SkeletonData;
+    data: SkeletonData = null;
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone. */
-    bones: Array<Bone>;
+    bones: Array<Bone> = null;
 
     /** The skeleton's slots. */
-    slots: Array<Slot>;
+    slots: Array<Slot> = null;
 
     /** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order. */
-    drawOrder: Array<Slot>;
+    drawOrder: Array<Slot> = null;
 
     /** The skeleton's IK constraints. */
-    ikConstraints: Array<IkConstraint>;
+    ikConstraints: Array<IkConstraint> = null;
 
     /** The skeleton's transform constraints. */
-    transformConstraints: Array<TransformConstraint>;
+    transformConstraints: Array<TransformConstraint> = null;
 
     /** The skeleton's path constraints. */
-    pathConstraints: Array<PathConstraint>;
+    pathConstraints: Array<PathConstraint> = null;
 
     /** The list of bones and constraints, sorted in the order they should be updated, as computed by {@link #updateCache()}. */
     _updateCache = new Array<Updatable>();
 
     /** The skeleton's current skin. May be null. */
-    skin: Skin;
+    skin: Skin = null;
 
     /** The color to tint all the skeleton's attachments. */
-    color: Color;
+    color: Color = null;
 
     /** Returns the skeleton's time. This can be used for tracking, such as with Slot {@link Slot#attachmentTime}.
      * <p>
@@ -419,15 +419,6 @@ export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
         return null;
     }
 
-    /** @returns -1 if the bone was not found. */
-    findBoneIndex (boneName: string) {
-        if (!boneName) throw new Error("boneName cannot be null.");
-        let bones = this.bones;
-        for (let i = 0, n = bones.length; i < n; i++)
-            if (bones[i].data.name == boneName) return i;
-        return -1;
-    }
-
     /** Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it
      * repeatedly.
      * @returns May be null. */
@@ -439,15 +430,6 @@ export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
             if (slot.data.name == slotName) return slot;
         }
         return null;
-    }
-
-    /** @returns -1 if the bone was not found. */
-    findSlotIndex (slotName: string) {
-        if (!slotName) throw new Error("slotName cannot be null.");
-        let slots = this.slots;
-        for (let i = 0, n = slots.length; i < n; i++)
-            if (slots[i].data.name == slotName) return i;
-        return -1;
     }
 
     /** Sets a skin by name.
@@ -497,7 +479,7 @@ export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
      * See {@link #getAttachment()}.
      * @returns May be null. */
     getAttachmentByName (slotName: string, attachmentName: string): Attachment {
-        return this.getAttachment(this.data.findSlotIndex(slotName), attachmentName);
+        return this.getAttachment(this.data.findSlot(slotName).index, attachmentName);
     }
 
     /** Finds an attachment by looking in the {@link #skin} and {@link SkeletonData#defaultSkin} using the slot index and
@@ -576,6 +558,15 @@ export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
         return null;
     }
 
+    /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose as `{ x: number, y: number, width: number, height: number }`.
+     * Note that this method will create temporary objects which can add to garbage collection pressure. Use `getBounds()` if garbage collection is a concern. */
+    getBoundsRect () {
+        let offset = new Vector2();
+        let size = new Vector2();
+        this.getBounds(offset, size);
+        return { x: offset.x, y: offset.y, width: size.x, height: size.y };
+    }
+
     /** Returns the axis aligned bounding box (AABB) of the region and mesh attachments for the current pose.
      * @param offset An output value, the distance from the skeleton origin to the bottom left corner of the AABB.
      * @param size An output value, the width and height of the AABB.
@@ -589,7 +580,7 @@ export class Skeleton implements ISkeleton<SkeletonData, Bone, Slot, Skin> {
             let slot = drawOrder[i];
             if (!slot.bone.active) continue;
             let verticesLength = 0;
-            let vertices: ArrayLike<number> = null;
+            let vertices: NumberArrayLike = null;
             let attachment = slot.getAttachment();
             if (attachment instanceof RegionAttachment) {
                 verticesLength = 8;

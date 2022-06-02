@@ -19,6 +19,13 @@ export interface Map<T> {
 /**
  * @public
  */
+export interface StringMap<T> {
+    [key: string]: T;
+}
+
+/**
+ * @public
+ */
 export class IntSet {
     array = new Array<number>();
 
@@ -45,7 +52,7 @@ export class IntSet {
  * @public
  */
 export class StringSet {
-    entries: Map<boolean> = {};
+    entries: StringMap<boolean> = {};
     size = 0;
 
     add (value: string): boolean {
@@ -73,6 +80,14 @@ export class StringSet {
         this.entries = {};
         this.size = 0;
     }
+}
+
+/**
+ * @public
+ */
+export interface NumberArrayLike {
+    readonly length: number;
+    [n: number]: number;
 }
 
 /**
@@ -150,7 +165,7 @@ export class Color {
         return this;
     }
 
-    static rgba8888ToColor(color: Color, value: number) {
+    static rgba8888ToColor (color: Color, value: number) {
         color.r = ((value & 0xff000000) >>> 24) / 255;
         color.g = ((value & 0x00ff0000) >>> 16) / 255;
         color.b = ((value & 0x0000ff00) >>> 8) / 255;
@@ -163,7 +178,7 @@ export class Color {
         color.b = ((value & 0x000000ff)) / 255;
     }
 
-    static fromString (hex : string) : Color {
+    static fromString (hex: string): Color {
         return new Color().setFromString(hex);
     }
 }
@@ -202,7 +217,7 @@ export class MathUtils {
     }
 
     static cbrt (x: number) {
-        let y = Math.pow(Math.abs(x), 1/3);
+        let y = Math.pow(Math.abs(x), 1 / 3);
         return x < 0 ? -y : y;
     }
 
@@ -216,6 +231,10 @@ export class MathUtils {
         if (u <= (mode - min) / d) return min + Math.sqrt(u * d * (mode - min));
         return max - Math.sqrt((1 - u) * d * (max - mode));
     }
+
+    static isPowerOfTwo (value: number) {
+        return value && (value & (value - 1)) === 0;
+    }
 }
 
 /**
@@ -223,7 +242,7 @@ export class MathUtils {
  */
 export abstract class Interpolation {
     protected abstract applyInternal (a: number): number;
-    apply(start: number, end: number, a: number): number {
+    apply (start: number, end: number, a: number): number {
         return start + (end - start) * this.applyInternal(a);
     }
 }
@@ -253,7 +272,7 @@ export class PowOut extends Pow {
         super(power);
     }
 
-    applyInternal (a: number) : number {
+    applyInternal (a: number): number {
         return Math.pow(a - 1, this.power) * (this.power % 2 == 0 ? -1 : 1) + 1;
     }
 }
@@ -262,7 +281,7 @@ export class PowOut extends Pow {
  * @public
  */
 export class Utils {
-    static SUPPORTS_TYPED_ARRAYS = typeof(Float32Array) !== "undefined";
+    static SUPPORTS_TYPED_ARRAYS = typeof (Float32Array) !== "undefined";
 
     static arrayCopy<T> (source: ArrayLike<T>, sourceStart: number, dest: ArrayLike<T>, destStart: number, numElements: number) {
         for (let i = sourceStart, j = destStart; i < sourceStart + numElements; i++, j++) {
@@ -296,7 +315,7 @@ export class Utils {
         return array;
     }
 
-    static newFloatArray (size: number): ArrayLike<number> {
+    static newFloatArray (size: number): NumberArrayLike {
         if (Utils.SUPPORTS_TYPED_ARRAYS)
             return new Float32Array(size)
         else {
@@ -306,7 +325,7 @@ export class Utils {
         }
     }
 
-    static newShortArray (size: number): ArrayLike<number> {
+    static newShortArray (size: number): NumberArrayLike {
         if (Utils.SUPPORTS_TYPED_ARRAYS)
             return new Int16Array(size)
         else {
@@ -330,7 +349,7 @@ export class Utils {
     }
 
     static contains<T> (array: Array<T>, element: T, identity = true) {
-        for (let i = 0; i < array.length; i++)
+        for (var i = 0; i < array.length; i++)
             if (array[i] == element) return true;
         return false;
     }

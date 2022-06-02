@@ -7,7 +7,7 @@
     "strictPeerDependencies": false,
     "resolutionStrategy": "fast"
   },
-  "nodeSupportedVersionRange": ">=10.0.0 <15.0.0",
+  "nodeSupportedVersionRange": ">=10.0.0 <18.0.0",
   "suppressNodeLtsWarning": true,
   "repository": {
     "url": "https://github.com/pixijs/pixi-spine",

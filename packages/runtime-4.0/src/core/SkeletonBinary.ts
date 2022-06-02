@@ -40,7 +40,7 @@ export class SkeletonBinary {
      * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
     scale = 1;
 
-    attachmentLoader: AttachmentLoader;
+    attachmentLoader: AttachmentLoader = null;
     private linkedMeshes = new Array<LinkedMesh>();
 
     constructor (attachmentLoader: AttachmentLoader) {
@@ -273,7 +273,7 @@ export class SkeletonBinary {
         return skin;
     }
 
-    private readAttachment(input: BinaryInput, skeletonData: SkeletonData, skin: Skin, slotIndex: number, attachmentName: string, nonessential: boolean): Attachment {
+    private readAttachment (input: BinaryInput, skeletonData: SkeletonData, skin: Skin, slotIndex: number, attachmentName: string, nonessential: boolean): Attachment {
         let scale = this.scale;
 
         let name = input.readStringRef();
@@ -507,7 +507,7 @@ export class SkeletonBinary {
                         let b = input.readUnsignedByte() / 255.0;
                         let a = input.readUnsignedByte() / 255.0;
 
-                        for (let frame = 0, bezier = 0;; frame++) {
+                        for (let frame = 0, bezier = 0; ; frame++) {
                             timeline.setFrame(frame, time, r, g, b, a);
                             if (frame == frameLast) break;
 
@@ -545,7 +545,7 @@ export class SkeletonBinary {
                         let g = input.readUnsignedByte() / 255.0;
                         let b = input.readUnsignedByte() / 255.0;
 
-                        for (let frame = 0, bezier = 0;; frame++) {
+                        for (let frame = 0, bezier = 0; ; frame++) {
                             timeline.setFrame(frame, time, r, g, b);
                             if (frame == frameLast) break;
 
@@ -584,7 +584,7 @@ export class SkeletonBinary {
                         let g2 = input.readUnsignedByte() / 255.0;
                         let b2 = input.readUnsignedByte() / 255.0;
 
-                        for (let frame = 0, bezier = 0;; frame++) {
+                        for (let frame = 0, bezier = 0; ; frame++) {
                             timeline.setFrame(frame, time, r, g, b, a, r2, g2, b2);
                             if (frame == frameLast) break;
                             let time2 = input.readFloat();
@@ -633,7 +633,7 @@ export class SkeletonBinary {
                         let g2 = input.readUnsignedByte() / 255.0;
                         let b2 = input.readUnsignedByte() / 255.0;
 
-                        for (let frame = 0, bezier = 0;; frame++) {
+                        for (let frame = 0, bezier = 0; ; frame++) {
                             timeline.setFrame(frame, time, r, g, b, r2, g2, b2);
                             if (frame == frameLast) break;
                             let time2 = input.readFloat();
@@ -670,7 +670,7 @@ export class SkeletonBinary {
                     case SLOT_ALPHA: {
                         let timeline = new AlphaTimeline(frameCount, input.readInt(true), slotIndex);
                         let time = input.readFloat(), a = input.readUnsignedByte() / 255;
-                        for (let frame = 0, bezier = 0;; frame++) {
+                        for (let frame = 0, bezier = 0; ; frame++) {
                             timeline.setFrame(frame, time, a);
                             if (frame == frameLast) break;
                             let time2 = input.readFloat();
@@ -736,7 +736,7 @@ export class SkeletonBinary {
             let index = input.readInt(true), frameCount = input.readInt(true), frameLast = frameCount - 1;
             let timeline = new IkConstraintTimeline(frameCount, input.readInt(true), index);
             let time = input.readFloat(), mix = input.readFloat(), softness = input.readFloat() * scale;
-            for (let frame = 0, bezier = 0;; frame++) {
+            for (let frame = 0, bezier = 0; ; frame++) {
                 timeline.setFrame(frame, time, mix, softness, input.readByte(), input.readBoolean(), input.readBoolean());
                 if (frame == frameLast) break;
                 let time2 = input.readFloat(), mix2 = input.readFloat(), softness2 = input.readFloat() * scale;
@@ -761,7 +761,7 @@ export class SkeletonBinary {
             let timeline = new TransformConstraintTimeline(frameCount, input.readInt(true), index);
             let time = input.readFloat(), mixRotate = input.readFloat(), mixX = input.readFloat(), mixY = input.readFloat(),
                 mixScaleX = input.readFloat(), mixScaleY = input.readFloat(), mixShearY = input.readFloat();
-            for (let frame = 0, bezier = 0;; frame++) {
+            for (let frame = 0, bezier = 0; ; frame++) {
                 timeline.setFrame(frame, time, mixRotate, mixX, mixY, mixScaleX, mixScaleY, mixShearY);
                 if (frame == frameLast) break;
                 let time2 = input.readFloat(), mixRotate2 = input.readFloat(), mixX2 = input.readFloat(), mixY2 = input.readFloat(),
@@ -808,7 +808,7 @@ export class SkeletonBinary {
                     case PATH_MIX:
                         let timeline = new PathConstraintMixTimeline(input.readInt(true), input.readInt(true), index);
                         let time = input.readFloat(), mixRotate = input.readFloat(), mixX = input.readFloat(), mixY = input.readFloat();
-                        for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1;; frame++) {
+                        for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1; ; frame++) {
                             timeline.setFrame(frame, time, mixRotate, mixX, mixY);
                             if (frame == frameLast) break;
                             let time2 = input.readFloat(), mixRotate2 = input.readFloat(), mixX2 = input.readFloat(),
@@ -850,7 +850,7 @@ export class SkeletonBinary {
                     let timeline = new DeformTimeline(frameCount, bezierCount, slotIndex, attachment);
 
                     let time = input.readFloat();
-                    for (let frame = 0, bezier = 0;; frame++) {
+                    for (let frame = 0, bezier = 0; ; frame++) {
                         let deform;
                         let end = input.readInt(true);
                         if (end == 0)
@@ -875,7 +875,7 @@ export class SkeletonBinary {
                         timeline.setFrame(frame, time, deform);
                         if (frame == frameLast) break;
                         let time2 = input.readFloat();
-                        switch(input.readByte()) {
+                        switch (input.readByte()) {
                             case CURVE_STEPPED:
                                 timeline.setStepped(frame);
                                 break;
@@ -964,12 +964,14 @@ class LinkedMesh {
 }
 
 class Vertices {
-    constructor(public bones: Array<number> = null, public vertices: Array<number> | Float32Array = null) { }
+    constructor (public bones: Array<number> = null, public vertices: Array<number> | Float32Array = null) { }
 }
+
+enum AttachmentType { Region, BoundingBox, Mesh, LinkedMesh, Path, Point, Clipping }
 
 function readTimeline1 (input: BinaryInput, timeline: CurveTimeline1, scale: number): CurveTimeline1 {
     let time = input.readFloat(), value = input.readFloat() * scale;
-    for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1;; frame++) {
+    for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1; ; frame++) {
         timeline.setFrame(frame, time, value);
         if (frame == frameLast) break;
         let time2 = input.readFloat(), value2 = input.readFloat() * scale;
@@ -988,7 +990,7 @@ function readTimeline1 (input: BinaryInput, timeline: CurveTimeline1, scale: num
 
 function readTimeline2 (input: BinaryInput, timeline: CurveTimeline2, scale: number): CurveTimeline2 {
     let time = input.readFloat(), value1 = input.readFloat() * scale, value2 = input.readFloat() * scale;
-    for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1;; frame++) {
+    for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1; ; frame++) {
         timeline.setFrame(frame, time, value1, value2);
         if (frame == frameLast) break;
         let time2 = input.readFloat(), nvalue1 = input.readFloat() * scale, nvalue2 = input.readFloat() * scale;
@@ -1012,27 +1014,27 @@ function setBezier (input: BinaryInput, timeline: CurveTimeline, bezier: number,
     timeline.setBezier(bezier, frame, value, time1, value1, input.readFloat(), input.readFloat() * scale, input.readFloat(), input.readFloat() * scale, time2, value2);
 }
 
-const  BONE_ROTATE = 0;
-const  BONE_TRANSLATE = 1;
-const  BONE_TRANSLATEX = 2;
-const  BONE_TRANSLATEY = 3;
-const  BONE_SCALE = 4;
-const  BONE_SCALEX = 5;
-const  BONE_SCALEY = 6;
-const  BONE_SHEAR = 7;
-const  BONE_SHEARX = 8;
-const  BONE_SHEARY = 9;
+const BONE_ROTATE = 0;
+const BONE_TRANSLATE = 1;
+const BONE_TRANSLATEX = 2;
+const BONE_TRANSLATEY = 3;
+const BONE_SCALE = 4;
+const BONE_SCALEX = 5;
+const BONE_SCALEY = 6;
+const BONE_SHEAR = 7;
+const BONE_SHEARX = 8;
+const BONE_SHEARY = 9;
 
-const  SLOT_ATTACHMENT = 0;
-const  SLOT_RGBA = 1;
-const  SLOT_RGB = 2;
-const  SLOT_RGBA2 = 3;
-const  SLOT_RGB2 = 4;
-const  SLOT_ALPHA = 5;
+const SLOT_ATTACHMENT = 0;
+const SLOT_RGBA = 1;
+const SLOT_RGB = 2;
+const SLOT_RGBA2 = 3;
+const SLOT_RGB2 = 4;
+const SLOT_ALPHA = 5;
 
-const  PATH_POSITION = 0;
-const  PATH_SPACING = 1;
-const  PATH_MIX = 2;
+const PATH_POSITION = 0;
+const PATH_SPACING = 1;
+const PATH_MIX = 2;
 
 // @ts-ignore
 const  CURVE_LINEAR = 0;
