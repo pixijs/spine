@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@microsoft/api-extractor": "7.13.5",
+    "@microsoft/api-extractor": "7.18.4",
     "@pixi-spine/eslint-config": "~1.0.0",
     "@pixi-spine/rollup-config": "~1.0.0",
     "chai": "~4.2.0",
@@ -51,6 +51,6 @@
     "rimraf": "3.0.2",
     "rollup": "^2.53.3",
     "tslib": "~2.2.0",
-    "typescript": "~4.2.3"
+    "typescript": "~4.3.0"
   }
 }
