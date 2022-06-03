@@ -967,8 +967,6 @@ class Vertices {
     constructor (public bones: Array<number> = null, public vertices: Array<number> | Float32Array = null) { }
 }
 
-enum AttachmentType { Region, BoundingBox, Mesh, LinkedMesh, Path, Point, Clipping }
-
 function readTimeline1 (input: BinaryInput, timeline: CurveTimeline1, scale: number): CurveTimeline1 {
     let time = input.readFloat(), value = input.readFloat() * scale;
     for (let frame = 0, bezier = 0, frameLast = timeline.getFrameCount() - 1; ; frame++) {
