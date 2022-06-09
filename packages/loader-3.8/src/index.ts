@@ -1,8 +1,12 @@
 /// <reference path="../global.d.ts" />
-import {AbstractSpineParser} from '@pixi-spine/loader-base';
-import {ISkeletonParser, TextureAtlas} from '@pixi-spine/base';
-import {LoaderResource, Loader} from "@pixi/loaders";
-import {AtlasAttachmentLoader, SkeletonBinary, SkeletonJson} from "@pixi-spine/runtime-3.8";
+
+import { ISkeletonParser, TextureAtlas } from "@pixi-spine/base";
+import { AbstractSpineParser } from "@pixi-spine/loader-base";
+import {
+    AtlasAttachmentLoader,
+    SkeletonBinary,
+    SkeletonJson,
+} from "@pixi-spine/runtime-3.8";
 
 /**
  * @public
@@ -16,7 +20,12 @@ export class SpineParser extends AbstractSpineParser {
         return new SkeletonJson(null);
     }
 
-    parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
+    parseData(
+        resource: PIXI.LoaderResource,
+        parser: ISkeletonParser,
+        atlas: TextureAtlas,
+        dataToParse: any
+    ): void {
         const parserCast = parser as SkeletonBinary | SkeletonJson;
 
         parserCast.attachmentLoader = new AtlasAttachmentLoader(atlas);
@@ -27,6 +36,6 @@ export class SpineParser extends AbstractSpineParser {
     static use = new SpineParser().genMiddleware().use;
 
     static registerLoaderPlugin() {
-        Loader.registerPlugin(SpineParser);
+        PIXI.Loader.registerPlugin(SpineParser);
     }
 }

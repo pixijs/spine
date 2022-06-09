@@ -1,17 +1,26 @@
-import type {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment} from './attachments';
-import {Animation} from './Animation';
-import {Event} from './Event';
-import {SkeletonData} from './SkeletonData';
-import {SlotData} from './SlotData';
-import {BoneData} from './BoneData';
-import {IkConstraintData} from './IkConstraintData';
-import {TransformConstraintData} from './TransformConstraintData';
-import {PathConstraintData, SpacingMode} from './PathConstraintData';
-import {Skin} from './Skin';
-import {EventData} from './EventData';
+import type {
+    Attachment,
+    AttachmentLoader,
+    MeshAttachment,
+    VertexAttachment,
+} from "./attachments";
+import { Animation } from "./Animation";
+import { Event } from "./Event";
+import { SkeletonData } from "./SkeletonData";
+import { SlotData } from "./SlotData";
+import { BoneData } from "./BoneData";
+import { IkConstraintData } from "./IkConstraintData";
+import { TransformConstraintData } from "./TransformConstraintData";
+import { PathConstraintData, SpacingMode } from "./PathConstraintData";
+import { Skin } from "./Skin";
+import { EventData } from "./EventData";
 import {
     AttachmentTimeline,
-    ColorTimeline, CurveTimeline, DeformTimeline, DrawOrderTimeline, EventTimeline,
+    ColorTimeline,
+    CurveTimeline,
+    DeformTimeline,
+    DrawOrderTimeline,
+    EventTimeline,
     IkConstraintTimeline,
     PathConstraintMixTimeline,
     PathConstraintPositionTimeline,
@@ -22,10 +31,17 @@ import {
     Timeline,
     TransformConstraintTimeline,
     TranslateTimeline,
-    TwoColorTimeline
-} from './Animation';
-import {ArrayLike, Color, PositionMode, RotateMode, TransformMode, Utils, settings} from '@pixi-spine/base';
-import {BLEND_MODES} from '@pixi/constants';
+    TwoColorTimeline,
+} from "./Animation";
+import {
+    ArrayLike,
+    Color,
+    PositionMode,
+    RotateMode,
+    TransformMode,
+    Utils,
+    settings,
+} from "@pixi-spine/base";
 
 /**
  * @public
@@ -35,26 +51,25 @@ export class SkeletonJson {
     scale = 1;
     private linkedMeshes = new Array<LinkedMesh>();
 
-    constructor (attachmentLoader: AttachmentLoader) {
+    constructor(attachmentLoader: AttachmentLoader) {
         this.attachmentLoader = attachmentLoader;
     }
 
-    readSkeletonData (json: string | any): SkeletonData {
+    readSkeletonData(json: string | any): SkeletonData {
         let scale = this.scale;
         let skeletonData = new SkeletonData();
-        let root = typeof(json) === "string" ? JSON.parse(json) : json;
+        let root = typeof json === "string" ? JSON.parse(json) : json;
 
         // Skeleton
         let skeletonMap = root.skeleton;
         if (skeletonMap != null) {
             skeletonData.hash = skeletonMap.hash;
             skeletonData.version = skeletonMap.spine;
-            if (skeletonData.version.substr(0, 3) !== '3.8') {
+            if (skeletonData.version.substr(0, 3) !== "3.8") {
                 let error = `Spine 3.8 loader cant load version ${skeletonMap.spine}. Please configure your pixi-spine bundle`;
                 console.error(error);
             }
-            if (skeletonData.version === '3.8.75')
-            {
+            if (skeletonData.version === "3.8.75") {
                 let error = `Unsupported skeleton data, 3.8.75 is deprecated, please export with a newer version of Spine.`;
                 console.error(error);
             }
@@ -75,9 +90,14 @@ export class SkeletonJson {
                 let parentName: string = this.getValue(boneMap, "parent", null);
                 if (parentName != null) {
                     parent = skeletonData.findBone(parentName);
-                    if (parent == null) throw new Error("Parent bone not found: " + parentName);
+                    if (parent == null)
+                        throw new Error("Parent bone not found: " + parentName);
                 }
-                let data = new BoneData(skeletonData.bones.length, boneMap.name, parent);
+                let data = new BoneData(
+                    skeletonData.bones.length,
+                    boneMap.name,
+                    parent
+                );
                 data.length = this.getValue(boneMap, "length", 0) * scale;
                 data.x = this.getValue(boneMap, "x", 0) * scale;
                 data.y = this.getValue(boneMap, "y", 0) * scale;
@@ -86,7 +106,9 @@ export class SkeletonJson {
                 data.scaleY = this.getValue(boneMap, "scaleY", 1);
                 data.shearX = this.getValue(boneMap, "shearX", 0);
                 data.shearY = this.getValue(boneMap, "shearY", 0);
-                data.transformMode = SkeletonJson.transformModeFromString(this.getValue(boneMap, "transform", "normal"));
+                data.transformMode = SkeletonJson.transformModeFromString(
+                    this.getValue(boneMap, "transform", "normal")
+                );
                 data.skinRequired = this.getValue(boneMap, "skin", false);
 
                 skeletonData.bones.push(data);
@@ -100,8 +122,13 @@ export class SkeletonJson {
                 let slotName: string = slotMap.name;
                 let boneName: string = slotMap.bone;
                 let boneData = skeletonData.findBone(boneName);
-                if (boneData == null) throw new Error("Slot bone not found: " + boneName);
-                let data = new SlotData(skeletonData.slots.length, slotName, boneData);
+                if (boneData == null)
+                    throw new Error("Slot bone not found: " + boneName);
+                let data = new SlotData(
+                    skeletonData.slots.length,
+                    slotName,
+                    boneData
+                );
 
                 let color: string = this.getValue(slotMap, "color", null);
                 if (color != null) data.color.setFromString(color);
@@ -112,8 +139,14 @@ export class SkeletonJson {
                     data.darkColor.setFromString(dark);
                 }
 
-                data.attachmentName = this.getValue(slotMap, "attachment", null);
-                data.blendMode = SkeletonJson.blendModeFromString(this.getValue(slotMap, "blend", "normal"));
+                data.attachmentName = this.getValue(
+                    slotMap,
+                    "attachment",
+                    null
+                );
+                data.blendMode = SkeletonJson.blendModeFromString(
+                    this.getValue(slotMap, "blend", "normal")
+                );
                 skeletonData.slots.push(data);
             }
         }
@@ -129,17 +162,26 @@ export class SkeletonJson {
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
                     let bone = skeletonData.findBone(boneName);
-                    if (bone == null) throw new Error("IK bone not found: " + boneName);
+                    if (bone == null)
+                        throw new Error("IK bone not found: " + boneName);
                     data.bones.push(bone);
                 }
 
                 let targetName: string = constraintMap.target;
                 data.target = skeletonData.findBone(targetName);
-                if (data.target == null) throw new Error("IK target bone not found: " + targetName);
+                if (data.target == null)
+                    throw new Error("IK target bone not found: " + targetName);
 
                 data.mix = this.getValue(constraintMap, "mix", 1);
-                data.softness = this.getValue(constraintMap, "softness", 0) * scale;
-                data.bendDirection = this.getValue(constraintMap, "bendPositive", true) ? 1 : -1;
+                data.softness =
+                    this.getValue(constraintMap, "softness", 0) * scale;
+                data.bendDirection = this.getValue(
+                    constraintMap,
+                    "bendPositive",
+                    true
+                )
+                    ? 1
+                    : -1;
                 data.compress = this.getValue(constraintMap, "compress", false);
                 data.stretch = this.getValue(constraintMap, "stretch", false);
                 data.uniform = this.getValue(constraintMap, "uniform", false);
@@ -159,17 +201,28 @@ export class SkeletonJson {
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
                     let bone = skeletonData.findBone(boneName);
-                    if (bone == null) throw new Error("Transform constraint bone not found: " + boneName);
+                    if (bone == null)
+                        throw new Error(
+                            "Transform constraint bone not found: " + boneName
+                        );
                     data.bones.push(bone);
                 }
 
                 let targetName: string = constraintMap.target;
                 data.target = skeletonData.findBone(targetName);
-                if (data.target == null) throw new Error("Transform constraint target bone not found: " + targetName);
+                if (data.target == null)
+                    throw new Error(
+                        "Transform constraint target bone not found: " +
+                            targetName
+                    );
 
                 data.local = this.getValue(constraintMap, "local", false);
                 data.relative = this.getValue(constraintMap, "relative", false);
-                data.offsetRotation = this.getValue(constraintMap, "rotation", 0);
+                data.offsetRotation = this.getValue(
+                    constraintMap,
+                    "rotation",
+                    0
+                );
                 data.offsetX = this.getValue(constraintMap, "x", 0) * scale;
                 data.offsetY = this.getValue(constraintMap, "y", 0) * scale;
                 data.offsetScaleX = this.getValue(constraintMap, "scaleX", 0);
@@ -177,7 +230,11 @@ export class SkeletonJson {
                 data.offsetShearY = this.getValue(constraintMap, "shearY", 0);
 
                 data.rotateMix = this.getValue(constraintMap, "rotateMix", 1);
-                data.translateMix = this.getValue(constraintMap, "translateMix", 1);
+                data.translateMix = this.getValue(
+                    constraintMap,
+                    "translateMix",
+                    1
+                );
                 data.scaleMix = this.getValue(constraintMap, "scaleMix", 1);
                 data.shearMix = this.getValue(constraintMap, "shearMix", 1);
 
@@ -196,24 +253,49 @@ export class SkeletonJson {
                 for (let j = 0; j < constraintMap.bones.length; j++) {
                     let boneName = constraintMap.bones[j];
                     let bone = skeletonData.findBone(boneName);
-                    if (bone == null) throw new Error("Transform constraint bone not found: " + boneName);
+                    if (bone == null)
+                        throw new Error(
+                            "Transform constraint bone not found: " + boneName
+                        );
                     data.bones.push(bone);
                 }
 
                 let targetName: string = constraintMap.target;
                 data.target = skeletonData.findSlot(targetName);
-                if (data.target == null) throw new Error("Path target slot not found: " + targetName);
+                if (data.target == null)
+                    throw new Error(
+                        "Path target slot not found: " + targetName
+                    );
 
-                data.positionMode = SkeletonJson.positionModeFromString(this.getValue(constraintMap, "positionMode", "percent"));
-                data.spacingMode = SkeletonJson.spacingModeFromString(this.getValue(constraintMap, "spacingMode", "length"));
-                data.rotateMode = SkeletonJson.rotateModeFromString(this.getValue(constraintMap, "rotateMode", "tangent"));
-                data.offsetRotation = this.getValue(constraintMap, "rotation", 0);
+                data.positionMode = SkeletonJson.positionModeFromString(
+                    this.getValue(constraintMap, "positionMode", "percent")
+                );
+                data.spacingMode = SkeletonJson.spacingModeFromString(
+                    this.getValue(constraintMap, "spacingMode", "length")
+                );
+                data.rotateMode = SkeletonJson.rotateModeFromString(
+                    this.getValue(constraintMap, "rotateMode", "tangent")
+                );
+                data.offsetRotation = this.getValue(
+                    constraintMap,
+                    "rotation",
+                    0
+                );
                 data.position = this.getValue(constraintMap, "position", 0);
-                if (data.positionMode == PositionMode.Fixed) data.position *= scale;
+                if (data.positionMode == PositionMode.Fixed)
+                    data.position *= scale;
                 data.spacing = this.getValue(constraintMap, "spacing", 0);
-                if (data.spacingMode == SpacingMode.Length || data.spacingMode == SpacingMode.Fixed) data.spacing *= scale;
+                if (
+                    data.spacingMode == SpacingMode.Length ||
+                    data.spacingMode == SpacingMode.Fixed
+                )
+                    data.spacing *= scale;
                 data.rotateMix = this.getValue(constraintMap, "rotateMix", 1);
-                data.translateMix = this.getValue(constraintMap, "translateMix", 1);
+                data.translateMix = this.getValue(
+                    constraintMap,
+                    "translateMix",
+                    1
+                );
 
                 skeletonData.pathConstraints.push(data);
             }
@@ -222,48 +304,80 @@ export class SkeletonJson {
         // Skins.
         if (root.skins) {
             for (let i = 0; i < root.skins.length; i++) {
-                let skinMap = root.skins[i]
+                let skinMap = root.skins[i];
                 let skin = new Skin(skinMap.name);
 
                 if (skinMap.bones) {
                     for (let ii = 0; ii < skinMap.bones.length; ii++) {
                         let bone = skeletonData.findBone(skinMap.bones[ii]);
-                        if (bone == null) throw new Error("Skin bone not found: " + skinMap.bones[i]);
+                        if (bone == null)
+                            throw new Error(
+                                "Skin bone not found: " + skinMap.bones[i]
+                            );
                         skin.bones.push(bone);
                     }
                 }
 
                 if (skinMap.ik) {
                     for (let ii = 0; ii < skinMap.ik.length; ii++) {
-                        let constraint = skeletonData.findIkConstraint(skinMap.ik[ii]);
-                        if (constraint == null) throw new Error("Skin IK constraint not found: " + skinMap.ik[i]);
+                        let constraint = skeletonData.findIkConstraint(
+                            skinMap.ik[ii]
+                        );
+                        if (constraint == null)
+                            throw new Error(
+                                "Skin IK constraint not found: " + skinMap.ik[i]
+                            );
                         skin.constraints.push(constraint);
                     }
                 }
 
                 if (skinMap.transform) {
                     for (let ii = 0; ii < skinMap.transform.length; ii++) {
-                        let constraint = skeletonData.findTransformConstraint(skinMap.transform[ii]);
-                        if (constraint == null) throw new Error("Skin transform constraint not found: " + skinMap.transform[i]);
+                        let constraint = skeletonData.findTransformConstraint(
+                            skinMap.transform[ii]
+                        );
+                        if (constraint == null)
+                            throw new Error(
+                                "Skin transform constraint not found: " +
+                                    skinMap.transform[i]
+                            );
                         skin.constraints.push(constraint);
                     }
                 }
 
                 if (skinMap.path) {
                     for (let ii = 0; ii < skinMap.path.length; ii++) {
-                        let constraint = skeletonData.findPathConstraint(skinMap.path[ii]);
-                        if (constraint == null) throw new Error("Skin path constraint not found: " + skinMap.path[i]);
+                        let constraint = skeletonData.findPathConstraint(
+                            skinMap.path[ii]
+                        );
+                        if (constraint == null)
+                            throw new Error(
+                                "Skin path constraint not found: " +
+                                    skinMap.path[i]
+                            );
                         skin.constraints.push(constraint);
                     }
                 }
 
                 for (let slotName in skinMap.attachments) {
                     let slot = skeletonData.findSlot(slotName);
-                    if (slot == null) throw new Error("Slot not found: " + slotName);
+                    if (slot == null)
+                        throw new Error("Slot not found: " + slotName);
                     let slotMap = skinMap.attachments[slotName];
                     for (let entryName in slotMap) {
-                        let attachment = this.readAttachment(slotMap[entryName], skin, slot.index, entryName, skeletonData);
-                        if (attachment != null) skin.setAttachment(slot.index, entryName, attachment);
+                        let attachment = this.readAttachment(
+                            slotMap[entryName],
+                            skin,
+                            slot.index,
+                            entryName,
+                            skeletonData
+                        );
+                        if (attachment != null)
+                            skin.setAttachment(
+                                slot.index,
+                                entryName,
+                                attachment
+                            );
                     }
                 }
                 skeletonData.skins.push(skin);
@@ -274,12 +388,22 @@ export class SkeletonJson {
         // Linked meshes.
         for (let i = 0, n = this.linkedMeshes.length; i < n; i++) {
             let linkedMesh = this.linkedMeshes[i];
-            let skin = linkedMesh.skin == null ? skeletonData.defaultSkin : skeletonData.findSkin(linkedMesh.skin);
-            if (skin == null) throw new Error("Skin not found: " + linkedMesh.skin);
-            let parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
-            if (parent == null) throw new Error("Parent mesh not found: " + linkedMesh.parent);
-            linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform ? <VertexAttachment>parent : <VertexAttachment>linkedMesh.mesh;
-            linkedMesh.mesh.setParentMesh(<MeshAttachment> parent);
+            let skin =
+                linkedMesh.skin == null
+                    ? skeletonData.defaultSkin
+                    : skeletonData.findSkin(linkedMesh.skin);
+            if (skin == null)
+                throw new Error("Skin not found: " + linkedMesh.skin);
+            let parent = skin.getAttachment(
+                linkedMesh.slotIndex,
+                linkedMesh.parent
+            );
+            if (parent == null)
+                throw new Error("Parent mesh not found: " + linkedMesh.parent);
+            linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform
+                ? <VertexAttachment>parent
+                : <VertexAttachment>linkedMesh.mesh;
+            linkedMesh.mesh.setParentMesh(<MeshAttachment>parent);
             // linkedMesh.mesh.updateUVs();
         }
         this.linkedMeshes.length = 0;
@@ -312,7 +436,13 @@ export class SkeletonJson {
         return skeletonData;
     }
 
-    readAttachment (map: any, skin: Skin, slotIndex: number, name: string, skeletonData: SkeletonData): Attachment {
+    readAttachment(
+        map: any,
+        skin: Skin,
+        slotIndex: number,
+        name: string,
+        skeletonData: SkeletonData
+    ): Attachment {
         let scale = this.scale;
         name = this.getValue(map, "name", name);
 
@@ -321,7 +451,11 @@ export class SkeletonJson {
         switch (type) {
             case "region": {
                 let path = this.getValue(map, "path", name);
-                let region = this.attachmentLoader.newRegionAttachment(skin, name, path);
+                let region = this.attachmentLoader.newRegionAttachment(
+                    skin,
+                    name,
+                    path
+                );
                 if (region == null) return null;
                 region.path = path;
                 region.x = this.getValue(map, "x", 0) * scale;
@@ -339,7 +473,10 @@ export class SkeletonJson {
                 return region;
             }
             case "boundingbox": {
-                let box = this.attachmentLoader.newBoundingBoxAttachment(skin, name);
+                let box = this.attachmentLoader.newBoundingBoxAttachment(
+                    skin,
+                    name
+                );
                 if (box == null) return null;
                 this.readVertices(map, box, map.vertexCount << 1);
                 let color: string = this.getValue(map, "color", null);
@@ -349,7 +486,11 @@ export class SkeletonJson {
             case "mesh":
             case "linkedmesh": {
                 let path = this.getValue(map, "path", name);
-                let mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                let mesh = this.attachmentLoader.newMeshAttachment(
+                    skin,
+                    name,
+                    path
+                );
                 if (mesh == null) return null;
                 mesh.path = path;
 
@@ -361,7 +502,15 @@ export class SkeletonJson {
 
                 let parent: string = this.getValue(map, "parent", null);
                 if (parent != null) {
-                    this.linkedMeshes.push(new LinkedMesh(mesh, <string> this.getValue(map, "skin", null), slotIndex, parent, this.getValue(map, "deform", true)));
+                    this.linkedMeshes.push(
+                        new LinkedMesh(
+                            mesh,
+                            <string>this.getValue(map, "skin", null),
+                            slotIndex,
+                            parent,
+                            this.getValue(map, "deform", true)
+                        )
+                    );
                     return mesh;
                 }
 
@@ -394,7 +543,10 @@ export class SkeletonJson {
                 return path;
             }
             case "point": {
-                let point = this.attachmentLoader.newPointAttachment(skin, name);
+                let point = this.attachmentLoader.newPointAttachment(
+                    skin,
+                    name
+                );
                 if (point == null) return null;
                 point.x = this.getValue(map, "x", 0) * scale;
                 point.y = this.getValue(map, "y", 0) * scale;
@@ -405,13 +557,17 @@ export class SkeletonJson {
                 return point;
             }
             case "clipping": {
-                let clip = this.attachmentLoader.newClippingAttachment(skin, name);
+                let clip = this.attachmentLoader.newClippingAttachment(
+                    skin,
+                    name
+                );
                 if (clip == null) return null;
 
                 let end = this.getValue(map, "end", null);
                 if (end != null) {
                     let slot = skeletonData.findSlot(end);
-                    if (slot == null) throw new Error("Clipping end slot not found: " + end);
+                    if (slot == null)
+                        throw new Error("Clipping end slot not found: " + end);
                     clip.endSlot = slot;
                 }
 
@@ -426,7 +582,11 @@ export class SkeletonJson {
         return null;
     }
 
-    readVertices (map: any, attachment: VertexAttachment, verticesLength: number) {
+    readVertices(
+        map: any,
+        attachment: VertexAttachment,
+        verticesLength: number
+    ) {
         let scale = this.scale;
         attachment.worldVerticesLength = verticesLength;
         let vertices: Array<number> = map.vertices;
@@ -441,7 +601,7 @@ export class SkeletonJson {
         }
         let weights = new Array<number>();
         let bones = new Array<number>();
-        for (let i = 0, n = vertices.length; i < n;) {
+        for (let i = 0, n = vertices.length; i < n; ) {
             let boneCount = vertices[i++];
             bones.push(boneCount);
             for (let nn = i + boneCount * 4; i < nn; i += 4) {
@@ -455,7 +615,7 @@ export class SkeletonJson {
         attachment.vertices = Utils.toFloatArray(weights);
     }
 
-    readAnimation (map: any, name: string, skeletonData: SkeletonData) {
+    readAnimation(map: any, name: string, skeletonData: SkeletonData) {
         let scale = this.scale;
         let timelines = new Array<Timeline>();
         let duration = 0;
@@ -465,20 +625,30 @@ export class SkeletonJson {
             for (let slotName in map.slots) {
                 let slotMap = map.slots[slotName];
                 let slotIndex = skeletonData.findSlotIndex(slotName);
-                if (slotIndex == -1) throw new Error("Slot not found: " + slotName);
+                if (slotIndex == -1)
+                    throw new Error("Slot not found: " + slotName);
                 for (let timelineName in slotMap) {
                     let timelineMap = slotMap[timelineName];
                     if (timelineName == "attachment") {
-                        let timeline = new AttachmentTimeline(timelineMap.length);
+                        let timeline = new AttachmentTimeline(
+                            timelineMap.length
+                        );
                         timeline.slotIndex = slotIndex;
 
                         let frameIndex = 0;
                         for (let i = 0; i < timelineMap.length; i++) {
                             let valueMap = timelineMap[i];
-                            timeline.setFrame(frameIndex++, this.getValue(valueMap, "time", 0), valueMap.name);
+                            timeline.setFrame(
+                                frameIndex++,
+                                this.getValue(valueMap, "time", 0),
+                                valueMap.name
+                            );
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[timeline.getFrameCount() - 1]
+                        );
                     } else if (timelineName == "color") {
                         let timeline = new ColorTimeline(timelineMap.length);
                         timeline.slotIndex = slotIndex;
@@ -488,13 +658,25 @@ export class SkeletonJson {
                             let valueMap = timelineMap[i];
                             let color = new Color();
                             color.setFromString(valueMap.color || "ffffffff");
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), color.r, color.g, color.b, color.a);
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                color.r,
+                                color.g,
+                                color.b,
+                                color.a
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[(timeline.getFrameCount() - 1) * ColorTimeline.ENTRIES]);
-
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    ColorTimeline.ENTRIES
+                            ]
+                        );
                     } else if (timelineName == "twoColor") {
                         let timeline = new TwoColorTimeline(timelineMap.length);
                         timeline.slotIndex = slotIndex;
@@ -506,15 +688,36 @@ export class SkeletonJson {
                             let dark = new Color();
                             light.setFromString(valueMap.light);
                             dark.setFromString(valueMap.dark);
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), light.r, light.g, light.b, light.a, dark.r, dark.g, dark.b);
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                light.r,
+                                light.g,
+                                light.b,
+                                light.a,
+                                dark.r,
+                                dark.g,
+                                dark.b
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[(timeline.getFrameCount() - 1) * TwoColorTimeline.ENTRIES]);
-
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    TwoColorTimeline.ENTRIES
+                            ]
+                        );
                     } else
-                        throw new Error("Invalid timeline type for a slot: " + timelineName + " (" + slotName + ")");
+                        throw new Error(
+                            "Invalid timeline type for a slot: " +
+                                timelineName +
+                                " (" +
+                                slotName +
+                                ")"
+                        );
                 }
             }
         }
@@ -524,7 +727,8 @@ export class SkeletonJson {
             for (let boneName in map.bones) {
                 let boneMap = map.bones[boneName];
                 let boneIndex = skeletonData.findBoneIndex(boneName);
-                if (boneIndex == -1) throw new Error("Bone not found: " + boneName);
+                if (boneIndex == -1)
+                    throw new Error("Bone not found: " + boneName);
                 for (let timelineName in boneMap) {
                     let timelineMap = boneMap[timelineName];
                     if (timelineName === "rotate") {
@@ -534,23 +738,39 @@ export class SkeletonJson {
                         let frameIndex = 0;
                         for (let i = 0; i < timelineMap.length; i++) {
                             let valueMap = timelineMap[i];
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "angle", 0));
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                this.getValue(valueMap, "angle", 0)
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[(timeline.getFrameCount() - 1) * RotateTimeline.ENTRIES]);
-
-                    } else if (timelineName === "translate" || timelineName === "scale" || timelineName === "shear") {
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    RotateTimeline.ENTRIES
+                            ]
+                        );
+                    } else if (
+                        timelineName === "translate" ||
+                        timelineName === "scale" ||
+                        timelineName === "shear"
+                    ) {
                         let timeline: TranslateTimeline = null;
-                        let timelineScale = 1, defaultValue = 0;
+                        let timelineScale = 1,
+                            defaultValue = 0;
                         if (timelineName === "scale") {
                             timeline = new ScaleTimeline(timelineMap.length);
                             defaultValue = 1;
                         } else if (timelineName === "shear")
                             timeline = new ShearTimeline(timelineMap.length);
                         else {
-                            timeline = new TranslateTimeline(timelineMap.length);
+                            timeline = new TranslateTimeline(
+                                timelineMap.length
+                            );
                             timelineScale = scale;
                         }
                         timeline.boneIndex = boneIndex;
@@ -558,16 +778,33 @@ export class SkeletonJson {
                         let frameIndex = 0;
                         for (let i = 0; i < timelineMap.length; i++) {
                             let valueMap = timelineMap[i];
-                            let x = this.getValue(valueMap, "x", defaultValue), y = this.getValue(valueMap, "y", defaultValue);
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), x * timelineScale, y * timelineScale);
+                            let x = this.getValue(valueMap, "x", defaultValue),
+                                y = this.getValue(valueMap, "y", defaultValue);
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                x * timelineScale,
+                                y * timelineScale
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[(timeline.getFrameCount() - 1) * TranslateTimeline.ENTRIES]);
-
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    TranslateTimeline.ENTRIES
+                            ]
+                        );
                     } else
-                        throw new Error("Invalid timeline type for a bone: " + timelineName + " (" + boneName + ")");
+                        throw new Error(
+                            "Invalid timeline type for a bone: " +
+                                timelineName +
+                                " (" +
+                                boneName +
+                                ")"
+                        );
                 }
             }
         }
@@ -578,17 +815,31 @@ export class SkeletonJson {
                 let constraintMap = map.ik[constraintName];
                 let constraint = skeletonData.findIkConstraint(constraintName);
                 let timeline = new IkConstraintTimeline(constraintMap.length);
-                timeline.ikConstraintIndex = skeletonData.ikConstraints.indexOf(constraint);
+                timeline.ikConstraintIndex =
+                    skeletonData.ikConstraints.indexOf(constraint);
                 let frameIndex = 0;
                 for (let i = 0; i < constraintMap.length; i++) {
                     let valueMap = constraintMap[i];
-                    timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "mix", 1), this.getValue(valueMap, "softness", 0) * scale,
-                        this.getValue(valueMap, "bendPositive", true) ? 1 : -1, this.getValue(valueMap, "compress", false), this.getValue(valueMap, "stretch", false));
+                    timeline.setFrame(
+                        frameIndex,
+                        this.getValue(valueMap, "time", 0),
+                        this.getValue(valueMap, "mix", 1),
+                        this.getValue(valueMap, "softness", 0) * scale,
+                        this.getValue(valueMap, "bendPositive", true) ? 1 : -1,
+                        this.getValue(valueMap, "compress", false),
+                        this.getValue(valueMap, "stretch", false)
+                    );
                     this.readCurve(valueMap, timeline, frameIndex);
                     frameIndex++;
                 }
                 timelines.push(timeline);
-                duration = Math.max(duration, timeline.frames[(timeline.getFrameCount() - 1) * IkConstraintTimeline.ENTRIES]);
+                duration = Math.max(
+                    duration,
+                    timeline.frames[
+                        (timeline.getFrameCount() - 1) *
+                            IkConstraintTimeline.ENTRIES
+                    ]
+                );
             }
         }
 
@@ -596,20 +847,35 @@ export class SkeletonJson {
         if (map.transform) {
             for (let constraintName in map.transform) {
                 let constraintMap = map.transform[constraintName];
-                let constraint = skeletonData.findTransformConstraint(constraintName);
-                let timeline = new TransformConstraintTimeline(constraintMap.length);
-                timeline.transformConstraintIndex = skeletonData.transformConstraints.indexOf(constraint);
+                let constraint =
+                    skeletonData.findTransformConstraint(constraintName);
+                let timeline = new TransformConstraintTimeline(
+                    constraintMap.length
+                );
+                timeline.transformConstraintIndex =
+                    skeletonData.transformConstraints.indexOf(constraint);
                 let frameIndex = 0;
                 for (let i = 0; i < constraintMap.length; i++) {
                     let valueMap = constraintMap[i];
-                    timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "rotateMix", 1),
-                        this.getValue(valueMap, "translateMix", 1), this.getValue(valueMap, "scaleMix", 1), this.getValue(valueMap, "shearMix", 1));
+                    timeline.setFrame(
+                        frameIndex,
+                        this.getValue(valueMap, "time", 0),
+                        this.getValue(valueMap, "rotateMix", 1),
+                        this.getValue(valueMap, "translateMix", 1),
+                        this.getValue(valueMap, "scaleMix", 1),
+                        this.getValue(valueMap, "shearMix", 1)
+                    );
                     this.readCurve(valueMap, timeline, frameIndex);
                     frameIndex++;
                 }
                 timelines.push(timeline);
-                duration = Math.max(duration,
-                    timeline.frames[(timeline.getFrameCount() - 1) * TransformConstraintTimeline.ENTRIES]);
+                duration = Math.max(
+                    duration,
+                    timeline.frames[
+                        (timeline.getFrameCount() - 1) *
+                            TransformConstraintTimeline.ENTRIES
+                    ]
+                );
             }
         }
 
@@ -617,46 +883,83 @@ export class SkeletonJson {
         if (map.path) {
             for (let constraintName in map.path) {
                 let constraintMap = map.path[constraintName];
-                let index = skeletonData.findPathConstraintIndex(constraintName);
-                if (index == -1) throw new Error("Path constraint not found: " + constraintName);
+                let index =
+                    skeletonData.findPathConstraintIndex(constraintName);
+                if (index == -1)
+                    throw new Error(
+                        "Path constraint not found: " + constraintName
+                    );
                 let data = skeletonData.pathConstraints[index];
                 for (let timelineName in constraintMap) {
                     let timelineMap = constraintMap[timelineName];
-                    if (timelineName === "position" || timelineName === "spacing") {
+                    if (
+                        timelineName === "position" ||
+                        timelineName === "spacing"
+                    ) {
                         let timeline: PathConstraintPositionTimeline = null;
                         let timelineScale = 1;
                         if (timelineName === "spacing") {
-                            timeline = new PathConstraintSpacingTimeline(timelineMap.length);
-                            if (data.spacingMode == SpacingMode.Length || data.spacingMode == SpacingMode.Fixed) timelineScale = scale;
+                            timeline = new PathConstraintSpacingTimeline(
+                                timelineMap.length
+                            );
+                            if (
+                                data.spacingMode == SpacingMode.Length ||
+                                data.spacingMode == SpacingMode.Fixed
+                            )
+                                timelineScale = scale;
                         } else {
-                            timeline = new PathConstraintPositionTimeline(timelineMap.length);
-                            if (data.positionMode == PositionMode.Fixed) timelineScale = scale;
+                            timeline = new PathConstraintPositionTimeline(
+                                timelineMap.length
+                            );
+                            if (data.positionMode == PositionMode.Fixed)
+                                timelineScale = scale;
                         }
                         timeline.pathConstraintIndex = index;
                         let frameIndex = 0;
                         for (let i = 0; i < timelineMap.length; i++) {
                             let valueMap = timelineMap[i];
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, timelineName, 0) * timelineScale);
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                this.getValue(valueMap, timelineName, 0) *
+                                    timelineScale
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration,
-                            timeline.frames[(timeline.getFrameCount() - 1) * PathConstraintPositionTimeline.ENTRIES]);
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    PathConstraintPositionTimeline.ENTRIES
+                            ]
+                        );
                     } else if (timelineName === "mix") {
-                        let timeline = new PathConstraintMixTimeline(timelineMap.length);
+                        let timeline = new PathConstraintMixTimeline(
+                            timelineMap.length
+                        );
                         timeline.pathConstraintIndex = index;
                         let frameIndex = 0;
                         for (let i = 0; i < timelineMap.length; i++) {
                             let valueMap = timelineMap[i];
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), this.getValue(valueMap, "rotateMix", 1),
-                                this.getValue(valueMap, "translateMix", 1));
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                this.getValue(valueMap, "rotateMix", 1),
+                                this.getValue(valueMap, "translateMix", 1)
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration,
-                            timeline.frames[(timeline.getFrameCount() - 1) * PathConstraintMixTimeline.ENTRIES]);
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[
+                                (timeline.getFrameCount() - 1) *
+                                    PathConstraintMixTimeline.ENTRIES
+                            ]
+                        );
                     }
                 }
             }
@@ -668,23 +971,32 @@ export class SkeletonJson {
                 let deformMap = map.deform[deformName];
                 let skin = skeletonData.findSkin(deformName);
                 if (skin == null) {
-                   if (settings.FAIL_ON_NON_EXISTING_SKIN) {
-                       throw new Error("Skin not found: " + deformName);
-                   } else {
-                       continue;
-                   }
+                    if (settings.FAIL_ON_NON_EXISTING_SKIN) {
+                        throw new Error("Skin not found: " + deformName);
+                    } else {
+                        continue;
+                    }
                 }
                 for (let slotName in deformMap) {
                     let slotMap = deformMap[slotName];
                     let slotIndex = skeletonData.findSlotIndex(slotName);
-                    if (slotIndex == -1) throw new Error("Slot not found: " + slotMap.name);
+                    if (slotIndex == -1)
+                        throw new Error("Slot not found: " + slotMap.name);
                     for (let timelineName in slotMap) {
                         let timelineMap = slotMap[timelineName];
-                        let attachment = <VertexAttachment>skin.getAttachment(slotIndex, timelineName);
-                        if (attachment == null) throw new Error("Deform attachment not found: " + timelineMap.name);
+                        let attachment = <VertexAttachment>(
+                            skin.getAttachment(slotIndex, timelineName)
+                        );
+                        if (attachment == null)
+                            throw new Error(
+                                "Deform attachment not found: " +
+                                    timelineMap.name
+                            );
                         let weighted = attachment.bones != null;
                         let vertices = attachment.vertices;
-                        let deformLength = weighted ? vertices.length / 3 * 2 : vertices.length;
+                        let deformLength = weighted
+                            ? (vertices.length / 3) * 2
+                            : vertices.length;
 
                         let timeline = new DeformTimeline(timelineMap.length);
                         timeline.slotIndex = slotIndex;
@@ -694,15 +1006,34 @@ export class SkeletonJson {
                         for (let j = 0; j < timelineMap.length; j++) {
                             let valueMap = timelineMap[j];
                             let deform: ArrayLike<number>;
-                            let verticesValue: Array<Number> = this.getValue(valueMap, "vertices", null);
+                            let verticesValue: Array<Number> = this.getValue(
+                                valueMap,
+                                "vertices",
+                                null
+                            );
                             if (verticesValue == null)
-                                deform = weighted ? Utils.newFloatArray(deformLength) : vertices;
+                                deform = weighted
+                                    ? Utils.newFloatArray(deformLength)
+                                    : vertices;
                             else {
                                 deform = Utils.newFloatArray(deformLength);
-                                let start = <number>this.getValue(valueMap, "offset", 0);
-                                Utils.arrayCopy(verticesValue, 0, deform, start, verticesValue.length);
+                                let start = <number>(
+                                    this.getValue(valueMap, "offset", 0)
+                                );
+                                Utils.arrayCopy(
+                                    verticesValue,
+                                    0,
+                                    deform,
+                                    start,
+                                    verticesValue.length
+                                );
                                 if (scale != 1) {
-                                    for (let i = start, n = i + verticesValue.length; i < n; i++)
+                                    for (
+                                        let i = start,
+                                            n = i + verticesValue.length;
+                                        i < n;
+                                        i++
+                                    )
                                         deform[i] *= scale;
                                 }
                                 if (!weighted) {
@@ -711,12 +1042,19 @@ export class SkeletonJson {
                                 }
                             }
 
-                            timeline.setFrame(frameIndex, this.getValue(valueMap, "time", 0), deform);
+                            timeline.setFrame(
+                                frameIndex,
+                                this.getValue(valueMap, "time", 0),
+                                deform
+                            );
                             this.readCurve(valueMap, timeline, frameIndex);
                             frameIndex++;
                         }
                         timelines.push(timeline);
-                        duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
+                        duration = Math.max(
+                            duration,
+                            timeline.frames[timeline.getFrameCount() - 1]
+                        );
                     }
                 }
             }
@@ -735,29 +1073,47 @@ export class SkeletonJson {
                 let offsets = this.getValue(drawOrderMap, "offsets", null);
                 if (offsets != null) {
                     drawOrder = Utils.newArray<number>(slotCount, -1);
-                    let unchanged = Utils.newArray<number>(slotCount - offsets.length, 0);
-                    let originalIndex = 0, unchangedIndex = 0;
+                    let unchanged = Utils.newArray<number>(
+                        slotCount - offsets.length,
+                        0
+                    );
+                    let originalIndex = 0,
+                        unchangedIndex = 0;
                     for (let i = 0; i < offsets.length; i++) {
                         let offsetMap = offsets[i];
-                        let slotIndex = skeletonData.findSlotIndex(offsetMap.slot);
-                        if (slotIndex == -1) throw new Error("Slot not found: " + offsetMap.slot);
+                        let slotIndex = skeletonData.findSlotIndex(
+                            offsetMap.slot
+                        );
+                        if (slotIndex == -1)
+                            throw new Error(
+                                "Slot not found: " + offsetMap.slot
+                            );
                         // Collect unchanged items.
                         while (originalIndex != slotIndex)
                             unchanged[unchangedIndex++] = originalIndex++;
                         // Set changed items.
-                        drawOrder[originalIndex + offsetMap.offset] = originalIndex++;
+                        drawOrder[originalIndex + offsetMap.offset] =
+                            originalIndex++;
                     }
                     // Collect remaining unchanged items.
                     while (originalIndex < slotCount)
                         unchanged[unchangedIndex++] = originalIndex++;
                     // Fill in unchanged items.
                     for (let i = slotCount - 1; i >= 0; i--)
-                        if (drawOrder[i] == -1) drawOrder[i] = unchanged[--unchangedIndex];
+                        if (drawOrder[i] == -1)
+                            drawOrder[i] = unchanged[--unchangedIndex];
                 }
-                timeline.setFrame(frameIndex++, this.getValue(drawOrderMap, "time", 0), drawOrder);
+                timeline.setFrame(
+                    frameIndex++,
+                    this.getValue(drawOrderMap, "time", 0),
+                    drawOrder
+                );
             }
             timelines.push(timeline);
-            duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
+            duration = Math.max(
+                duration,
+                timeline.frames[timeline.getFrameCount() - 1]
+            );
         }
 
         // Event timeline.
@@ -767,11 +1123,27 @@ export class SkeletonJson {
             for (let i = 0; i < map.events.length; i++) {
                 let eventMap = map.events[i];
                 let eventData = skeletonData.findEvent(eventMap.name);
-                if (eventData == null) throw new Error("Event not found: " + eventMap.name);
-                let event = new Event(Utils.toSinglePrecision(this.getValue(eventMap, "time", 0)), eventData);
-                event.intValue = this.getValue(eventMap, "int", eventData.intValue);
-                event.floatValue = this.getValue(eventMap, "float", eventData.floatValue);
-                event.stringValue = this.getValue(eventMap, "string", eventData.stringValue);
+                if (eventData == null)
+                    throw new Error("Event not found: " + eventMap.name);
+                let event = new Event(
+                    Utils.toSinglePrecision(this.getValue(eventMap, "time", 0)),
+                    eventData
+                );
+                event.intValue = this.getValue(
+                    eventMap,
+                    "int",
+                    eventData.intValue
+                );
+                event.floatValue = this.getValue(
+                    eventMap,
+                    "float",
+                    eventData.floatValue
+                );
+                event.stringValue = this.getValue(
+                    eventMap,
+                    "string",
+                    eventData.stringValue
+                );
                 if (event.data.audioPath != null) {
                     event.volume = this.getValue(eventMap, "volume", 1);
                     event.balance = this.getValue(eventMap, "balance", 0);
@@ -779,7 +1151,10 @@ export class SkeletonJson {
                 timeline.setFrame(frameIndex++, event);
             }
             timelines.push(timeline);
-            duration = Math.max(duration, timeline.frames[timeline.getFrameCount() - 1]);
+            duration = Math.max(
+                duration,
+                timeline.frames[timeline.getFrameCount() - 1]
+            );
         }
 
         if (isNaN(duration)) {
@@ -789,37 +1164,42 @@ export class SkeletonJson {
         skeletonData.animations.push(new Animation(name, timelines, duration));
     }
 
-    readCurve (map: any, timeline: CurveTimeline, frameIndex: number) {
+    readCurve(map: any, timeline: CurveTimeline, frameIndex: number) {
         if (!map.hasOwnProperty("curve")) return;
-        if (map.curve === "stepped")
-            timeline.setStepped(frameIndex);
+        if (map.curve === "stepped") timeline.setStepped(frameIndex);
         else {
             let curve: number = map.curve;
-            timeline.setCurve(frameIndex, curve, this.getValue(map, "c2", 0), this.getValue(map, "c3", 1), this.getValue(map, "c4", 1));
+            timeline.setCurve(
+                frameIndex,
+                curve,
+                this.getValue(map, "c2", 0),
+                this.getValue(map, "c3", 1),
+                this.getValue(map, "c4", 1)
+            );
         }
     }
 
-    getValue (map: any, prop: string, defaultValue: any) {
+    getValue(map: any, prop: string, defaultValue: any) {
         return map[prop] !== undefined ? map[prop] : defaultValue;
     }
 
-    static blendModeFromString (str: string) {
+    static blendModeFromString(str: string) {
         str = str.toLowerCase();
-        if (str == "normal") return BLEND_MODES.NORMAL;
-        if (str == "additive") return BLEND_MODES.ADD;
-        if (str == "multiply") return BLEND_MODES.MULTIPLY;
-        if (str == "screen") return BLEND_MODES.SCREEN;
+        if (str == "normal") return PIXI.BLEND_MODES.NORMAL;
+        if (str == "additive") return PIXI.BLEND_MODES.ADD;
+        if (str == "multiply") return PIXI.BLEND_MODES.MULTIPLY;
+        if (str == "screen") return PIXI.BLEND_MODES.SCREEN;
         throw new Error(`Unknown blend mode: ${str}`);
     }
 
-    static positionModeFromString (str: string) {
+    static positionModeFromString(str: string) {
         str = str.toLowerCase();
         if (str == "fixed") return PositionMode.Fixed;
         if (str == "percent") return PositionMode.Percent;
         throw new Error(`Unknown position mode: ${str}`);
     }
 
-    static spacingModeFromString (str: string) {
+    static spacingModeFromString(str: string) {
         str = str.toLowerCase();
         if (str == "length") return SpacingMode.Length;
         if (str == "fixed") return SpacingMode.Fixed;
@@ -827,7 +1207,7 @@ export class SkeletonJson {
         throw new Error(`Unknown position mode: ${str}`);
     }
 
-    static rotateModeFromString (str: string) {
+    static rotateModeFromString(str: string) {
         str = str.toLowerCase();
         if (str == "tangent") return RotateMode.Tangent;
         if (str == "chain") return RotateMode.Chain;
@@ -839,20 +1219,29 @@ export class SkeletonJson {
         str = str.toLowerCase();
         if (str == "normal") return TransformMode.Normal;
         if (str == "onlytranslation") return TransformMode.OnlyTranslation;
-        if (str == "norotationorreflection") return TransformMode.NoRotationOrReflection;
+        if (str == "norotationorreflection")
+            return TransformMode.NoRotationOrReflection;
         if (str == "noscale") return TransformMode.NoScale;
-        if (str == "noscaleorreflection") return TransformMode.NoScaleOrReflection;
+        if (str == "noscaleorreflection")
+            return TransformMode.NoScaleOrReflection;
         throw new Error(`Unknown transform mode: ${str}`);
     }
 }
 
 class LinkedMesh {
-    parent: string; skin: string;
+    parent: string;
+    skin: string;
     slotIndex: number;
     mesh: MeshAttachment;
     inheritDeform: boolean;
 
-    constructor (mesh: MeshAttachment, skin: string, slotIndex: number, parent: string, inheritDeform: boolean) {
+    constructor(
+        mesh: MeshAttachment,
+        skin: string,
+        slotIndex: number,
+        parent: string,
+        inheritDeform: boolean
+    ) {
         this.mesh = mesh;
         this.skin = skin;
         this.slotIndex = slotIndex;

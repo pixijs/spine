@@ -1,32 +1,40 @@
-
-import { Texture } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
-
 /**
  * @public
  */
-export function filterFromString (text: string): TextureFilter {
+export function filterFromString(text: string): TextureFilter {
     switch (text.toLowerCase()) {
-        case "nearest": return TextureFilter.Nearest;
-        case "linear": return TextureFilter.Linear;
-        case "mipmap": return TextureFilter.MipMap;
-        case "mipmapnearestnearest": return TextureFilter.MipMapNearestNearest;
-        case "mipmaplinearnearest": return TextureFilter.MipMapLinearNearest;
-        case "mipmapnearestlinear": return TextureFilter.MipMapNearestLinear;
-        case "mipmaplinearlinear": return TextureFilter.MipMapLinearLinear;
-        default: throw new Error(`Unknown texture filter ${text}`);
+        case "nearest":
+            return TextureFilter.Nearest;
+        case "linear":
+            return TextureFilter.Linear;
+        case "mipmap":
+            return TextureFilter.MipMap;
+        case "mipmapnearestnearest":
+            return TextureFilter.MipMapNearestNearest;
+        case "mipmaplinearnearest":
+            return TextureFilter.MipMapLinearNearest;
+        case "mipmapnearestlinear":
+            return TextureFilter.MipMapNearestLinear;
+        case "mipmaplinearlinear":
+            return TextureFilter.MipMapLinearLinear;
+        default:
+            throw new Error(`Unknown texture filter ${text}`);
     }
 }
 
 /**
  * @public
  */
-export function wrapFromString (text: string): TextureWrap {
+export function wrapFromString(text: string): TextureWrap {
     switch (text.toLowerCase()) {
-        case "mirroredtepeat": return TextureWrap.MirroredRepeat;
-        case "clamptoedge": return TextureWrap.ClampToEdge;
-        case "repeat": return TextureWrap.Repeat;
-        default: throw new Error(`Unknown texture wrap ${text}`);
+        case "mirroredtepeat":
+            return TextureWrap.MirroredRepeat;
+        case "clamptoedge":
+            return TextureWrap.ClampToEdge;
+        case "repeat":
+            return TextureWrap.Repeat;
+        default:
+            throw new Error(`Unknown texture wrap ${text}`);
     }
 }
 
@@ -40,7 +48,7 @@ export enum TextureFilter {
     MipMapNearestNearest = 9984, // WebGLRenderingContext.NEAREST_MIPMAP_NEAREST
     MipMapLinearNearest = 9985, // WebGLRenderingContext.LINEAR_MIPMAP_NEAREST
     MipMapNearestLinear = 9986, // WebGLRenderingContext.NEAREST_MIPMAP_LINEAR
-    MipMapLinearLinear = 9987 // WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
+    MipMapLinearLinear = 9987, // WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
 }
 
 /**
@@ -49,17 +57,17 @@ export enum TextureFilter {
 export enum TextureWrap {
     MirroredRepeat = 33648, // WebGLRenderingContext.MIRRORED_REPEAT
     ClampToEdge = 33071, // WebGLRenderingContext.CLAMP_TO_EDGE
-    Repeat = 10497 // WebGLRenderingContext.REPEAT
+    Repeat = 10497, // WebGLRenderingContext.REPEAT
 }
 
 /**
  * @public
  */
 export class TextureRegion {
-    texture: Texture;
+    texture: PIXI.Texture;
 
     //thats for overrides
-    size: Rectangle = null;
+    size: PIXI.Rectangle = null;
 
     names: string[] = null;
     values: number[][] = null;

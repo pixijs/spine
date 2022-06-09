@@ -7,7 +7,7 @@
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "peerDependencies": {
-    "@pixi/loaders": "^6.1.0"
+    "pixi.js-legacy": "5.3.8"
   },
   "dependencies": {
     "@pixi-spine/base": "~3.0.15",

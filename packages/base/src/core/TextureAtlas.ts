@@ -1,10 +1,10 @@
-import {SCALE_MODES, MIPMAP_MODES, ALPHA_MODES} from '@pixi/constants';
-import {Texture} from '@pixi/core';
-import {Rectangle} from '@pixi/math';
-import {TextureRegion, TextureWrap, TextureFilter, filterFromString} from './TextureRegion';
-import {Map, Disposable} from './Utils';
-
-import type {BaseTexture} from '@pixi/core';
+import {
+    TextureRegion,
+    TextureWrap,
+    TextureFilter,
+    filterFromString,
+} from "./TextureRegion";
+import { Map, Disposable } from "./Utils";
 
 class RegionFields {
     x = 0;
@@ -25,13 +25,20 @@ export class TextureAtlas implements Disposable {
     pages = new Array<TextureAtlasPage>();
     regions = new Array<TextureAtlasRegion>();
 
-    constructor(atlasText?: string, textureLoader?: (path: string, loaderFunction: (tex: BaseTexture) => any) => any, callback?: (obj: TextureAtlas) => any) {
+    constructor(
+        atlasText?: string,
+        textureLoader?: (
+            path: string,
+            loaderFunction: (tex: PIXI.BaseTexture) => any
+        ) => any,
+        callback?: (obj: TextureAtlas) => any
+    ) {
         if (atlasText) {
             this.addSpineAtlas(atlasText, textureLoader, callback);
         }
     }
 
-    addTexture(name: string, texture: Texture) {
+    addTexture(name: string, texture: PIXI.Texture) {
         let pages = this.pages;
         let page: TextureAtlasPage = null;
         for (let i = 0; i < pages.length; i++) {
@@ -42,7 +49,7 @@ export class TextureAtlas implements Disposable {
         }
         if (page === null) {
             page = new TextureAtlasPage();
-            page.name = 'texturePage';
+            page.name = "texturePage";
             let baseTexture = texture.baseTexture;
             page.width = baseTexture.realWidth;
             page.height = baseTexture.realHeight;
@@ -62,19 +69,38 @@ export class TextureAtlas implements Disposable {
         return region;
     }
 
-    addTextureHash(textures: Map<Texture>, stripExtension: boolean) {
+    addTextureHash(textures: Map<PIXI.Texture>, stripExtension: boolean) {
         for (let key in textures) {
             if (textures.hasOwnProperty(key)) {
-                this.addTexture(stripExtension && key.indexOf('.') !== -1 ? key.substr(0, key.lastIndexOf('.')) : key, textures[key]);
+                this.addTexture(
+                    stripExtension && key.indexOf(".") !== -1
+                        ? key.substr(0, key.lastIndexOf("."))
+                        : key,
+                    textures[key]
+                );
             }
         }
     }
 
-    public addSpineAtlas(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any) {
+    public addSpineAtlas(
+        atlasText: string,
+        textureLoader: (
+            path: string,
+            loaderFunction: (tex: PIXI.BaseTexture) => any
+        ) => any,
+        callback: (obj: TextureAtlas) => any
+    ) {
         return this.load(atlasText, textureLoader, callback);
     }
 
-    private load(atlasText: string, textureLoader: (path: string, loaderFunction: (tex: BaseTexture) => any) => any, callback: (obj: TextureAtlas) => any) {
+    private load(
+        atlasText: string,
+        textureLoader: (
+            path: string,
+            loaderFunction: (tex: PIXI.BaseTexture) => any
+        ) => any,
+        callback: (obj: TextureAtlas) => any
+    ) {
         if (textureLoader == null)
             throw new Error("textureLoader cannot be null.");
 
@@ -95,19 +121,21 @@ export class TextureAtlas implements Disposable {
             page.magFilter = filterFromString(entry[2]);
         };
         pageFields["repeat"] = () => {
-            if (entry[1].indexOf('x') != -1) page.uWrap = TextureWrap.Repeat;
-            if (entry[1].indexOf('y') != -1) page.vWrap = TextureWrap.Repeat;
+            if (entry[1].indexOf("x") != -1) page.uWrap = TextureWrap.Repeat;
+            if (entry[1].indexOf("y") != -1) page.vWrap = TextureWrap.Repeat;
         };
         pageFields["pma"] = () => {
             page.pma = entry[1] == "true";
         };
 
         let regionFields: Map<Function> = {};
-        regionFields["xy"] = () => { // Deprecated, use bounds.
+        regionFields["xy"] = () => {
+            // Deprecated, use bounds.
             region.x = parseInt(entry[1]);
             region.y = parseInt(entry[2]);
         };
-        regionFields["size"] = () => { // Deprecated, use bounds.
+        regionFields["size"] = () => {
+            // Deprecated, use bounds.
             region.width = parseInt(entry[1]);
             region.height = parseInt(entry[2]);
         };
@@ -117,11 +145,13 @@ export class TextureAtlas implements Disposable {
             region.width = parseInt(entry[3]);
             region.height = parseInt(entry[4]);
         };
-        regionFields["offset"] = () => { // Deprecated, use offsets.
+        regionFields["offset"] = () => {
+            // Deprecated, use offsets.
             region.offsetX = parseInt(entry[1]);
             region.offsetY = parseInt(entry[2]);
         };
-        regionFields["orig"] = () => { // Deprecated, use offsets.
+        regionFields["orig"] = () => {
+            // Deprecated, use offsets.
             region.originalWidth = parseInt(entry[1]);
             region.originalHeight = parseInt(entry[2]);
         };
@@ -171,13 +201,19 @@ export class TextureAtlas implements Disposable {
                     page.name = line.trim();
 
                     while (true) {
-                        if (reader.readEntry(entry, line = reader.readLine()) == 0) break;
+                        if (
+                            reader.readEntry(
+                                entry,
+                                (line = reader.readLine())
+                            ) == 0
+                        )
+                            break;
                         let field: Function = pageFields[entry[0]];
                         if (field) field();
                     }
                     this.pages.push(page);
 
-                    textureLoader(page.name, (texture: BaseTexture) => {
+                    textureLoader(page.name, (texture: PIXI.BaseTexture) => {
                         if (texture === null) {
                             this.pages.splice(this.pages.indexOf(page), 1);
                             return callback && callback(null);
@@ -185,7 +221,7 @@ export class TextureAtlas implements Disposable {
                         page.baseTexture = texture;
                         //TODO: set scaleMode and mipmapMode from spine
                         if (page.pma) {
-                            texture.alphaMode = ALPHA_MODES.PMA;
+                            texture.alphaMode = PIXI.ALPHA_MODES.PMA;
                         }
                         if (!texture.valid) {
                             texture.setSize(page.width, page.height);
@@ -197,7 +233,11 @@ export class TextureAtlas implements Disposable {
                             page.width = texture.realWidth;
                             page.height = texture.realHeight;
                             if (!page.width || !page.height) {
-                                console.log("ERROR spine atlas page " + page.name + ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)");
+                                console.log(
+                                    "ERROR spine atlas page " +
+                                        page.name +
+                                        ": meshes wont work if you dont specify size in atlas (http://www.html5gamedevs.com/topic/18888-pixi-spines-and-meshes/?p=107121)"
+                                );
                             }
                         }
                         iterateParser();
@@ -212,15 +252,17 @@ export class TextureAtlas implements Disposable {
                     let names: string[] = null;
                     let values: number[][] = null;
                     while (true) {
-                        let count = reader.readEntry(entry, line = reader.readLine());
+                        let count = reader.readEntry(
+                            entry,
+                            (line = reader.readLine())
+                        );
                         if (count == 0) break;
                         let field: Function = regionFields[entry[0]];
-                        if (field)
-                            field();
+                        if (field) field();
                         else {
                             if (names == null) {
                                 names = [];
-                                values = []
+                                values = [];
                             }
                             names.push(entry[0]);
                             let entryValues: number[] = [];
@@ -229,7 +271,10 @@ export class TextureAtlas implements Disposable {
                             values.push(entryValues);
                         }
                     }
-                    if (region.originalWidth == 0 && region.originalHeight == 0) {
+                    if (
+                        region.originalWidth == 0 &&
+                        region.originalHeight == 0
+                    ) {
                         region.originalWidth = region.width;
                         region.originalHeight = region.height;
                     }
@@ -245,12 +290,33 @@ export class TextureAtlas implements Disposable {
                     region.offsetY /= resolution;
 
                     const swapWH = region.rotate % 4 !== 0;
-                    let frame = new Rectangle(region.x, region.y, swapWH ? region.height : region.width, swapWH ? region.width : region.height);
+                    let frame = new PIXI.Rectangle(
+                        region.x,
+                        region.y,
+                        swapWH ? region.height : region.width,
+                        swapWH ? region.width : region.height
+                    );
 
-                    let orig = new Rectangle(0, 0, region.originalWidth, region.originalHeight);
-                    let trim = new Rectangle(region.offsetX, region.originalHeight - region.height - region.offsetY, region.width, region.height);
+                    let orig = new PIXI.Rectangle(
+                        0,
+                        0,
+                        region.originalWidth,
+                        region.originalHeight
+                    );
+                    let trim = new PIXI.Rectangle(
+                        region.offsetX,
+                        region.originalHeight - region.height - region.offsetY,
+                        region.width,
+                        region.height
+                    );
 
-                    atlasRegion.texture = new Texture(atlasRegion.page.baseTexture, frame, orig, trim, region.rotate);
+                    atlasRegion.texture = new PIXI.Texture(
+                        atlasRegion.page.baseTexture,
+                        frame,
+                        orig,
+                        trim,
+                        region.rotate
+                    );
                     atlasRegion.index = region.index;
                     atlasRegion.texture.updateUvs();
 
@@ -290,21 +356,20 @@ class TextureAtlasReader {
     }
 
     readLine(): string {
-        if (this.index >= this.lines.length)
-            return null;
+        if (this.index >= this.lines.length) return null;
         return this.lines[this.index++];
     }
 
-    readEntry (entry: string[], line: string): number {
+    readEntry(entry: string[], line: string): number {
         if (line == null) return 0;
         line = line.trim();
         if (line.length == 0) return 0;
 
-        let colon = line.indexOf(':');
+        let colon = line.indexOf(":");
         if (colon == -1) return 0;
         entry[0] = line.substr(0, colon).trim();
-        for (let i = 1, lastMatch = colon + 1;; i++) {
-            let comma = line.indexOf(',', lastMatch);
+        for (let i = 1, lastMatch = colon + 1; ; i++) {
+            let comma = line.indexOf(",", lastMatch);
             if (comma == -1) {
                 entry[i] = line.substr(lastMatch).trim();
                 return i;
@@ -325,7 +390,7 @@ export class TextureAtlasPage {
     magFilter: TextureFilter = TextureFilter.Nearest;
     uWrap: TextureWrap = TextureWrap.ClampToEdge;
     vWrap: TextureWrap = TextureWrap.ClampToEdge;
-    baseTexture: BaseTexture;
+    baseTexture: PIXI.BaseTexture;
     width: number;
     height: number;
     pma: boolean;
@@ -334,15 +399,15 @@ export class TextureAtlasPage {
         let tex = this.baseTexture;
         let filter = this.minFilter;
         if (filter == TextureFilter.Linear) {
-            tex.scaleMode = SCALE_MODES.LINEAR;
+            tex.scaleMode = PIXI.SCALE_MODES.LINEAR;
         } else if (this.minFilter == TextureFilter.Nearest) {
-            tex.scaleMode = SCALE_MODES.NEAREST;
+            tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
         } else {
-            tex.mipmap = MIPMAP_MODES.POW2;
+            tex.mipmap = PIXI.MIPMAP_MODES.POW2;
             if (filter == TextureFilter.MipMapNearestNearest) {
-                tex.scaleMode = SCALE_MODES.NEAREST;
+                tex.scaleMode = PIXI.SCALE_MODES.NEAREST;
             } else {
-                tex.scaleMode = SCALE_MODES.LINEAR;
+                tex.scaleMode = PIXI.SCALE_MODES.LINEAR;
             }
         }
     }

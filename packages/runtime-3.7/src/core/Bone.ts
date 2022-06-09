@@ -1,15 +1,20 @@
-import {Matrix} from '@pixi/math';
-import {Updatable} from "./Updatable";
-import {BoneData} from "./BoneData";
-import {Skeleton} from "./Skeleton";
-import {IBone, MathUtils, settings, TransformMode, Vector2} from "@pixi-spine/base";
+import { Updatable } from "./Updatable";
+import { BoneData } from "./BoneData";
+import { Skeleton } from "./Skeleton";
+import {
+    IBone,
+    MathUtils,
+    settings,
+    TransformMode,
+    Vector2,
+} from "@pixi-spine/base";
 
 /**
  * @public
  */
 export class Bone implements Updatable, IBone {
     //be careful! Spine b,c is c,b in pixi matrix
-    matrix = new Matrix();
+    matrix = new PIXI.Matrix();
 
     get worldX(): number {
         return this.matrix.tx;
@@ -53,16 +58,40 @@ export class Bone implements Updatable, IBone {
 
     /** Same as {@link #updateWorldTransform()}. This method exists for Bone to implement {@link Updatable}. */
     update() {
-        this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
+        this.updateWorldTransformWith(
+            this.x,
+            this.y,
+            this.rotation,
+            this.scaleX,
+            this.scaleY,
+            this.shearX,
+            this.shearY
+        );
     }
 
     /** Computes the world transform using the parent bone and this bone's local transform. */
     updateWorldTransform() {
-        this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
+        this.updateWorldTransformWith(
+            this.x,
+            this.y,
+            this.rotation,
+            this.scaleX,
+            this.scaleY,
+            this.shearX,
+            this.shearY
+        );
     }
 
     /** Computes the world transform using the parent bone and the specified local transform. */
-    updateWorldTransformWith(x: number, y: number, rotation: number, scaleX: number, scaleY: number, shearX: number, shearY: number) {
+    updateWorldTransformWith(
+        x: number,
+        y: number,
+        rotation: number,
+        scaleX: number,
+        scaleY: number,
+        shearX: number,
+        shearY: number
+    ) {
         this.ax = x;
         this.ay = y;
         this.arotation = rotation;
@@ -76,9 +105,10 @@ export class Bone implements Updatable, IBone {
         let m = this.matrix;
 
         let sx = this.skeleton.scaleX;
-        let sy = settings.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
+        let sy = settings.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
 
-        if (parent == null) { // Root bone.
+        if (parent == null) {
+            // Root bone.
             let skeleton = this.skeleton;
             let rotationY = rotation + 90 + shearY;
             m.a = MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
@@ -90,7 +120,10 @@ export class Bone implements Updatable, IBone {
             return;
         }
 
-        let pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
+        let pa = parent.matrix.a,
+            pb = parent.matrix.c,
+            pc = parent.matrix.b,
+            pd = parent.matrix.d;
         m.tx = pa * x + pb * y + parent.matrix.tx;
         m.ty = pc * x + pd * y + parent.matrix.ty;
         switch (this.data.transformMode) {
@@ -151,11 +184,15 @@ export class Bone implements Updatable, IBone {
                 zc *= s;
                 s = Math.sqrt(za * za + zc * zc);
                 if (
-                    this.data.transformMode == TransformMode.NoScale
-                    && (pa * pd - pb * pc < 0) != (settings.yDown?
-                    (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
-                        (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0))
-                ) s = -s;
+                    this.data.transformMode == TransformMode.NoScale &&
+                    pa * pd - pb * pc < 0 !=
+                        (settings.yDown
+                            ? this.skeleton.scaleX < 0 !=
+                              this.skeleton.scaleY > 0
+                            : this.skeleton.scaleX < 0 !=
+                              this.skeleton.scaleY < 0)
+                )
+                    s = -s;
                 let r = Math.PI / 2 + Math.atan2(zc, za);
                 let zb = Math.cos(r) * s;
                 let zd = Math.sin(r) * s;
@@ -220,14 +257,17 @@ export class Bone implements Updatable, IBone {
             this.ascaleX = Math.sqrt(m.a * m.a + m.b * m.b);
             this.ascaleY = Math.sqrt(m.c * m.c + m.d * m.d);
             this.ashearX = 0;
-            this.ashearY = Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) * MathUtils.radDeg;
+            this.ashearY =
+                Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) *
+                MathUtils.radDeg;
             return;
         }
         let pm = parent.matrix;
         let pid = 1 / (pm.a * pm.d - pm.b * pm.c);
-        let dx = m.tx - pm.tx, dy = m.ty - pm.ty;
-        this.ax = (dx * pm.d * pid - dy * pm.c * pid);
-        this.ay = (dy * pm.a * pid - dx * pm.b * pid);
+        let dx = m.tx - pm.tx,
+            dy = m.ty - pm.ty;
+        this.ax = dx * pm.d * pid - dy * pm.c * pid;
+        this.ay = dy * pm.a * pid - dx * pm.b * pid;
         let ia = pid * pm.d;
         let id = pid * pm.a;
         let ib = pid * pm.c;
@@ -241,7 +281,8 @@ export class Bone implements Updatable, IBone {
         if (this.ascaleX > 0.0001) {
             let det = ra * rd - rb * rc;
             this.ascaleY = det / this.ascaleX;
-            this.ashearY = Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
+            this.ashearY =
+                Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
             this.arotation = Math.atan2(rc, ra) * MathUtils.radDeg;
         } else {
             this.ascaleX = 0;
@@ -253,38 +294,55 @@ export class Bone implements Updatable, IBone {
 
     worldToLocal(world: Vector2) {
         let m = this.matrix;
-        let a = m.a, b = m.c, c = m.b, d = m.d;
+        let a = m.a,
+            b = m.c,
+            c = m.b,
+            d = m.d;
         let invDet = 1 / (a * d - b * c);
-        let x = world.x - m.tx, y = world.y - m.ty;
-        world.x = (x * d * invDet - y * b * invDet);
-        world.y = (y * a * invDet - x * c * invDet);
+        let x = world.x - m.tx,
+            y = world.y - m.ty;
+        world.x = x * d * invDet - y * b * invDet;
+        world.y = y * a * invDet - x * c * invDet;
         return world;
     }
 
     localToWorld(local: Vector2) {
         let m = this.matrix;
-        let x = local.x, y = local.y;
+        let x = local.x,
+            y = local.y;
         local.x = x * m.a + y * m.c + m.tx;
         local.y = x * m.b + y * m.d + m.ty;
         return local;
     }
 
-    worldToLocalRotation (worldRotation: number) {
-        let sin = MathUtils.sinDeg(worldRotation), cos = MathUtils.cosDeg(worldRotation);
+    worldToLocalRotation(worldRotation: number) {
+        let sin = MathUtils.sinDeg(worldRotation),
+            cos = MathUtils.cosDeg(worldRotation);
         let mat = this.matrix;
-        return Math.atan2(mat.a * sin - mat.b * cos, mat.d * cos - mat.c * sin) * MathUtils.radDeg;
+        return (
+            Math.atan2(mat.a * sin - mat.b * cos, mat.d * cos - mat.c * sin) *
+            MathUtils.radDeg
+        );
     }
 
-    localToWorldRotation (localRotation: number) {
-        let sin = MathUtils.sinDeg(localRotation), cos = MathUtils.cosDeg(localRotation);
+    localToWorldRotation(localRotation: number) {
+        let sin = MathUtils.sinDeg(localRotation),
+            cos = MathUtils.cosDeg(localRotation);
         let mat = this.matrix;
-        return Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) * MathUtils.radDeg;
+        return (
+            Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) *
+            MathUtils.radDeg
+        );
     }
 
-    rotateWorld (degrees: number) {
+    rotateWorld(degrees: number) {
         let mat = this.matrix;
-        let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
-        let cos = MathUtils.cosDeg(degrees), sin = MathUtils.sinDeg(degrees);
+        let a = mat.a,
+            b = mat.c,
+            c = mat.b,
+            d = mat.d;
+        let cos = MathUtils.cosDeg(degrees),
+            sin = MathUtils.sinDeg(degrees);
         mat.a = cos * a - sin * c;
         mat.c = cos * b - sin * d;
         mat.b = sin * a + cos * c;

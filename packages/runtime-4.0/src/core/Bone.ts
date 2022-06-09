@@ -1,8 +1,13 @@
-import {Matrix} from '@pixi/math';
-import {Updatable} from "./Updatable";
-import {BoneData} from "./BoneData";
-import {Skeleton} from "./Skeleton";
-import {IBone, MathUtils, settings, TransformMode, Vector2} from "@pixi-spine/base";
+import { Updatable } from "./Updatable";
+import { BoneData } from "./BoneData";
+import { Skeleton } from "./Skeleton";
+import {
+    IBone,
+    MathUtils,
+    settings,
+    TransformMode,
+    Vector2,
+} from "@pixi-spine/base";
 
 /** Stores a bone's current pose.
  *
@@ -13,7 +18,7 @@ import {IBone, MathUtils, settings, TransformMode, Vector2} from "@pixi-spine/ba
  * */
 export class Bone implements Updatable, IBone {
     //be careful! Spine b,c is c,b in pixi matrix
-    matrix = new Matrix();
+    matrix = new PIXI.Matrix();
 
     get worldX(): number {
         return this.matrix.tx;
@@ -81,7 +86,7 @@ export class Bone implements Updatable, IBone {
     active = false;
 
     /** @param parent May be null. */
-    constructor (data: BoneData, skeleton: Skeleton, parent: Bone) {
+    constructor(data: BoneData, skeleton: Skeleton, parent: Bone) {
         if (!data) throw new Error("data cannot be null.");
         if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
@@ -92,20 +97,36 @@ export class Bone implements Updatable, IBone {
 
     /** Returns false when the bone has not been computed because {@link BoneData#skinRequired} is true and the
      * {@link Skeleton#skin active skin} does not {@link Skin#bones contain} this bone. */
-    isActive () {
+    isActive() {
         return this.active;
     }
 
     /** Computes the world transform using the parent bone and this bone's local applied transform. */
-    update () {
-        this.updateWorldTransformWith(this.ax, this.ay, this.arotation, this.ascaleX, this.ascaleY, this.ashearX, this.ashearY);
+    update() {
+        this.updateWorldTransformWith(
+            this.ax,
+            this.ay,
+            this.arotation,
+            this.ascaleX,
+            this.ascaleY,
+            this.ashearX,
+            this.ashearY
+        );
     }
 
     /** Computes the world transform using the parent bone and this bone's local transform.
      *
      * See {@link #updateWorldTransformWith()}. */
-    updateWorldTransform () {
-        this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);
+    updateWorldTransform() {
+        this.updateWorldTransformWith(
+            this.x,
+            this.y,
+            this.rotation,
+            this.scaleX,
+            this.scaleY,
+            this.shearX,
+            this.shearY
+        );
     }
 
     /** Computes the world transform using the parent bone and the specified local transform. The applied transform is set to the
@@ -113,7 +134,15 @@ export class Bone implements Updatable, IBone {
      *
      * See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
      * Runtimes Guide. */
-    updateWorldTransformWith (x: number, y: number, rotation: number, scaleX: number, scaleY: number, shearX: number, shearY: number) {
+    updateWorldTransformWith(
+        x: number,
+        y: number,
+        rotation: number,
+        scaleX: number,
+        scaleY: number,
+        shearX: number,
+        shearY: number
+    ) {
         this.ax = x;
         this.ay = y;
         this.arotation = rotation;
@@ -126,8 +155,9 @@ export class Bone implements Updatable, IBone {
         let m = this.matrix;
 
         let sx = this.skeleton.scaleX;
-        let sy = settings.yDown? -this.skeleton.scaleY : this.skeleton.scaleY;
-        if (!parent) { // Root bone.
+        let sy = settings.yDown ? -this.skeleton.scaleY : this.skeleton.scaleY;
+        if (!parent) {
+            // Root bone.
             let skeleton = this.skeleton;
             let rotationY = rotation + 90 + shearY;
             m.a = MathUtils.cosDeg(rotation + shearX) * scaleX * sx;
@@ -139,7 +169,10 @@ export class Bone implements Updatable, IBone {
             return;
         }
 
-        let pa = parent.matrix.a, pb = parent.matrix.c, pc = parent.matrix.b, pd = parent.matrix.d;
+        let pa = parent.matrix.a,
+            pb = parent.matrix.c,
+            pc = parent.matrix.b,
+            pd = parent.matrix.d;
         m.tx = pa * x + pb * y + parent.matrix.tx;
         m.ty = pc * x + pd * y + parent.matrix.ty;
 
@@ -203,11 +236,15 @@ export class Bone implements Updatable, IBone {
                 zc *= s;
                 s = Math.sqrt(za * za + zc * zc);
                 if (
-                    this.data.transformMode == TransformMode.NoScale
-                    && (pa * pd - pb * pc < 0) != (settings.yDown?
-                    (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
-                        (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0))
-                ) s = -s;
+                    this.data.transformMode == TransformMode.NoScale &&
+                    pa * pd - pb * pc < 0 !=
+                        (settings.yDown
+                            ? this.skeleton.scaleX < 0 !=
+                              this.skeleton.scaleY > 0
+                            : this.skeleton.scaleX < 0 !=
+                              this.skeleton.scaleY < 0)
+                )
+                    s = -s;
                 let r = Math.PI / 2 + Math.atan2(zc, za);
                 let zb = Math.cos(r) * s;
                 let zd = Math.sin(r) * s;
@@ -229,7 +266,7 @@ export class Bone implements Updatable, IBone {
     }
 
     /** Sets this bone's local transform to the setup pose. */
-    setToSetupPose () {
+    setToSetupPose() {
         let data = this.data;
         this.x = data.x;
         this.y = data.y;
@@ -241,23 +278,23 @@ export class Bone implements Updatable, IBone {
     }
 
     /** The world rotation for the X axis, calculated using {@link #a} and {@link #c}. */
-    getWorldRotationX () {
+    getWorldRotationX() {
         return Math.atan2(this.matrix.b, this.matrix.a) * MathUtils.radDeg;
     }
 
     /** The world rotation for the Y axis, calculated using {@link #b} and {@link #d}. */
-    getWorldRotationY () {
+    getWorldRotationY() {
         return Math.atan2(this.matrix.d, this.matrix.c) * MathUtils.radDeg;
     }
 
     /** The magnitude (always positive) of the world scale X, calculated using {@link #a} and {@link #c}. */
-    getWorldScaleX () {
+    getWorldScaleX() {
         let m = this.matrix;
         return Math.sqrt(m.a * m.a + m.b * m.b);
     }
 
     /** The magnitude (always positive) of the world scale Y, calculated using {@link #b} and {@link #d}. */
-    getWorldScaleY () {
+    getWorldScaleY() {
         let m = this.matrix;
         return Math.sqrt(m.c * m.c + m.d * m.d);
     }
@@ -270,7 +307,7 @@ export class Bone implements Updatable, IBone {
      *
      * Some information is ambiguous in the world transform, such as -1,-1 scale versus 180 rotation. The applied transform after
      * calling this method is equivalent to the local transform used to compute the world transform, but may not be identical. */
-    updateAppliedTransform () {
+    updateAppliedTransform() {
         let parent = this.parent;
         let m = this.matrix;
         if (!parent) {
@@ -280,14 +317,17 @@ export class Bone implements Updatable, IBone {
             this.ascaleX = Math.sqrt(m.a * m.a + m.b * m.b);
             this.ascaleY = Math.sqrt(m.c * m.c + m.d * m.d);
             this.ashearX = 0;
-            this.ashearY = Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) * MathUtils.radDeg;
+            this.ashearY =
+                Math.atan2(m.a * m.c + m.b * m.d, m.a * m.d - m.b * m.c) *
+                MathUtils.radDeg;
             return;
         }
         let pm = parent.matrix;
         let pid = 1 / (pm.a * pm.d - pm.b * pm.c);
-        let dx = m.tx - pm.tx, dy = m.ty - pm.ty;
-        this.ax = (dx * pm.d * pid - dy * pm.c * pid);
-        this.ay = (dy * pm.a * pid - dx * pm.b * pid);
+        let dx = m.tx - pm.tx,
+            dy = m.ty - pm.ty;
+        this.ax = dx * pm.d * pid - dy * pm.c * pid;
+        this.ay = dy * pm.a * pid - dx * pm.b * pid;
         let ia = pid * pm.d;
         let id = pid * pm.a;
         let ib = pid * pm.c;
@@ -301,7 +341,8 @@ export class Bone implements Updatable, IBone {
         if (this.ascaleX > 0.0001) {
             let det = ra * rd - rb * rc;
             this.ascaleY = det / this.ascaleX;
-            this.ashearY = Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
+            this.ashearY =
+                Math.atan2(ra * rb + rc * rd, det) * MathUtils.radDeg;
             this.arotation = Math.atan2(rc, ra) * MathUtils.radDeg;
         } else {
             this.ascaleX = 0;
@@ -314,46 +355,63 @@ export class Bone implements Updatable, IBone {
     /** Transforms a point from world coordinates to the bone's local coordinates. */
     worldToLocal(world: Vector2) {
         let m = this.matrix;
-        let a = m.a, b = m.c, c = m.b, d = m.d;
+        let a = m.a,
+            b = m.c,
+            c = m.b,
+            d = m.d;
         let invDet = 1 / (a * d - b * c);
-        let x = world.x - m.tx, y = world.y - m.ty;
-        world.x = (x * d * invDet - y * b * invDet);
-        world.y = (y * a * invDet - x * c * invDet);
+        let x = world.x - m.tx,
+            y = world.y - m.ty;
+        world.x = x * d * invDet - y * b * invDet;
+        world.y = y * a * invDet - x * c * invDet;
         return world;
     }
 
     /** Transforms a point from the bone's local coordinates to world coordinates. */
     localToWorld(local: Vector2) {
         let m = this.matrix;
-        let x = local.x, y = local.y;
+        let x = local.x,
+            y = local.y;
         local.x = x * m.a + y * m.c + m.tx;
         local.y = x * m.b + y * m.d + m.ty;
         return local;
     }
 
     /** Transforms a world rotation to a local rotation. */
-    worldToLocalRotation (worldRotation: number) {
-        let sin = MathUtils.sinDeg(worldRotation), cos = MathUtils.cosDeg(worldRotation);
+    worldToLocalRotation(worldRotation: number) {
+        let sin = MathUtils.sinDeg(worldRotation),
+            cos = MathUtils.cosDeg(worldRotation);
         let mat = this.matrix;
-        return Math.atan2(mat.a * sin - mat.b * cos, mat.d * cos - mat.c * sin) * MathUtils.radDeg;
+        return (
+            Math.atan2(mat.a * sin - mat.b * cos, mat.d * cos - mat.c * sin) *
+            MathUtils.radDeg
+        );
     }
 
     /** Transforms a local rotation to a world rotation. */
-    localToWorldRotation (localRotation: number) {
+    localToWorldRotation(localRotation: number) {
         localRotation -= this.rotation - this.shearX;
-        let sin = MathUtils.sinDeg(localRotation), cos = MathUtils.cosDeg(localRotation);
+        let sin = MathUtils.sinDeg(localRotation),
+            cos = MathUtils.cosDeg(localRotation);
         let mat = this.matrix;
-        return Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) * MathUtils.radDeg;
+        return (
+            Math.atan2(cos * mat.b + sin * mat.d, cos * mat.a + sin * mat.c) *
+            MathUtils.radDeg
+        );
     }
 
     /** Rotates the world transform the specified amount.
      * <p>
      * After changes are made to the world transform, {@link #updateAppliedTransform()} should be called and {@link #update()} will
      * need to be called on any child bones, recursively. */
-    rotateWorld (degrees: number) {
+    rotateWorld(degrees: number) {
         let mat = this.matrix;
-        let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
-        let cos = MathUtils.cosDeg(degrees), sin = MathUtils.sinDeg(degrees);
+        let a = mat.a,
+            b = mat.c,
+            c = mat.b,
+            d = mat.d;
+        let cos = MathUtils.cosDeg(degrees),
+            sin = MathUtils.sinDeg(degrees);
         mat.a = cos * a - sin * c;
         mat.c = cos * b - sin * d;
         mat.b = sin * a + cos * c;
