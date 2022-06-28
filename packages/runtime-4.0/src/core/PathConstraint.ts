@@ -12,17 +12,19 @@ import {MathUtils, PositionMode, RotateMode, Utils} from "@pixi-spine/base";
  * @public
  * */
 export class PathConstraint implements Updatable {
-    static NONE = -1; static BEFORE = -2; static AFTER = -3;
+    static NONE = -1;
+    static BEFORE = -2;
+    static AFTER = -3;
     static epsilon = 0.00001;
 
     /** The path constraint's setup pose data. */
-    data: PathConstraintData;
+    data: PathConstraintData = null;
 
     /** The bones that will be modified by this path constraint. */
-    bones: Array<Bone>;
+    bones: Array<Bone> = null;
 
     /** The slot whose path attachment will be used to constrained the bones. */
-    target: Slot;
+    target: Slot = null;
 
     /** The position along the path. */
     position = 0;
@@ -36,15 +38,18 @@ export class PathConstraint implements Updatable {
 
     mixY = 0;
 
-    spaces = new Array<number>(); positions = new Array<number>();
-    world = new Array<number>(); curves = new Array<number>(); lengths = new Array<number>();
+    spaces = new Array<number>();
+    positions = new Array<number>();
+    world = new Array<number>();
+    curves = new Array<number>();
+    lengths = new Array<number>();
     segments = new Array<number>();
 
     active = false;
 
-    constructor (data: PathConstraintData, skeleton: Skeleton) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+    constructor(data: PathConstraintData, skeleton: Skeleton) {
+        if (!data) throw new Error("data cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
         this.bones = new Array<Bone>();
         for (let i = 0, n = data.bones.length; i < n; i++)
@@ -57,11 +62,11 @@ export class PathConstraint implements Updatable {
         this.mixY = data.mixY;
     }
 
-    isActive () {
+    isActive() {
         return this.active;
     }
 
-    update () {
+    update() {
         let attachment = this.target.getAttachment();
         if (!(attachment instanceof PathAttachment)) return;
 
@@ -71,9 +76,10 @@ export class PathConstraint implements Updatable {
         let data = this.data;
         let tangents = data.rotateMode == RotateMode.Tangent, scale = data.rotateMode == RotateMode.ChainScale;
 
-        let boneCount = this.bones.length, spacesCount = tangents ? boneCount : boneCount + 1;
         let bones = this.bones;
-        let spaces = Utils.setArraySize(this.spaces, spacesCount), lengths: Array<number> = scale ? this.lengths = Utils.setArraySize(this.lengths, boneCount) : null;
+        let boneCount = bones.length, spacesCount = tangents ? boneCount : boneCount + 1;
+        let spaces = Utils.setArraySize(this.spaces, spacesCount),
+            lengths: Array<number> = scale ? this.lengths = Utils.setArraySize(this.lengths, boneCount) : null;
         let spacing = this.spacing;
 
         switch (data.spacingMode) {
@@ -191,10 +197,11 @@ export class PathConstraint implements Updatable {
         }
     }
 
-    computeWorldPositions (path: PathAttachment, spacesCount: number, tangents: boolean) {
+    computeWorldPositions(path: PathAttachment, spacesCount: number, tangents: boolean) {
         let target = this.target;
         let position = this.position;
-        let spaces = this.spaces, out = Utils.setArraySize(this.positions, spacesCount * 3 + 2), world: Array<number> = null;
+        let spaces = this.spaces, out = Utils.setArraySize(this.positions, spacesCount * 3 + 2),
+            world: Array<number> = null;
         let closed = path.closed;
         let verticesLength = path.worldVerticesLength, curveCount = verticesLength / 6, prevCurve = PathConstraint.NONE;
 
@@ -242,7 +249,7 @@ export class PathConstraint implements Updatable {
                 }
 
                 // Determine curve containing position.
-                for (;; curve++) {
+                for (; ; curve++) {
                     let length = lengths[curve];
                     if (p > length) continue;
                     if (curve == 0)
@@ -321,7 +328,7 @@ export class PathConstraint implements Updatable {
 
         if (this.data.positionMode == PositionMode.Percent) position *= pathLength;
 
-        let multiplier = 0;
+        let multiplier;
         switch (this.data.spacingMode) {
             case SpacingMode.Percent:
                 multiplier = pathLength;
@@ -353,7 +360,7 @@ export class PathConstraint implements Updatable {
             }
 
             // Determine curve containing position.
-            for (;; curve++) {
+            for (; ; curve++) {
                 let length = curves[curve];
                 if (p > length) continue;
                 if (curve == 0)
@@ -408,7 +415,7 @@ export class PathConstraint implements Updatable {
 
             // Weight by segment length.
             p *= curveLength;
-            for (;; segment++) {
+            for (; ; segment++) {
                 let length = segments[segment];
                 if (p > length) continue;
                 if (segment == 0)
@@ -424,22 +431,22 @@ export class PathConstraint implements Updatable {
         return out;
     }
 
-    addBeforePosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+    addBeforePosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
         let x1 = temp[i], y1 = temp[i + 1], dx = temp[i + 2] - x1, dy = temp[i + 3] - y1, r = Math.atan2(dy, dx);
         out[o] = x1 + p * Math.cos(r);
         out[o + 1] = y1 + p * Math.sin(r);
         out[o + 2] = r;
     }
 
-    addAfterPosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+    addAfterPosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
         let x1 = temp[i + 2], y1 = temp[i + 3], dx = x1 - temp[i], dy = y1 - temp[i + 1], r = Math.atan2(dy, dx);
         out[o] = x1 + p * Math.cos(r);
         out[o + 1] = y1 + p * Math.sin(r);
         out[o + 2] = r;
     }
 
-    addCurvePosition (p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
-                      out: Array<number>, o: number, tangents: boolean) {
+    addCurvePosition(p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
+                     out: Array<number>, o: number, tangents: boolean) {
         if (p == 0 || isNaN(p)) {
             out[o] = x1;
             out[o + 1] = y1;

@@ -24,13 +24,13 @@ export class Bone implements Updatable, IBone {
     }
 
     /** The bone's setup pose data. */
-    data: BoneData;
+    data: BoneData = null;
 
     /** The skeleton this bone belongs to. */
-    skeleton: Skeleton;
+    skeleton: Skeleton = null;
 
     /** The parent bone, or null if this is the root bone. */
-    parent: Bone;
+    parent: Bone = null;
 
     /** The immediate children of this bone. */
     children = new Array<Bone>();
@@ -169,8 +169,8 @@ export class Bone implements Updatable, IBone {
                 let prx = 0;
                 if (s > 0.0001) {
                     s = Math.abs(pa * pd - pb * pc) / s;
-                    pa /= this.skeleton.scaleX;
-                    pc /= this.skeleton.scaleY;
+                    pa /= sx;
+                    pc /= sy;
                     pb = pc * s;
                     pd = pa * s;
                     prx = Math.atan2(pc, pa) * MathUtils.radDeg;
@@ -202,12 +202,8 @@ export class Bone implements Updatable, IBone {
                 za *= s;
                 zc *= s;
                 s = Math.sqrt(za * za + zc * zc);
-                if (
-                    this.data.transformMode == TransformMode.NoScale
-                    && (pa * pd - pb * pc < 0) != (settings.yDown?
-                    (this.skeleton.scaleX < 0 != this.skeleton.scaleY > 0) :
-                        (this.skeleton.scaleX < 0 != this.skeleton.scaleY < 0))
-                ) s = -s;
+                if (this.data.transformMode == TransformMode.NoScale
+                    && (pa * pd - pb * pc < 0) != (sx < 0 != sy < 0)) s = -s;
                 let r = Math.PI / 2 + Math.atan2(zc, za);
                 let zb = Math.cos(r) * s;
                 let zd = Math.sin(r) * s;

@@ -2,7 +2,7 @@ import {Updatable} from "./Updatable";
 import {IkConstraintData} from "./IkConstraintData";
 import {Bone} from "./Bone";
 import {Skeleton} from "./Skeleton";
-import {MathUtils, TransformMode} from "@pixi-spine/base";
+import {MathUtils, settings, TransformMode} from "@pixi-spine/base";
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.
@@ -78,17 +78,24 @@ export class IkConstraint implements Updatable {
         let pa = p.a, pb = p.c, pc = p.b, pd = p.d;
         let rotationIK = -bone.ashearX - bone.arotation, tx = 0, ty = 0;
 
+        let skelX = bone.skeleton.scaleX;
+        let skelY = settings.yDown? -bone.skeleton.scaleY : bone.skeleton.scaleY;
+
         switch(bone.data.transformMode) {
             case TransformMode.OnlyTranslation:
                 tx = targetX - bone.worldX;
                 ty = targetY - bone.worldY;
+                //TODO: possible bug in spine-ts runtime!
+                if (settings.yDown) {
+                    ty = -ty;
+                }
                 break;
             case TransformMode.NoRotationOrReflection:
                 let s = Math.abs(pa * pd - pb * pc) / (pa * pa + pc * pc);
-                let sa = pa / bone.skeleton.scaleX;
-                let sc = pc / bone.skeleton.scaleY;
-                pb = -sc * s * bone.skeleton.scaleX;
-                pd = sa * s * bone.skeleton.scaleY;
+                let sa = pa / skelX;
+                let sc = pc / skelY;
+                pb = -sc * s * skelX;
+                pd = sa * s * skelY;
                 rotationIK += Math.atan2(sc, sa) * MathUtils.radDeg;
             // Fall through
             default:
