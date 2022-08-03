@@ -1,6 +1,6 @@
 # pixi-spine
 
-Spine 3.7, 3.8, 4.0 implementation for PixiJS v5 & v6. 
+Spine 3.7, 3.8, 4.0, 4.1 implementation for PixiJS v5 & v6. 
 
 Typescript definitions are up-to-date with PixiJS v6.
 
@@ -85,7 +85,7 @@ Main bundle `pixi-spine` weights more than 1 MB.
 
 Bundle `@pixi-spine/all-3.8` weights about 400 KB.
 
-If you want to use different version (3.7, 4.0) please look how modules `loader-3.8` and `pixi-spine-3.8` are made.
+If you want to use different version (3.7) please look how modules `loader-3.8` and `pixi-spine-3.8` are made.
 
 Basically, you have to copy its code in a separate file in your project, and alter imports to corresonding version. 
 
@@ -100,7 +100,7 @@ export * from '@pixi-spine/base';
 SpineParser.registerLoaderPlugin();
 ```
 
-In case author was too lazy to publish`loader-3.7` or `loader-4.0`, you can do the same trick with them, just look in sources of `loader-3.8`.
+In case author was too lazy to publish`loader-3.7`, you can do the same trick with them, just look in sources of `loader-3.8`.
 
 ## Want to go advanced?
 
