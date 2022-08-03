@@ -14,7 +14,7 @@
     "@pixi-spine/loader-base": "~3.0.16",
     "@pixi-spine/runtime-3.7": "~3.0.16",
     "@pixi-spine/runtime-3.8": "~3.0.16",
-    "@pixi-spine/runtime-4.0": "~3.0.16"
+    "@pixi-spine/runtime-4.1": "~3.0.16"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",

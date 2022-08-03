@@ -1,21 +1,27 @@
 {
-  "name": "@pixi-spine/all-4.0",
+  "name": "@pixi-spine/loader-4.1",
   "version": "3.0.16",
-  "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 4.0",
-  "main": "lib/all-4.0.js",
-  "module": "lib/all-4.0.es.js",
-  "bundle": "dist/pixi-spine-4.0.umd.js",
+  "description": "Pixi loader middleware for spine 4.1 models",
+  "main": "lib/loader-4.1.js",
+  "module": "lib/loader-4.1.es.js",
+  "bundle": "dist/loader-4.1.js",
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
+  "peerDependencies": {
+    "@pixi/app": "^6.1.0",
+    "@pixi/core": "^6.1.0",
+    "@pixi/display": "^6.1.0",
+    "@pixi/loaders": "^6.1.0",
+    "resource-loader": "~3.0.1"
+  },
   "dependencies": {
     "@pixi-spine/base": "~3.0.16",
-    "@pixi-spine/loader-4.0": "~3.0.16",
     "@pixi-spine/loader-base": "~3.0.16",
     "@pixi-spine/runtime-4.0": "~3.0.16"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
   },
   "repository": {
     "type": "git",
@@ -24,27 +30,17 @@
   "files": [
     "lib",
     "dist",
-    "*.d.ts",
-    "SPINE-LICENSE"
+    "*.d.ts"
   ],
   "keywords": [
     "pixi.js",
     "pixi",
-    "spine",
-    "SPINE-LICENSE"
+    "spine"
   ],
   "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
-  "contributors": [
-    "Mat Groves",
-    "Chad Engler <chad@pantherdev.com>",
-    "Richard Davey <rdavey@gmail.com>",
-    "Shukant K. Pal <shukantpal@outlook.com>",
-    "Yevhenii Huselietov <d46k16@gmail.com>"
-  ],
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },
-  "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
     "@pixi-spine/eslint-config": "~1.0.0",

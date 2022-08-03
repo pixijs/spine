@@ -52,6 +52,12 @@
       "versionPolicyName": "PixiSpine"
     },
     {
+      "packageName": "@pixi-spine/runtime-4.1",
+      "projectFolder": "packages/runtime-4.1",
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
+    },
+    {
       "packageName": "@pixi-spine/loader-3.8",
       "projectFolder": "packages/loader-3.8",
       "reviewCategory": "production",
@@ -60,6 +66,12 @@
     {
       "packageName": "@pixi-spine/loader-4.0",
       "projectFolder": "packages/loader-4.0",
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
+    },
+    {
+      "packageName": "@pixi-spine/loader-4.1",
+      "projectFolder": "packages/loader-4.1",
       "reviewCategory": "production",
       "versionPolicyName": "PixiSpine"
     },
@@ -84,6 +96,12 @@
     {
       "packageName": "@pixi-spine/all-4.0",
       "projectFolder": "bundles/all-4.0",
+      "reviewCategory": "production",
+      "versionPolicyName": "PixiSpine"
+    },
+    {
+      "packageName": "@pixi-spine/all-4.1",
+      "projectFolder": "bundles/all-4.1",
       "reviewCategory": "production",
       "versionPolicyName": "PixiSpine"
     },

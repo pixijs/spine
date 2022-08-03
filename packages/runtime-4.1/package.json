@@ -1,17 +1,18 @@
 {
-  "name": "@pixi-spine/all-4.0",
+  "name": "@pixi-spine/runtime-4.1",
   "version": "3.0.16",
-  "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 4.0",
-  "main": "lib/all-4.0.js",
-  "module": "lib/all-4.0.es.js",
-  "bundle": "dist/pixi-spine-4.0.umd.js",
+  "description": "Pixi runtime for spine 4.1 models",
+  "main": "lib/runtime-4.1.js",
+  "module": "lib/runtime-4.1.es.js",
+  "bundle": "dist/runtime-4.1.js",
+  "namespace": "PIXI.spine41",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "peerDependencies": {
+    "@pixi/constants": "^6.1.0",
+    "@pixi/math": "^6.1.0"
+  },
   "dependencies": {
-    "@pixi-spine/base": "~3.0.16",
-    "@pixi-spine/loader-4.0": "~3.0.16",
-    "@pixi-spine/loader-base": "~3.0.16",
-    "@pixi-spine/runtime-4.0": "~3.0.16"
+    "@pixi-spine/base": "~3.0.16"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
@@ -24,23 +25,14 @@
   "files": [
     "lib",
     "dist",
-    "*.d.ts",
-    "SPINE-LICENSE"
+    "index.d.ts"
   ],
   "keywords": [
     "pixi.js",
     "pixi",
-    "spine",
-    "SPINE-LICENSE"
+    "spine"
   ],
   "author": "Ivan Igorevich Popelyshev <ivan.popelyshev@gmail.com>",
-  "contributors": [
-    "Mat Groves",
-    "Chad Engler <chad@pantherdev.com>",
-    "Richard Davey <rdavey@gmail.com>",
-    "Shukant K. Pal <shukantpal@outlook.com>",
-    "Yevhenii Huselietov <d46k16@gmail.com>"
-  ],
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
   },
@@ -51,7 +43,6 @@
     "@pixi-spine/rollup-config": "~1.0.0",
     "chai": "~4.2.0",
     "eslint": "~7.13.0",
-    "prepend": "=1.0.2",
     "rimraf": "3.0.2",
     "rollup": "^2.53.3",
     "tslib": "~2.2.0",
