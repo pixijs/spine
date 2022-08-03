@@ -833,6 +833,24 @@ export class SkeletonJson {
             }
         }
 
+        // ver40 compatibility
+        if (map.deform) {
+            map.attachments = { };
+            for (let deformName in map.deform) {
+                let deformMap = map.deform[deformName];
+                let outMap = map.attachments[deformName] = {}
+                for (let slotName in deformMap) {
+                    let slotMap = deformMap[slotName];
+                    let outMap2 = outMap[slotName] = {};
+                    for (let innerMapName in slotMap) {
+                        outMap2[innerMapName] = {
+                            deform: slotMap[innerMapName]
+                        }
+                    }
+                }
+            }
+        }
+
         // Attachment timelines.
         if (map.attachments) {
             for (let attachmentsName in map.attachments) {
