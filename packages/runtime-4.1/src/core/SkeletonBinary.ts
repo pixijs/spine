@@ -34,6 +34,7 @@ import {Sequence, SequenceModeValues} from "./attachments";
  * @public
  * */
 export class SkeletonBinary {
+    ver40 = false;
     static BlendModeValues = [ BLEND_MODES.NORMAL, BLEND_MODES.ADD, BLEND_MODES.MULTIPLY, BLEND_MODES.SCREEN];
     /** Scales bone positions, image sizes, and translations as they are loaded. This allows different size images to be used at
      * runtime than were used in Spine.
@@ -66,6 +67,7 @@ export class SkeletonBinary {
             let error = `Spine 4.1 loader cant load version ${skeletonData.version}. Please configure your pixi-spine bundle`;
             console.error(error);
         }
+        this.ver40 = verShort === '4.0';
         skeletonData.x = input.readFloat();
         skeletonData.y = input.readFloat();
         skeletonData.width = input.readFloat();
@@ -466,12 +468,17 @@ export class SkeletonBinary {
     }
 
     private readSequence (input: BinaryInput) {
-        if (!input.readBoolean()) return null;
+        if (this.ver40 || !input.readBoolean()) return null;
         let sequence = new Sequence(input.readInt(true));
         sequence.start = input.readInt(true);
         sequence.digits = input.readInt(true);
         sequence.setupIndex = input.readInt(true);
         return sequence;
+    }
+
+    private readDeformTimelineType(input: BinaryInput) {
+        if (this.ver40) return ATTACHMENT_DEFORM;
+        return input.readByte();
     }
 
     private readVertices (input: BinaryInput, vertexCount: number): Vertices {
@@ -881,7 +888,7 @@ export class SkeletonBinary {
                     let attachmentName = input.readStringRef();
                     if (!attachmentName) throw new Error("attachmentName must not be null.");
                     let attachment = skin.getAttachment(slotIndex, attachmentName);
-                    let timelineType = input.readByte();
+                    let timelineType = this.readDeformTimelineType(input);
                     let frameCount = input.readInt(true);
                     let frameLast = frameCount - 1;
 
