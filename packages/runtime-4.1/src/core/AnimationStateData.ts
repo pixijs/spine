@@ -1,5 +1,5 @@
 import {SkeletonData} from "./SkeletonData";
-import {IAnimationStateData, Map} from '@pixi-spine/base';
+import {IAnimationStateData, StringMap} from '@pixi-spine/base';
 import type {Animation} from './Animation';
 
 /** Stores mix (crossfade) durations to be applied when {@link AnimationState} animations are changed.
@@ -9,13 +9,13 @@ export class AnimationStateData implements IAnimationStateData<SkeletonData, Ani
     /** The SkeletonData to look up animations when they are specified by name. */
     skeletonData: SkeletonData;
 
-    animationToMixTime: Map<number> = { };
+    animationToMixTime: StringMap<number> = {};
 
     /** The mix duration to use when no mix duration has been defined between two animations. */
     defaultMix = 0;
 
     constructor (skeletonData: SkeletonData) {
-        if (skeletonData == null) throw new Error("skeletonData cannot be null.");
+        if (!skeletonData) throw new Error("skeletonData cannot be null.");
         this.skeletonData = skeletonData;
     }
 
@@ -24,9 +24,9 @@ export class AnimationStateData implements IAnimationStateData<SkeletonData, Ani
      * See {@link #setMixWith()}. */
     setMix (fromName: string, toName: string, duration: number) {
         let from = this.skeletonData.findAnimation(fromName);
-        if (from == null) throw new Error("Animation not found: " + fromName);
+        if (!from) throw new Error("Animation not found: " + fromName);
         let to = this.skeletonData.findAnimation(toName);
-        if (to == null) throw new Error("Animation not found: " + toName);
+        if (!to) throw new Error("Animation not found: " + toName);
         this.setMixWith(from, to, duration);
     }
 
@@ -34,8 +34,8 @@ export class AnimationStateData implements IAnimationStateData<SkeletonData, Ani
      *
      * See {@link TrackEntry#mixDuration}. */
     setMixWith (from: Animation, to: Animation, duration: number) {
-        if (from == null) throw new Error("from cannot be null.");
-        if (to == null) throw new Error("to cannot be null.");
+        if (!from) throw new Error("from cannot be null.");
+        if (!to) throw new Error("to cannot be null.");
         let key = from.name + "." + to.name;
         this.animationToMixTime[key] = duration;
     }

@@ -47,12 +47,12 @@ export class BinaryInput {
         return optimizePositive ? result : ((result >>> 1) ^ -(result & 1));
     }
 
-    readStringRef (): string {
+    readStringRef (): string | null {
         let index = this.readInt(true);
         return index == 0 ? null : this.strings[index - 1];
     }
 
-    readString (): string {
+    readString (): string | null {
         let byteCount = this.readInt(true);
         switch (byteCount) {
             case 0:

@@ -28,16 +28,16 @@ import type {Slot} from "./Slot";
  * @public
  * */
 export class AnimationState implements IAnimationState<AnimationStateData> {
+    static _emptyAnimation = new Animation("<empty>", [], 0);
     private static emptyAnimation (): Animation {
-        if (!_emptyAnimation) _emptyAnimation = new Animation("<empty>", [], 0);
-        return _emptyAnimation;
+        return AnimationState._emptyAnimation;
     }
 
     /** The AnimationStateData to look up mix durations. */
-    data: AnimationStateData = null;
+    data: AnimationStateData;
 
     /** The list of tracks that currently have animations, which may contain null entries. */
-    tracks = new Array<TrackEntry>();
+    tracks = new Array<TrackEntry | null>();
 
     /** Multiplier for the delta time when the animation state is updated, causing time for all animations and mixes to play slower
      * or faster. Defaults to 1.
@@ -101,7 +101,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             }
             if (current.mixingFrom && this.updateMixingFrom(current, delta)) {
                 // End mixing from entries once all have completed.
-                let from = current.mixingFrom;
+                let from: TrackEntry | null = current.mixingFrom;
                 current.mixingFrom = null;
                 if (from) from.mixingTo = null;
                 while (from) {
@@ -169,12 +169,12 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
 
             // Apply current entry.
             let animationLast = current.animationLast, animationTime = current.getAnimationTime(), applyTime = animationTime;
-            let applyEvents = events;
+            let applyEvents: Event[] | null = events;
             if (current.reverse) {
-                applyTime = current.animation.duration - applyTime;
+                applyTime = current.animation!.duration - applyTime;
                 applyEvents = null;
             }
-            let timelines = current.animation.timelines;
+            let timelines = current.animation!.timelines;
             let timelineCount = timelines.length;
             if ((i == 0 && mix == 1) || blend == MixBlend.add) {
                 for (let ii = 0; ii < timelineCount; ii++) {
@@ -191,13 +191,14 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             } else {
                 let timelineMode = current.timelineMode;
 
-                let firstFrame = current.timelinesRotation.length != timelineCount << 1;
+                let shortestRotation = current.shortestRotation;
+                let firstFrame = !shortestRotation && current.timelinesRotation.length != timelineCount << 1;
                 if (firstFrame) current.timelinesRotation.length = timelineCount << 1;
 
                 for (let ii = 0; ii < timelineCount; ii++) {
                     let timeline = timelines[ii];
                     let timelineBlend = timelineMode[ii] == SUBSEQUENT ? blend : MixBlend.setup;
-                    if (timeline instanceof RotateTimeline) {
+                    if (!shortestRotation && timeline instanceof RotateTimeline) {
                         this.applyRotateTimeline(timeline, skeleton, applyTime, mix, timelineBlend, current.timelinesRotation, ii << 1, firstFrame);
                     } else if (timeline instanceof AttachmentTimeline) {
                         this.applyAttachmentTimeline(timeline, skeleton, applyTime, blend, true);
@@ -233,7 +234,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
     }
 
     applyMixingFrom (to: TrackEntry, skeleton: Skeleton, blend: MixBlend) {
-        let from = to.mixingFrom;
+        let from = to.mixingFrom!;
         if (from.mixingFrom) this.applyMixingFrom(from, skeleton, blend);
 
         let mix = 0;
@@ -247,13 +248,13 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         }
 
         let attachments = mix < from.attachmentThreshold, drawOrder = mix < from.drawOrderThreshold;
-        let timelines = from.animation.timelines;
+        let timelines = from.animation!.timelines;
         let timelineCount = timelines.length;
         let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
         let animationLast = from.animationLast, animationTime = from.getAnimationTime(), applyTime = animationTime;
         let events = null;
         if (from.reverse)
-            applyTime = from.animation.duration - applyTime;
+            applyTime = from.animation!.duration - applyTime;
         else if (mix < from.eventThreshold)
             events = this.events;
 
@@ -264,7 +265,8 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             let timelineMode = from.timelineMode;
             let timelineHoldMix = from.timelineHoldMix;
 
-            let firstFrame = from.timelinesRotation.length != timelineCount << 1;
+            let shortestRotation = from.shortestRotation;
+            let firstFrame = !shortestRotation && from.timelinesRotation.length != timelineCount << 1;
             if (firstFrame) from.timelinesRotation.length = timelineCount << 1;
 
             from.totalAlpha = 0;
@@ -299,7 +301,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                 }
                 from.totalAlpha += alpha;
 
-                if (timeline instanceof RotateTimeline)
+                if (!shortestRotation && timeline instanceof RotateTimeline)
                     this.applyRotateTimeline(timeline, skeleton, applyTime, alpha, timelineBlend, from.timelinesRotation, i << 1, firstFrame);
                 else if (timeline instanceof AttachmentTimeline)
                     this.applyAttachmentTimeline(timeline, skeleton, applyTime, timelineBlend, attachments);
@@ -335,7 +337,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         if (slot.attachmentState <= this.unkeyedState) slot.attachmentState = this.unkeyedState + SETUP;
     }
 
-    setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean) {
+    setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string | null, attachments: boolean) {
         slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(slot.data.index, attachmentName));
         if (attachments) slot.attachmentState = this.unkeyedState + CURRENT;
     }
@@ -631,13 +633,16 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
     }
 
     /** @param last May be null. */
-    trackEntry (trackIndex: number, animation: Animation, loop: boolean, last: TrackEntry) {
+    trackEntry (trackIndex: number, animation: Animation, loop: boolean, last: TrackEntry | null) {
         let entry = this.trackEntryPool.obtain();
         entry.reset();
         entry.trackIndex = trackIndex;
         entry.animation = animation;
         entry.loop = loop;
         entry.holdPrevious = false;
+
+        entry.reverse = false;
+        entry.shortestRotation = false;
 
         entry.eventThreshold = 0;
         entry.attachmentThreshold = 0;
@@ -656,9 +661,10 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         entry.timeScale = 1;
 
         entry.alpha = 1;
-        entry.interruptAlpha = 1;
         entry.mixTime = 0;
-        entry.mixDuration = !last ? 0 : this.data.getMix(last.animation, animation);
+        entry.mixDuration = !last ? 0 : this.data.getMix(last.animation!, animation);
+        entry.interruptAlpha = 1;
+        entry.totalAlpha = 0;
         entry.mixBlend = MixBlend.replace;
         return entry;
     }
@@ -692,8 +698,8 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
 
     computeHold (entry: TrackEntry) {
         let to = entry.mixingTo;
-        let timelines = entry.animation.timelines;
-        let timelinesCount = entry.animation.timelines.length;
+        let timelines = entry.animation!.timelines;
+        let timelinesCount = entry.animation!.timelines.length;
         let timelineMode = entry.timelineMode;
         timelineMode.length = timelinesCount;
         let timelineHoldMix = entry.timelineHoldMix;
@@ -713,11 +719,11 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                 if (!propertyIDs.addAll(ids))
                     timelineMode[i] = SUBSEQUENT;
                 else if (!to || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
-                    || timeline instanceof EventTimeline || !to.animation.hasTimeline(ids)) {
+                    || timeline instanceof EventTimeline || !to.animation!.hasTimeline(ids)) {
                     timelineMode[i] = FIRST;
                 } else {
-                    for (let next = to.mixingTo; next; next = next.mixingTo) {
-                        if (next.animation.hasTimeline(ids)) continue;
+                    for (let next = to.mixingTo; next; next = next!.mixingTo) {
+                        if (next.animation!.hasTimeline(ids)) continue;
                         if (entry.mixDuration > 0) {
                             timelineMode[i] = HOLD_MIX;
                             timelineHoldMix[i] = next;
@@ -809,26 +815,26 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
  * */
 export class TrackEntry implements ITrackEntry {
     /** The animation to apply for this track entry. */
-    animation: Animation = null;
+    animation: Animation | null = null;
 
-    previous: TrackEntry = null;
+    previous: TrackEntry | null = null;
 
     /** The animation queued to start after this animation, or null. `next` makes up a linked list. */
-    next: TrackEntry = null;
+    next: TrackEntry | null = null;
 
     /** The track entry for the previous animation when mixing from the previous animation to this animation, or null if no
      * mixing is currently occuring. When mixing from multiple animations, `mixingFrom` makes up a linked list. */
-    mixingFrom: TrackEntry = null;
+    mixingFrom: TrackEntry | null = null;
 
     /** The track entry for the next animation when mixing from this animation to the next animation, or null if no mixing is
      * currently occuring. When mixing to multiple animations, `mixingTo` makes up a linked list. */
-    mixingTo: TrackEntry = null;
+    mixingTo: TrackEntry | null = null;
 
     /** The listener for events generated by this track entry, or null.
      *
      * A track entry returned from {@link AnimationState#setAnimation()} is already the current animation
      * for the track, so the track entry listener {@link AnimationStateListener#start()} will not be called. */
-    listener: AnimationStateListener = null;
+    listener: AnimationStateListener | null = null;
 
     /** The index of the track where this track entry is either current or queued.
      *
@@ -853,6 +859,8 @@ export class TrackEntry implements ITrackEntry {
     holdPrevious: boolean = false;
 
     reverse: boolean = false;
+
+    shortestRotation: boolean = false;
 
     /** When the mix percentage ({@link #mixTime} / {@link #mixDuration}) is less than the
      * `eventThreshold`, event timelines are applied while this animation is being mixed out. Defaults to 0, so event
@@ -1070,7 +1078,7 @@ export class TrackEntry implements ITrackEntry {
 export class EventQueue {
     objects: Array<any> = [];
     drainDisabled = false;
-    animState: AnimationState = null;
+    animState: AnimationState;
 
     constructor (animState: AnimationState) {
         this.animState = animState;
@@ -1122,35 +1130,47 @@ export class EventQueue {
             switch (type) {
                 case EventType.start:
                     if (entry.listener && entry.listener.start) entry.listener.start(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].start) listeners[ii].start(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.start) listener.start(entry);
+                    }
                     break;
                 case EventType.interrupt:
                     if (entry.listener && entry.listener.interrupt) entry.listener.interrupt(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].interrupt) listeners[ii].interrupt(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.interrupt) listener.interrupt(entry);
+                    }
                     break;
                 case EventType.end:
                     if (entry.listener && entry.listener.end) entry.listener.end(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].end) listeners[ii].end(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.end) listener.end(entry);
+                    }
                 // Fall through.
                 case EventType.dispose:
                     if (entry.listener && entry.listener.dispose) entry.listener.dispose(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].dispose) listeners[ii].dispose(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.dispose) listener.dispose(entry);
+                    }
                     this.animState.trackEntryPool.free(entry);
                     break;
                 case EventType.complete:
                     if (entry.listener && entry.listener.complete) entry.listener.complete(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].complete) listeners[ii].complete(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.complete) listener.complete(entry);
+                    }
                     break;
                 case EventType.event:
                     let event = objects[i++ + 2] as Event;
                     if (entry.listener && entry.listener.event) entry.listener.event(entry, event);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].event) listeners[ii].event(entry, event);
+                    for (let ii = 0; ii < listeners.length; ii++) {
+                        let listener = listeners[ii];
+                        if (listener.event) listener.event(entry, event);
+                    }
                     break;
             }
         }
@@ -1180,24 +1200,24 @@ export enum EventType {
  * */
 export interface AnimationStateListener extends IAnimationStateListener {
     /** Invoked when this entry has been set as the current entry. */
-    start?(entry: TrackEntry): void;
+    start?: (entry: TrackEntry) => void;
 
     /** Invoked when another entry has replaced this entry as the current entry. This entry may continue being applied for
      * mixing. */
-    interrupt?(entry: TrackEntry): void;
+    interrupt?: (entry: TrackEntry) => void;
 
     /** Invoked when this entry is no longer the current entry and will never be applied again. */
-    end?(entry: TrackEntry): void;
+    end?: (entry: TrackEntry) => void;
 
     /** Invoked when this entry will be disposed. This may occur without the entry ever being set as the current entry.
      * References to the entry should not be kept after dispose is called, as it may be destroyed or reused. */
-    dispose?(entry: TrackEntry): void;
+    dispose?: (entry: TrackEntry) => void;
 
     /** Invoked every time this entry's animation completes a loop. */
-    complete?(entry: TrackEntry): void;
+    complete?: (entry: TrackEntry) => void;
 
     /** Invoked when this entry's animation triggers an event. */
-    event?(entry: TrackEntry, event: Event): void;
+    event?: (entry: TrackEntry, event: Event) => void;
 }
 
 /**
@@ -1226,24 +1246,24 @@ export abstract class AnimationStateAdapter implements AnimationStateListener {
 /** 1. A previously applied timeline has set this property.
  *
  * Result: Mix from the current pose to the timeline pose. */
-const SUBSEQUENT = 0;
+export const SUBSEQUENT = 0;
 /** 1. This is the first timeline to set this property.
  * 2. The next track entry applied after this one does not have a timeline to set this property.
  *
  * Result: Mix from the setup pose to the timeline pose. */
-const FIRST = 1;
+export const FIRST = 1;
 /** 1) A previously applied timeline has set this property.<br>
  * 2) The next track entry to be applied does have a timeline to set this property.<br>
  * 3) The next track entry after that one does not have a timeline to set this property.<br>
  * Result: Mix from the current pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading
  * animations that key the same property. A subsequent timeline will set this property using a mix. */
-const HOLD_SUBSEQUENT = 2;
+export const HOLD_SUBSEQUENT = 2;
 /** 1) This is the first timeline to set this property.<br>
  * 2) The next track entry to be applied does have a timeline to set this property.<br>
  * 3) The next track entry after that one does not have a timeline to set this property.<br>
  * Result: Mix from the setup pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading animations
  * that key the same property. A subsequent timeline will set this property using a mix. */
-const HOLD_FIRST = 3;
+export const HOLD_FIRST = 3;
 /** 1. This is the first timeline to set this property.
  * 2. The next track entry to be applied does have a timeline to set this property.
  * 3. The next track entry after that one does have a timeline to set this property.
@@ -1256,9 +1276,7 @@ const HOLD_FIRST = 3;
  * "dipping" A is not mixed out, however D (the first entry that doesn't set the property) mixing in is used to mix out A
  * (which affects B and C). Without using D to mix out, A would be applied fully until mixing completes, then snap into
  * place. */
-const HOLD_MIX = 4;
+export const HOLD_MIX = 4;
 
-const SETUP = 1;
-const CURRENT = 2;
-
-let _emptyAnimation: Animation = null;
+export const SETUP = 1;
+export const CURRENT = 2;

@@ -1,4 +1,4 @@
-import type {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment} from './attachments';
+import type {Attachment, AttachmentLoader, HasTextureRegion, MeshAttachment, VertexAttachment} from './attachments';
 import {
     AlphaTimeline, Animation,
     AttachmentTimeline, CurveTimeline, CurveTimeline1, CurveTimeline2, DeformTimeline, DrawOrderTimeline, EventTimeline,
@@ -7,7 +7,7 @@ import {
     PathConstraintPositionTimeline,
     PathConstraintSpacingTimeline, RGB2Timeline, RGBA2Timeline, RGBATimeline, RGBTimeline,
     RotateTimeline,
-    ScaleTimeline, ScaleXTimeline, ScaleYTimeline,
+    ScaleTimeline, ScaleXTimeline, ScaleYTimeline, SequenceTimeline,
     ShearTimeline, ShearXTimeline, ShearYTimeline,
     Timeline,
     TransformConstraintTimeline,
@@ -24,6 +24,7 @@ import {Skin} from './Skin';
 import {EventData} from './EventData';
 import {AttachmentType, BinaryInput, Color, PositionMode, Utils} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
+import {Sequence, SequenceModeValues} from "./attachments";
 
 /** Loads skeleton data in the Spine binary format.
  *
@@ -40,7 +41,7 @@ export class SkeletonBinary {
      * See [Scaling](http://esotericsoftware.com/spine-loading-skeleton-data#Scaling) in the Spine Runtimes Guide. */
     scale = 1;
 
-    attachmentLoader: AttachmentLoader = null;
+    attachmentLoader: AttachmentLoader;
     private linkedMeshes = new Array<LinkedMesh>();
 
     constructor (attachmentLoader: AttachmentLoader) {
@@ -81,13 +82,17 @@ export class SkeletonBinary {
         let n = 0;
         // Strings.
         n = input.readInt(true)
-        for (let i = 0; i < n; i++)
-            input.strings.push(input.readString());
+        for (let i = 0; i < n; i++) {
+            let str = input.readString();
+            if (!str) throw new Error("String in string table must not be null.");
+            input.strings.push(str);
+        }
 
         // Bones.
         n = input.readInt(true)
         for (let i = 0; i < n; i++) {
             let name = input.readString();
+            if (!name) throw new Error("Bone name must not be null.");
             let parent = i == 0 ? null : skeletonData.bones[input.readInt(true)];
             let data = new BoneData(i, name, parent);
             data.rotation = input.readFloat();
@@ -108,6 +113,7 @@ export class SkeletonBinary {
         n = input.readInt(true);
         for (let i = 0; i < n; i++) {
             let slotName = input.readString();
+            if (!slotName) throw new Error("Slot name must not be null.");
             let boneData = skeletonData.bones[input.readInt(true)];
             let data = new SlotData(i, slotName, boneData);
             Color.rgba8888ToColor(data.color, input.readInt32());
@@ -116,14 +122,16 @@ export class SkeletonBinary {
             if (darkColor != -1) Color.rgb888ToColor(data.darkColor = new Color(), darkColor);
 
             data.attachmentName = input.readStringRef();
-            data.blendMode = SkeletonBinary.BlendModeValues[input.readInt(true)];
+            data.blendMode = input.readInt(true);
             skeletonData.slots.push(data);
         }
 
         // IK constraints.
         n = input.readInt(true);
         for (let i = 0, nn; i < n; i++) {
-            let data = new IkConstraintData(input.readString());
+            let name = input.readString();
+            if (!name) throw new Error("IK constraint data name must not be null.");
+            let data = new IkConstraintData(name);
             data.order = input.readInt(true);
             data.skinRequired = input.readBoolean();
             nn = input.readInt(true);
@@ -142,7 +150,9 @@ export class SkeletonBinary {
         // Transform constraints.
         n = input.readInt(true);
         for (let i = 0, nn; i < n; i++) {
-            let data = new TransformConstraintData(input.readString());
+            let name = input.readString();
+            if (!name) throw new Error("Transform constraint data name must not be null.");
+            let data = new TransformConstraintData(name);
             data.order = input.readInt(true);
             data.skinRequired = input.readBoolean();
             nn = input.readInt(true);
@@ -169,7 +179,9 @@ export class SkeletonBinary {
         // Path constraints.
         n = input.readInt(true);
         for (let i = 0, nn; i < n; i++) {
-            let data = new PathConstraintData(input.readString());
+            let name = input.readString();
+            if (!name) throw new Error("Path constraint data name must not be null.");
+            let data = new PathConstraintData(name);
             data.order = input.readInt(true);
             data.skinRequired = input.readBoolean();
             nn = input.readInt(true);
@@ -201,8 +213,11 @@ export class SkeletonBinary {
         {
             let i = skeletonData.skins.length;
             Utils.setArraySize(skeletonData.skins, n = i + input.readInt(true));
-            for (; i < n; i++)
-                skeletonData.skins[i] = this.readSkin(input, skeletonData, false, nonessential);
+            for (; i < n; i++) {
+                let skin = this.readSkin(input, skeletonData, false, nonessential);
+                if (!skin) throw new Error("readSkin() should not have returned null.");
+                skeletonData.skins[i] = skin;
+            }
         }
 
         // Linked meshes.
@@ -210,17 +225,22 @@ export class SkeletonBinary {
         for (let i = 0; i < n; i++) {
             let linkedMesh = this.linkedMeshes[i];
             let skin = !linkedMesh.skin ? skeletonData.defaultSkin : skeletonData.findSkin(linkedMesh.skin);
+            if (!skin) throw new Error("Not skin found for linked mesh.");
+            if (!linkedMesh.parent) throw new Error("Linked mesh parent must not be null");
             let parent = skin.getAttachment(linkedMesh.slotIndex, linkedMesh.parent);
-            linkedMesh.mesh.deformAttachment = linkedMesh.inheritDeform ? parent as VertexAttachment : linkedMesh.mesh;
+            if (!parent) throw new Error(`Parent mesh not found: ${linkedMesh.parent}`);
+            linkedMesh.mesh.timelineAttachment = linkedMesh.inheritTimeline ? parent as VertexAttachment : linkedMesh.mesh;
             linkedMesh.mesh.setParentMesh(parent as MeshAttachment);
-            // linkedMesh.mesh.updateUVs();
+            // if (linkedMesh.mesh.region != null) linkedMesh.mesh.updateRegion();
         }
         this.linkedMeshes.length = 0;
 
         // Events.
         n = input.readInt(true);
         for (let i = 0; i < n; i++) {
-            let data = new EventData(input.readStringRef());
+            let eventName = input.readStringRef();
+            if (!eventName) throw new Error
+            let data = new EventData(eventName);
             data.intValue = input.readInt(false);
             data.floatValue = input.readFloat();
             data.stringValue = input.readString();
@@ -234,12 +254,15 @@ export class SkeletonBinary {
 
         // Animations.
         n = input.readInt(true);
-        for (let i = 0; i < n; i++)
-            skeletonData.animations.push(this.readAnimation(input, input.readString(), skeletonData));
+        for (let i = 0; i < n; i++) {
+            let animationName = input.readString();
+            if (!animationName) throw new Error("Animatio name must not be null.");
+            skeletonData.animations.push(this.readAnimation(input, animationName, skeletonData));
+        }
         return skeletonData;
     }
 
-    private readSkin (input: BinaryInput, skeletonData: SkeletonData, defaultSkin: boolean, nonessential: boolean): Skin {
+    private readSkin (input: BinaryInput, skeletonData: SkeletonData, defaultSkin: boolean, nonessential: boolean): Skin | null {
         let skin = null;
         let slotCount = 0;
 
@@ -248,7 +271,9 @@ export class SkeletonBinary {
             if (slotCount == 0) return null;
             skin = new Skin("default");
         } else {
-            skin = new Skin(input.readStringRef());
+            let skinName = input.readStringRef();
+            if (!skinName) throw new Error("Skin name must not be null.");
+            skin = new Skin(skinName);
             skin.bones.length = input.readInt(true);
             for (let i = 0, n = skin.bones.length; i < n; i++)
                 skin.bones[i] = skeletonData.bones[input.readInt(true)];
@@ -267,6 +292,7 @@ export class SkeletonBinary {
             let slotIndex = input.readInt(true);
             for (let ii = 0, nn = input.readInt(true); ii < nn; ii++) {
                 let name = input.readStringRef();
+                if (!name) throw new Error("Attachment name must not be null");
                 let attachment = this.readAttachment(input, skeletonData, skin, slotIndex, name, nonessential);
                 if (attachment) skin.setAttachment(slotIndex, name, attachment);
             }
@@ -274,7 +300,7 @@ export class SkeletonBinary {
         return skin;
     }
 
-    private readAttachment (input: BinaryInput, skeletonData: SkeletonData, skin: Skin, slotIndex: number, attachmentName: string, nonessential: boolean): Attachment {
+    private readAttachment (input: BinaryInput, skeletonData: SkeletonData, skin: Skin, slotIndex: number, attachmentName: string, nonessential: boolean): Attachment | null {
         let scale = this.scale;
 
         let name = input.readStringRef();
@@ -291,9 +317,10 @@ export class SkeletonBinary {
                 let width = input.readFloat();
                 let height = input.readFloat();
                 let color = input.readInt32();
+                let sequence = this.readSequence(input);
 
                 if (!path) path = name;
-                let region = this.attachmentLoader.newRegionAttachment(skin, name, path);
+                let region = this.attachmentLoader.newRegionAttachment(skin, name, path, sequence);
                 if (!region) return null;
                 region.path = path;
                 region.x = x * scale;
@@ -304,7 +331,8 @@ export class SkeletonBinary {
                 region.width = width * scale;
                 region.height = height * scale;
                 Color.rgba8888ToColor(region.color, color);
-                // region.updateOffset();
+                region.sequence = sequence;
+                if (sequence == null) region.updateRegion();
                 return region;
             }
             case AttachmentType.BoundingBox: {
@@ -315,7 +343,7 @@ export class SkeletonBinary {
                 let box = this.attachmentLoader.newBoundingBoxAttachment(skin, name);
                 if (!box) return null;
                 box.worldVerticesLength = vertexCount << 1;
-                box.vertices = vertices.vertices;
+                box.vertices = vertices.vertices!;
                 box.bones = vertices.bones;
                 if (nonessential) Color.rgba8888ToColor(box.color, color);
                 return box;
@@ -328,7 +356,8 @@ export class SkeletonBinary {
                 let triangles = this.readShortArray(input);
                 let vertices = this.readVertices(input, vertexCount);
                 let hullLength = input.readInt(true);
-                let edges = null;
+                let sequence = this.readSequence(input);
+                let edges: number[] = [];
                 let width = 0, height = 0;
                 if (nonessential) {
                     edges = this.readShortArray(input);
@@ -337,17 +366,18 @@ export class SkeletonBinary {
                 }
 
                 if (!path) path = name;
-                let mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                let mesh = this.attachmentLoader.newMeshAttachment(skin, name, path, sequence);
                 if (!mesh) return null;
                 mesh.path = path;
                 Color.rgba8888ToColor(mesh.color, color);
                 mesh.bones = vertices.bones;
-                mesh.vertices = vertices.vertices;
+                mesh.vertices = vertices.vertices!;
                 mesh.worldVerticesLength = vertexCount << 1;
                 mesh.triangles = triangles;
                 mesh.regionUVs = new Float32Array(uvs);
-                // mesh.updateUVs();
+                // if (sequence == null) mesh.updateRegion();
                 mesh.hullLength = hullLength << 1;
+                mesh.sequence = sequence;
                 if (nonessential) {
                     mesh.edges = edges;
                     mesh.width = width * scale;
@@ -360,7 +390,8 @@ export class SkeletonBinary {
                 let color = input.readInt32();
                 let skinName = input.readStringRef();
                 let parent = input.readStringRef();
-                let inheritDeform = input.readBoolean();
+                let inheritTimelines = input.readBoolean();
+                let sequence = this.readSequence(input);
                 let width = 0, height = 0;
                 if (nonessential) {
                     width = input.readFloat();
@@ -368,15 +399,16 @@ export class SkeletonBinary {
                 }
 
                 if (!path) path = name;
-                let mesh = this.attachmentLoader.newMeshAttachment(skin, name, path);
+                let mesh = this.attachmentLoader.newMeshAttachment(skin, name, path, sequence);
                 if (!mesh) return null;
                 mesh.path = path;
                 Color.rgba8888ToColor(mesh.color, color);
+                mesh.sequence = sequence;
                 if (nonessential) {
                     mesh.width = width * scale;
                     mesh.height = height * scale;
                 }
-                this.linkedMeshes.push(new LinkedMesh(mesh, skinName, slotIndex, parent, inheritDeform));
+                this.linkedMeshes.push(new LinkedMesh(mesh, skinName, slotIndex, parent, inheritTimelines));
                 return mesh;
             }
             case AttachmentType.Path: {
@@ -394,7 +426,7 @@ export class SkeletonBinary {
                 path.closed = closed;
                 path.constantSpeed = constantSpeed;
                 path.worldVerticesLength = vertexCount << 1;
-                path.vertices = vertices.vertices;
+                path.vertices = vertices.vertices!;
                 path.bones = vertices.bones;
                 path.lengths = lengths;
                 if (nonessential) Color.rgba8888ToColor(path.color, color);
@@ -424,13 +456,22 @@ export class SkeletonBinary {
                 if (!clip) return null;
                 clip.endSlot = skeletonData.slots[endSlotIndex];
                 clip.worldVerticesLength = vertexCount << 1;
-                clip.vertices = vertices.vertices;
+                clip.vertices = vertices.vertices!;
                 clip.bones = vertices.bones;
                 if (nonessential) Color.rgba8888ToColor(clip.color, color);
                 return clip;
             }
         }
         return null;
+    }
+
+    private readSequence (input: BinaryInput) {
+        if (!input.readBoolean()) return null;
+        let sequence = new Sequence(input.readInt(true));
+        sequence.start = input.readInt(true);
+        sequence.digits = input.readInt(true);
+        sequence.setupIndex = input.readInt(true);
+        return sequence;
     }
 
     private readVertices (input: BinaryInput, vertexCount: number): Vertices {
@@ -482,7 +523,6 @@ export class SkeletonBinary {
         input.readInt(true); // Number of timelines.
         let timelines = new Array<Timeline>();
         let scale = this.scale;
-
         // Slot timelines.
         for (let i = 0, n = input.readInt(true); i < n; i++) {
             let slotIndex = input.readInt(true);
@@ -687,7 +727,6 @@ export class SkeletonBinary {
                             a = a2;
                         }
                         timelines.push(timeline);
-                        break;
                     }
                 }
             }
@@ -840,52 +879,73 @@ export class SkeletonBinary {
                 let slotIndex = input.readInt(true);
                 for (let iii = 0, nnn = input.readInt(true); iii < nnn; iii++) {
                     let attachmentName = input.readStringRef();
-                    let attachment = skin.getAttachment(slotIndex, attachmentName) as VertexAttachment;
-                    let weighted = attachment.bones;
-                    let vertices = attachment.vertices;
-                    let deformLength = weighted ? vertices.length / 3 * 2 : vertices.length;
-
+                    if (!attachmentName) throw new Error("attachmentName must not be null.");
+                    let attachment = skin.getAttachment(slotIndex, attachmentName);
+                    let timelineType = input.readByte();
                     let frameCount = input.readInt(true);
                     let frameLast = frameCount - 1;
-                    let bezierCount = input.readInt(true);
-                    let timeline = new DeformTimeline(frameCount, bezierCount, slotIndex, attachment);
 
-                    let time = input.readFloat();
-                    for (let frame = 0, bezier = 0; ; frame++) {
-                        let deform;
-                        let end = input.readInt(true);
-                        if (end == 0)
-                            deform = weighted ? Utils.newFloatArray(deformLength) : vertices;
-                        else {
-                            deform = Utils.newFloatArray(deformLength);
-                            let start = input.readInt(true);
-                            end += start;
-                            if (scale == 1) {
-                                for (let v = start; v < end; v++)
-                                    deform[v] = input.readFloat();
-                            } else {
-                                for (let v = start; v < end; v++)
-                                    deform[v] = input.readFloat() * scale;
-                            }
-                            if (!weighted) {
-                                for (let v = 0, vn = deform.length; v < vn; v++)
-                                    deform[v] += vertices[v];
-                            }
-                        }
+                    switch (timelineType) {
+                        case ATTACHMENT_DEFORM: {
+                            let vertexAttachment = attachment as VertexAttachment;
+                            let weighted = vertexAttachment.bones;
+                            let vertices = vertexAttachment.vertices;
+                            let deformLength = weighted ? vertices.length / 3 * 2 : vertices.length;
 
-                        timeline.setFrame(frame, time, deform);
-                        if (frame == frameLast) break;
-                        let time2 = input.readFloat();
-                        switch (input.readByte()) {
-                            case CURVE_STEPPED:
-                                timeline.setStepped(frame);
-                                break;
-                            case CURVE_BEZIER:
-                                setBezier(input, timeline, bezier++, frame, 0, time, time2, 0, 1, 1);
+
+                            let bezierCount = input.readInt(true);
+                            let timeline = new DeformTimeline(frameCount, bezierCount, slotIndex, vertexAttachment);
+
+                            let time = input.readFloat();
+                            for (let frame = 0, bezier = 0; ; frame++) {
+                                let deform;
+                                let end = input.readInt(true);
+                                if (end == 0)
+                                    deform = weighted ? Utils.newFloatArray(deformLength) : vertices;
+                                else {
+                                    deform = Utils.newFloatArray(deformLength);
+                                    let start = input.readInt(true);
+                                    end += start;
+                                    if (scale == 1) {
+                                        for (let v = start; v < end; v++)
+                                            deform[v] = input.readFloat();
+                                    } else {
+                                        for (let v = start; v < end; v++)
+                                            deform[v] = input.readFloat() * scale;
+                                    }
+                                    if (!weighted) {
+                                        for (let v = 0, vn = deform.length; v < vn; v++)
+                                            deform[v] += vertices[v];
+                                    }
+                                }
+
+                                timeline.setFrame(frame, time, deform);
+                                if (frame == frameLast) break;
+                                let time2 = input.readFloat();
+                                switch (input.readByte()) {
+                                    case CURVE_STEPPED:
+                                        timeline.setStepped(frame);
+                                        break;
+                                    case CURVE_BEZIER:
+                                        setBezier(input, timeline, bezier++, frame, 0, time, time2, 0, 1, 1);
+                                }
+                                time = time2;
+                            }
+                            timelines.push(timeline);
+                            break;
                         }
-                        time = time2;
+                        case ATTACHMENT_SEQUENCE: {
+                            let timeline = new SequenceTimeline(frameCount, slotIndex, attachment as unknown as HasTextureRegion);
+                            for (let frame = 0; frame < frameCount; frame++) {
+                                let time = input.readFloat();
+                                let modeAndIndex = input.readInt32();
+                                timeline.setFrame(frame, time, SequenceModeValues[modeAndIndex & 0xf], modeAndIndex >> 4,
+                                    input.readFloat());
+                            }
+                            timelines.push(timeline);
+                            break;
+                        }
                     }
-                    timelines.push(timeline);
                 }
             }
         }
@@ -950,22 +1010,22 @@ export class SkeletonBinary {
 }
 
 class LinkedMesh {
-    parent: string; skin: string;
+    parent: string | null; skin: string | null;
     slotIndex: number;
     mesh: MeshAttachment;
-    inheritDeform: boolean;
+    inheritTimeline: boolean;
 
-    constructor (mesh: MeshAttachment, skin: string, slotIndex: number, parent: string, inheritDeform: boolean) {
+    constructor (mesh: MeshAttachment, skin: string | null, slotIndex: number, parent: string | null, inheritDeform: boolean) {
         this.mesh = mesh;
         this.skin = skin;
         this.slotIndex = slotIndex;
         this.parent = parent;
-        this.inheritDeform = inheritDeform;
+        this.inheritTimeline = inheritDeform;
     }
 }
 
 class Vertices {
-    constructor (public bones: Array<number> = null, public vertices: Array<number> | Float32Array = null) { }
+    constructor (public bones: Array<number> | null = null, public vertices: Array<number> | Float32Array | null = null) { }
 }
 
 function readTimeline1 (input: BinaryInput, timeline: CurveTimeline1, scale: number): CurveTimeline1 {
@@ -1031,11 +1091,13 @@ const SLOT_RGBA2 = 3;
 const SLOT_RGB2 = 4;
 const SLOT_ALPHA = 5;
 
+const ATTACHMENT_DEFORM = 0;
+const ATTACHMENT_SEQUENCE = 1;
+
 const PATH_POSITION = 0;
 const PATH_SPACING = 1;
 const PATH_MIX = 2;
 
-// @ts-ignore
-const  CURVE_LINEAR = 0;
-const  CURVE_STEPPED = 1;
-const  CURVE_BEZIER = 2;
+// const CURVE_LINEAR = 0;
+const CURVE_STEPPED = 1;
+const CURVE_BEZIER = 2;
