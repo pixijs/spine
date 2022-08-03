@@ -49,6 +49,8 @@ export class Slot implements ISlot {
         this.color = new Color();
         this.darkColor = !data.darkColor ? null : new Color();
         this.setToSetupPose();
+
+        this.blendMode = this.data.blendMode;
     }
 
     /** The skeleton this slot belongs to. */
