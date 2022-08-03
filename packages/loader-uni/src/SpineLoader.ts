@@ -52,7 +52,7 @@ class UniJsonParser implements ISkeletonParser {
         if (ver === SPINE_VERSION.VER38) {
             parser = new spine38.SkeletonJson(new spine38.AtlasAttachmentLoader(atlas));
         }
-        if (ver === SPINE_VERSION.VER40) {
+        if (ver === SPINE_VERSION.VER40 || ver === SPINE_VERSION.VER41) {
             parser = new spine41.SkeletonJson(new spine41.AtlasAttachmentLoader(atlas));
         }
         if (!parser) {
