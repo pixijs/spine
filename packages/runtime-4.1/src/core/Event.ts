@@ -10,16 +10,17 @@ import {IEvent} from "@pixi-spine/base";
  * */
 export class Event implements IEvent {
     data: EventData;
-    intValue: number;
-    floatValue: number;
-    stringValue: string;
-    time: number;
-    volume: number;
-    balance: number;
+    intValue: number = 0;
+    floatValue: number = 0;
+    stringValue: string | null = null;
+    time: number = 0;
+    volume: number = 0;
+    balance: number = 0;
 
     constructor (time: number, data: EventData) {
-        if (data == null) throw new Error("data cannot be null.");
+        if (!data) throw new Error("data cannot be null.");
         this.time = time;
         this.data = data;
     }
 }
+

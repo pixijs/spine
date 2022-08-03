@@ -23,6 +23,5 @@ export * from './core/SlotData';
 export * from './core/TransformConstraint';
 export * from './core/TransformConstraintData';
 export * from './core/Updatable';
-export * from './core/VertexEffect';
 
 export * from './Spine';

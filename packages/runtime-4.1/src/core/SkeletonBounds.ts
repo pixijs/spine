@@ -1,5 +1,5 @@
 import {BoundingBoxAttachment} from "./attachments";
-import {Pool, Utils} from "@pixi-spine/base";
+import {Pool, Utils, NumberArrayLike} from "@pixi-spine/base";
 import type {Skeleton} from "./Skeleton";
 
 /** Collects each visible {@link BoundingBoxAttachment} and computes the world vertices for its polygon. The polygon vertices are
@@ -24,9 +24,9 @@ export class SkeletonBounds {
     boundingBoxes = new Array<BoundingBoxAttachment>();
 
     /** The world vertices for the bounding box polygons. */
-    polygons = new Array<ArrayLike<number>>();
+    polygons = new Array<NumberArrayLike>();
 
-    private polygonPool = new Pool<ArrayLike<number>>(() => {
+    private polygonPool = new Pool<NumberArrayLike>(() => {
         return Utils.newFloatArray(16);
     });
 
@@ -35,7 +35,7 @@ export class SkeletonBounds {
      * @param updateAabb If true, the axis aligned bounding box containing all the polygons is computed. If false, the
      *           SkeletonBounds AABB methods will always return true. */
     update (skeleton: Skeleton, updateAabb: boolean) {
-        if (skeleton == null) throw new Error("skeleton cannot be null.");
+        if (!skeleton) throw new Error("skeleton cannot be null.");
         let boundingBoxes = this.boundingBoxes;
         let polygons = this.polygons;
         let polygonPool = this.polygonPool;
@@ -126,7 +126,7 @@ export class SkeletonBounds {
 
     /** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
      * efficient to only call this method if {@link #aabbContainsPoint(float, float)} returns true. */
-    containsPoint (x: number, y: number): BoundingBoxAttachment {
+    containsPoint (x: number, y: number): BoundingBoxAttachment | null {
         let polygons = this.polygons;
         for (let i = 0, n = polygons.length; i < n; i++)
             if (this.containsPointPolygon(polygons[i], x, y)) return this.boundingBoxes[i];
@@ -134,7 +134,7 @@ export class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains the point. */
-    containsPointPolygon (polygon: ArrayLike<number>, x: number, y: number) {
+    containsPointPolygon (polygon: NumberArrayLike, x: number, y: number) {
         let vertices = polygon;
         let nn = polygon.length;
 
@@ -163,7 +163,7 @@ export class SkeletonBounds {
     }
 
     /** Returns true if the polygon contains any part of the line segment. */
-    intersectsSegmentPolygon (polygon: ArrayLike<number>, x1: number, y1: number, x2: number, y2: number) {
+    intersectsSegmentPolygon (polygon: NumberArrayLike, x1: number, y1: number, x2: number, y2: number) {
         let vertices = polygon;
         let nn = polygon.length;
 
@@ -188,7 +188,7 @@ export class SkeletonBounds {
 
     /** Returns the polygon for the specified bounding box, or null. */
     getPolygon (boundingBox: BoundingBoxAttachment) {
-        if (boundingBox == null) throw new Error("boundingBox cannot be null.");
+        if (!boundingBox) throw new Error("boundingBox cannot be null.");
         let index = this.boundingBoxes.indexOf(boundingBox);
         return index == -1 ? null : this.polygons[index];
     }

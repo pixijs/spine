@@ -7,12 +7,12 @@ import {IEventData} from "@pixi-spine/base";
  * */
 export class EventData implements IEventData {
     name: string;
-    intValue: number;
-    floatValue: number;
-    stringValue: string;
-    audioPath: string;
-    volume: number;
-    balance: number;
+    intValue: number = 0;
+    floatValue: number = 0;
+    stringValue: string | null = null;
+    audioPath: string | null = null;
+    volume: number = 0;
+    balance: number = 0;
 
     constructor (name: string) {
         this.name = name;
