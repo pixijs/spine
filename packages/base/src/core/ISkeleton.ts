@@ -44,6 +44,37 @@ export interface ISkin {
 export interface IAttachment {
     name: string;
     type: AttachmentType;
+    readonly sequence?: ISequence;
+}
+
+/**
+ * @public
+ */
+export interface IHasTextureRegion {
+    /** The name used to find the {@link #region()}. */
+    path: string;
+
+    /** The region used to draw the attachment. After setting the region or if the region's properties are changed,
+     * {@link #updateRegion()} must be called. */
+    region: TextureRegion | null;
+
+    /** Updates any values the attachment calculates using the {@link #getRegion()}. Must be called after setting the
+     * {@link #getRegion()} or if the region's properties are changed. */
+    // updateRegion (): void;
+
+    /** The color to tint the attachment. */
+    color: Color;
+
+    readonly sequence: ISequence | null;
+}
+
+/**
+ * @public
+ */
+export interface ISequence {
+    id: number;
+    regions: TextureRegion[];
+    apply (slot: ISlot, attachment: IHasTextureRegion): void;
 }
 
 /**

@@ -1,4 +1,4 @@
-import type {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment, HasTextureRegion} from './attachments';
+import type {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment} from './attachments';
 import {
     AlphaTimeline, Animation,
     AttachmentTimeline, CurveTimeline, CurveTimeline1, CurveTimeline2, DeformTimeline, DrawOrderTimeline, EventTimeline,
@@ -22,7 +22,7 @@ import {TransformConstraintData} from './TransformConstraintData';
 import {PathConstraintData, SpacingMode} from './PathConstraintData';
 import {Skin} from './Skin';
 import {EventData} from './EventData';
-import {NumberArrayLike, Color, PositionMode, RotateMode, TransformMode, Utils, settings} from '@pixi-spine/base';
+import {NumberArrayLike, Color, IHasTextureRegion, PositionMode, RotateMode, TransformMode, Utils, settings} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 import {Sequence, SequenceMode} from './attachments/Sequence';
 
@@ -917,7 +917,7 @@ export class SkeletonJson {
                                 }
                                 timelines.push(timeline);
                             } else if (timelineMapName == "sequence") {
-                                let timeline = new SequenceTimeline(timelineMap.length, slotIndex, attachment as unknown as HasTextureRegion);
+                                let timeline = new SequenceTimeline(timelineMap.length, slotIndex, attachment as unknown as IHasTextureRegion);
                                 let lastDelay = 0;
                                 for (let frame = 0; frame < timelineMap.length; frame++) {
                                     let delay = getValue(keyMap, "delay", lastDelay);

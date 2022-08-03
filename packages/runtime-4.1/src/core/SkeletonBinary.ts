@@ -1,4 +1,4 @@
-import type {Attachment, AttachmentLoader, HasTextureRegion, MeshAttachment, VertexAttachment} from './attachments';
+import type {Attachment, AttachmentLoader, MeshAttachment, VertexAttachment} from './attachments';
 import {
     AlphaTimeline, Animation,
     AttachmentTimeline, CurveTimeline, CurveTimeline1, CurveTimeline2, DeformTimeline, DrawOrderTimeline, EventTimeline,
@@ -22,7 +22,7 @@ import {TransformConstraintData} from './TransformConstraintData';
 import {PathConstraintData, SpacingMode} from './PathConstraintData';
 import {Skin} from './Skin';
 import {EventData} from './EventData';
-import {AttachmentType, BinaryInput, Color, PositionMode, Utils} from '@pixi-spine/base';
+import {AttachmentType, BinaryInput, Color, IHasTextureRegion, PositionMode, Utils} from '@pixi-spine/base';
 import {BLEND_MODES} from '@pixi/constants';
 import {Sequence, SequenceModeValues} from "./attachments";
 
@@ -942,7 +942,7 @@ export class SkeletonBinary {
                             break;
                         }
                         case ATTACHMENT_SEQUENCE: {
-                            let timeline = new SequenceTimeline(frameCount, slotIndex, attachment as unknown as HasTextureRegion);
+                            let timeline = new SequenceTimeline(frameCount, slotIndex, attachment as unknown as IHasTextureRegion);
                             for (let frame = 0; frame < frameCount; frame++) {
                                 let time = input.readFloat();
                                 let modeAndIndex = input.readInt32();

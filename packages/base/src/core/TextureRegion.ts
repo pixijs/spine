@@ -64,6 +64,8 @@ export class TextureRegion {
     names: string[] = null;
     values: number[][] = null;
 
+    renderObject: any = null;
+
     get width(): number {
         const tex = this.texture;
         if (tex.trim) {

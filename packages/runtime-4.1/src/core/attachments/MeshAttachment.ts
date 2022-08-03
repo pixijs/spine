@@ -1,13 +1,13 @@
 import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color, IMeshAttachment, NumberArrayLike, TextureRegion, Utils} from '@pixi-spine/base';
-import {HasTextureRegion} from './HasTextureRegion';
+import {AttachmentType, Color, IMeshAttachment, IHasTextureRegion,
+    NumberArrayLike, TextureRegion, Utils} from '@pixi-spine/base';
 import {Sequence} from './Sequence';
 import type {Slot} from '../Slot';
 
 /**
  * @public
  */
-export class MeshAttachment extends VertexAttachment implements IMeshAttachment, HasTextureRegion {
+export class MeshAttachment extends VertexAttachment implements IMeshAttachment, IHasTextureRegion {
     type = AttachmentType.Mesh;
 
     region: TextureRegion | null = null;

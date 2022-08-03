@@ -1,12 +1,12 @@
 import {Event} from './Event';
 import type {Skeleton} from "./Skeleton";
 import {Attachment, VertexAttachment} from "./attachments";
-import {NumberArrayLike, IAnimation, ITimeline, MathUtils, MixBlend, StringSet, Utils, MixDirection} from '@pixi-spine/base';
+import {NumberArrayLike, IAnimation, ITimeline, MathUtils,
+    MixBlend, StringSet, Utils, MixDirection, IHasTextureRegion} from '@pixi-spine/base';
 import {Slot} from "./Slot";
 import {IkConstraint} from "./IkConstraint";
 import {TransformConstraint} from "./TransformConstraint";
 import {PathConstraint} from "./PathConstraint";
-import { HasTextureRegion } from "./attachments/HasTextureRegion";
 import { SequenceMode, SequenceModeValues } from "./attachments/Sequence";
 
 /**
@@ -2157,9 +2157,9 @@ export class SequenceTimeline extends Timeline implements SlotTimeline {
     static DELAY = 2;
 
     slotIndex: number;
-    attachment: HasTextureRegion;
+    attachment: IHasTextureRegion;
 
-    constructor (frameCount: number, slotIndex: number, attachment: HasTextureRegion) {
+    constructor (frameCount: number, slotIndex: number, attachment: IHasTextureRegion) {
         super(frameCount, [
             Property.sequence + "|" + slotIndex + "|" + attachment.sequence!.id
         ]);

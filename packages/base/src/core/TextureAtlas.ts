@@ -190,7 +190,6 @@ export class TextureAtlas implements Disposable {
                         if (!texture.valid) {
                             texture.setSize(page.width, page.height);
                         }
-                        this.pages.push(page);
                         page.setFilters();
 
                         if (!page.width || !page.height) {
@@ -202,7 +201,6 @@ export class TextureAtlas implements Disposable {
                         }
                         iterateParser();
                     });
-                    this.pages.push(page);
                     break;
                 } else {
                     region = new RegionFields();

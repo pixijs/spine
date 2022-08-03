@@ -1,12 +1,13 @@
 import {Attachment} from './Attachment';
-import {AttachmentType, NumberArrayLike, Color, TextureRegion, Utils, IRegionAttachment} from "@pixi-spine/base";
+import {AttachmentType, NumberArrayLike, Color, TextureRegion, Utils,
+    IHasTextureRegion, IRegionAttachment} from "@pixi-spine/base";
 import {Sequence} from './Sequence';
 import type {Slot} from '../Slot';
 
 /**
  * @public
  */
-export class RegionAttachment extends Attachment implements IRegionAttachment {
+export class RegionAttachment extends Attachment implements IRegionAttachment, IHasTextureRegion {
     type = AttachmentType.Region;
 
     /** The local x translation. */

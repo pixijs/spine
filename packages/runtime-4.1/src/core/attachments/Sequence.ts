@@ -1,11 +1,10 @@
-import { Utils, TextureRegion } from '@pixi-spine/base';
+import { Utils, TextureRegion, IHasTextureRegion, ISequence } from '@pixi-spine/base';
 import { Slot } from "../Slot";
-import type { HasTextureRegion } from "./HasTextureRegion";
 
 /**
  * @public
  */
-export class Sequence {
+export class Sequence implements ISequence {
 	private static _nextID = 0;
 
 	id = Sequence.nextID();
@@ -28,7 +27,7 @@ export class Sequence {
 		return copy;
 	}
 
-	apply (slot: Slot, attachment: HasTextureRegion) {
+	apply (slot: Slot, attachment: IHasTextureRegion) {
 		let index = slot.sequenceIndex;
 		if (index == -1) index = this.setupIndex;
 		if (index >= this.regions.length) index = this.regions.length - 1;

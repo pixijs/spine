@@ -1246,24 +1246,24 @@ export abstract class AnimationStateAdapter implements AnimationStateListener {
 /** 1. A previously applied timeline has set this property.
  *
  * Result: Mix from the current pose to the timeline pose. */
-export const SUBSEQUENT = 0;
+const SUBSEQUENT = 0;
 /** 1. This is the first timeline to set this property.
  * 2. The next track entry applied after this one does not have a timeline to set this property.
  *
  * Result: Mix from the setup pose to the timeline pose. */
-export const FIRST = 1;
+const FIRST = 1;
 /** 1) A previously applied timeline has set this property.<br>
  * 2) The next track entry to be applied does have a timeline to set this property.<br>
  * 3) The next track entry after that one does not have a timeline to set this property.<br>
  * Result: Mix from the current pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading
  * animations that key the same property. A subsequent timeline will set this property using a mix. */
-export const HOLD_SUBSEQUENT = 2;
+const HOLD_SUBSEQUENT = 2;
 /** 1) This is the first timeline to set this property.<br>
  * 2) The next track entry to be applied does have a timeline to set this property.<br>
  * 3) The next track entry after that one does not have a timeline to set this property.<br>
  * Result: Mix from the setup pose to the timeline pose, but do not mix out. This avoids "dipping" when crossfading animations
  * that key the same property. A subsequent timeline will set this property using a mix. */
-export const HOLD_FIRST = 3;
+const HOLD_FIRST = 3;
 /** 1. This is the first timeline to set this property.
  * 2. The next track entry to be applied does have a timeline to set this property.
  * 3. The next track entry after that one does have a timeline to set this property.
@@ -1276,7 +1276,7 @@ export const HOLD_FIRST = 3;
  * "dipping" A is not mixed out, however D (the first entry that doesn't set the property) mixing in is used to mix out A
  * (which affects B and C). Without using D to mix out, A would be applied fully until mixing completes, then snap into
  * place. */
-export const HOLD_MIX = 4;
+const HOLD_MIX = 4;
 
-export const SETUP = 1;
-export const CURRENT = 2;
+const SETUP = 1;
+const CURRENT = 2;

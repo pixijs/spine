@@ -1,6 +1,8 @@
 
-import {AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment,
-    PathAttachment, PointAttachment, ClippingAttachment} from './attachments';
+import {
+    AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment,
+    PathAttachment, PointAttachment, ClippingAttachment, Sequence
+} from './attachments';
 import type {TextureAtlas} from "@pixi-spine/base";
 import type {Skin} from "./Skin";
 
@@ -10,49 +12,60 @@ import type {Skin} from "./Skin";
 export class AtlasAttachmentLoader implements AttachmentLoader {
     atlas: TextureAtlas;
 
-    constructor(atlas: TextureAtlas) {
+    constructor (atlas: TextureAtlas) {
         this.atlas = atlas;
     }
 
-    /** @return May be null to not load an attachment. */
-    // @ts-ignore
-    newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-        let attachment = new RegionAttachment(name);
-        attachment.region = region;
+    loadSequence (name: string, basePath: string, sequence: Sequence) {
+        let regions = sequence.regions;
+        for (let i = 0, n = regions.length; i < n; i++) {
+            let path = sequence.getPath(basePath, i);
+            let region = this.atlas.findRegion(path);
+            if (region == null) throw new Error("Region not found in atlas: " + path + " (sequence: " + name + ")");
+            regions[i] = region;
+            regions[i].renderObject = regions[i];
+        }
+    }
+
+    newRegionAttachment (skin: Skin, name: string, path: string, sequence: Sequence): RegionAttachment {
+        let attachment = new RegionAttachment(name, path);
+        if (sequence != null) {
+            this.loadSequence(name, path, sequence);
+        } else {
+            let region = this.atlas.findRegion(path);
+            if (!region) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
+            region.renderObject = region;
+            attachment.region = region;
+        }
         return attachment;
     }
 
-    /** @return May be null to not load an attachment. */
-    // @ts-ignore
-    newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-        let attachment = new MeshAttachment(name);
-        attachment.region = region;
+    newMeshAttachment (skin: Skin, name: string, path: string, sequence: Sequence): MeshAttachment {
+        let attachment = new MeshAttachment(name, path);
+        if (sequence != null) {
+            this.loadSequence(name, path, sequence);
+        } else {
+            let region = this.atlas.findRegion(path);
+            if (!region) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
+            region.renderObject = region;
+            attachment.region = region;
+        }
         return attachment;
     }
 
-    /** @return May be null to not load an attachment. */
-    // @ts-ignore
-    newBoundingBoxAttachment(skin: Skin, name: string): BoundingBoxAttachment {
+    newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment {
         return new BoundingBoxAttachment(name);
     }
 
-    /** @return May be null to not load an attachment */
-    // @ts-ignore
-    newPathAttachment(skin: Skin, name: string): PathAttachment {
+    newPathAttachment (skin: Skin, name: string): PathAttachment {
         return new PathAttachment(name);
     }
 
-    // @ts-ignore
-    newPointAttachment(skin: Skin, name: string): PointAttachment {
+    newPointAttachment (skin: Skin, name: string): PointAttachment {
         return new PointAttachment(name);
     }
 
-    // @ts-ignore
-    newClippingAttachment(skin: Skin, name: string): ClippingAttachment {
+    newClippingAttachment (skin: Skin, name: string): ClippingAttachment {
         return new ClippingAttachment(name);
     }
 }
