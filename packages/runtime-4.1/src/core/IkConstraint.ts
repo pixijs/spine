@@ -48,9 +48,14 @@ export class IkConstraint implements Updatable {
         this.stretch = data.stretch;
 
         this.bones = new Array<Bone>();
-        for (let i = 0; i < data.bones.length; i++)
-            this.bones.push(skeleton.findBone(data.bones[i].name));
-        this.target = skeleton.findBone(data.target.name);
+        for (let i = 0; i < data.bones.length; i++) {
+            let bone = skeleton.findBone(data.bones[i].name);
+            if (!bone) throw new Error(`Couldn't find bone ${data.bones[i].name}`);
+            this.bones.push(bone);
+        }
+        let target = skeleton.findBone(data.target.name);
+        if (!target) throw new Error(`Couldn't find bone ${data.target.name}`);
+        this.target = target;
     }
 
     isActive () {
@@ -74,7 +79,7 @@ export class IkConstraint implements Updatable {
     /** Applies 1 bone IK. The target is specified in the world coordinate system. */
     apply1 (bone: Bone, targetX: number, targetY: number, compress: boolean, stretch: boolean, uniform: boolean, alpha: number) {
         let p = bone.parent.matrix;
-
+        if (!p) throw new Error("IK bone must have parent.");
         let pa = p.a, pb = p.c, pc = p.b, pd = p.d;
         let rotationIK = -bone.ashearX - bone.arotation, tx = 0, ty = 0;
 
@@ -164,6 +169,7 @@ export class IkConstraint implements Updatable {
             cwy = c * cx + d * cy + pmat.ty;
         }
         let pp = parent.parent.matrix;
+        if (!pp) throw new Error("IK parent must itself have a parent.");
         a = pp.a;
         b = pp.c;
         c = pp.b;

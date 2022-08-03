@@ -11,7 +11,12 @@ export class IkConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
 
     /** The bone that is the IK target. */
-    target: BoneData;
+    private _target: BoneData | null = null;
+    public set target (boneData: BoneData) { this._target = boneData; }
+    public get target () {
+        if (!this._target) throw new Error("BoneData not set.")
+        else return this._target;
+    }
 
     /** Controls the bend direction of the IK bones, either 1 or -1. */
     bendDirection = 1;

@@ -12,19 +12,17 @@ import {MathUtils, PositionMode, RotateMode, Utils} from "@pixi-spine/base";
  * @public
  * */
 export class PathConstraint implements Updatable {
-    static NONE = -1;
-    static BEFORE = -2;
-    static AFTER = -3;
+    static NONE = -1; static BEFORE = -2; static AFTER = -3;
     static epsilon = 0.00001;
 
     /** The path constraint's setup pose data. */
-    data: PathConstraintData = null;
+    data: PathConstraintData;
 
     /** The bones that will be modified by this path constraint. */
-    bones: Array<Bone> = null;
+    bones: Array<Bone>;
 
     /** The slot whose path attachment will be used to constrained the bones. */
-    target: Slot = null;
+    target: Slot;
 
     /** The position along the path. */
     position = 0;
@@ -38,23 +36,25 @@ export class PathConstraint implements Updatable {
 
     mixY = 0;
 
-    spaces = new Array<number>();
-    positions = new Array<number>();
-    world = new Array<number>();
-    curves = new Array<number>();
-    lengths = new Array<number>();
+    spaces = new Array<number>(); positions = new Array<number>();
+    world = new Array<number>(); curves = new Array<number>(); lengths = new Array<number>();
     segments = new Array<number>();
 
     active = false;
 
-    constructor(data: PathConstraintData, skeleton: Skeleton) {
+    constructor (data: PathConstraintData, skeleton: Skeleton) {
         if (!data) throw new Error("data cannot be null.");
         if (!skeleton) throw new Error("skeleton cannot be null.");
         this.data = data;
         this.bones = new Array<Bone>();
-        for (let i = 0, n = data.bones.length; i < n; i++)
-            this.bones.push(skeleton.findBone(data.bones[i].name));
-        this.target = skeleton.findSlot(data.target.name);
+        for (let i = 0, n = data.bones.length; i < n; i++) {
+            let bone = skeleton.findBone(data.bones[i].name);
+            if (!bone) throw new Error(`Couldn't find bone ${data.bones[i].name}.`);
+            this.bones.push(bone);
+        }
+        let target = skeleton.findSlot(data.target.name);
+        if (!target) throw new Error(`Couldn't find target bone ${data.target.name}`);
+        this.target = target;
         this.position = data.position;
         this.spacing = data.spacing;
         this.mixRotate = data.mixRotate;
@@ -62,11 +62,11 @@ export class PathConstraint implements Updatable {
         this.mixY = data.mixY;
     }
 
-    isActive() {
+    isActive () {
         return this.active;
     }
 
-    update() {
+    update () {
         let attachment = this.target.getAttachment();
         if (!(attachment instanceof PathAttachment)) return;
 
@@ -78,8 +78,7 @@ export class PathConstraint implements Updatable {
 
         let bones = this.bones;
         let boneCount = bones.length, spacesCount = tangents ? boneCount : boneCount + 1;
-        let spaces = Utils.setArraySize(this.spaces, spacesCount),
-            lengths: Array<number> = scale ? this.lengths = Utils.setArraySize(this.lengths, boneCount) : null;
+        let spaces = Utils.setArraySize(this.spaces, spacesCount), lengths: Array<number> = scale ? this.lengths = Utils.setArraySize(this.lengths, boneCount) : [];
         let spacing = this.spacing;
 
         switch (data.spacingMode) {
@@ -197,11 +196,10 @@ export class PathConstraint implements Updatable {
         }
     }
 
-    computeWorldPositions(path: PathAttachment, spacesCount: number, tangents: boolean) {
+    computeWorldPositions (path: PathAttachment, spacesCount: number, tangents: boolean) {
         let target = this.target;
         let position = this.position;
-        let spaces = this.spaces, out = Utils.setArraySize(this.positions, spacesCount * 3 + 2),
-            world: Array<number> = null;
+        let spaces = this.spaces, out = Utils.setArraySize(this.positions, spacesCount * 3 + 2), world: Array<number> = this.world;
         let closed = path.closed;
         let verticesLength = path.worldVerticesLength, curveCount = verticesLength / 6, prevCurve = PathConstraint.NONE;
 
@@ -431,22 +429,22 @@ export class PathConstraint implements Updatable {
         return out;
     }
 
-    addBeforePosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+    addBeforePosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
         let x1 = temp[i], y1 = temp[i + 1], dx = temp[i + 2] - x1, dy = temp[i + 3] - y1, r = Math.atan2(dy, dx);
         out[o] = x1 + p * Math.cos(r);
         out[o + 1] = y1 + p * Math.sin(r);
         out[o + 2] = r;
     }
 
-    addAfterPosition(p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
+    addAfterPosition (p: number, temp: Array<number>, i: number, out: Array<number>, o: number) {
         let x1 = temp[i + 2], y1 = temp[i + 3], dx = x1 - temp[i], dy = y1 - temp[i + 1], r = Math.atan2(dy, dx);
         out[o] = x1 + p * Math.cos(r);
         out[o + 1] = y1 + p * Math.sin(r);
         out[o + 2] = r;
     }
 
-    addCurvePosition(p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
-                     out: Array<number>, o: number, tangents: boolean) {
+    addCurvePosition (p: number, x1: number, y1: number, cx1: number, cy1: number, cx2: number, cy2: number, x2: number, y2: number,
+                      out: Array<number>, o: number, tangents: boolean) {
         if (p == 0 || isNaN(p)) {
             out[o] = x1;
             out[o + 1] = y1;

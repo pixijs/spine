@@ -37,9 +37,14 @@ export class TransformConstraint implements Updatable {
         this.mixScaleY = data.mixScaleY;
         this.mixShearY = data.mixShearY;
         this.bones = new Array<Bone>();
-        for (let i = 0; i < data.bones.length; i++)
-            this.bones.push(skeleton.findBone(data.bones[i].name));
-        this.target = skeleton.findBone(data.target.name);
+        for (let i = 0; i < data.bones.length; i++) {
+            let bone = skeleton.findBone(data.bones[i].name);
+            if (!bone) throw new Error(`Couldn't find bone ${data.bones[i].name}.`);
+            this.bones.push(bone);
+        }
+        let target = skeleton.findBone(data.target.name);
+        if (!target) throw new Error(`Couldn't find target bone ${data.target.name}.`);
+        this.target = target;
     }
 
     isActive () {

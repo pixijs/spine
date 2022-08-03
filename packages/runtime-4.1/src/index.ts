@@ -1,6 +1,4 @@
 export * from './core/attachments';
-export * from './core/vertexeffects/JitterEffect';
-export * from './core/vertexeffects/SwirlEffect';
 export * from './core/Animation';
 export * from './core/AnimationState';
 export * from './core/AnimationStateData';

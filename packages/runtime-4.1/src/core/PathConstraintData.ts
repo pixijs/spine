@@ -14,25 +14,30 @@ export class PathConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
 
     /** The slot whose path attachment will be used to constrained the bones. */
-    target: SlotData;
+    private _target: SlotData | null = null;
+    public set target (slotData: SlotData) { this._target = slotData; }
+    public get target () {
+        if (!this._target) throw new Error("SlotData not set.")
+        else return this._target;
+    }
 
     /** The mode for positioning the first bone on the path. */
-    positionMode: PositionMode;
+    positionMode: PositionMode = PositionMode.Fixed;
 
     /** The mode for positioning the bones after the first bone on the path. */
-    spacingMode: SpacingMode;
+    spacingMode: SpacingMode = SpacingMode.Fixed;
 
     /** The mode for adjusting the rotation of the bones. */
-    rotateMode: RotateMode;
+    rotateMode: RotateMode = RotateMode.Chain;
 
     /** An offset added to the constrained bone rotation. */
-    offsetRotation: number;
+    offsetRotation: number = 0;
 
     /** The position along the path. */
-    position: number;
+    position: number = 0;
 
     /** The spacing between bones. */
-    spacing: number;
+    spacing: number = 0;
 
     mixRotate = 0;
     mixX = 0;

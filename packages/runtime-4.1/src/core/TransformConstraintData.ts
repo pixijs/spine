@@ -12,7 +12,12 @@ export class TransformConstraintData extends ConstraintData {
     bones = new Array<BoneData>();
 
     /** The target bone whose world transform will be copied to the constrained bones. */
-    target: BoneData;
+    private _target: BoneData | null = null;
+    public set target (boneData: BoneData) { this._target = boneData; }
+    public get target () {
+        if (!this._target) throw new Error("BoneData not set.")
+        else return this._target;
+    }
 
     mixRotate = 0;
     mixX = 0;
