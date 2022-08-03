@@ -1,13 +1,16 @@
 import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color, IMeshAttachment, TextureRegion, Utils} from '@pixi-spine/base';
+import {AttachmentType, Color, IMeshAttachment, NumberArrayLike, TextureRegion, Utils} from '@pixi-spine/base';
+import {HasTextureRegion} from './HasTextureRegion';
+import {Sequence} from './Sequence';
+import type {Slot} from '../Slot';
 
 /**
  * @public
  */
-export class MeshAttachment extends VertexAttachment implements IMeshAttachment {
+export class MeshAttachment extends VertexAttachment implements IMeshAttachment, HasTextureRegion {
     type = AttachmentType.Mesh;
 
-    region: TextureRegion;
+    region: TextureRegion | null = null;
 
     /** The name of the texture region for this attachment. */
     path: string;
@@ -16,29 +19,33 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     regionUVs: Float32Array;
 
     /** Triplets of vertex indices which describe the mesh's triangulation. */
-    triangles: Array<number>;
+    triangles: Array<number> = [];
 
     /** The color to tint the mesh. */
     color = new Color(1, 1, 1, 1);
 
     /** The width of the mesh's image. Available only when nonessential data was exported. */
-    width: number;
+    width: number = 0;
 
     /** The height of the mesh's image. Available only when nonessential data was exported. */
-    height: number;
+    height: number = 0;
 
     /** The number of entries at the beginning of {@link #vertices} that make up the mesh hull. */
-    hullLength: number;
+    hullLength: number = 0;
 
     /** Vertex index pairs describing edges for controling triangulation. Mesh triangles will never cross edges. Only available if
      * nonessential data was exported. Triangulation is not performed at runtime. */
-    edges: Array<number>;
+    edges: Array<number> = [];
 
-    private parentMesh: MeshAttachment;
+    private parentMesh: MeshAttachment | null = null;
+
+    sequence: Sequence | null = null;
+
     tempColor = new Color(0, 0, 0, 0);
 
-    constructor (name: string) {
+    constructor (name: string, path: string) {
         super(name);
+        this.path = path;
     }
 
     /** The parent mesh if this is a linked mesh, else null. A linked mesh shares the {@link #bones}, {@link #vertices},
@@ -65,9 +72,8 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     copy (): Attachment {
         if (this.parentMesh) return this.newLinkedMesh();
 
-        let copy = new MeshAttachment(this.name);
+        let copy = new MeshAttachment(this.name, this.path);
         copy.region = this.region;
-        copy.path = this.path;
         copy.color.setFromColor(this.color);
 
         this.copyTo(copy);
@@ -76,6 +82,8 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         copy.triangles = new Array<number>(this.triangles.length);
         Utils.arrayCopy(this.triangles, 0, copy.triangles, 0, this.triangles.length);
         copy.hullLength = this.hullLength;
+
+        copy.sequence = this.sequence != null ? this.sequence.copy() : null;
 
         // Nonessential.
         if (this.edges) {
@@ -88,15 +96,19 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         return copy;
     }
 
+    computeWorldVertices (slot: Slot, start: number, count: number, worldVertices: NumberArrayLike, offset: number, stride: number) {
+        if (this.sequence != null) this.sequence.apply(slot, this);
+        super.computeWorldVertices(slot, start, count, worldVertices, offset, stride);
+    }
+
     /** Returns a new mesh with the {@link #parentMesh} set to this mesh's parent mesh, if any, else to this mesh. **/
     newLinkedMesh (): MeshAttachment {
-        let copy = new MeshAttachment(this.name);
+        let copy = new MeshAttachment(this.name, this.path);
         copy.region = this.region;
-        copy.path = this.path;
         copy.color.setFromColor(this.color);
-        copy.deformAttachment = this.deformAttachment;
+        copy.timelineAttachment = this.timelineAttachment;
         copy.setParentMesh(this.parentMesh ? this.parentMesh : this);
-        // copy.updateUVs();
+        // if (copy.region != null) copy.updateRegion();
         return copy;
     }
 }

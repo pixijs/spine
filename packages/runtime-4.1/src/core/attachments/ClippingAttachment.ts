@@ -7,7 +7,9 @@ import type {SlotData} from '../SlotData';
  */
 export class ClippingAttachment extends VertexAttachment implements IClippingAttachment {
     type = AttachmentType.Clipping;
-    endSlot: SlotData;
+    /** Clipping is performed between the clipping polygon's slot and the end slot. Returns null if clipping is done until the end of
+     * the skeleton's rendering. */
+    endSlot: SlotData | null = null;
 
     // Nonessential.
     /** The color of the clipping polygon as it was in Spine. Available only when nonessential data was exported. Clipping polygons
@@ -26,3 +28,4 @@ export class ClippingAttachment extends VertexAttachment implements IClippingAtt
         return copy;
     }
 }
+

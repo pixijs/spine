@@ -8,7 +8,9 @@ import type {Bone} from '../Bone';
 export class PointAttachment extends VertexAttachment {
     type = AttachmentType.Point;
 
-    x: number; y: number; rotation: number;
+    x: number = 0;
+    y: number = 0;
+    rotation: number = 0;
 
     /** The color of the point attachment as it was in Spine. Available only when nonessential data was exported. Point attachments
      * are not usually rendered at runtime. */
