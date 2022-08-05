@@ -26,6 +26,35 @@ import {settings} from "./settings";
 
 let tempRgb = [0, 0, 0];
 
+type DebugDisplayObjects = {        
+    bones: Container;
+    skeletonXY: Graphics;
+    regionAttachmentsShape: Graphics;
+    meshTrianglesLine: Graphics;
+    meshHullLine: Graphics;
+    clippingPolygon: Graphics;
+    boundingBoxesRect: Graphics;
+    boundingBoxesCircle: Graphics;
+    boundingBoxesPolygon: Graphics;
+    pathsCurve: Graphics;
+    pathsLine: Graphics;
+}
+
+interface DebugOptions {
+    lineWidth: number; // 1
+    regionAttachmentsColor: number; // 0x0078ff
+    meshHullColor: number; // 0x0078ff
+    meshTrianglesColor: number; // 0xffcc00
+    clippingPolygonColor: number; // 0xff00ff
+    boundingBoxesRectColor: number; // 0x00ff00
+    boundingBoxesPolygonColor: number; // 0x00ff00
+    boundingBoxesCircleColor: number; // 0x00ff00
+    pathsCurveColor: number; // 0xff0000
+    pathsLineColor: number; // 0xff00ff
+    skeletonXYColor:number; // 0xff0000
+    bonesColor:number; // 0x00eecc
+}
+
 /**
  * @public
  */
@@ -74,7 +103,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     AnimationState extends IAnimationState,
     AnimationStateData extends IAnimationStateData>
     extends Container implements GlobalMixins.Spine {
-
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;
     skeleton: Skeleton;
@@ -85,6 +113,38 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     localDelayLimit: number;
     private _autoUpdate: boolean;
     protected _visible: boolean;
+    private debugObjects: DebugDisplayObjects;
+    private debugContainer: Container;
+    readonly debugOptions: DebugOptions;
+
+    private _drawDebug: boolean = false;
+    public get drawDebug(): boolean {
+        return this._drawDebug;
+    }
+    public set drawDebug(value: boolean) {
+        if (value === this._drawDebug) {
+            return;
+        }
+
+        if (value) {
+            if (this.debugContainer === undefined || this.debugObjects === undefined) {
+                this.createDebug();
+            }
+            this.addChild(this.debugContainer);
+        } else {
+            this.removeChild(this.debugContainer);
+        }
+
+        this._drawDebug = value;
+    }
+    public drawMeshHull: boolean = true;
+    public drawMeshTriangles: boolean = true;
+    public drawBones: boolean = true;
+    public drawPaths: boolean = true;
+    public drawBoundingBoxes: boolean = true;
+    public drawClipping: boolean = true;
+    public drawRegionAttachments: boolean = true;
+
 
     abstract createSkeleton(spineData: ISkeletonData);
 
@@ -162,6 +222,21 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
         this.autoUpdate = true;
         this.visible = true;
+
+        this.debugOptions = {
+            lineWidth: 1,
+            regionAttachmentsColor: 0x0078ff,
+            meshHullColor: 0x0078ff,
+            meshTrianglesColor: 0xffcc00,
+            clippingPolygonColor: 0xff00ff,
+            boundingBoxesRectColor: 0x00ff00,
+            boundingBoxesPolygonColor: 0x00ff00,
+            boundingBoxesCircleColor: 0x00ff00,
+            pathsCurveColor: 0xff0000,
+            pathsLineColor: 0xff00ff,
+            skeletonXYColor: 0xff0000,
+            bonesColor: 0x00eecc
+        }
     }
 
     /**
@@ -471,6 +546,12 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 }
             }
         }
+
+        // Easy debug, read the private variable just to save the extra getter call.
+        if (this._drawDebug)
+        {
+            this.updateDebug();
+        }
     };
 
     private setSpriteRegion(attachment: IRegionAttachment, sprite: SpineSprite, region: TextureRegion) {
@@ -766,6 +847,385 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         return [list_d, list_n];
     };
 
+    /**
+     * The debug objects don't exist until you turn debug to true for the first time.
+     * Just to be extra paranoid on the memory footprint.
+     */
+    private createDebug() {
+        if (this.debugContainer === undefined) {
+            this.debugContainer = new Container();
+        }
+
+        if (this.debugObjects === undefined){
+            this.debugObjects = {
+                bones: new Container(),
+                skeletonXY: new Graphics(),
+                regionAttachmentsShape: new Graphics(),
+                meshTrianglesLine: new Graphics(),
+                meshHullLine: new Graphics(),
+                clippingPolygon: new Graphics(),
+                boundingBoxesRect: new Graphics(),
+                boundingBoxesCircle: new Graphics(),
+                boundingBoxesPolygon: new Graphics(),
+                pathsCurve: new Graphics(),
+                pathsLine: new Graphics(),
+            };
+            let key: keyof typeof this.debugObjects;
+            for (key in this.debugObjects) {
+                this.debugContainer.addChild(this.debugObjects[key]);
+            }
+        }
+    }
+
+    private updateDebug()
+    {
+
+        // clear all the debug objects
+        let key: keyof typeof this.debugObjects;
+        for (key in this.debugObjects) {
+            const elem = this.debugObjects[key];
+            if (elem instanceof Graphics) {
+                elem.clear();
+            } else if (elem instanceof Container) {
+                for (let len = elem.children.length; len > 0; len--) {
+                    elem.children[len - 1].destroy({ children: true, texture: true, baseTexture: true });
+                }
+            }
+        }
+
+        const scale = this.scale.x || this.scale.y || 1;
+		const lineWidth = this.debugOptions.lineWidth / scale;
+
+        if (this.drawBones) {
+            this.drawBonesFunc(lineWidth, scale);
+        }
+
+        if (this.drawPaths) {
+            this.drawPathsFunc(lineWidth);
+        }
+
+        if (this.drawBoundingBoxes) {
+            this.drawBoundingBoxesFunc(lineWidth);
+        }
+
+        if (this.drawClipping) {
+            this.drawClippingFunc(lineWidth);
+        }
+
+        if (this.drawMeshHull || this.drawMeshTriangles) {
+            this.drawMeshHullAndMeshTriangles(lineWidth);
+        }
+
+        if (this.drawRegionAttachments) {
+            this.drawRegionAttachmentsFunc(lineWidth);
+        }
+    }
+
+    private drawBonesFunc(lineWidth:number, scale:number): void {
+		const skeleton = this.skeleton;
+		const skeletonX = skeleton.x;
+		const skeletonY = skeleton.y;
+		const bones = skeleton.bones;
+
+		this.debugObjects.skeletonXY.lineStyle(lineWidth, 0xff0000, 1);
+
+		for (let i = 0, len = bones.length; i < len; i++) {
+			const bone = bones[i],
+				boneLen = bone.data.length,
+				starX = skeletonX + bone.worldX,
+				starY = skeletonY + bone.worldY,
+				endX = skeletonX + boneLen * bone.matrix.a + bone.worldX,
+				endY = skeletonY + boneLen * bone.matrix.b + bone.worldY;
+
+			if (bone.data.name === "root" || bone.parent === null) {
+				continue;
+			}
+
+			// 三角形计算公式
+			// 面积 A=sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4
+			// 阿尔法 alpha=acos((pow(b, 2)+pow(c, 2)-pow(a, 2))/(2*b*c))
+			// 贝塔 beta=acos((pow(a, 2)+pow(c, 2)-pow(b, 2))/(2*a*c))
+			// 伽马 gamma=acos((pow(a, 2)+pow(b, 2)-pow(c, 2))/(2*a*b))
+
+			const w = Math.abs(starX - endX),
+				h = Math.abs(starY - endY),
+				// a = w,                                              // 边长a
+				a2 = Math.pow(w, 2), // 边长a平方根
+				b = h, // 边长b
+				b2 = Math.pow(h, 2), // 边长b平方根
+				c = Math.sqrt(a2 + b2), // 边长c
+				c2 = Math.pow(c, 2), // 边长c平方根
+				rad = Math.PI / 180,
+				// A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0,   // A角角度
+				// C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0,   // C角角度
+				B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // B角角度
+			if (c === 0) {
+				continue;
+			}
+
+			const gp = new Graphics();
+			this.debugObjects.bones.addChild(gp);
+
+			// 绘制骨骼线条
+			const refRation = c / 50 / scale;
+			gp.beginFill(0x00eecc, 1);
+			gp.drawPolygon(0, 0, 0 - refRation, c - refRation * 3, 0, c - refRation, 0 + refRation, c - refRation * 3);
+			gp.endFill();
+			gp.x = starX;
+			gp.y = starY;
+			gp.pivot.y = c;
+
+			// 计算骨骼旋转角度
+			let rotation = 0;
+			if (starX < endX && starY < endY) {
+				// 右下
+				rotation = -B + 180 * rad;
+			} else if (starX > endX && starY < endY) {
+				// 左下
+				rotation = 180 * rad + B;
+			} else if (starX > endX && starY > endY) {
+				// 左上
+				rotation = -B;
+			} else if (starX < endX && starY > endY) {
+				// 左下
+				rotation = B;
+			} else if (starY === endY && starX < endX) {
+				// 向右
+				rotation = 90 * rad;
+			} else if (starY === endY && starX > endX) {
+				// 向左
+				rotation = -90 * rad;
+			} else if (starX === endX && starY < endY) {
+				// 向下
+				rotation = 180 * rad;
+			} else if (starX === endX && starY > endY) {
+				// 向上
+				rotation = 0;
+			}
+			gp.rotation = rotation;
+
+			// 绘制骨骼起始旋转点
+			gp.lineStyle(lineWidth + refRation / 2.4, 0x00eecc, 1);
+			gp.beginFill(0x000000, 0.6);
+			gp.drawCircle(0, c, refRation * 1.2);
+			gp.endFill();
+		}
+
+		// 绘制骨架起点『X』形式
+		const startDotSize = lineWidth * 3;
+		this.debugObjects.skeletonXY.moveTo(skeletonX - startDotSize, skeletonY - startDotSize);
+		this.debugObjects.skeletonXY.lineTo(skeletonX + startDotSize, skeletonY + startDotSize);
+		this.debugObjects.skeletonXY.moveTo(skeletonX + startDotSize, skeletonY - startDotSize);
+		this.debugObjects.skeletonXY.lineTo(skeletonX - startDotSize, skeletonY + startDotSize);
+	}
+
+	private drawRegionAttachmentsFunc(lineWidth:number): void {
+		const skeleton = this.skeleton;
+		const slots = skeleton.slots;
+
+		this.debugObjects.regionAttachmentsShape.lineStyle(lineWidth, 0x0078ff, 1);
+
+		for (let i = 0, len = slots.length; i < len; i++) {
+			const slot = slots[i],
+				attachment = slot.getAttachment();
+			if (!(attachment instanceof RegionAttachment)) {
+				continue;
+			}
+
+			const vertices = new Float32Array(8);
+			attachment.updateOffset();
+			attachment.computeWorldVertices(slot.bone, vertices, 0, 2);
+			this.debugObjects.regionAttachmentsShape.drawPolygon([...vertices.slice(0, 8)]);
+			// this.debugObjects.regionAttachmentsShape.moveTo(vertices[0],vertices[1]);
+			// this.debugObjects.regionAttachmentsShape.lineTo(vertices[2],vertices[3]);
+			// this.debugObjects.regionAttachmentsShape.lineTo(vertices[4],vertices[5]);
+			// this.debugObjects.regionAttachmentsShape.lineTo(vertices[6],vertices[7]);
+			// this.debugObjects.regionAttachmentsShape.lineTo(vertices[0],vertices[1]);
+		}
+	}
+
+	// 绘制蒙皮
+	private drawMeshHullAndMeshTriangles(lineWidth:number): void {
+		const skeleton = this.skeleton;
+		const slots = skeleton.slots;
+
+		this.debugObjects.meshHullLine.lineStyle(lineWidth, 0x0078ff, 1);
+		this.debugObjects.meshTrianglesLine.lineStyle(lineWidth, 0xffcc00, 1);
+
+		for (let i = 0, len = slots.length; i < len; i++) {
+			const slot = slots[i];
+			if (!slot.bone.active) {
+				continue;
+			}
+			const attachment = slot.getAttachment();
+			if (!(attachment instanceof MeshAttachment)) {
+				continue;
+			}
+
+			const vertices = new Float32Array(attachment.vertices.length),
+				triangles = attachment.triangles;
+			let hullLength = attachment.hullLength;
+			attachment.computeWorldVertices(slot, 0, attachment.worldVerticesLength, vertices, 0, 2);
+			// 画蒙皮网格（三角形）
+			if (this.drawMeshTriangles) {
+				for (let i = 0, len = triangles.length; i < len; i += 3) {
+					const v1 = triangles[i] * 2,
+						v2 = triangles[i + 1] * 2,
+						v3 = triangles[i + 2] * 2;
+					this.debugObjects.meshTrianglesLine.moveTo(vertices[v1], vertices[v1 + 1]);
+					this.debugObjects.meshTrianglesLine.lineTo(vertices[v2], vertices[v2 + 1]);
+					this.debugObjects.meshTrianglesLine.lineTo(vertices[v3], vertices[v3 + 1]);
+				}
+			}
+
+			// 画蒙皮边框
+			if (this.drawMeshHull && hullLength > 0) {
+				hullLength = (hullLength >> 1) * 2;
+				let lastX = vertices[hullLength - 2],
+					lastY = vertices[hullLength - 1];
+				for (let i = 0, len = hullLength; i < len; i += 2) {
+					const x = vertices[i],
+						y = vertices[i + 1];
+					this.debugObjects.meshHullLine.moveTo(x, y);
+					this.debugObjects.meshHullLine.lineTo(lastX, lastY);
+					lastX = x;
+					lastY = y;
+				}
+			}
+		}
+	}
+
+	// 蒙版区域
+	private drawClippingFunc(lineWidth:number): void {
+		const skeleton = this.skeleton;
+		const slots = skeleton.slots;
+
+		this.debugObjects.clippingPolygon.lineStyle(lineWidth, 0xff00ff, 1);
+		for (let i = 0, len = slots.length; i < len; i++) {
+			const slot = slots[i];
+			if (!slot.bone.active) {
+				continue;
+			}
+			const attachment = slot.getAttachment();
+			if (!(attachment instanceof ClippingAttachment)) {
+				continue;
+			}
+
+			const nn = attachment.worldVerticesLength,
+				world = new Float32Array(nn);
+			attachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
+			this.debugObjects.clippingPolygon.drawPolygon([...world]);
+		}
+	}
+
+	// 绘制边界框
+	private drawBoundingBoxesFunc(lineWidth:number): void {
+		// 绘制边界框的总外框
+		this.debugObjects.boundingBoxesRect.lineStyle(lineWidth, 0x00ff00, 5);
+
+		const bounds = new SkeletonBounds();
+		bounds.update(this.skeleton, true);
+		this.debugObjects.boundingBoxesRect.drawRect(bounds.minX, bounds.minY, bounds.getWidth(), bounds.getHeight());
+
+		const polygons = bounds.polygons,
+			drawPolygon = (polygonVertices: ArrayLike<number>, _offset: unknown, count: number): void => {
+				this.debugObjects.boundingBoxesPolygon.lineStyle(lineWidth, 0x00ff00, 1);
+				this.debugObjects.boundingBoxesPolygon.beginFill(0x00ff00, 0.1);
+
+				if (count < 3) {
+					throw new Error("Polygon must contain at least 3 vertices");
+				}
+				const paths = [],
+					dotSize = lineWidth * 2;
+				for (let i = 0, len = polygonVertices.length; i < len; i += 2) {
+					const x1 = polygonVertices[i],
+						y1 = polygonVertices[i + 1];
+
+					// 绘制边界框节点
+					this.debugObjects.boundingBoxesCircle.lineStyle(0);
+					this.debugObjects.boundingBoxesCircle.beginFill(0x00dd00);
+					this.debugObjects.boundingBoxesCircle.drawCircle(x1, y1, dotSize);
+					this.debugObjects.boundingBoxesCircle.endFill();
+
+					paths.push(x1, y1);
+				}
+
+				// 绘制边界框区域
+				this.debugObjects.boundingBoxesPolygon.drawPolygon(paths);
+				this.debugObjects.boundingBoxesPolygon.endFill();
+			};
+
+		for (let i = 0, len = polygons.length; i < len; i++) {
+			const polygon = polygons[i];
+			drawPolygon(polygon, 0, polygon.length);
+		}
+	}
+
+	// 绘制路径
+	private drawPathsFunc(lineWidth:number): void {
+		const skeleton = this.skeleton;
+		const slots = skeleton.slots;
+
+		this.debugObjects.pathsCurve.lineStyle(lineWidth, 0xff0000, 1);
+		this.debugObjects.pathsLine.lineStyle(lineWidth, 0xff00ff, 1);
+
+		for (let i = 0, len = slots.length; i < len; i++) {
+			const slot = slots[i];
+			if (!slot.bone.active) {
+				continue;
+			}
+			const attachment = slot.getAttachment();
+			if (attachment instanceof PathAttachment) {
+				let nn = attachment.worldVerticesLength;
+				const world = new Float32Array(nn);
+				attachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
+				let x1 = world[2],
+					y1 = world[3],
+					x2 = 0,
+					y2 = 0;
+				if (attachment.closed) {
+					const cx1 = world[0],
+						cy1 = world[1],
+						cx2 = world[nn - 2],
+						cy2 = world[nn - 1];
+					x2 = world[nn - 4];
+					y2 = world[nn - 3];
+
+					// 曲线
+					this.debugObjects.pathsCurve.moveTo(x1, y1);
+					this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+
+					// 句柄
+					this.debugObjects.pathsLine.moveTo(x1, y1);
+					this.debugObjects.pathsLine.lineTo(cx1, cy1);
+					this.debugObjects.pathsLine.moveTo(x2, y2);
+					this.debugObjects.pathsLine.lineTo(cx2, cy2);
+				}
+				nn -= 4;
+				for (let ii = 4; ii < nn; ii += 6) {
+					const cx1 = world[ii],
+						cy1 = world[ii + 1],
+						cx2 = world[ii + 2],
+						cy2 = world[ii + 3];
+					x2 = world[ii + 4];
+					y2 = world[ii + 5];
+					// 曲线
+					this.debugObjects.pathsCurve.moveTo(x1, y1);
+					this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+
+					// 句柄
+					this.debugObjects.pathsLine.moveTo(x1, y1);
+					this.debugObjects.pathsLine.lineTo(cx1, cy1);
+					this.debugObjects.pathsLine.moveTo(x2, y2);
+					this.debugObjects.pathsLine.lineTo(cx2, cy2);
+					x1 = x2;
+					y1 = y2;
+				}
+			}
+		}
+	}
+
+
     destroy(options?: any): void {
         for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
             let slot = this.skeleton.slots[i];
@@ -789,6 +1249,20 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         this.stateData = null;
         this.state = null;
         this.tempClipContainers = null;
+
+        if (this.debugObjects)
+        {
+            let key: keyof typeof this.debugObjects;
+            for (key in this.debugObjects) {
+                this.debugContainer.destroy({baseTexture:options?.baseTexture,children:true,texture:options?.texture});
+            }
+            this.debugObjects = null;
+        }
+        if (this.debugContainer)
+        {
+            this.debugContainer.destroy({baseTexture:options?.baseTexture,children:true,texture:options?.texture});
+            this.debugContainer = null;
+        }
 
         super.destroy(options);
     }
