@@ -13,7 +13,7 @@ const results = main({
 
 // TODO: get sorted deps of all our @pixi-spine deps
 
-const umdDeps = ['@pixi/app', '@pixi/constants', '@pixi/core', '@pixi/display', '@pixi/graphics',
+const umdDeps = ['@pixi/constants', '@pixi/core', '@pixi/display', '@pixi/graphics',
     '@pixi/loaders', '@pixi/math', '@pixi/mesh-extras', '@pixi/sprite', '@pixi/utils'];
 
 const license1 = 'is licensed under the MIT License.\n * http://www.opensource.org/licenses/mit-license';
