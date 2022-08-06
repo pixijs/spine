@@ -1,4 +1,5 @@
 const { main } = require('@pixi-spine/rollup-config/main');
+const pkg = require('./package.json');
 
 const results = main({
     globals: {
@@ -9,10 +10,13 @@ const results = main({
     },
 });
 
-// TODO: get sorted deps of all our @pixi-spine deps
-
-const umdDeps = ['@pixi/constants', '@pixi/core', '@pixi/display', '@pixi/graphics',
-    '@pixi/loaders', '@pixi/math', '@pixi/mesh-extras', '@pixi/sprite', '@pixi/utils'];
+// Find all the peer deps. Note: This assumes we have only two levels of peer deps.
+let umdDeps = [];
+const deps = Object.keys(pkg.dependencies || {});
+for (let dep of deps) {
+    const p = require(`${dep}/package.json`);
+    umdDeps = umdDeps.concat(Object.keys(p.peerDependencies || {}));
+}
 
 const license1 = 'is licensed under the MIT License.\n * http://www.opensource.org/licenses/mit-license';
 const licenseSpine = 'is licensed under SPINE-LICENSE\n * http://esotericsoftware.com/spine-runtimes-license';
