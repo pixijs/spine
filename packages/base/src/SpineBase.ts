@@ -345,7 +345,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             let region = (attachment as IRegionAttachment).region;
 
             let attColor = (attachment as any).color;
-            switch (attachment.type) {
+            switch (attachment != null && attachment.type) {
                 case AttachmentType.Region:
                     let transform = slotContainer.transform;
                     transform.setFromMatrix(slot.bone.matrix);
@@ -945,24 +945,24 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 continue;
             }
 
-            // 三角形计算公式
-            // 面积 A=sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4
-            // 阿尔法 alpha=acos((pow(b, 2)+pow(c, 2)-pow(a, 2))/(2*b*c))
-            // 贝塔 beta=acos((pow(a, 2)+pow(c, 2)-pow(b, 2))/(2*a*c))
-            // 伽马 gamma=acos((pow(a, 2)+pow(b, 2)-pow(c, 2))/(2*a*b))
+            // Triangle calculation formula
+            // area: A=sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4
+            // alpha: alpha=acos((pow(b, 2)+pow(c, 2)-pow(a, 2))/(2*b*c))
+            // beta: beta=acos((pow(a, 2)+pow(c, 2)-pow(b, 2))/(2*a*c))
+            // gamma: gamma=acos((pow(a, 2)+pow(b, 2)-pow(c, 2))/(2*a*b))
 
             const w = Math.abs(starX - endX),
                 h = Math.abs(starY - endY),
-                // a = w,                                              // 边长a
-                a2 = Math.pow(w, 2), // 边长a平方根
-                b = h, // 边长b
-                b2 = Math.pow(h, 2), // 边长b平方根
-                c = Math.sqrt(a2 + b2), // 边长c
-                c2 = Math.pow(c, 2), // 边长c平方根
+                // a = w, // side length a
+                a2 = Math.pow(w, 2), // square root of side length a
+                b = h, // side length b
+                b2 = Math.pow(h, 2), // square root of side length b
+                c = Math.sqrt(a2 + b2), // side length c
+                c2 = Math.pow(c, 2), // square root of side length c
                 rad = Math.PI / 180,
-                // A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0,   // A角角度
-                // C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0,   // C角角度
-                B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // B角角度
+                // A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0, // Angle A
+                // C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0, // C angle
+                B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // angle of corner B
             if (c === 0) {
                 continue;
             }
@@ -970,7 +970,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             const gp = new Graphics();
             this.debugObjects.bones.addChild(gp);
 
-            // 绘制骨骼线条
+            // draw bone
             const refRation = c / 50 / scale;
             gp.beginFill(0x00eecc, 1);
             gp.drawPolygon(0, 0, 0 - refRation, c - refRation * 3, 0, c - refRation, 0 + refRation, c - refRation * 3);
@@ -979,43 +979,43 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             gp.y = starY;
             gp.pivot.y = c;
 
-            // 计算骨骼旋转角度
+            // Calculate bone rotation angle
             let rotation = 0;
             if (starX < endX && starY < endY) {
-                // 右下
+                // bottom right
                 rotation = -B + 180 * rad;
             } else if (starX > endX && starY < endY) {
-                // 左下
+                // bottom left
                 rotation = 180 * rad + B;
             } else if (starX > endX && starY > endY) {
-                // 左上
+                // top left
                 rotation = -B;
             } else if (starX < endX && starY > endY) {
-                // 左下
+                // bottom left
                 rotation = B;
             } else if (starY === endY && starX < endX) {
-                // 向右
+                // To the right
                 rotation = 90 * rad;
             } else if (starY === endY && starX > endX) {
-                // 向左
+                // go left
                 rotation = -90 * rad;
             } else if (starX === endX && starY < endY) {
-                // 向下
+                // down
                 rotation = 180 * rad;
             } else if (starX === endX && starY > endY) {
-                // 向上
+                // up
                 rotation = 0;
             }
             gp.rotation = rotation;
 
-            // 绘制骨骼起始旋转点
+            // Draw the starting rotation point of the bone
             gp.lineStyle(lineWidth + refRation / 2.4, 0x00eecc, 1);
             gp.beginFill(0x000000, 0.6);
             gp.drawCircle(0, c, refRation * 1.2);
             gp.endFill();
         }
 
-        // 绘制骨架起点『X』形式
+        // Draw the skeleton starting point "X" form
         const startDotSize = lineWidth * 3;
         this.debugObjects.skeletonXY.moveTo(skeletonX - startDotSize, skeletonY - startDotSize);
         this.debugObjects.skeletonXY.lineTo(skeletonX + startDotSize, skeletonY + startDotSize);
@@ -1032,7 +1032,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         for (let i = 0, len = slots.length; i < len; i++) {
             const slot = slots[i],
                 attachment = slot.getAttachment();
-            if (attachment.type !== AttachmentType.Region) {
+            if (attachment == null || attachment.type !== AttachmentType.Region) {
                 continue;
             }
 
@@ -1052,7 +1052,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         }
     }
 
-    // 绘制蒙皮
     private drawMeshHullAndMeshTriangles(lineWidth:number): void {
         const skeleton = this.skeleton;
         const slots = skeleton.slots;
@@ -1066,7 +1065,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 continue;
             }
             const attachment = slot.getAttachment();
-            if ((attachment.type !== AttachmentType.Mesh)) {
+            if (attachment == null || attachment.type !== AttachmentType.Mesh) {
                 continue;
             }
 
@@ -1076,7 +1075,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 triangles = meshAttachment.triangles;
             let hullLength = meshAttachment.hullLength;
             meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, vertices, 0, 2);
-            // 画蒙皮网格（三角形）
+            // draw the skinned mesh (triangle)
             if (this.drawMeshTriangles) {
                 for (let i = 0, len = triangles.length; i < len; i += 3) {
                     const v1 = triangles[i] * 2,
@@ -1088,7 +1087,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 }
             }
 
-            // 画蒙皮边框
+            // draw skin border
             if (this.drawMeshHull && hullLength > 0) {
                 hullLength = (hullLength >> 1) * 2;
                 let lastX = vertices[hullLength - 2],
@@ -1105,7 +1104,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         }
     }
 
-    // 蒙版区域
     private drawClippingFunc(lineWidth:number): void {
         const skeleton = this.skeleton;
         const slots = skeleton.slots;
@@ -1117,7 +1115,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 continue;
             }
             const attachment = slot.getAttachment();
-            if (!(attachment.type === AttachmentType.Clipping)) {
+            if (attachment == null || attachment.type !== AttachmentType.Clipping) {
                 continue;
             }
 
@@ -1130,9 +1128,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         }
     }
 
-    // 绘制边界框
     private drawBoundingBoxesFunc(lineWidth:number): void {
-        // 绘制边界框的总外框
+        // draw the total outline of the bounding box
         this.debugObjects.boundingBoxesRect.lineStyle(lineWidth, 0x00ff00, 5);
 
         const bounds = new SkeletonBoundsBase();
@@ -1153,7 +1150,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                     const x1 = polygonVertices[i],
                         y1 = polygonVertices[i + 1];
 
-                    // 绘制边界框节点
+                    // draw the bounding box node
                     this.debugObjects.boundingBoxesCircle.lineStyle(0);
                     this.debugObjects.boundingBoxesCircle.beginFill(0x00dd00);
                     this.debugObjects.boundingBoxesCircle.drawCircle(x1, y1, dotSize);
@@ -1162,7 +1159,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                     paths.push(x1, y1);
                 }
 
-                // 绘制边界框区域
+                // draw the bounding box area
                 this.debugObjects.boundingBoxesPolygon.drawPolygon(paths);
                 this.debugObjects.boundingBoxesPolygon.endFill();
             };
@@ -1173,7 +1170,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         }
     }
 
-    // 绘制路径
     private drawPathsFunc(lineWidth:number): void {
         const skeleton = this.skeleton;
         const slots = skeleton.slots;
@@ -1187,53 +1183,55 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 continue;
             }
             const attachment = slot.getAttachment();
-            if (attachment.type === AttachmentType.Path) {
-                const pathAttachment = attachment as IVertexAttachment & {closed:boolean};
-                let nn = pathAttachment.worldVerticesLength;
-                const world = new Float32Array(nn);
-                pathAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
-                let x1 = world[2],
-                    y1 = world[3],
-                    x2 = 0,
-                    y2 = 0;
-                if (pathAttachment.closed) {
-                    const cx1 = world[0],
-                        cy1 = world[1],
-                        cx2 = world[nn - 2],
-                        cy2 = world[nn - 1];
-                    x2 = world[nn - 4];
-                    y2 = world[nn - 3];
+            if (attachment == null || attachment.type !== AttachmentType.Path) {
+                continue
+            }
 
-                    // 曲线
-                    this.debugObjects.pathsCurve.moveTo(x1, y1);
-                    this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+            const pathAttachment = attachment as IVertexAttachment & {closed:boolean};
+            let nn = pathAttachment.worldVerticesLength;
+            const world = new Float32Array(nn);
+            pathAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
+            let x1 = world[2],
+                y1 = world[3],
+                x2 = 0,
+                y2 = 0;
+            if (pathAttachment.closed) {
+                const cx1 = world[0],
+                    cy1 = world[1],
+                    cx2 = world[nn - 2],
+                    cy2 = world[nn - 1];
+                x2 = world[nn - 4];
+                y2 = world[nn - 3];
 
-                    // 句柄
-                    this.debugObjects.pathsLine.moveTo(x1, y1);
-                    this.debugObjects.pathsLine.lineTo(cx1, cy1);
-                    this.debugObjects.pathsLine.moveTo(x2, y2);
-                    this.debugObjects.pathsLine.lineTo(cx2, cy2);
-                }
-                nn -= 4;
-                for (let ii = 4; ii < nn; ii += 6) {
-                    const cx1 = world[ii],
-                        cy1 = world[ii + 1],
-                        cx2 = world[ii + 2],
-                        cy2 = world[ii + 3];
-                    x2 = world[ii + 4];
-                    y2 = world[ii + 5];
-                    // 曲线
-                    this.debugObjects.pathsCurve.moveTo(x1, y1);
-                    this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+                // curve
+                this.debugObjects.pathsCurve.moveTo(x1, y1);
+                this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
 
-                    // 句柄
-                    this.debugObjects.pathsLine.moveTo(x1, y1);
-                    this.debugObjects.pathsLine.lineTo(cx1, cy1);
-                    this.debugObjects.pathsLine.moveTo(x2, y2);
-                    this.debugObjects.pathsLine.lineTo(cx2, cy2);
-                    x1 = x2;
-                    y1 = y2;
-                }
+                // handle
+                this.debugObjects.pathsLine.moveTo(x1, y1);
+                this.debugObjects.pathsLine.lineTo(cx1, cy1);
+                this.debugObjects.pathsLine.moveTo(x2, y2);
+                this.debugObjects.pathsLine.lineTo(cx2, cy2);
+            }
+            nn -= 4;
+            for (let ii = 4; ii < nn; ii += 6) {
+                const cx1 = world[ii],
+                    cy1 = world[ii + 1],
+                    cx2 = world[ii + 2],
+                    cy2 = world[ii + 3];
+                x2 = world[ii + 4];
+                y2 = world[ii + 5];
+                // curve
+                this.debugObjects.pathsCurve.moveTo(x1, y1);
+                this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
+
+                // handle
+                this.debugObjects.pathsLine.moveTo(x1, y1);
+                this.debugObjects.pathsLine.lineTo(cx1, cy1);
+                this.debugObjects.pathsLine.moveTo(x2, y2);
+                this.debugObjects.pathsLine.lineTo(cx2, cy2);
+                x1 = x2;
+                y1 = y2;
             }
         }
     }

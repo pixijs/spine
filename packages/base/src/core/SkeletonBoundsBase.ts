@@ -50,7 +50,7 @@ export class SkeletonBoundsBase <BoundingBoxAttachment extends IVertexAttachment
             let slot = slots[i];
             if (!slot.bone.active) continue;
             let attachment = slot.getAttachment();
-            if (attachment.type === AttachmentType.BoundingBox) {
+            if (attachment != null && attachment.type === AttachmentType.BoundingBox) {
                 let boundingBox = attachment as BoundingBoxAttachment;
                 boundingBoxes.push(boundingBox);
 
