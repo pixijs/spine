@@ -117,9 +117,36 @@ let spine = new PIXI.heaven.Spine(spineData);
 
 ### Debug
 
-To show bones and bounds you can use [pixi-spine-debug](https://github.com/sbfkcel/pixi-spine-debug). If you want to write your own debug plugin, look at how this one [was created](https://github.com/pixijs/pixi-spine/issues/324)
+To show bones and bounds you can set `yourSpine.drawDebug = true`  
+Only after you set `drawDebug` to true, debug graphics are created.
 
-Demo: https://sbfkcel.github.io/pixi-spine-debug/
+Control what gets drawn with the following flags:
+
+```js
+yourSpine.drawMeshHull = true;
+yourSpine.drawMeshTriangles = true;
+yourSpine.drawBones = true;
+yourSpine.drawPaths = true;
+yourSpine.drawBoundingBoxes = true;
+yourSpine.drawClipping = true;
+yourSpine.drawRegionAttachments = true;
+```
+
+To have even more control, you can customize the color and line thickness with
+```js
+yourSpine.debugOptions.lineWidth = 1;
+yourSpine.debugOptions.regionAttachmentsColor = 0x0078ff;
+yourSpine.debugOptions.meshHullColor = 0x0078ff;
+yourSpine.debugOptions.meshTrianglesColor = 0xffcc00;
+yourSpine.debugOptions.clippingPolygonColor = 0xff00ff;
+yourSpine.debugOptions.boundingBoxesRectColor = 0x00ff00;
+yourSpine.debugOptions.boundingBoxesPolygonColor = 0x00ff00;
+yourSpine.debugOptions.boundingBoxesCircleColor = 0x00ff00;
+yourSpine.debugOptions.pathsCurveColor = 0xff0000;
+yourSpine.debugOptions.pathsLineColor = 0xff00ff;
+yourSpine.debugOptions.skeletonXYColor = 0xff0000;
+yourSpine.debugOptions.bonesColor = 0x00eecc;
+```
 
 ## Build & Development
 
