@@ -24,8 +24,9 @@ import {BLEND_MODES} from '@pixi/constants';
  * @public
  */
 export interface IBone {
-    data: { name: string };
+    data: IBoneData;
     matrix: Matrix;
+    active:boolean;
 }
 
 /**
@@ -111,6 +112,7 @@ export interface IMeshAttachment extends IVertexAttachment {
     color: Color;
     regionUVs: Float32Array,
     triangles: number[],
+    hullLength:number,
 }
 
 /**
@@ -183,6 +185,8 @@ export interface ISkeleton<SkeletonData extends ISkeletonData = ISkeletonData,
     drawOrder: Slot[]
     skin: Skin;
     data: SkeletonData;
+    x: number; // added for debug purposes
+    y: number; // added for debug purposes
     updateWorldTransform (): void;
     setToSetupPose (): void;
     findSlotIndex (slotName: string): number;
