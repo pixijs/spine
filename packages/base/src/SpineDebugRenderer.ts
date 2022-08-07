@@ -7,12 +7,23 @@ import { AttachmentType } from "./core/AttachmentType";
 import { SkeletonBoundsBase } from "./core/SkeletonBoundsBase";
 
 /**
+ * Make a class that extends from this interface to create your own debug renderer.
  * @public
  */
 export interface ISpineDebugRenderer {
+    /**
+     * This will be called every frame, after the spine has been updated. 
+     */
     renderDebug(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void;
 
+    /**
+     *  This is called when the `spine.debug` object is set to null or when the spine is destroyed.
+     */
     unregisterSpine(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void
+
+    /**
+     * This is called when the `spine.debug` object is set to a new instance of a debug renderer.
+     */
     registerSpine(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void
 }
 
@@ -32,6 +43,7 @@ type DebugDisplayObjects = {
 }
 
 /**
+ * This is a debug renderer that uses PixiJS Graphics under the hood.
  * @public
  */
 export class SpineDebugRenderer implements ISpineDebugRenderer {

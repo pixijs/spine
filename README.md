@@ -117,36 +117,49 @@ let spine = new PIXI.heaven.Spine(spineData);
 
 ### Debug
 
-To show bones and bounds you can set `yourSpine.drawDebug = true`  
-Only after you set `drawDebug` to true, debug graphics are created.
+To show debug graphics you can set `yourSpine.debug = new SpineDebugRenderer()`  
 
 Control what gets drawn with the following flags:
 
 ```js
-yourSpine.drawMeshHull = true;
-yourSpine.drawMeshTriangles = true;
-yourSpine.drawBones = true;
-yourSpine.drawPaths = true;
-yourSpine.drawBoundingBoxes = true;
-yourSpine.drawClipping = true;
-yourSpine.drawRegionAttachments = true;
+// Master toggle
+yourSpine.debug.drawDebug = true; 
+
+// Per feature toggle
+yourSpine.debug.drawMeshHull = true;
+yourSpine.debug.drawMeshTriangles = true;
+yourSpine.debug.drawBones = true;
+yourSpine.debug.drawPaths = true;
+yourSpine.debug.drawBoundingBoxes = true;
+yourSpine.debug.drawClipping = true;
+yourSpine.debug.drawRegionAttachments = true;
 ```
 
 To have even more control, you can customize the color and line thickness with
 ```js
-yourSpine.debugOptions.lineWidth = 1;
-yourSpine.debugOptions.regionAttachmentsColor = 0x0078ff;
-yourSpine.debugOptions.meshHullColor = 0x0078ff;
-yourSpine.debugOptions.meshTrianglesColor = 0xffcc00;
-yourSpine.debugOptions.clippingPolygonColor = 0xff00ff;
-yourSpine.debugOptions.boundingBoxesRectColor = 0x00ff00;
-yourSpine.debugOptions.boundingBoxesPolygonColor = 0x00ff00;
-yourSpine.debugOptions.boundingBoxesCircleColor = 0x00ff00;
-yourSpine.debugOptions.pathsCurveColor = 0xff0000;
-yourSpine.debugOptions.pathsLineColor = 0xff00ff;
-yourSpine.debugOptions.skeletonXYColor = 0xff0000;
-yourSpine.debugOptions.bonesColor = 0x00eecc;
+yourSpine.debug.debugOptions.lineWidth = 1;
+yourSpine.debug.debugOptions.regionAttachmentsColor = 0x0078ff;
+yourSpine.debug.debugOptions.meshHullColor = 0x0078ff;
+yourSpine.debug.debugOptions.meshTrianglesColor = 0xffcc00;
+yourSpine.debug.debugOptions.clippingPolygonColor = 0xff00ff;
+yourSpine.debug.debugOptions.boundingBoxesRectColor = 0x00ff00;
+yourSpine.debug.debugOptions.boundingBoxesPolygonColor = 0x00ff00;
+yourSpine.debug.debugOptions.boundingBoxesCircleColor = 0x00ff00;
+yourSpine.debug.debugOptions.pathsCurveColor = 0xff0000;
+yourSpine.debug.debugOptions.pathsLineColor = 0xff00ff;
+yourSpine.debug.debugOptions.skeletonXYColor = 0xff0000;
+yourSpine.debug.debugOptions.bonesColor = 0x00eecc;
 ```
+
+You can reuse a single debug renderer and they will share the debug settings!
+```js
+const debugRenderer = new SpineDebugRenderer();
+
+oneSpine.debug = debugRenderer;
+anotherSpine.debug = debugRenderer;
+```
+
+If you want to create your own debugger you can extend `SpineDebugRenderer` or create a class from scratch that implements `ISpineDebugRenderer`!
 
 ## Build & Development
 
