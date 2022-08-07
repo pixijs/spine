@@ -1,7 +1,6 @@
 import {AttachmentType} from './core/AttachmentType';
 import {TextureRegion} from './core/TextureRegion';
 import {MathUtils} from './core/Utils';
-import {SkeletonBoundsBase} from './core/SkeletonBoundsBase';
 import type {
     IAnimationState,
     IAnimationStateData
@@ -24,40 +23,9 @@ import {Rectangle, Polygon, Transform} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
 import type {Texture} from '@pixi/core';
 import {settings} from "./settings";
+import { ISpineDebugRenderer } from './SpineDebugRenderer';
 
 let tempRgb = [0, 0, 0];
-
-type DebugDisplayObjects = {        
-    bones: Container;
-    skeletonXY: Graphics;
-    regionAttachmentsShape: Graphics;
-    meshTrianglesLine: Graphics;
-    meshHullLine: Graphics;
-    clippingPolygon: Graphics;
-    boundingBoxesRect: Graphics;
-    boundingBoxesCircle: Graphics;
-    boundingBoxesPolygon: Graphics;
-    pathsCurve: Graphics;
-    pathsLine: Graphics;
-}
-
-/**
- * @public
- */
-export interface SpineDebugOptions {
-    lineWidth: number; // 1
-    regionAttachmentsColor: number; // 0x0078ff
-    meshHullColor: number; // 0x0078ff
-    meshTrianglesColor: number; // 0xffcc00
-    clippingPolygonColor: number; // 0xff00ff
-    boundingBoxesRectColor: number; // 0x00ff00
-    boundingBoxesPolygonColor: number; // 0x00ff00
-    boundingBoxesCircleColor: number; // 0x00ff00
-    pathsCurveColor: number; // 0xff0000
-    pathsLineColor: number; // 0xff00ff
-    skeletonXYColor:number; // 0xff0000
-    bonesColor:number; // 0x00eecc
-}
 
 /**
  * @public
@@ -117,37 +85,18 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     localDelayLimit: number;
     private _autoUpdate: boolean;
     protected _visible: boolean;
-    private debugObjects: DebugDisplayObjects;
-    private debugContainer: Container;
-    readonly debugOptions: SpineDebugOptions;
-
-    private _drawDebug: boolean = false;
-    public get drawDebug(): boolean {
-        return this._drawDebug;
+    private _debug: ISpineDebugRenderer;
+    public get debug(): ISpineDebugRenderer {
+        return this._debug;
     }
-    public set drawDebug(value: boolean) {
-        if (value === this._drawDebug) {
+    public set debug(value: ISpineDebugRenderer) {
+        if (value == this._debug) { // soft equality allows null == undefined
             return;
         }
-
-        if (value) {
-            if (this.debugContainer === undefined || this.debugObjects === undefined) {
-                this.createDebug();
-            }
-            this.addChild(this.debugContainer);
-        } else {
-            this.removeChild(this.debugContainer);
-        }
-
-        this._drawDebug = value;
+        this._debug?.unregisterSpine(this);
+        value?.registerSpine(this);
+        this._debug = value;
     }
-    public drawMeshHull: boolean = true;
-    public drawMeshTriangles: boolean = true;
-    public drawBones: boolean = true;
-    public drawPaths: boolean = true;
-    public drawBoundingBoxes: boolean = true;
-    public drawClipping: boolean = true;
-    public drawRegionAttachments: boolean = true;
 
 
     abstract createSkeleton(spineData: ISkeletonData);
@@ -226,21 +175,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
         this.autoUpdate = true;
         this.visible = true;
-
-        this.debugOptions = {
-            lineWidth: 1,
-            regionAttachmentsColor: 0x0078ff,
-            meshHullColor: 0x0078ff,
-            meshTrianglesColor: 0xffcc00,
-            clippingPolygonColor: 0xff00ff,
-            boundingBoxesRectColor: 0x00ff00,
-            boundingBoxesPolygonColor: 0x00ff00,
-            boundingBoxesCircleColor: 0x00ff00,
-            pathsCurveColor: 0xff0000,
-            pathsLineColor: 0xff00ff,
-            skeletonXYColor: 0xff0000,
-            bonesColor: 0x00eecc
-        }
     }
 
     /**
@@ -551,11 +485,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             }
         }
 
-        // Easy debug, read the private variable just to save the extra getter call.
-        if (this._drawDebug)
-        {
-            this.updateDebug();
-        }
+        // if you can debug, then debug!
+        this._debug?.renderDebug(this);
     };
 
     private setSpriteRegion(attachment: IRegionAttachment, sprite: SpineSprite, region: TextureRegion) {
@@ -851,393 +782,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         return [list_d, list_n];
     };
 
-    /**
-     * The debug objects don't exist until you turn debug to true for the first time.
-     * Just to be extra paranoid on the memory footprint.
-     */
-    private createDebug() {
-        if (this.debugContainer === undefined) {
-            this.debugContainer = new Container();
-        }
-
-        if (this.debugObjects === undefined){
-            this.debugObjects = {
-                bones: new Container(),
-                skeletonXY: new Graphics(),
-                regionAttachmentsShape: new Graphics(),
-                meshTrianglesLine: new Graphics(),
-                meshHullLine: new Graphics(),
-                clippingPolygon: new Graphics(),
-                boundingBoxesRect: new Graphics(),
-                boundingBoxesCircle: new Graphics(),
-                boundingBoxesPolygon: new Graphics(),
-                pathsCurve: new Graphics(),
-                pathsLine: new Graphics(),
-            };
-            let key: keyof DebugDisplayObjects;
-            for (key in this.debugObjects) {
-                this.debugContainer.addChild(this.debugObjects[key]);
-            }
-        }
-    }
-
-    private updateDebug()
-    {
-
-        // clear all the debug objects
-        let key: keyof DebugDisplayObjects;
-        for (key in this.debugObjects) {
-            const elem = this.debugObjects[key];
-            if (elem instanceof Graphics) {
-                elem.clear();
-            } else if (elem instanceof Container) {
-                for (let len = elem.children.length; len > 0; len--) {
-                    elem.children[len - 1].destroy({ children: true, texture: true, baseTexture: true });
-                }
-            }
-        }
-
-        const scale = this.scale.x || this.scale.y || 1;
-        const lineWidth = this.debugOptions.lineWidth / scale;
-
-        if (this.drawBones) {
-            this.drawBonesFunc(lineWidth, scale);
-        }
-
-        if (this.drawPaths) {
-            this.drawPathsFunc(lineWidth);
-        }
-
-        if (this.drawBoundingBoxes) {
-            this.drawBoundingBoxesFunc(lineWidth);
-        }
-
-        if (this.drawClipping) {
-            this.drawClippingFunc(lineWidth);
-        }
-
-        if (this.drawMeshHull || this.drawMeshTriangles) {
-            this.drawMeshHullAndMeshTriangles(lineWidth);
-        }
-
-        if (this.drawRegionAttachments) {
-            this.drawRegionAttachmentsFunc(lineWidth);
-        }
-    }
-
-    private drawBonesFunc(lineWidth:number, scale:number): void {
-        const skeleton = this.skeleton;
-        const skeletonX = skeleton.x;
-        const skeletonY = skeleton.y;
-        const bones = skeleton.bones;
-
-        this.debugObjects.skeletonXY.lineStyle(lineWidth, 0xff0000, 1);
-
-        for (let i = 0, len = bones.length; i < len; i++) {
-            const bone = bones[i],
-                boneLen = bone.data.length,
-                starX = skeletonX + bone.matrix.tx,
-                starY = skeletonY + bone.matrix.ty,
-                endX = skeletonX + boneLen * bone.matrix.a + bone.matrix.tx,
-                endY = skeletonY + boneLen * bone.matrix.b + bone.matrix.ty;
-
-            if (bone.data.name === "root" || bone.data.parent === null) {
-                continue;
-            }
-
-            // Triangle calculation formula
-            // area: A=sqrt((a+b+c)*(-a+b+c)*(a-b+c)*(a+b-c))/4
-            // alpha: alpha=acos((pow(b, 2)+pow(c, 2)-pow(a, 2))/(2*b*c))
-            // beta: beta=acos((pow(a, 2)+pow(c, 2)-pow(b, 2))/(2*a*c))
-            // gamma: gamma=acos((pow(a, 2)+pow(b, 2)-pow(c, 2))/(2*a*b))
-
-            const w = Math.abs(starX - endX),
-                h = Math.abs(starY - endY),
-                // a = w, // side length a
-                a2 = Math.pow(w, 2), // square root of side length a
-                b = h, // side length b
-                b2 = Math.pow(h, 2), // square root of side length b
-                c = Math.sqrt(a2 + b2), // side length c
-                c2 = Math.pow(c, 2), // square root of side length c
-                rad = Math.PI / 180,
-                // A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0, // Angle A
-                // C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0, // C angle
-                B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // angle of corner B
-            if (c === 0) {
-                continue;
-            }
-
-            const gp = new Graphics();
-            this.debugObjects.bones.addChild(gp);
-
-            // draw bone
-            const refRation = c / 50 / scale;
-            gp.beginFill(0x00eecc, 1);
-            gp.drawPolygon(0, 0, 0 - refRation, c - refRation * 3, 0, c - refRation, 0 + refRation, c - refRation * 3);
-            gp.endFill();
-            gp.x = starX;
-            gp.y = starY;
-            gp.pivot.y = c;
-
-            // Calculate bone rotation angle
-            let rotation = 0;
-            if (starX < endX && starY < endY) {
-                // bottom right
-                rotation = -B + 180 * rad;
-            } else if (starX > endX && starY < endY) {
-                // bottom left
-                rotation = 180 * rad + B;
-            } else if (starX > endX && starY > endY) {
-                // top left
-                rotation = -B;
-            } else if (starX < endX && starY > endY) {
-                // bottom left
-                rotation = B;
-            } else if (starY === endY && starX < endX) {
-                // To the right
-                rotation = 90 * rad;
-            } else if (starY === endY && starX > endX) {
-                // go left
-                rotation = -90 * rad;
-            } else if (starX === endX && starY < endY) {
-                // down
-                rotation = 180 * rad;
-            } else if (starX === endX && starY > endY) {
-                // up
-                rotation = 0;
-            }
-            gp.rotation = rotation;
-
-            // Draw the starting rotation point of the bone
-            gp.lineStyle(lineWidth + refRation / 2.4, 0x00eecc, 1);
-            gp.beginFill(0x000000, 0.6);
-            gp.drawCircle(0, c, refRation * 1.2);
-            gp.endFill();
-        }
-
-        // Draw the skeleton starting point "X" form
-        const startDotSize = lineWidth * 3;
-        this.debugObjects.skeletonXY.moveTo(skeletonX - startDotSize, skeletonY - startDotSize);
-        this.debugObjects.skeletonXY.lineTo(skeletonX + startDotSize, skeletonY + startDotSize);
-        this.debugObjects.skeletonXY.moveTo(skeletonX + startDotSize, skeletonY - startDotSize);
-        this.debugObjects.skeletonXY.lineTo(skeletonX - startDotSize, skeletonY + startDotSize);
-    }
-
-    private drawRegionAttachmentsFunc(lineWidth:number): void {
-        const skeleton = this.skeleton;
-        const slots = skeleton.slots;
-
-        this.debugObjects.regionAttachmentsShape.lineStyle(lineWidth, 0x0078ff, 1);
-
-        for (let i = 0, len = slots.length; i < len; i++) {
-            const slot = slots[i],
-                attachment = slot.getAttachment();
-            if (attachment == null || attachment.type !== AttachmentType.Region) {
-                continue;
-            }
-
-            const regionAttachment = attachment as IRegionAttachment & {
-                computeWorldVertices:(slot: unknown, worldVertices: unknown, offset: unknown, stride: unknown) => void,
-                updateOffset?:() => void,
-            };
-
-            const vertices = new Float32Array(8);
-
-
-            regionAttachment?.updateOffset(); // We don't need this on all versions
-
-            regionAttachment.computeWorldVertices(slot, vertices, 0, 2);
-            this.debugObjects.regionAttachmentsShape.drawPolygon(Array.from(vertices.slice(0, 8)));
-            
-        }
-    }
-
-    private drawMeshHullAndMeshTriangles(lineWidth:number): void {
-        const skeleton = this.skeleton;
-        const slots = skeleton.slots;
-
-        this.debugObjects.meshHullLine.lineStyle(lineWidth, 0x0078ff, 1);
-        this.debugObjects.meshTrianglesLine.lineStyle(lineWidth, 0xffcc00, 1);
-
-        for (let i = 0, len = slots.length; i < len; i++) {
-            const slot = slots[i];
-            if (!slot.bone.active) {
-                continue;
-            }
-            const attachment = slot.getAttachment();
-            if (attachment == null || attachment.type !== AttachmentType.Mesh) {
-                continue;
-            }
-
-            const meshAttachment:IMeshAttachment = attachment as IMeshAttachment;
-
-            const vertices = new Float32Array(meshAttachment.worldVerticesLength),
-                triangles = meshAttachment.triangles;
-            let hullLength = meshAttachment.hullLength;
-            meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, vertices, 0, 2);
-            // draw the skinned mesh (triangle)
-            if (this.drawMeshTriangles) {
-                for (let i = 0, len = triangles.length; i < len; i += 3) {
-                    const v1 = triangles[i] * 2,
-                        v2 = triangles[i + 1] * 2,
-                        v3 = triangles[i + 2] * 2;
-                    this.debugObjects.meshTrianglesLine.moveTo(vertices[v1], vertices[v1 + 1]);
-                    this.debugObjects.meshTrianglesLine.lineTo(vertices[v2], vertices[v2 + 1]);
-                    this.debugObjects.meshTrianglesLine.lineTo(vertices[v3], vertices[v3 + 1]);
-                }
-            }
-
-            // draw skin border
-            if (this.drawMeshHull && hullLength > 0) {
-                hullLength = (hullLength >> 1) * 2;
-                let lastX = vertices[hullLength - 2],
-                    lastY = vertices[hullLength - 1];
-                for (let i = 0, len = hullLength; i < len; i += 2) {
-                    const x = vertices[i],
-                        y = vertices[i + 1];
-                    this.debugObjects.meshHullLine.moveTo(x, y);
-                    this.debugObjects.meshHullLine.lineTo(lastX, lastY);
-                    lastX = x;
-                    lastY = y;
-                }
-            }
-        }
-    }
-
-    private drawClippingFunc(lineWidth:number): void {
-        const skeleton = this.skeleton;
-        const slots = skeleton.slots;
-
-        this.debugObjects.clippingPolygon.lineStyle(lineWidth, 0xff00ff, 1);
-        for (let i = 0, len = slots.length; i < len; i++) {
-            const slot = slots[i];
-            if (!slot.bone.active) {
-                continue;
-            }
-            const attachment = slot.getAttachment();
-            if (attachment == null || attachment.type !== AttachmentType.Clipping) {
-                continue;
-            }
-
-            const clippingAttachment: IClippingAttachment = attachment as IClippingAttachment;
-
-            const nn = clippingAttachment.worldVerticesLength,
-                world = new Float32Array(nn);
-            clippingAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
-            this.debugObjects.clippingPolygon.drawPolygon(Array.from(world));
-        }
-    }
-
-    private drawBoundingBoxesFunc(lineWidth:number): void {
-        // draw the total outline of the bounding box
-        this.debugObjects.boundingBoxesRect.lineStyle(lineWidth, 0x00ff00, 5);
-
-        const bounds = new SkeletonBoundsBase();
-        bounds.update(this.skeleton, true);
-        this.debugObjects.boundingBoxesRect.drawRect(bounds.minX, bounds.minY, bounds.getWidth(), bounds.getHeight());
-
-        const polygons = bounds.polygons,
-            drawPolygon = (polygonVertices: ArrayLike<number>, _offset: unknown, count: number): void => {
-                this.debugObjects.boundingBoxesPolygon.lineStyle(lineWidth, 0x00ff00, 1);
-                this.debugObjects.boundingBoxesPolygon.beginFill(0x00ff00, 0.1);
-
-                if (count < 3) {
-                    throw new Error("Polygon must contain at least 3 vertices");
-                }
-                const paths = [],
-                    dotSize = lineWidth * 2;
-                for (let i = 0, len = polygonVertices.length; i < len; i += 2) {
-                    const x1 = polygonVertices[i],
-                        y1 = polygonVertices[i + 1];
-
-                    // draw the bounding box node
-                    this.debugObjects.boundingBoxesCircle.lineStyle(0);
-                    this.debugObjects.boundingBoxesCircle.beginFill(0x00dd00);
-                    this.debugObjects.boundingBoxesCircle.drawCircle(x1, y1, dotSize);
-                    this.debugObjects.boundingBoxesCircle.endFill();
-
-                    paths.push(x1, y1);
-                }
-
-                // draw the bounding box area
-                this.debugObjects.boundingBoxesPolygon.drawPolygon(paths);
-                this.debugObjects.boundingBoxesPolygon.endFill();
-            };
-
-        for (let i = 0, len = polygons.length; i < len; i++) {
-            const polygon = polygons[i];
-            drawPolygon(polygon, 0, polygon.length);
-        }
-    }
-
-    private drawPathsFunc(lineWidth:number): void {
-        const skeleton = this.skeleton;
-        const slots = skeleton.slots;
-
-        this.debugObjects.pathsCurve.lineStyle(lineWidth, 0xff0000, 1);
-        this.debugObjects.pathsLine.lineStyle(lineWidth, 0xff00ff, 1);
-
-        for (let i = 0, len = slots.length; i < len; i++) {
-            const slot = slots[i];
-            if (!slot.bone.active) {
-                continue;
-            }
-            const attachment = slot.getAttachment();
-            if (attachment == null || attachment.type !== AttachmentType.Path) {
-                continue
-            }
-
-            const pathAttachment = attachment as IVertexAttachment & {closed:boolean};
-            let nn = pathAttachment.worldVerticesLength;
-            const world = new Float32Array(nn);
-            pathAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
-            let x1 = world[2],
-                y1 = world[3],
-                x2 = 0,
-                y2 = 0;
-            if (pathAttachment.closed) {
-                const cx1 = world[0],
-                    cy1 = world[1],
-                    cx2 = world[nn - 2],
-                    cy2 = world[nn - 1];
-                x2 = world[nn - 4];
-                y2 = world[nn - 3];
-
-                // curve
-                this.debugObjects.pathsCurve.moveTo(x1, y1);
-                this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
-
-                // handle
-                this.debugObjects.pathsLine.moveTo(x1, y1);
-                this.debugObjects.pathsLine.lineTo(cx1, cy1);
-                this.debugObjects.pathsLine.moveTo(x2, y2);
-                this.debugObjects.pathsLine.lineTo(cx2, cy2);
-            }
-            nn -= 4;
-            for (let ii = 4; ii < nn; ii += 6) {
-                const cx1 = world[ii],
-                    cy1 = world[ii + 1],
-                    cx2 = world[ii + 2],
-                    cy2 = world[ii + 3];
-                x2 = world[ii + 4];
-                y2 = world[ii + 5];
-                // curve
-                this.debugObjects.pathsCurve.moveTo(x1, y1);
-                this.debugObjects.pathsCurve.bezierCurveTo(cx1, cy1, cx2, cy2, x2, y2);
-
-                // handle
-                this.debugObjects.pathsLine.moveTo(x1, y1);
-                this.debugObjects.pathsLine.lineTo(cx1, cy1);
-                this.debugObjects.pathsLine.moveTo(x2, y2);
-                this.debugObjects.pathsLine.lineTo(cx2, cy2);
-                x1 = x2;
-                y1 = y2;
-            }
-        }
-    }
-
 
     destroy(options?: any): void {
+        this.debug = null; // setter will do the cleanup
+
         for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
             let slot = this.skeleton.slots[i];
             for (let name in slot.meshes) {
@@ -1260,20 +808,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         this.stateData = null;
         this.state = null;
         this.tempClipContainers = null;
-
-        if (this.debugObjects)
-        {
-            let key: keyof DebugDisplayObjects;
-            for (key in this.debugObjects) {
-                this.debugContainer.destroy({baseTexture:options?.baseTexture,children:true,texture:options?.texture});
-            }
-            this.debugObjects = null;
-        }
-        if (this.debugContainer)
-        {
-            this.debugContainer.destroy({baseTexture:options?.baseTexture,children:true,texture:options?.texture});
-            this.debugContainer = null;
-        }
 
         super.destroy(options);
     }

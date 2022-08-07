@@ -11,3 +11,4 @@ export * from './core/SkeletonBoundsBase';
 
 export * from './settings';
 export * from './SpineBase';
+export * from './SpineDebugRenderer';
