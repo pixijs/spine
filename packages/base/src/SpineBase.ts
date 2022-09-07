@@ -339,7 +339,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                     }
 
                     const id = (attachment as IVertexAttachment).id;
-                    if (!slot.currentMeshId || slot.currentMeshId !== id) {
+                    if (slot.currentMeshId === undefined || slot.currentMeshId !== id) {
                         let meshId = id;
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
