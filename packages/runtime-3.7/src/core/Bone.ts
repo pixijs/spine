@@ -51,6 +51,9 @@ export class Bone implements Updatable, IBone {
         this.setToSetupPose();
     }
 
+    /** NOT USED IN 3.7. Needed for the debug graph code */
+    active: boolean = true;
+
     /** Same as {@link #updateWorldTransform()}. This method exists for Bone to implement {@link Updatable}. */
     update() {
         this.updateWorldTransformWith(this.x, this.y, this.rotation, this.scaleX, this.scaleY, this.shearX, this.shearY);

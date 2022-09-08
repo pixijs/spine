@@ -2,6 +2,7 @@ import {Attachment} from './Attachment';
 import {AttachmentType, ArrayLike, Color, TextureRegion, Utils, IRegionAttachment} from "@pixi-spine/base";
 
 import type {Bone} from '../Bone';
+import { Slot } from '../Slot';
 
 /**
  * @public
@@ -159,9 +160,9 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
      * @param worldVertices The output world vertices. Must have a length >= `offset` + 8.
      * @param offset The `worldVertices` index to begin writing values.
      * @param stride The number of `worldVertices` entries between the value pairs written. */
-    computeWorldVertices (bone: Bone, worldVertices: ArrayLike<number>, offset: number, stride: number) {
+    computeWorldVertices (bone: Bone | Slot, worldVertices: ArrayLike<number>, offset: number, stride: number) {
         let vertexOffset = this.offset;
-        let mat = bone.matrix;
+        let mat = bone instanceof Slot? bone.bone.matrix : bone.matrix;
         let x = mat.tx, y = mat.ty;
         let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
         let offsetX = 0, offsetY = 0;

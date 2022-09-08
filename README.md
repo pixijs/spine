@@ -117,9 +117,49 @@ let spine = new PIXI.heaven.Spine(spineData);
 
 ### Debug
 
-To show bones and bounds you can use [pixi-spine-debug](https://github.com/sbfkcel/pixi-spine-debug). If you want to write your own debug plugin, look at how this one [was created](https://github.com/pixijs/pixi-spine/issues/324)
+To show debug graphics you can set `yourSpine.debug = new SpineDebugRenderer()`  
 
-Demo: https://sbfkcel.github.io/pixi-spine-debug/
+Control what gets drawn with the following flags:
+
+```js
+// Master toggle
+yourSpine.debug.drawDebug = true; 
+
+// Per feature toggle
+yourSpine.debug.drawMeshHull = true;
+yourSpine.debug.drawMeshTriangles = true;
+yourSpine.debug.drawBones = true;
+yourSpine.debug.drawPaths = true;
+yourSpine.debug.drawBoundingBoxes = true;
+yourSpine.debug.drawClipping = true;
+yourSpine.debug.drawRegionAttachments = true;
+```
+
+To have even more control, you can customize the color and line thickness with
+```js
+yourSpine.debug.debugOptions.lineWidth = 1;
+yourSpine.debug.debugOptions.regionAttachmentsColor = 0x0078ff;
+yourSpine.debug.debugOptions.meshHullColor = 0x0078ff;
+yourSpine.debug.debugOptions.meshTrianglesColor = 0xffcc00;
+yourSpine.debug.debugOptions.clippingPolygonColor = 0xff00ff;
+yourSpine.debug.debugOptions.boundingBoxesRectColor = 0x00ff00;
+yourSpine.debug.debugOptions.boundingBoxesPolygonColor = 0x00ff00;
+yourSpine.debug.debugOptions.boundingBoxesCircleColor = 0x00ff00;
+yourSpine.debug.debugOptions.pathsCurveColor = 0xff0000;
+yourSpine.debug.debugOptions.pathsLineColor = 0xff00ff;
+yourSpine.debug.debugOptions.skeletonXYColor = 0xff0000;
+yourSpine.debug.debugOptions.bonesColor = 0x00eecc;
+```
+
+You can reuse a single debug renderer and they will share the debug settings!
+```js
+const debugRenderer = new SpineDebugRenderer();
+
+oneSpine.debug = debugRenderer;
+anotherSpine.debug = debugRenderer;
+```
+
+If you want to create your own debugger you can extend `SpineDebugRenderer` or create a class from scratch that implements `ISpineDebugRenderer`!
 
 ## Build & Development
 

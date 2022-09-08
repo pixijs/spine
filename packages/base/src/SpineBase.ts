@@ -23,6 +23,7 @@ import {Rectangle, Polygon, Transform} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
 import type {Texture} from '@pixi/core';
 import {settings} from "./settings";
+import { ISpineDebugRenderer } from './SpineDebugRenderer';
 
 let tempRgb = [0, 0, 0];
 
@@ -74,7 +75,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     AnimationState extends IAnimationState,
     AnimationStateData extends IAnimationStateData>
     extends Container implements GlobalMixins.Spine {
-
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;
     skeleton: Skeleton;
@@ -85,6 +85,19 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     localDelayLimit: number;
     private _autoUpdate: boolean;
     protected _visible: boolean;
+    private _debug: ISpineDebugRenderer;
+    public get debug(): ISpineDebugRenderer {
+        return this._debug;
+    }
+    public set debug(value: ISpineDebugRenderer) {
+        if (value == this._debug) { // soft equality allows null == undefined
+            return;
+        }
+        this._debug?.unregisterSpine(this);
+        value?.registerSpine(this);
+        this._debug = value;
+    }
+
 
     abstract createSkeleton(spineData: ISkeletonData);
 
@@ -266,7 +279,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             let region = (attachment as IRegionAttachment).region;
 
             let attColor = (attachment as any).color;
-            switch (attachment.type) {
+            switch (attachment != null && attachment.type) {
                 case AttachmentType.Region:
                     let transform = slotContainer.transform;
                     transform.setFromMatrix(slot.bone.matrix);
@@ -471,6 +484,9 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 }
             }
         }
+
+        // if you can debug, then debug!
+        this._debug?.renderDebug(this);
     };
 
     private setSpriteRegion(attachment: IRegionAttachment, sprite: SpineSprite, region: TextureRegion) {
@@ -766,7 +782,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         return [list_d, list_n];
     };
 
+
     destroy(options?: any): void {
+        this.debug = null; // setter will do the cleanup
+
         for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
             let slot = this.skeleton.slots[i];
             for (let name in slot.meshes) {
