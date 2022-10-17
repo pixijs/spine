@@ -10,20 +10,13 @@ class UniBinaryParser implements ISkeletonParser {
     scale = 1;
 
     readSkeletonData(atlas: TextureAtlas, dataToParse: Uint8Array): ISkeletonData {
-        let input = new BinaryInput(dataToParse);
-        input.readString();
-        let version = input.readString();
-        let ver = detectSpineVersion(version);
         let parser: any = null;
-
+        let version = this.readVersionOldFormat(dataToParse);
+        let ver = detectSpineVersion(version);
         if (ver === SPINE_VERSION.VER38) {
             parser = new spine38.SkeletonBinary(new spine38.AtlasAttachmentLoader(atlas));
         }
-
-        input = new BinaryInput(dataToParse);
-        input.readInt32();
-        input.readInt32();
-        version = input.readString();
+        version = this.readVersionNewFormat(dataToParse);
         ver = detectSpineVersion(version);
         if (ver === SPINE_VERSION.VER40 || ver === SPINE_VERSION.VER41) {
             parser = new spine41.SkeletonBinary(new spine41.AtlasAttachmentLoader(atlas));
@@ -35,6 +28,32 @@ class UniBinaryParser implements ISkeletonParser {
 
         parser.scale = this.scale;
         return parser.readSkeletonData(dataToParse);
+    }
+
+    readVersionOldFormat(dataToParse: Uint8Array){
+        let input = new BinaryInput(dataToParse);
+        let version;
+        try {
+            input.readString();
+            version = input.readString();
+        }catch (e){
+            version = "";
+        }
+        return version || ""
+    }
+
+    readVersionNewFormat(dataToParse: Uint8Array){
+        let input = new BinaryInput(dataToParse);
+        input.readInt32();
+        input.readInt32();
+        let version;
+        try {
+            version = input.readString();
+        }catch (e){
+            version = ""
+        }
+
+        return version || ""
     }
 }
 
