@@ -4,20 +4,7 @@
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
   "main": "lib/loader-uni.js",
   "module": "lib/loader-uni.es.js",
-  "bundle": "dist/loader-uni.js",
   "types": "./index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./index.d.ts",
-        "default": "./lib/loader-uni.es.js"
-      },
-      "require": {
-        "types": "./index.d.ts",
-        "default": "./lib/loader-uni.js"
-      }
-    }
-  },
   "namespace": "PIXI.spine",
   "peerDependencies": {
     "@pixi/loaders": "^6.1.0"
