@@ -8,11 +8,7 @@
   "types": "./index.d.ts",
   "namespace": "PIXI.spine",
   "peerDependencies": {
-    "@pixi/app": "^6.1.0",
-    "@pixi/core": "^6.1.0",
-    "@pixi/display": "^6.1.0",
-    "@pixi/loaders": "^6.1.0",
-    "resource-loader": "~3.0.1"
+    "@pixi/loaders": "^6.1.0"
   },
   "dependencies": {
     "@pixi-spine/base": "~3.1.0",
