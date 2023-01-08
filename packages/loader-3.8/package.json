@@ -6,6 +6,18 @@
   "module": "lib/loader-3.8.es.js",
   "bundle": "dist/loader-3.8.js",
   "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./index.d.ts",
+        "default": "./lib/loader-3.8.es.js"
+      },
+      "require": {
+        "types": "./index.d.ts",
+        "default": "./lib/loader-3.8.js"
+      }
+    }
+  },
   "namespace": "PIXI.spine",
   "peerDependencies": {
     "@pixi/loaders": "^6.1.0"

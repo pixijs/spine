@@ -7,6 +7,18 @@
 	"bundle": "dist/runtime-3.8.js",
 	"namespace": "PIXI.spine38",
 	"types": "./index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./index.d.ts",
+				"default": "./lib/runtime-3.8.es.js"
+			},
+			"require": {
+				"types": "./index.d.ts",
+				"default": "./lib/runtime-3.8.js"
+			}
+		}
+	},
 	"peerDependencies": {
 		"@pixi/constants": "^6.1.0",
 		"@pixi/math": "^6.1.0"

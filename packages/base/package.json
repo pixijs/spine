@@ -7,6 +7,18 @@
   "bundle": "dist/base.js",
   "namespace": "PIXI.spine",
   "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./index.d.ts",
+        "default": "./lib/base.es.js"
+      },
+      "require": {
+        "types": "./index.d.ts",
+        "default": "./lib/base.js"
+      }
+    }
+  },
   "peerDependencies": {
     "@pixi/constants": "^6.1.0",
     "@pixi/core": "^6.1.0",
