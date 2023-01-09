@@ -1,6 +1,6 @@
 {
   "name": "@pixi-spine/loader-4.1",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Pixi loader middleware for spine 4.1 models",
   "main": "lib/loader-4.1.js",
   "module": "lib/loader-4.1.es.js",
@@ -13,9 +13,9 @@
     "@pixi/loaders": "^6.1.0"
   },
   "dependencies": {
-    "@pixi-spine/base": "~3.1.0",
-    "@pixi-spine/loader-base": "~3.1.0",
-    "@pixi-spine/runtime-4.1": "~3.1.0"
+    "@pixi-spine/base": "~3.1.1",
+    "@pixi-spine/loader-base": "~3.1.1",
+    "@pixi-spine/runtime-4.1": "~3.1.1"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
