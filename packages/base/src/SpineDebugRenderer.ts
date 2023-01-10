@@ -1,10 +1,10 @@
-import { Container } from "@pixi/display";
-import { Graphics } from "@pixi/graphics";
-import type { IAnimationState, IAnimationStateData } from "./core/IAnimation";
-import type { IClippingAttachment, IMeshAttachment, IRegionAttachment, ISkeleton, ISkeletonData, IVertexAttachment } from "./core/ISkeleton";
-import type { SpineBase } from "./SpineBase";
-import { AttachmentType } from "./core/AttachmentType";
-import { SkeletonBoundsBase } from "./core/SkeletonBoundsBase";
+import { Container } from '@pixi/display';
+import { Graphics } from '@pixi/graphics';
+import type { IAnimationState, IAnimationStateData } from './core/IAnimation';
+import type { IClippingAttachment, IMeshAttachment, IRegionAttachment, ISkeleton, ISkeletonData, IVertexAttachment } from './core/ISkeleton';
+import type { SpineBase } from './SpineBase';
+import { AttachmentType } from './core/AttachmentType';
+import { SkeletonBoundsBase } from './core/SkeletonBoundsBase';
 
 /**
  * Make a class that extends from this interface to create your own debug renderer.
@@ -12,19 +12,19 @@ import { SkeletonBoundsBase } from "./core/SkeletonBoundsBase";
  */
 export interface ISpineDebugRenderer {
     /**
-     * This will be called every frame, after the spine has been updated. 
+     * This will be called every frame, after the spine has been updated.
      */
-    renderDebug(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void;
+    renderDebug(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>): void;
 
     /**
      *  This is called when the `spine.debug` object is set to null or when the spine is destroyed.
      */
-    unregisterSpine(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void
+    unregisterSpine(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>): void;
 
     /**
      * This is called when the `spine.debug` object is set to a new instance of a debug renderer.
      */
-    registerSpine(spine:SpineBase< ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void
+    registerSpine(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>): void;
 }
 
 type DebugDisplayObjects = {
@@ -40,44 +40,43 @@ type DebugDisplayObjects = {
     pathsCurve: Graphics;
     pathsLine: Graphics;
     parentDebugContainer: Container;
-}
+};
 
 /**
  * This is a debug renderer that uses PixiJS Graphics under the hood.
  * @public
  */
 export class SpineDebugRenderer implements ISpineDebugRenderer {
-    private registeredSpines:Map<SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, DebugDisplayObjects> = new Map();
+    private registeredSpines: Map<SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, DebugDisplayObjects> = new Map();
 
-    public drawDebug: boolean = true;
-    public drawMeshHull: boolean = true;
-    public drawMeshTriangles: boolean = true;
-    public drawBones: boolean = true;
-    public drawPaths: boolean = true;
-    public drawBoundingBoxes: boolean = true;
-    public drawClipping: boolean = true;
-    public drawRegionAttachments: boolean = true;
+    public drawDebug = true;
+    public drawMeshHull = true;
+    public drawMeshTriangles = true;
+    public drawBones = true;
+    public drawPaths = true;
+    public drawBoundingBoxes = true;
+    public drawClipping = true;
+    public drawRegionAttachments = true;
 
-    public lineWidth: number =  1;
-    public regionAttachmentsColor: number =  0x0078ff;
-    public meshHullColor: number =  0x0078ff;
-    public meshTrianglesColor: number =  0xffcc00;
-    public clippingPolygonColor: number =  0xff00ff;
-    public boundingBoxesRectColor: number =  0x00ff00;
-    public boundingBoxesPolygonColor: number =  0x00ff00;
-    public boundingBoxesCircleColor: number =  0x00ff00;
-    public pathsCurveColor: number =  0xff0000;
-    public pathsLineColor: number =  0xff00ff;
-    public skeletonXYColor:number = 0xff0000;
-    public bonesColor:number = 0x00eecc;
+    public lineWidth = 1;
+    public regionAttachmentsColor = 0x0078ff;
+    public meshHullColor = 0x0078ff;
+    public meshTrianglesColor = 0xffcc00;
+    public clippingPolygonColor = 0xff00ff;
+    public boundingBoxesRectColor = 0x00ff00;
+    public boundingBoxesPolygonColor = 0x00ff00;
+    public boundingBoxesCircleColor = 0x00ff00;
+    public pathsCurveColor = 0xff0000;
+    public pathsLineColor = 0xff00ff;
+    public skeletonXYColor = 0xff0000;
+    public bonesColor = 0x00eecc;
 
     /**
      * The debug is attached by force to each spine object. So we need to create it inside the spine when we get the first update
      */
     public registerSpine(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>) {
-        if (this.registeredSpines.has(spine))
-        {
-            console.warn("SpineDebugRenderer.registerSpine() - this spine is already registered!", spine);
+        if (this.registeredSpines.has(spine)) {
+            console.warn('SpineDebugRenderer.registerSpine() - this spine is already registered!', spine);
         }
         const debugDisplayObjects = {
             parentDebugContainer: new Container(),
@@ -93,7 +92,7 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
             pathsCurve: new Graphics(),
             pathsLine: new Graphics(),
         };
-        
+
         debugDisplayObjects.parentDebugContainer.addChild(debugDisplayObjects.bones);
         debugDisplayObjects.parentDebugContainer.addChild(debugDisplayObjects.skeletonXY);
         debugDisplayObjects.parentDebugContainer.addChild(debugDisplayObjects.regionAttachmentsShape);
@@ -110,8 +109,7 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
         this.registeredSpines.set(spine, debugDisplayObjects);
     }
-    public renderDebug(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void {
-
+    public renderDebug(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>): void {
         if (!this.registeredSpines.has(spine)) {
             // This should never happen. Spines are registered when you assign spine.debug
             this.registerSpine(spine);
@@ -161,8 +159,13 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
             this.drawRegionAttachmentsFunc(spine, debugDisplayObjects, lineWidth);
         }
     }
-    
-    private drawBonesFunc(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number, scale:number): void {
+
+    private drawBonesFunc(
+        spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>,
+        debugDisplayObjects: DebugDisplayObjects,
+        lineWidth: number,
+        scale: number
+    ): void {
         const skeleton = spine.skeleton;
         const skeletonX = skeleton.x;
         const skeletonY = skeleton.y;
@@ -171,14 +174,14 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
         debugDisplayObjects.skeletonXY.lineStyle(lineWidth, this.skeletonXYColor, 1);
 
         for (let i = 0, len = bones.length; i < len; i++) {
-            const bone = bones[i],
-                boneLen = bone.data.length,
-                starX = skeletonX + bone.matrix.tx,
-                starY = skeletonY + bone.matrix.ty,
-                endX = skeletonX + boneLen * bone.matrix.a + bone.matrix.tx,
-                endY = skeletonY + boneLen * bone.matrix.b + bone.matrix.ty;
+            const bone = bones[i];
+            const boneLen = bone.data.length;
+            const starX = skeletonX + bone.matrix.tx;
+            const starY = skeletonY + bone.matrix.ty;
+            const endX = skeletonX + boneLen * bone.matrix.a + bone.matrix.tx;
+            const endY = skeletonY + boneLen * bone.matrix.b + bone.matrix.ty;
 
-            if (bone.data.name === "root" || bone.data.parent === null) {
+            if (bone.data.name === 'root' || bone.data.parent === null) {
                 continue;
             }
 
@@ -188,27 +191,30 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
             // beta: beta=acos((pow(a, 2)+pow(c, 2)-pow(b, 2))/(2*a*c))
             // gamma: gamma=acos((pow(a, 2)+pow(b, 2)-pow(c, 2))/(2*a*b))
 
-            const w = Math.abs(starX - endX),
-                h = Math.abs(starY - endY),
-                // a = w, // side length a
-                a2 = Math.pow(w, 2), // square root of side length a
-                b = h, // side length b
-                b2 = Math.pow(h, 2), // square root of side length b
-                c = Math.sqrt(a2 + b2), // side length c
-                c2 = Math.pow(c, 2), // square root of side length c
-                rad = Math.PI / 180,
-                // A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0, // Angle A
-                // C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0, // C angle
-                B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // angle of corner B
+            const w = Math.abs(starX - endX);
+            const h = Math.abs(starY - endY);
+            // a = w, // side length a
+            const a2 = Math.pow(w, 2); // square root of side length a
+            const b = h; // side length b
+            const b2 = Math.pow(h, 2); // square root of side length b
+            const c = Math.sqrt(a2 + b2); // side length c
+            const c2 = Math.pow(c, 2); // square root of side length c
+            const rad = Math.PI / 180;
+            // A = Math.acos([a2 + c2 - b2] / [2 * a * c]) || 0, // Angle A
+            // C = Math.acos([a2 + b2 - c2] / [2 * a * b]) || 0, // C angle
+            const B = Math.acos((c2 + b2 - a2) / (2 * b * c)) || 0; // angle of corner B
+
             if (c === 0) {
                 continue;
             }
 
             const gp = new Graphics();
+
             debugDisplayObjects.bones.addChild(gp);
 
             // draw bone
             const refRation = c / 50 / scale;
+
             gp.beginFill(this.bonesColor, 1);
             gp.drawPolygon(0, 0, 0 - refRation, c - refRation * 3, 0, c - refRation, 0 + refRation, c - refRation * 3);
             gp.endFill();
@@ -218,6 +224,7 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
             // Calculate bone rotation angle
             let rotation = 0;
+
             if (starX < endX && starY < endY) {
                 // bottom right
                 rotation = -B + 180 * rad;
@@ -254,42 +261,50 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
         // Draw the skeleton starting point "X" form
         const startDotSize = lineWidth * 3;
+
         debugDisplayObjects.skeletonXY.moveTo(skeletonX - startDotSize, skeletonY - startDotSize);
         debugDisplayObjects.skeletonXY.lineTo(skeletonX + startDotSize, skeletonY + startDotSize);
         debugDisplayObjects.skeletonXY.moveTo(skeletonX + startDotSize, skeletonY - startDotSize);
         debugDisplayObjects.skeletonXY.lineTo(skeletonX - startDotSize, skeletonY + startDotSize);
     }
 
-    private drawRegionAttachmentsFunc(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number): void {
+    private drawRegionAttachmentsFunc(
+        spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>,
+        debugDisplayObjects: DebugDisplayObjects,
+        lineWidth: number
+    ): void {
         const skeleton = spine.skeleton;
         const slots = skeleton.slots;
 
         debugDisplayObjects.regionAttachmentsShape.lineStyle(lineWidth, this.regionAttachmentsColor, 1);
 
         for (let i = 0, len = slots.length; i < len; i++) {
-            const slot = slots[i],
-                attachment = slot.getAttachment();
+            const slot = slots[i];
+            const attachment = slot.getAttachment();
+
             if (attachment == null || attachment.type !== AttachmentType.Region) {
                 continue;
             }
 
             const regionAttachment = attachment as IRegionAttachment & {
-                computeWorldVertices:(slot: unknown, worldVertices: unknown, offset: unknown, stride: unknown) => void,
-                updateOffset?:() => void,
+                computeWorldVertices: (slot: unknown, worldVertices: unknown, offset: unknown, stride: unknown) => void;
+                updateOffset?: () => void;
             };
 
             const vertices = new Float32Array(8);
-
 
             regionAttachment?.updateOffset(); // We don't need this on all versions
 
             regionAttachment.computeWorldVertices(slot, vertices, 0, 2);
             debugDisplayObjects.regionAttachmentsShape.drawPolygon(Array.from(vertices.slice(0, 8)));
-            
         }
     }
 
-    private drawMeshHullAndMeshTriangles(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number): void {
+    private drawMeshHullAndMeshTriangles(
+        spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>,
+        debugDisplayObjects: DebugDisplayObjects,
+        lineWidth: number
+    ): void {
         const skeleton = spine.skeleton;
         const slots = skeleton.slots;
 
@@ -298,26 +313,30 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
         for (let i = 0, len = slots.length; i < len; i++) {
             const slot = slots[i];
+
             if (!slot.bone.active) {
                 continue;
             }
             const attachment = slot.getAttachment();
+
             if (attachment == null || attachment.type !== AttachmentType.Mesh) {
                 continue;
             }
 
-            const meshAttachment:IMeshAttachment = attachment as IMeshAttachment;
+            const meshAttachment: IMeshAttachment = attachment as IMeshAttachment;
 
-            const vertices = new Float32Array(meshAttachment.worldVerticesLength),
-                triangles = meshAttachment.triangles;
+            const vertices = new Float32Array(meshAttachment.worldVerticesLength);
+            const triangles = meshAttachment.triangles;
             let hullLength = meshAttachment.hullLength;
+
             meshAttachment.computeWorldVertices(slot, 0, meshAttachment.worldVerticesLength, vertices, 0, 2);
             // draw the skinned mesh (triangle)
             if (this.drawMeshTriangles) {
                 for (let i = 0, len = triangles.length; i < len; i += 3) {
-                    const v1 = triangles[i] * 2,
-                        v2 = triangles[i + 1] * 2,
-                        v3 = triangles[i + 2] * 2;
+                    const v1 = triangles[i] * 2;
+                    const v2 = triangles[i + 1] * 2;
+                    const v3 = triangles[i + 2] * 2;
+
                     debugDisplayObjects.meshTrianglesLine.moveTo(vertices[v1], vertices[v1 + 1]);
                     debugDisplayObjects.meshTrianglesLine.lineTo(vertices[v2], vertices[v2 + 1]);
                     debugDisplayObjects.meshTrianglesLine.lineTo(vertices[v3], vertices[v3 + 1]);
@@ -327,11 +346,13 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
             // draw skin border
             if (this.drawMeshHull && hullLength > 0) {
                 hullLength = (hullLength >> 1) * 2;
-                let lastX = vertices[hullLength - 2],
-                    lastY = vertices[hullLength - 1];
+                let lastX = vertices[hullLength - 2];
+                let lastY = vertices[hullLength - 1];
+
                 for (let i = 0, len = hullLength; i < len; i += 2) {
-                    const x = vertices[i],
-                        y = vertices[i + 1];
+                    const x = vertices[i];
+                    const y = vertices[i + 1];
+
                     debugDisplayObjects.meshHullLine.moveTo(x, y);
                     debugDisplayObjects.meshHullLine.lineTo(lastX, lastY);
                     lastX = x;
@@ -341,73 +362,83 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
         }
     }
 
-    private drawClippingFunc(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number): void {
+    private drawClippingFunc(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth: number): void {
         const skeleton = spine.skeleton;
         const slots = skeleton.slots;
 
         debugDisplayObjects.clippingPolygon.lineStyle(lineWidth, this.clippingPolygonColor, 1);
         for (let i = 0, len = slots.length; i < len; i++) {
             const slot = slots[i];
+
             if (!slot.bone.active) {
                 continue;
             }
             const attachment = slot.getAttachment();
+
             if (attachment == null || attachment.type !== AttachmentType.Clipping) {
                 continue;
             }
 
             const clippingAttachment: IClippingAttachment = attachment as IClippingAttachment;
 
-            const nn = clippingAttachment.worldVerticesLength,
-                world = new Float32Array(nn);
+            const nn = clippingAttachment.worldVerticesLength;
+            const world = new Float32Array(nn);
+
             clippingAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
             debugDisplayObjects.clippingPolygon.drawPolygon(Array.from(world));
         }
     }
 
-    private drawBoundingBoxesFunc(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number): void {
+    private drawBoundingBoxesFunc(
+        spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>,
+        debugDisplayObjects: DebugDisplayObjects,
+        lineWidth: number
+    ): void {
         // draw the total outline of the bounding box
         debugDisplayObjects.boundingBoxesRect.lineStyle(lineWidth, this.boundingBoxesRectColor, 5);
 
         const bounds = new SkeletonBoundsBase();
+
         bounds.update(spine.skeleton, true);
         debugDisplayObjects.boundingBoxesRect.drawRect(bounds.minX, bounds.minY, bounds.getWidth(), bounds.getHeight());
 
-        const polygons = bounds.polygons,
-            drawPolygon = (polygonVertices: ArrayLike<number>, _offset: unknown, count: number): void => {
-                debugDisplayObjects.boundingBoxesPolygon.lineStyle(lineWidth, this.boundingBoxesPolygonColor, 1);
-                debugDisplayObjects.boundingBoxesPolygon.beginFill(this.boundingBoxesPolygonColor, 0.1);
+        const polygons = bounds.polygons;
+        const drawPolygon = (polygonVertices: ArrayLike<number>, _offset: unknown, count: number): void => {
+            debugDisplayObjects.boundingBoxesPolygon.lineStyle(lineWidth, this.boundingBoxesPolygonColor, 1);
+            debugDisplayObjects.boundingBoxesPolygon.beginFill(this.boundingBoxesPolygonColor, 0.1);
 
-                if (count < 3) {
-                    throw new Error("Polygon must contain at least 3 vertices");
-                }
-                const paths = [],
-                    dotSize = lineWidth * 2;
-                for (let i = 0, len = polygonVertices.length; i < len; i += 2) {
-                    const x1 = polygonVertices[i],
-                        y1 = polygonVertices[i + 1];
+            if (count < 3) {
+                throw new Error('Polygon must contain at least 3 vertices');
+            }
+            const paths = [];
+            const dotSize = lineWidth * 2;
 
-                    // draw the bounding box node
-                    debugDisplayObjects.boundingBoxesCircle.lineStyle(0);
-                    debugDisplayObjects.boundingBoxesCircle.beginFill(this.boundingBoxesCircleColor);
-                    debugDisplayObjects.boundingBoxesCircle.drawCircle(x1, y1, dotSize);
-                    debugDisplayObjects.boundingBoxesCircle.endFill();
+            for (let i = 0, len = polygonVertices.length; i < len; i += 2) {
+                const x1 = polygonVertices[i];
+                const y1 = polygonVertices[i + 1];
 
-                    paths.push(x1, y1);
-                }
+                // draw the bounding box node
+                debugDisplayObjects.boundingBoxesCircle.lineStyle(0);
+                debugDisplayObjects.boundingBoxesCircle.beginFill(this.boundingBoxesCircleColor);
+                debugDisplayObjects.boundingBoxesCircle.drawCircle(x1, y1, dotSize);
+                debugDisplayObjects.boundingBoxesCircle.endFill();
 
-                // draw the bounding box area
-                debugDisplayObjects.boundingBoxesPolygon.drawPolygon(paths);
-                debugDisplayObjects.boundingBoxesPolygon.endFill();
-            };
+                paths.push(x1, y1);
+            }
+
+            // draw the bounding box area
+            debugDisplayObjects.boundingBoxesPolygon.drawPolygon(paths);
+            debugDisplayObjects.boundingBoxesPolygon.endFill();
+        };
 
         for (let i = 0, len = polygons.length; i < len; i++) {
             const polygon = polygons[i];
+
             drawPolygon(polygon, 0, polygon.length);
         }
     }
 
-    private drawPathsFunc(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth:number): void {
+    private drawPathsFunc(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>, debugDisplayObjects: DebugDisplayObjects, lineWidth: number): void {
         const skeleton = spine.skeleton;
         const slots = skeleton.slots;
 
@@ -416,27 +447,32 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
         for (let i = 0, len = slots.length; i < len; i++) {
             const slot = slots[i];
+
             if (!slot.bone.active) {
                 continue;
             }
             const attachment = slot.getAttachment();
+
             if (attachment == null || attachment.type !== AttachmentType.Path) {
-                continue
+                continue;
             }
 
-            const pathAttachment = attachment as IVertexAttachment & {closed:boolean};
+            const pathAttachment = attachment as IVertexAttachment & { closed: boolean };
             let nn = pathAttachment.worldVerticesLength;
             const world = new Float32Array(nn);
+
             pathAttachment.computeWorldVertices(slot, 0, nn, world, 0, 2);
-            let x1 = world[2],
-                y1 = world[3],
-                x2 = 0,
-                y2 = 0;
+            let x1 = world[2];
+            let y1 = world[3];
+            let x2 = 0;
+            let y2 = 0;
+
             if (pathAttachment.closed) {
-                const cx1 = world[0],
-                    cy1 = world[1],
-                    cx2 = world[nn - 2],
-                    cy2 = world[nn - 1];
+                const cx1 = world[0];
+                const cy1 = world[1];
+                const cx2 = world[nn - 2];
+                const cy2 = world[nn - 1];
+
                 x2 = world[nn - 4];
                 y2 = world[nn - 3];
 
@@ -452,10 +488,11 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
             }
             nn -= 4;
             for (let ii = 4; ii < nn; ii += 6) {
-                const cx1 = world[ii],
-                    cy1 = world[ii + 1],
-                    cx2 = world[ii + 2],
-                    cy2 = world[ii + 3];
+                const cx1 = world[ii];
+                const cy1 = world[ii + 1];
+                const cx2 = world[ii + 2];
+                const cy2 = world[ii + 3];
+
                 x2 = world[ii + 4];
                 y2 = world[ii + 5];
                 // curve
@@ -473,12 +510,13 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
         }
     }
 
-    public unregisterSpine(spine:SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>):void{
+    public unregisterSpine(spine: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>): void {
         if (!this.registeredSpines.has(spine)) {
             console.warn("SpineDebugRenderer.unregisterSpine() - spine is not registered, can't unregister!", spine);
         }
         const debugDisplayObjects = this.registeredSpines.get(spine);
-        debugDisplayObjects.parentDebugContainer.destroy({baseTexture:true, children:true, texture:true});
+
+        debugDisplayObjects.parentDebugContainer.destroy({ baseTexture: true, children: true, texture: true });
         this.registeredSpines.delete(spine);
     }
 }

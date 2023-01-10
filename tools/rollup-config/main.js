@@ -6,6 +6,7 @@ const {globals} = require('@pixi-build-tools/globals');
 const resolve = require('rollup-plugin-node-resolve');
 
 const string = require('rollup-plugin-string').string;
+
 const sourcemaps = require('rollup-plugin-sourcemaps');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('rollup-plugin-replace');

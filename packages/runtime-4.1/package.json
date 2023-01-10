@@ -9,10 +9,8 @@
   "types": "./index.d.ts",
   "peerDependencies": {
     "@pixi/constants": "^6.1.0",
-    "@pixi/math": "^6.1.0"
-  },
-  "dependencies": {
-    "@pixi-spine/base": "~3.1.1"
+    "@pixi/math": "^6.1.0",
+    "@pixi-spine/base": "*"
   },
   "scripts": {
     "build": "rollup -c rollup.config.js --silent",
@@ -38,14 +36,5 @@
   },
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
-  "devDependencies": {
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "@pixi-spine/rollup-config": "~1.0.0",
-    "chai": "~4.2.0",
-    "eslint": "~7.13.0",
-    "rimraf": "3.0.2",
-    "rollup": "^2.53.3",
-    "tslib": "~2.2.0",
-    "typescript": "~4.3.0"
-  }
+  "devDependencies": {}
 }

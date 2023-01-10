@@ -1,4 +1,3 @@
-
 // These enums were moved from PathConstraintData.ts of spine 3.7, 3.8 and 4.0
 
 /** Controls how the first bone is positioned along the path.
@@ -7,7 +6,8 @@
  * @public
  * */
 export enum PositionMode {
-    Fixed, Percent
+    Fixed,
+    Percent,
 }
 
 /** Controls how bones are rotated, translated, and scaled to match the path.
@@ -16,7 +16,9 @@ export enum PositionMode {
  * @public
  * */
 export enum RotateMode {
-    Tangent, Chain, ChainScale
+    Tangent,
+    Chain,
+    ChainScale,
 }
 
 /**
