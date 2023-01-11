@@ -1,7 +1,7 @@
-import {ConstraintData} from "./ConstraintData";
-import type {SlotData} from "./SlotData";
-import type {BoneData} from "./BoneData";
-import { PositionMode, RotateMode } from "@pixi-spine/base";
+import { ConstraintData } from './ConstraintData';
+import type { SlotData } from './SlotData';
+import type { BoneData } from './BoneData';
+import { PositionMode, RotateMode } from '@pixi-spine/base';
 
 /** Stores the setup pose for a {@link PathConstraint}.
  *
@@ -9,15 +9,16 @@ import { PositionMode, RotateMode } from "@pixi-spine/base";
  * @public
  * */
 export class PathConstraintData extends ConstraintData {
-
     /** The bones that will be modified by this path constraint. */
     bones = new Array<BoneData>();
 
     /** The slot whose path attachment will be used to constrained the bones. */
     private _target: SlotData | null = null;
-    public set target (slotData: SlotData) { this._target = slotData; }
-    public get target () {
-        if (!this._target) throw new Error("SlotData not set.")
+    public set target(slotData: SlotData) {
+        this._target = slotData;
+    }
+    public get target() {
+        if (!this._target) throw new Error('SlotData not set.');
         else return this._target;
     }
 
@@ -31,19 +32,19 @@ export class PathConstraintData extends ConstraintData {
     rotateMode: RotateMode = RotateMode.Chain;
 
     /** An offset added to the constrained bone rotation. */
-    offsetRotation: number = 0;
+    offsetRotation = 0;
 
     /** The position along the path. */
-    position: number = 0;
+    position = 0;
 
     /** The spacing between bones. */
-    spacing: number = 0;
+    spacing = 0;
 
     mixRotate = 0;
     mixX = 0;
     mixY = 0;
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name, 0, false);
     }
 }
@@ -54,5 +55,8 @@ export class PathConstraintData extends ConstraintData {
  * @public
  * */
 export enum SpacingMode {
-    Length, Fixed, Percent, Proportional
+    Length,
+    Fixed,
+    Percent,
+    Proportional,
 }

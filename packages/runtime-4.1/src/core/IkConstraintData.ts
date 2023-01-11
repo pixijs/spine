@@ -1,5 +1,5 @@
-import {ConstraintData} from "./ConstraintData";
-import {BoneData} from "./BoneData";
+import { ConstraintData } from './ConstraintData';
+import type { BoneData } from './BoneData';
 
 /** Stores the setup pose for an {@link IkConstraint}.
  * <p>
@@ -12,9 +12,11 @@ export class IkConstraintData extends ConstraintData {
 
     /** The bone that is the IK target. */
     private _target: BoneData | null = null;
-    public set target (boneData: BoneData) { this._target = boneData; }
-    public get target () {
-        if (!this._target) throw new Error("BoneData not set.")
+    public set target(boneData: BoneData) {
+        this._target = boneData;
+    }
+    public get target() {
+        if (!this._target) throw new Error('BoneData not set.');
         else return this._target;
     }
 
@@ -38,7 +40,7 @@ export class IkConstraintData extends ConstraintData {
     /** For two bone IK, the distance from the maximum reach of the bones that rotation will slow. */
     softness = 0;
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name, 0, false);
     }
 }

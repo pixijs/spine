@@ -1,32 +1,31 @@
-import {Skin} from '../Skin';
-import type {RegionAttachment} from './RegionAttachment';
-import type {MeshAttachment} from './MeshAttachment';
-import type {BoundingBoxAttachment} from './BoundingBoxAttachment';
-import type {PathAttachment} from './PathAttachment';
-import type {PointAttachment} from './PointAttachment';
-import type {ClippingAttachment} from './ClippingAttachment';
-import type {Sequence} from './Sequence';
+import type { Skin } from '../Skin';
+import type { RegionAttachment } from './RegionAttachment';
+import type { MeshAttachment } from './MeshAttachment';
+import type { BoundingBoxAttachment } from './BoundingBoxAttachment';
+import type { PathAttachment } from './PathAttachment';
+import type { PointAttachment } from './PointAttachment';
+import type { ClippingAttachment } from './ClippingAttachment';
+import type { Sequence } from './Sequence';
 
 /**
  * @public
  */
 export interface AttachmentLoader {
     /** @return May be null to not load an attachment. */
-    newRegionAttachment (skin: Skin, name: string, path: string, sequence: Sequence | null): RegionAttachment;
+    newRegionAttachment(skin: Skin, name: string, path: string, sequence: Sequence | null): RegionAttachment;
 
     /** @return May be null to not load an attachment. */
-    newMeshAttachment (skin: Skin, name: string, path: string, sequence: Sequence | null): MeshAttachment;
+    newMeshAttachment(skin: Skin, name: string, path: string, sequence: Sequence | null): MeshAttachment;
 
     /** @return May be null to not load an attachment. */
-    newBoundingBoxAttachment (skin: Skin, name: string): BoundingBoxAttachment;
+    newBoundingBoxAttachment(skin: Skin, name: string): BoundingBoxAttachment;
 
     /** @return May be null to not load an attachment */
-    newPathAttachment (skin: Skin, name: string): PathAttachment;
+    newPathAttachment(skin: Skin, name: string): PathAttachment;
 
     /** @return May be null to not load an attachment */
-    newPointAttachment (skin: Skin, name: string): PointAttachment;
+    newPointAttachment(skin: Skin, name: string): PointAttachment;
 
     /** @return May be null to not load an attachment */
-    newClippingAttachment (skin: Skin, name: string): ClippingAttachment;
+    newClippingAttachment(skin: Skin, name: string): ClippingAttachment;
 }
-
