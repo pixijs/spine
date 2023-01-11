@@ -2,8 +2,8 @@
   "name": "@pixi-spine/runtime-3.7",
   "version": "3.1.1",
   "description": "Pixi runtime for spine 3.7 models",
-  "main": "lib/runtime-3.7.js",
-  "module": "lib/runtime-3.7.es.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
   "exports": {
     ".": {

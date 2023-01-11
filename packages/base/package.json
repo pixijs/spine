@@ -2,8 +2,8 @@
   "name": "@pixi-spine/base",
   "version": "3.1.1",
   "description": "Base of pixi-spine integration, common files for spine runtimes of different versions",
-  "main": "lib/base.js",
-  "module": "lib/base.es.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
   "exports": {
     ".": {
