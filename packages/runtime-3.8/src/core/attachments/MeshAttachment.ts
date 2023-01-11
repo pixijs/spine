@@ -1,5 +1,5 @@
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color, IMeshAttachment, TextureRegion, Utils} from '@pixi-spine/base';
+import { Attachment, VertexAttachment } from './Attachment';
+import { AttachmentType, Color, IMeshAttachment, TextureRegion, Utils } from '@pixi-spine/base';
 
 /**
  * @public
@@ -19,16 +19,16 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     private parentMesh: MeshAttachment;
     tempColor = new Color(0, 0, 0, 0);
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name);
     }
 
-    getParentMesh () {
+    getParentMesh() {
         return this.parentMesh;
     }
 
     /** @param parentMesh May be null. */
-    setParentMesh (parentMesh: MeshAttachment) {
+    setParentMesh(parentMesh: MeshAttachment) {
         this.parentMesh = parentMesh;
         if (parentMesh != null) {
             this.bones = parentMesh.bones;
@@ -37,14 +37,15 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
             this.regionUVs = parentMesh.regionUVs;
             this.triangles = parentMesh.triangles;
             this.hullLength = parentMesh.hullLength;
-            this.worldVerticesLength = parentMesh.worldVerticesLength
+            this.worldVerticesLength = parentMesh.worldVerticesLength;
         }
     }
 
-    copy (): Attachment {
+    copy(): Attachment {
         if (this.parentMesh != null) return this.newLinkedMesh();
 
-        let copy = new MeshAttachment(this.name);
+        const copy = new MeshAttachment(this.name);
+
         copy.region = this.region;
         copy.path = this.path;
         copy.color.setFromColor(this.color);
@@ -67,14 +68,16 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
         return copy;
     }
 
-    newLinkedMesh (): MeshAttachment {
-        let copy = new MeshAttachment(this.name);
+    newLinkedMesh(): MeshAttachment {
+        const copy = new MeshAttachment(this.name);
+
         copy.region = this.region;
         copy.path = this.path;
         copy.color.setFromColor(this.color);
         copy.deformAttachment = this.deformAttachment;
         copy.setParentMesh(this.parentMesh != null ? this.parentMesh : this);
         // copy.updateUVs();
+
         return copy;
     }
 }

@@ -4,17 +4,33 @@
 	"description": "Pixi runtime for spine 3.8 models",
 	"main": "lib/runtime-3.8.js",
 	"module": "lib/runtime-3.8.es.js",
-	"bundle": "dist/runtime-3.8.js",
-	"namespace": "PIXI.spine38",
 	"types": "./index.d.ts",
+	"exports": {
+		".": {
+			"import": "./lib/index.mjs",
+			"require": "./lib/index.js",
+			"types": "./index.d.ts"
+		}
+	},
+	"extensionConfig": {
+		"namespace": "PIXI.spine37",
+		"bundle": "dist/runtime-3.8.js",
+		"bundleModule": "dist/runtime-3.8.mjs",
+		"globals": {
+			"@pixi-spine/base": "PIXI.spine"
+		}
+	},
 	"peerDependencies": {
 		"@pixi/constants": "^6.1.0",
 		"@pixi/math": "^6.1.0",
 		"@pixi-spine/base": "*"
 	},
 	"scripts": {
-		"build": "rollup -c rollup.config.js --silent",
-		"build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+		"build": "run-p build:*",
+		"build:rollup": "rollup -c rollup.config.mjs --silent",
+		"build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+		"lint": "eslint src/**/*.ts",
+		"lint:fix": "eslint src/**/*.ts --fix"
 	},
 	"repository": {
 		"type": "git",

@@ -1,7 +1,7 @@
-import {ConstraintData} from "./Constraint";
-import type {SlotData} from "./SlotData";
-import type {BoneData} from "./BoneData";
-import { RotateMode, PositionMode } from "@pixi-spine/base";
+import { ConstraintData } from './Constraint';
+import type { SlotData } from './SlotData';
+import type { BoneData } from './BoneData';
+import type { RotateMode, PositionMode } from '@pixi-spine/base';
 
 /**
  * @public
@@ -13,9 +13,12 @@ export class PathConstraintData extends ConstraintData {
     spacingMode: SpacingMode;
     rotateMode: RotateMode;
     offsetRotation: number;
-    position: number; spacing: number; rotateMix: number; translateMix: number;
+    position: number;
+    spacing: number;
+    rotateMix: number;
+    translateMix: number;
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name, 0, false);
     }
 }
@@ -23,5 +26,7 @@ export class PathConstraintData extends ConstraintData {
  * @public
  */
 export enum SpacingMode {
-    Length, Fixed, Percent
+    Length,
+    Fixed,
+    Percent,
 }

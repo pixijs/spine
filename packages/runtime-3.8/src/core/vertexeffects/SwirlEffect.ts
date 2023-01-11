@@ -1,6 +1,6 @@
-import {VertexEffect} from "../VertexEffect";
-import type {Skeleton} from "../Skeleton";
-import {Color, MathUtils, PowOut, Vector2} from "@pixi-spine/base";
+import type { VertexEffect } from '../VertexEffect';
+import type { Skeleton } from '../Skeleton';
+import { Color, MathUtils, PowOut, Vector2 } from '@pixi-spine/base';
 
 /**
  * @public
@@ -14,7 +14,7 @@ export class SwirlEffect implements VertexEffect {
     private worldX = 0;
     private worldY = 0;
 
-    constructor (radius: number) {
+    constructor(radius: number) {
         this.radius = radius;
     }
 
@@ -24,19 +24,20 @@ export class SwirlEffect implements VertexEffect {
     }
 
     transform(position: Vector2, uv: Vector2, light: Color, dark: Color): void {
-        let radAngle = this.angle * MathUtils.degreesToRadians;
-        let x = position.x - this.worldX;
-        let y = position.y - this.worldY;
-        let dist = Math.sqrt(x * x + y * y);
+        const radAngle = this.angle * MathUtils.degreesToRadians;
+        const x = position.x - this.worldX;
+        const y = position.y - this.worldY;
+        const dist = Math.sqrt(x * x + y * y);
+
         if (dist < this.radius) {
-            let theta = SwirlEffect.interpolation.apply(0, radAngle, (this.radius - dist) / this.radius);
-            let cos = Math.cos(theta);
-            let sin = Math.sin(theta);
+            const theta = SwirlEffect.interpolation.apply(0, radAngle, (this.radius - dist) / this.radius);
+            const cos = Math.cos(theta);
+            const sin = Math.sin(theta);
+
             position.x = cos * x - sin * y + this.worldX;
             position.y = sin * x + cos * y + this.worldY;
         }
     }
 
-    end(): void {
-    }
+    end(): void {}
 }
