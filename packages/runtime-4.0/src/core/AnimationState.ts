@@ -1144,7 +1144,7 @@ export class EventQueue {
                 case EventType.complete:
                     if (entry.listener && entry.listener.complete) entry.listener.complete(entry);
                     for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].complete) listeners[ii].complete(entry);
+                        if (listeners[ii].complete) PIXI.ticker.shared.addOnce(listeners[ii].complete.bind(listeners[ii], entry));
                     break;
                 case EventType.event:
                     let event = objects[i++ + 2] as Event;
