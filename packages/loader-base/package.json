@@ -2,11 +2,24 @@
   "name": "@pixi-spine/loader-base",
   "version": "3.1.1",
   "description": "Pixi loader middleware base",
-  "main": "lib/loader-base.js",
-  "module": "lib/loader-base.es.js",
-  "bundle": "dist/loader-base.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/loader-base.js",
+    "bundleModule": "dist/loader-base.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine"
+    }
+  },
   "peerDependencies": {
     "@pixi/constants": "^6.1.0",
     "@pixi/core": "^6.1.0",
@@ -14,8 +27,11 @@
     "@pixi-spine/base": "*"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node ../../scripts/injectGlobalMixins",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",

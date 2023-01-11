@@ -1,7 +1,7 @@
-import {IResourceMetadata, Loader, LoaderResource} from "@pixi/loaders";
-import {BaseTexture, Texture} from "@pixi/core";
-import {ISkeletonParser, TextureAtlas} from "@pixi-spine/base";
-import {ALPHA_MODES} from "@pixi/constants";
+import { IResourceMetadata, Loader, LoaderResource } from '@pixi/loaders';
+import { BaseTexture, IAutoDetectOptions, Resource, Texture } from '@pixi/core';
+import { ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
+import { ALPHA_MODES } from '@pixi/constants';
 
 function isJson(resource: LoaderResource) {
     return resource.type === LoaderResource.TYPE.JSON;
@@ -24,6 +24,7 @@ export abstract class AbstractSpineParser {
     abstract parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void;
 
     genMiddleware() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         return {
@@ -34,8 +35,7 @@ export abstract class AbstractSpineParser {
                 }
 
                 const isJsonSpineModel = isJson(resource) && resource.data.bones;
-                const isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || resource.metadata
-                    && (resource.metadata as any).spineMetadata);
+                const isBinarySpineModel = isBuffer(resource) && (resource.extension === 'skel' || (resource.metadata && (resource.metadata as any).spineMetadata));
 
                 if (!isJsonSpineModel && !isBinarySpineModel) {
                     return next();
@@ -61,11 +61,13 @@ export abstract class AbstractSpineParser {
                 }
 
                 const metadataAtlas = metadata.spineAtlas;
+
                 if (metadataAtlas === false) {
                     return next();
                 }
                 if (metadataAtlas && metadataAtlas.pages) {
                     self.parseData(resource, parser, metadataAtlas, dataToParse);
+
                     return next();
                 }
 
@@ -77,55 +79,60 @@ export abstract class AbstractSpineParser {
                  * have the same name
                  */
                 let atlasPath = resource.url;
-                let queryStringPos = atlasPath.indexOf('?');
+                const queryStringPos = atlasPath.indexOf('?');
+
                 if (queryStringPos > 0) {
-                    //remove querystring
-                    atlasPath = atlasPath.substr(0, queryStringPos)
+                    // remove querystring
+                    atlasPath = atlasPath.substr(0, queryStringPos);
                 }
                 atlasPath = atlasPath.substr(0, atlasPath.lastIndexOf('.')) + metadataAtlasSuffix;
-// use atlas path as a params. (no need to use same atlas file name with json file name)
+                // use atlas path as a params. (no need to use same atlas file name with json file name)
                 if (metadata.spineAtlasFile) {
                     atlasPath = metadata.spineAtlasFile;
                 }
 
-//remove the baseUrl
+                // remove the baseUrl
                 atlasPath = atlasPath.replace(this.baseUrl, '');
 
                 const atlasOptions = {
                     crossOrigin: resource.crossOrigin,
                     xhrType: LoaderResource.XHR_RESPONSE_TYPE.TEXT,
                     metadata: metadata.spineMetadata || null,
-                    parentResource: resource
+                    parentResource: resource,
                 };
                 const imageOptions = {
                     crossOrigin: resource.crossOrigin,
                     metadata: metadata.imageMetadata || null,
-                    parentResource: resource
+                    parentResource: resource,
                 };
                 let baseUrl = resource.url.substr(0, resource.url.lastIndexOf('/') + 1);
-//remove the baseUrl
+                // remove the baseUrl
+
                 baseUrl = baseUrl.replace(this.baseUrl, '');
 
-                const namePrefix = metadata.imageNamePrefix || (resource.name + '_atlas_page_');
+                const namePrefix = metadata.imageNamePrefix || `${resource.name}_atlas_page_`;
 
-                const adapter = metadata.images ? staticImageLoader(metadata.images)
-                    : metadata.image ? staticImageLoader({'default': metadata.image})
-                        : metadata.imageLoader ? metadata.imageLoader(this, namePrefix, baseUrl, imageOptions)
-                            : imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
+                let adapter: (line: string, callback: (baseTexture: BaseTexture<Resource, IAutoDetectOptions>) => any) => void;
 
-                function createSkeletonWithRawAtlas(rawData: string) {
-                    new TextureAtlas(rawData, adapter, function(spineAtlas) {
+                if (metadata.images) adapter = staticImageLoader(metadata.images);
+                else if (metadata.image) adapter = staticImageLoader({ default: metadata.image });
+                else if (metadata.imageLoader) adapter = metadata.imageLoader(this, namePrefix, baseUrl, imageOptions);
+                else adapter = imageLoaderAdapter(this, namePrefix, baseUrl, imageOptions);
+
+                const createSkeletonWithRawAtlas = (rawData: string) => {
+                    // eslint-disable-next-line no-new
+                    new TextureAtlas(rawData, adapter, (spineAtlas) => {
                         if (spineAtlas) {
                             self.parseData(resource, parser, spineAtlas, dataToParse);
                         }
                         next();
                     });
-                }
+                };
 
                 if (metadata.atlasRawData) {
-                    createSkeletonWithRawAtlas(metadata.atlasRawData)
+                    createSkeletonWithRawAtlas(metadata.atlasRawData);
                 } else {
-                    this.add(resource.name + '_atlas', atlasPath, atlasOptions, function (atlasResource: any) {
+                    this.add(`${resource.name}_atlas`, atlasPath, atlasOptions, (atlasResource: any) => {
                         if (!atlasResource.error) {
                             createSkeletonWithRawAtlas(atlasResource.data);
                         } else {
@@ -133,8 +140,8 @@ export abstract class AbstractSpineParser {
                         }
                     });
                 }
-            }
-        }
+            },
+        };
     }
 }
 
@@ -142,18 +149,21 @@ export abstract class AbstractSpineParser {
  * @public
  */
 export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, imageOptions: any) {
-    if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
+    if (baseUrl && baseUrl.lastIndexOf('/') !== baseUrl.length - 1) {
         baseUrl += '/';
     }
-    return function (line: string, callback: (baseTexture: BaseTexture) => any) {
+
+    return (line: string, callback: (baseTexture: BaseTexture) => any) => {
         const name = namePrefix + line;
         const url = baseUrl + line;
 
         const cachedResource = loader.resources[name];
+
         if (cachedResource) {
             const done = () => {
-                callback(cachedResource.texture.baseTexture)
-            }
+                callback(cachedResource.texture.baseTexture);
+            };
+
             if (cachedResource.texture) {
                 done();
             } else {
@@ -172,30 +182,30 @@ export function imageLoaderAdapter(loader: any, namePrefix: any, baseUrl: any, i
                 }
             });
         }
-    }
+    };
 }
 
 /**
  * @public
  */
 export function syncImageLoaderAdapter(baseUrl: any, crossOrigin: any) {
-    if (baseUrl && baseUrl.lastIndexOf('/') !== (baseUrl.length - 1)) {
+    if (baseUrl && baseUrl.lastIndexOf('/') !== baseUrl.length - 1) {
         baseUrl += '/';
     }
-    return function (line: any, callback: any) {
+
+    return (line: any, callback: any) => {
         callback(BaseTexture.from(line, crossOrigin));
-    }
+    };
 }
 
 /**
  * @public
  */
-export function staticImageLoader(pages: { [key: string]: (BaseTexture | Texture) }) {
-    return function (line: any, callback: any) {
-        let page = pages[line] || pages['default'] as any;
-        if (page && page.baseTexture)
-            callback(page.baseTexture);
-        else
-            callback(page);
-    }
+export function staticImageLoader(pages: { [key: string]: BaseTexture | Texture }) {
+    return (line: any, callback: any) => {
+        const page = pages[line] || (pages.default as any);
+
+        if (page && page.baseTexture) callback(page.baseTexture);
+        else callback(page);
+    };
 }
