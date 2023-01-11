@@ -4,17 +4,33 @@
   "description": "Pixi runtime for spine 4.0 models",
   "main": "lib/runtime-4.0.js",
   "module": "lib/runtime-4.0.es.js",
-  "bundle": "dist/runtime-4.0.js",
-  "namespace": "PIXI.spine40",
   "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine40",
+    "bundle": "dist/runtime-4.0.js",
+    "bundleModule": "dist/runtime-4.0.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine"
+    }
+  },
   "peerDependencies": {
     "@pixi/constants": "^6.1.0",
     "@pixi/math": "^6.1.0",
     "@pixi-spine/base": "*"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",

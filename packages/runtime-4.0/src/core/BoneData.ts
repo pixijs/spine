@@ -1,4 +1,4 @@
-import {Color, TransformMode} from '@pixi-spine/base';
+import { Color, TransformMode } from '@pixi-spine/base';
 
 /** Stores the setup pose for a {@link Bone}.
  * @public
@@ -49,9 +49,9 @@ export class BoneData {
      * rendered at runtime. */
     color = new Color();
 
-    constructor (index: number, name: string, parent: BoneData) {
-        if (index < 0) throw new Error("index must be >= 0.");
-        if (name == null) throw new Error("name cannot be null.");
+    constructor(index: number, name: string, parent: BoneData) {
+        if (index < 0) throw new Error('index must be >= 0.');
+        if (name == null) throw new Error('name cannot be null.');
         this.index = index;
         this.name = name;
         this.parent = parent;

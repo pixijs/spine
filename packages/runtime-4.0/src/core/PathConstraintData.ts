@@ -1,7 +1,7 @@
-import {ConstraintData} from "./ConstraintData";
-import type {SlotData} from "./SlotData";
-import type {BoneData} from "./BoneData";
-import { PositionMode, RotateMode } from "@pixi-spine/base";
+import { ConstraintData } from './ConstraintData';
+import type { SlotData } from './SlotData';
+import type { BoneData } from './BoneData';
+import type { PositionMode, RotateMode } from '@pixi-spine/base';
 
 /** Stores the setup pose for a {@link PathConstraint}.
  *
@@ -9,7 +9,6 @@ import { PositionMode, RotateMode } from "@pixi-spine/base";
  * @public
  * */
 export class PathConstraintData extends ConstraintData {
-
     /** The bones that will be modified by this path constraint. */
     bones = new Array<BoneData>();
 
@@ -38,7 +37,7 @@ export class PathConstraintData extends ConstraintData {
     mixX = 0;
     mixY = 0;
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name, 0, false);
     }
 }
@@ -49,5 +48,8 @@ export class PathConstraintData extends ConstraintData {
  * @public
  * */
 export enum SpacingMode {
-    Length, Fixed, Percent, Proportional
+    Length,
+    Fixed,
+    Percent,
+    Proportional,
 }

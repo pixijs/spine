@@ -1,14 +1,13 @@
-import {Color} from '@pixi-spine/base';
+import { Color } from '@pixi-spine/base';
 
-import type {ISlotData} from '@pixi-spine/base';
-import type {BLEND_MODES} from '@pixi/constants';
-import {BoneData} from "./BoneData";
+import type { ISlotData } from '@pixi-spine/base';
+import type { BLEND_MODES } from '@pixi/constants';
+import type { BoneData } from './BoneData';
 
 /** Stores the setup pose for a {@link Slot}.
  * @public
  * */
 export class SlotData implements ISlotData {
-
     /** The index of the slot in {@link Skeleton#getSlots()}. */
     index: number;
 
@@ -32,13 +31,12 @@ export class SlotData implements ISlotData {
     /** The blend mode for drawing the slot's attachment. */
     blendMode: BLEND_MODES;
 
-    constructor (index: number, name: string, boneData: BoneData) {
-        if (index < 0) throw new Error("index must be >= 0.");
-        if (!name) throw new Error("name cannot be null.");
-        if (!boneData) throw new Error("boneData cannot be null.");
+    constructor(index: number, name: string, boneData: BoneData) {
+        if (index < 0) throw new Error('index must be >= 0.');
+        if (!name) throw new Error('name cannot be null.');
+        if (!boneData) throw new Error('boneData cannot be null.');
         this.index = index;
         this.name = name;
         this.boneData = boneData;
     }
 }
-
