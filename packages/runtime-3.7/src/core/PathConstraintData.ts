@@ -1,6 +1,6 @@
-import type {SlotData} from "./SlotData";
-import type {BoneData} from "./BoneData";
-import { RotateMode, PositionMode, IPathConstraintData } from "@pixi-spine/base";
+import type { SlotData } from './SlotData';
+import type { BoneData } from './BoneData';
+import type { RotateMode, PositionMode, IPathConstraintData } from '@pixi-spine/base';
 
 /**
  * @public
@@ -28,5 +28,7 @@ export class PathConstraintData implements IPathConstraintData {
  * @public
  */
 export enum SpacingMode {
-    Length, Fixed, Percent
+    Length,
+    Fixed,
+    Percent,
 }

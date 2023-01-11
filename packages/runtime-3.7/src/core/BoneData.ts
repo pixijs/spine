@@ -1,4 +1,4 @@
-import { TransformMode } from "@pixi-spine/base";
+import { TransformMode } from '@pixi-spine/base';
 
 /**
  * @public
@@ -18,8 +18,8 @@ export class BoneData {
     transformMode = TransformMode.Normal;
 
     constructor(index: number, name: string, parent: BoneData) {
-        if (index < 0) throw new Error("index must be >= 0.");
-        if (name == null) throw new Error("name cannot be null.");
+        if (index < 0) throw new Error('index must be >= 0.');
+        if (name == null) throw new Error('name cannot be null.');
         this.index = index;
         this.name = name;
         this.parent = parent;

@@ -30,7 +30,8 @@
     "@pixi/utils": "^6.1.0"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.mjs --silent",
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
     "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"

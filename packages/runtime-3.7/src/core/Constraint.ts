@@ -1,4 +1,4 @@
-import {Updatable} from "./Updatable";
+import type { Updatable } from './Updatable';
 
 /**
  * @public

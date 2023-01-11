@@ -14,6 +14,7 @@ module.exports = {
         ],
 
         // special rules because most of this code is lifted from spine
+        // I would love to not have to do this, but I don't have the time nor the energy to fix the entire lib. Milton - 2023
 
         eqeqeq: 0,
         '@typescript-eslint/no-unused-vars': 0,
@@ -33,5 +34,8 @@ module.exports = {
         '@typescript-eslint/ban-types': 0,
         '@typescript-eslint/no-empty-interface': 0,
         '@typescript-eslint/adjacent-overload-signatures': 0,
+        'no-fallthrough': 0,
+        '@typescript-eslint/no-unused-expressions': 0,
+        'max-params': 0,
     },
 };

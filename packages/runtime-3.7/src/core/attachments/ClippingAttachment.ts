@@ -1,6 +1,6 @@
-import {VertexAttachment} from './Attachment';
-import {AttachmentType, Color, IClippingAttachment} from '@pixi-spine/base';
-import type {SlotData} from '../SlotData';
+import { VertexAttachment } from './Attachment';
+import { AttachmentType, Color, IClippingAttachment } from '@pixi-spine/base';
+import type { SlotData } from '../SlotData';
 
 /**
  * @public

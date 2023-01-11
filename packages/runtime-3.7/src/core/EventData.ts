@@ -1,4 +1,4 @@
-import {IEventData} from "@pixi-spine/base";
+import type { IEventData } from '@pixi-spine/base';
 
 /**
  * @public
@@ -12,7 +12,7 @@ export class EventData implements IEventData {
     volume: number;
     balance: number;
 
-    constructor (name: string) {
+    constructor(name: string) {
         this.name = name;
     }
 }
