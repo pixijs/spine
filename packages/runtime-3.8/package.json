@@ -52,5 +52,7 @@
 	},
 	"license": "SEE SPINE-LICENSE",
 	"homepage": "https://github.com/pixijs/pixi-spine/#readme",
-	"devDependencies": {}
+	"devDependencies": {
+		"@pixi-spine/rollup-config": "*"
+	}
 }
