@@ -14,7 +14,7 @@ export enum SPINE_VERSION {
  */
 export function detectSpineVersion(version: string): SPINE_VERSION {
     const ver3 = version.substr(0, 3);
-    const verNum = Math.floor(+ver3 * 10 + 1e-3);
+    const verNum = Math.floor(Number(ver3) * 10 + 1e-3);
 
     if (ver3 === '3.7') {
         return SPINE_VERSION.VER37;
@@ -32,5 +32,6 @@ export function detectSpineVersion(version: string): SPINE_VERSION {
     if (verNum < SPINE_VERSION.VER37) {
         return SPINE_VERSION.VER37;
     }
+
     return SPINE_VERSION.UNKNOWN;
 }

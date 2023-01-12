@@ -2,10 +2,27 @@
   "name": "@pixi-spine/loader-uni",
   "version": "3.1.1",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
-  "main": "lib/loader-uni.js",
-  "module": "lib/loader-uni.es.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/loader-uni.js",
+    "bundleModule": "dist/loader-uni.mjs",
+    "globals": {
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/runtime-3.7": "PIXI.spine",
+      "@pixi-spine/runtime-3.8": "PIXI.spine",
+      "@pixi-spine/runtime-4.1": "PIXI.spine"
+    }
+  },
   "peerDependencies": {
     "@pixi/loaders": "^6.1.0",
     "@pixi-spine/base": "*",
@@ -15,8 +32,11 @@
     "@pixi-spine/runtime-4.1": "*"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node ../../scripts/injectGlobalMixins",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",

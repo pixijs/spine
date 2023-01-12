@@ -1,10 +1,10 @@
-import {AbstractSpineParser} from '@pixi-spine/loader-base';
-import {BinaryInput, ISkeletonData, ISkeletonParser, TextureAtlas} from "@pixi-spine/base";
-import {LoaderResource, Loader} from "@pixi/loaders";
-import * as spine38 from "@pixi-spine/runtime-3.8";
-import * as spine37 from "@pixi-spine/runtime-3.7";
-import * as spine41 from "@pixi-spine/runtime-4.1";
-import {detectSpineVersion, SPINE_VERSION} from "./versions";
+import { AbstractSpineParser } from '@pixi-spine/loader-base';
+import { BinaryInput, ISkeletonData, ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
+import { LoaderResource, Loader } from '@pixi/loaders';
+import * as spine38 from '@pixi-spine/runtime-3.8';
+import * as spine37 from '@pixi-spine/runtime-3.7';
+import * as spine41 from '@pixi-spine/runtime-4.1';
+import { detectSpineVersion, SPINE_VERSION } from './versions';
 
 class UniBinaryParser implements ISkeletonParser {
     scale = 1;
@@ -13,6 +13,7 @@ class UniBinaryParser implements ISkeletonParser {
         let parser: any = null;
         let version = this.readVersionOldFormat(dataToParse);
         let ver = detectSpineVersion(version);
+
         if (ver === SPINE_VERSION.VER38) {
             parser = new spine38.SkeletonBinary(new spine38.AtlasAttachmentLoader(atlas));
         }
@@ -22,38 +23,44 @@ class UniBinaryParser implements ISkeletonParser {
             parser = new spine41.SkeletonBinary(new spine41.AtlasAttachmentLoader(atlas));
         }
         if (!parser) {
-            let error = `Unsupported version of spine model ${version}, please update pixi-spine`;
+            const error = `Unsupported version of spine model ${version}, please update pixi-spine`;
+
             console.error(error);
         }
 
         parser.scale = this.scale;
+
         return parser.readSkeletonData(dataToParse);
     }
 
-    readVersionOldFormat(dataToParse: Uint8Array){
-        let input = new BinaryInput(dataToParse);
+    readVersionOldFormat(dataToParse: Uint8Array) {
+        const input = new BinaryInput(dataToParse);
         let version;
+
         try {
             input.readString();
             version = input.readString();
-        }catch (e){
-            version = "";
+        } catch (e) {
+            version = '';
         }
-        return version || ""
+
+        return version || '';
     }
 
-    readVersionNewFormat(dataToParse: Uint8Array){
-        let input = new BinaryInput(dataToParse);
+    readVersionNewFormat(dataToParse: Uint8Array) {
+        const input = new BinaryInput(dataToParse);
+
         input.readInt32();
         input.readInt32();
         let version;
+
         try {
             version = input.readString();
-        }catch (e){
-            version = ""
+        } catch (e) {
+            version = '';
         }
 
-        return version || ""
+        return version || '';
     }
 }
 
@@ -75,11 +82,13 @@ class UniJsonParser implements ISkeletonParser {
             parser = new spine41.SkeletonJson(new spine41.AtlasAttachmentLoader(atlas));
         }
         if (!parser) {
-            let error = `Unsupported version of spine model ${version}, please update pixi-spine`;
+            const error = `Unsupported version of spine model ${version}, please update pixi-spine`;
+
             console.error(error);
         }
 
         parser.scale = this.scale;
+
         return parser.readSkeletonData(dataToParse);
     }
 }
@@ -97,7 +106,8 @@ export class SpineParser extends AbstractSpineParser {
     }
 
     parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
-        const parserCast = parser as (UniBinaryParser | UniJsonParser);
+        const parserCast = parser as UniBinaryParser | UniJsonParser;
+
         resource.spineData = parserCast.readSkeletonData(atlas, dataToParse);
         resource.spineAtlas = atlas;
     }
