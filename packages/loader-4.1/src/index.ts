@@ -1,8 +1,10 @@
+/* eslint-disable spaced-comment */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../global.d.ts" />
-import {AbstractSpineParser} from '@pixi-spine/loader-base';
-import {ISkeletonParser, TextureAtlas} from '@pixi-spine/base';
-import {LoaderResource, Loader} from "@pixi/loaders";
-import {AtlasAttachmentLoader, SkeletonBinary, SkeletonJson} from "@pixi-spine/runtime-4.1";
+import { AbstractSpineParser } from '@pixi-spine/loader-base';
+import type { ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
+import { LoaderResource, Loader } from '@pixi/loaders';
+import { AtlasAttachmentLoader, SkeletonBinary, SkeletonJson } from '@pixi-spine/runtime-4.1';
 
 /**
  * @public
