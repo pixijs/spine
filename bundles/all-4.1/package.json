@@ -20,7 +20,7 @@
       "@pixi-spine/base": "PIXI.spine",
       "@pixi-spine/loader-4.1": "PIXI.spine",
       "@pixi-spine/loader-base": "PIXI.spine",
-      "@pixi-spine/runtime-4.1": "PIXI.spine"
+      "@pixi-spine/runtime-4.1": "PIXI.spine41"
     }
   },
   "dependencies": {

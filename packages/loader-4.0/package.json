@@ -17,7 +17,7 @@
     "bundle": "dist/loader-4.0.js",
     "bundleModule": "dist/loader-4.0.mjs",
     "globals": {
-      "@pixi-spine/runtime-4.0": "PIXI.spine",
+      "@pixi-spine/runtime-4.0": "PIXI.spine40",
       "@pixi-spine/loader-base": "PIXI.spine"
     }
   },

@@ -2,22 +2,55 @@
   "name": "pixi-spine",
   "version": "3.1.1",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
-  "main": "lib/all.js",
-  "module": "lib/all.es.js",
-  "bundle": "dist/pixi-spine.umd.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/pixi-spine.js",
+    "bundleModule": "dist/pixi-spine.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine",
+      "@pixi-spine/runtime-3.7": "PIXI.spine37",
+      "@pixi-spine/runtime-3.8": "PIXI.spine38",
+      "@pixi-spine/runtime-4.0": "PIXI.spine40",
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/loader-uni": "PIXI.spine"
+    }
+  },
   "dependencies": {
     "@pixi-spine/base": "*",
-    "@pixi-spine/loader-base": "*",
-    "@pixi-spine/loader-uni": "*",
     "@pixi-spine/runtime-3.7": "*",
     "@pixi-spine/runtime-3.8": "*",
-    "@pixi-spine/runtime-4.1": "*"
+    "@pixi-spine/runtime-4.0": "*",
+    "@pixi-spine/loader-base": "*",
+    "@pixi-spine/loader-uni": "*"
+  },
+  "peerDependencies": {
+    "@pixi/constants": "^6.1.0",
+    "@pixi/core": "^6.1.0",
+    "@pixi/display": "^6.1.0",
+    "@pixi/graphics": "^6.1.0",
+    "@pixi/math": "^6.1.0",
+    "@pixi/mesh": "^6.1.0",
+    "@pixi/mesh-extras": "^6.1.0",
+    "@pixi/sprite": "^6.1.0",
+    "@pixi/utils": "^6.1.0",
+    "@pixi/loaders": "^6.1.0"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
