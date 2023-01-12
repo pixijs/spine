@@ -2,20 +2,51 @@
   "name": "@pixi-spine/all-3.8",
   "version": "3.1.1",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 3.8",
-  "main": "lib/all-3.8.js",
-  "module": "lib/all-3.8.es.js",
-  "bundle": "dist/pixi-spine-3.8.umd.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/pixi-spine-3.8.js",
+    "bundleModule": "dist/pixi-spine-3.8.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine",
+      "@pixi-spine/loader-3.8": "PIXI.spine",
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/runtime-3.8": "PIXI.spine"
+    }
+  },
   "dependencies": {
     "@pixi-spine/base": "*",
     "@pixi-spine/loader-3.8": "*",
     "@pixi-spine/loader-base": "*",
     "@pixi-spine/runtime-3.8": "*"
   },
+  "peerDependencies": {
+    "@pixi/constants": "^6.1.0",
+    "@pixi/core": "^6.1.0",
+    "@pixi/display": "^6.1.0",
+    "@pixi/graphics": "^6.1.0",
+    "@pixi/math": "^6.1.0",
+    "@pixi/mesh": "^6.1.0",
+    "@pixi/mesh-extras": "^6.1.0",
+    "@pixi/sprite": "^6.1.0",
+    "@pixi/utils": "^6.1.0",
+    "@pixi/loaders": "^6.1.0"
+  },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -46,5 +77,7 @@
   },
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "@pixi-spine/rollup-config": "*"
+  }
 }
