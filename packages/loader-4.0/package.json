@@ -2,22 +2,36 @@
   "name": "@pixi-spine/loader-4.0",
   "version": "3.1.1",
   "description": "Pixi loader middleware for spine 4.0 models",
-  "main": "lib/loader-4.0.js",
-  "module": "lib/loader-4.0.es.js",
-  "bundle": "dist/loader-4.0.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/loader-4.0.js",
+    "bundleModule": "dist/loader-4.0.mjs",
+    "globals": {
+      "@pixi-spine/runtime-4.0": "PIXI.spine",
+      "@pixi-spine/loader-base": "PIXI.spine"
+    }
+  },
   "peerDependencies": {
-    "@pixi/core": "^6.1.0",
-    "@pixi/display": "^6.1.0",
     "@pixi/loaders": "^6.1.0",
-    "@pixi-spine/base": "*",
     "@pixi-spine/loader-base": "*",
     "@pixi-spine/runtime-4.0": "*"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node ../../scripts/injectGlobalMixins",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -39,6 +53,7 @@
   },
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/rollup-config": "*"
+    "@pixi-spine/rollup-config": "*",
+    "@pixi-spine/base": "*"
   }
 }

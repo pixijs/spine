@@ -14,10 +14,9 @@
   },
   "extensionConfig": {
     "namespace": "PIXI.spine",
-    "bundle": "dist/base.js",
-    "bundleModule": "dist/base.mjs",
+    "bundle": "dist/loader-3.8.js",
+    "bundleModule": "dist/loader-3.8.mjs",
     "globals": {
-      "@pixi-spine/base": "PIXI.spine.base",
       "@pixi-spine/runtime-3.8": "PIXI.spine",
       "@pixi-spine/loader-base": "PIXI.spine"
     }
