@@ -21,9 +21,15 @@
     }
   },
   "peerDependencies": {
-    "@pixi/constants": "^6.1.0",
-    "@pixi/core": "^6.1.0",
-    "@pixi/loaders": "^6.1.0",
+    "@pixi/assets": " ^7.0.0",
+    "@pixi/core": "^7.0.0",
+    "@pixi/constants": "^7.0.0",
+    "@pixi/extensions": "^7.0.0",
+    "@pixi/math": "^7.0.0",
+    "@pixi/runner": "^7.0.0",
+    "@pixi/settings": "^7.0.0",
+    "@pixi/ticker": "^7.0.0",
+    "@pixi/utils": "^7.0.0",
     "@pixi-spine/base": "*"
   },
   "scripts": {

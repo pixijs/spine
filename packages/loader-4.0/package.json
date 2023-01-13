@@ -22,7 +22,6 @@
     }
   },
   "peerDependencies": {
-    "@pixi/loaders": "^6.1.0",
     "@pixi-spine/loader-base": "*",
     "@pixi-spine/runtime-4.0": "*"
   },
