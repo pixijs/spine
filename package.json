@@ -10,7 +10,8 @@
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
     "prepublishOnly": "lerna run build",
-    "publish": "lerna publish --no-private"
+    "lernaPublish": "lerna publish --no-private",
+    "lernaPublish:fromPackage": "lerna publish from-package --no-private"
   },
   "workspaces": [
     "packages/*",
