@@ -1,6 +1,5 @@
-import { AbstractSpineParser } from '@pixi-spine/loader-base';
+import { ISpineResource, SpineLoaderAbstract } from '@pixi-spine/loader-base';
 import { BinaryInput, ISkeletonData, ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
-import { LoaderResource, Loader } from '@pixi/loaders';
 import * as spine38 from '@pixi-spine/runtime-3.8';
 import * as spine37 from '@pixi-spine/runtime-3.7';
 import * as spine41 from '@pixi-spine/runtime-4.1';
@@ -96,7 +95,7 @@ class UniJsonParser implements ISkeletonParser {
 /**
  * @public
  */
-export class SpineParser extends AbstractSpineParser {
+export class SpineLoader extends SpineLoaderAbstract<ISkeletonData> {
     createBinaryParser(): ISkeletonParser {
         return new UniBinaryParser();
     }
@@ -105,16 +104,12 @@ export class SpineParser extends AbstractSpineParser {
         return new UniJsonParser();
     }
 
-    parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
+    parseData(parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): ISpineResource<ISkeletonData> {
         const parserCast = parser as UniBinaryParser | UniJsonParser;
 
-        resource.spineData = parserCast.readSkeletonData(atlas, dataToParse);
-        resource.spineAtlas = atlas;
-    }
-
-    static use = new SpineParser().genMiddleware().use;
-
-    static registerLoaderPlugin() {
-        Loader.registerPlugin(SpineParser);
+        return {
+            spineData: parserCast.readSkeletonData(atlas, dataToParse),
+            spineAtlas: atlas,
+        };
     }
 }

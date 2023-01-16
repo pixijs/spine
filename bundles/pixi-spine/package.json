@@ -21,6 +21,7 @@
       "@pixi-spine/runtime-3.7": "PIXI.spine37",
       "@pixi-spine/runtime-3.8": "PIXI.spine38",
       "@pixi-spine/runtime-4.0": "PIXI.spine40",
+      "@pixi-spine/runtime-4.1": "PIXI.spine41",
       "@pixi-spine/loader-base": "PIXI.spine",
       "@pixi-spine/loader-uni": "PIXI.spine"
     }
@@ -30,6 +31,7 @@
     "@pixi-spine/runtime-3.7": "*",
     "@pixi-spine/runtime-3.8": "*",
     "@pixi-spine/runtime-4.0": "*",
+    "@pixi-spine/runtime-4.1": "*",
     "@pixi-spine/loader-base": "*",
     "@pixi-spine/loader-uni": "*"
   },
@@ -79,5 +81,7 @@
   },
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "@pixi-spine/rollup-config": "*"
+  }
 }

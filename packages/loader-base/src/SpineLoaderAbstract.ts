@@ -27,7 +27,7 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
 
     abstract parseData(parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): ISpineResource<SKD>;
 
-    public installLoader(): void {
+    public installLoader(): any {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const spineAdapter = this;
         const spineLoaderExtension: AssetExtension<SPINEJSON | SPINEBINARY | ISpineResource<SKD>, ISpineMetadata> = {
@@ -59,7 +59,7 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
                     const isBinarySpineModel = checkExtension(options.src, '.skel') && isBuffer(asset);
 
                     // From 6.x loader. If the atlas is strictly false we bail
-                    const isMetadataAngry = options.data.spineAtlas === false;
+                    const isMetadataAngry = options.data?.spineAtlas === false;
 
                     return Promise.resolve((isJsonSpineModel && !isMetadataAngry) || isBinarySpineModel);
                 },
@@ -73,7 +73,7 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
                         basePath += '/';
                     }
 
-                    const isJsonSpineModel = fileExt === 'json' && isJson(asset);
+                    const isJsonSpineModel = checkExtension(loadAsset.src, '.json') && isJson(asset);
                     // const isBinarySpineModel = fileExt === 'slel' && isBuffer(asset);
 
                     let parser: ISkeletonParser = null;
@@ -143,6 +143,8 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
         } as AssetExtension<SPINEJSON | SPINEBINARY | ISpineResource<SKD>, ISpineMetadata>;
 
         extensions.add(spineLoaderExtension);
+
+        return spineLoaderExtension;
     }
 }
 

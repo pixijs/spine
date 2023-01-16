@@ -1,7 +1,7 @@
 import { TextureAtlas } from '@pixi-spine/base';
 import { type AssetExtension, LoaderParserPriority, LoadAsset, Loader, checkExtension } from '@pixi/assets';
 import { BaseTexture, extensions, ExtensionType, settings, Texture, utils } from '@pixi/core';
-import type { ISpineMetadata } from './spineLoader';
+import type { ISpineMetadata } from './SpineLoaderAbstract';
 
 type RawAtlas = string;
 
