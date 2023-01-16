@@ -1,6 +1,6 @@
 {
   "name": "@pixi-spine/loader-base",
-  "version": "3.1.1",
+  "version": "4.0.0",
   "description": "Pixi loader middleware base",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -21,16 +21,16 @@
     }
   },
   "peerDependencies": {
+    "@pixi-spine/base": "*",
     "@pixi/assets": " ^7.0.0",
-    "@pixi/core": "^7.0.0",
     "@pixi/constants": "^7.0.0",
+    "@pixi/core": "^7.0.0",
     "@pixi/extensions": "^7.0.0",
     "@pixi/math": "^7.0.0",
     "@pixi/runner": "^7.0.0",
     "@pixi/settings": "^7.0.0",
     "@pixi/ticker": "^7.0.0",
-    "@pixi/utils": "^7.0.0",
-    "@pixi-spine/base": "*"
+    "@pixi/utils": "^7.0.0"
   },
   "scripts": {
     "build": "run-p build:*",
