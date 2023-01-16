@@ -172,3 +172,10 @@ That will build all packages and bundles. Browser packages are inside `dist` and
 
 [node]:             https://nodejs.org/
 [typescript]:       https://www.typescriptlang.org/
+
+## Deploying
+
+If you have enough rights to publish this monorepo, you can publish by running `npm run lernaPublish`
+This is so that it runs with the internal npm v8 since npm v9 doesn't play nice with Lerna.
+
+If for some reason your publish failed, use `npm run lernaPublish:fromPackage` to try to force a publish without creating a new version
