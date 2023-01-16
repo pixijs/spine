@@ -9,7 +9,8 @@
     "build:rollup": "lerna run build:rollup",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
-    "prepublishOnly": "echo useLerna && exit 1"
+    "prepublishOnly": "echo \"use npm RUN publish so you can use lerna with npm 8\" && exit 1",
+    "publish": "npx lerna publish --no-private"
   },
   "workspaces": [
     "packages/*",
@@ -28,7 +29,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "install": "^0.13.0",
     "lerna": "^6.4.0",
-    "npm": "^9.2.0",
+    "npm": "^8.0.0",
     "npm-run-all": "^4.1.5",
     "prepend": "=1.0.2",
     "rimraf": "3.0.2",

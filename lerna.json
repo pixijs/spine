@@ -1,7 +1,4 @@
 {
   "useWorkspaces": true,
-  "version": "3.1.2",
-  "npmClientArgs": [
-    "--legacy-peer-deps"
-  ]
+  "version": "3.1.2"
 }
