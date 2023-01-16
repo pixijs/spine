@@ -9,8 +9,8 @@
     "build:rollup": "lerna run build:rollup",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
-    "prepublishOnly": "echo \"use npm RUN publish so you can use lerna with npm 8\" && exit 1",
-    "publish": "npx lerna publish --no-private"
+    "prepublishOnly": "lerna run build",
+    "publish": "lerna publish --no-private"
   },
   "workspaces": [
     "packages/*",
