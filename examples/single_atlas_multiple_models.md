@@ -2,6 +2,8 @@ Suppose you want to use same atlas for several models. You can put all the textu
 
 Load it in separate loader, then use atlas for all others.
 
+#### This example is for PixiJS version < 7.x
+
 ```js
 const preLoader = new PIXI.Loader();
 const loader = new PIXI.Loader();

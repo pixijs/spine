@@ -1,5 +1,7 @@
 ### How to use same texture from multiple atlases
 
+#### This example is for PixiJS version < 7.x
+
 imageLoader uses existing resource for a texture if you specify namePrefix.
 
 Do not use this approach if all of your textures are named `skeleton.png` :)

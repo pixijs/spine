@@ -1,5 +1,7 @@
 ### How to use pre-loaded json and atlas files
 
+#### This example is for PixiJS version < 7.x
+
 ```js
 var rawSkeletonData = JSON.parse("$jsondata"); //your skeleton.json file here
 var rawAtlasData = "$atlasdata"; //your atlas file 
