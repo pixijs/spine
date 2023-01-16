@@ -9,7 +9,6 @@
     "build:rollup": "lerna run build:rollup",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
-    "prepare": "lerna run build",
     "prepublishOnly": "echo useLerna && exit 1"
   },
   "workspaces": [
