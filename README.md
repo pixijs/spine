@@ -11,7 +11,9 @@ Spine 3.7, 3.8, 4.0, 4.1 implementation for PixiJS.
 
 For spine < 3.7 support is limited, but accepting PR's for `runtime-3.7` package.
 
-For previous versions of pixi & typescript definitions - please refer to [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
+For previous versions of pixi refer to
+- [README in pixi6](https://github.com/pixijs/pixi-spine/tree/pixi6/#readme)
+- [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
 
 Demos:
 
