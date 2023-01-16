@@ -4,11 +4,13 @@
   "description": "Parent package for pixi-spine",
   "main": "index.js",
   "scripts": {
-    "build:compile": "rush build",
-    "build:types": "rush build:types",
-    "build": "npm run build:compile && npm run build:types",
-    "prepublishOnly": "npm run build",
-    "test": "cd ./tools/unit-tests && pnpm test && cd ../.."
+    "build": "lerna run build",
+    "build:types": "lerna run build:types",
+    "build:rollup": "lerna run build:rollup",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run lint:fix",
+    "prepublish": "lerna run build",
+    "publish": "echo jaja"
   },
   "workspaces": [
     "packages/*",
