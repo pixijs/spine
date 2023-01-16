@@ -10,7 +10,7 @@
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
     "prepublish": "lerna run build",
-    "publish": "echo jaja"
+    "prepublishOnly": "echo useLerna && exit 1"
   },
   "workspaces": [
     "packages/*",
