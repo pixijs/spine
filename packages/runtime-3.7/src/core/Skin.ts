@@ -1,7 +1,7 @@
 import type { Attachment } from './attachments';
 import type { Skeleton } from './Skeleton';
 
-import type { Map, ISkin } from '@pixi-spine/base';
+import type { Map, ISkin } from '@pixi/spine-base';
 
 /**
  * @public

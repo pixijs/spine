@@ -1,4 +1,4 @@
-import { ISkeletonData, ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
+import { ISkeletonData, ISkeletonParser, TextureAtlas } from '@pixi/spine-base';
 import { AssetExtension, checkExtension, LoadAsset, Loader, LoaderParserPriority } from '@pixi/assets';
 import { BaseTexture, extensions, ExtensionType, settings, Texture, utils } from '@pixi/core';
 import { makeSpineTextureAtlasLoaderFunctionFromPixiLoaderObject } from './atlasLoader';

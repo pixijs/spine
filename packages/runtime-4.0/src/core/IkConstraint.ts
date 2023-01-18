@@ -2,7 +2,7 @@ import type { Updatable } from './Updatable';
 import type { IkConstraintData } from './IkConstraintData';
 import type { Bone } from './Bone';
 import type { Skeleton } from './Skeleton';
-import { MathUtils, settings, TransformMode } from '@pixi-spine/base';
+import { MathUtils, settings, TransformMode } from '@pixi/spine-base';
 
 /** Stores the current pose for an IK constraint. An IK constraint adjusts the rotation of 1 or 2 constrained bones so the tip of
  * the last bone is as close to the target bone as possible.

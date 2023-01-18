@@ -1,6 +1,6 @@
 {
-  "name": "@pixi-spine/runtime-3.7",
-  "version": "4.0.0",
+  "name": "@pixi/spine-runtime-3.7",
+  "version": "3.1.2",
   "description": "Pixi runtime for spine 3.7 models",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -17,11 +17,11 @@
     "bundle": "dist/runtime-3.7.js",
     "bundleModule": "dist/runtime-3.7.mjs",
     "globals": {
-      "@pixi-spine/base": "PIXI.spine"
+      "@pixi/spine-base": "PIXI.spine"
     }
   },
   "peerDependencies": {
-    "@pixi-spine/base": "*",
+    "@pixi/spine-base": "*",
     "@pixi/constants": "^7.0.0",
     "@pixi/math": "^7.0.0"
   },

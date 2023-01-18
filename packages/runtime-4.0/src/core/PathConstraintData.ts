@@ -1,7 +1,7 @@
 import { ConstraintData } from './ConstraintData';
 import type { SlotData } from './SlotData';
 import type { BoneData } from './BoneData';
-import type { PositionMode, RotateMode } from '@pixi-spine/base';
+import type { PositionMode, RotateMode } from '@pixi/spine-base';
 
 /** Stores the setup pose for a {@link PathConstraint}.
  *

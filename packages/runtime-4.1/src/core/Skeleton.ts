@@ -7,7 +7,7 @@ import { IkConstraint } from './IkConstraint';
 import { TransformConstraint } from './TransformConstraint';
 import { PathConstraint } from './PathConstraint';
 import type { Skin } from './Skin';
-import { Color, MathUtils, NumberArrayLike, settings, Utils, Vector2, ISkeleton } from '@pixi-spine/base';
+import { Color, MathUtils, NumberArrayLike, settings, Utils, Vector2, ISkeleton } from '@pixi/spine-base';
 
 /** Stores the current pose for a skeleton.
  *

@@ -4,14 +4,14 @@ Spine 3.7, 3.8, 4.0, 4.1 implementation for PixiJS.
 
 ### Versions Compatibility
 
-| PixiJS | pixi-spine |
+| PixiJS | Pixi Spine Plugin |
 |---|---|
-| v5.x - v6.x | v3.x |
-| v7.x | v4.x |
+| v5.x - v6.x | pixi-spine v3.x |
+| v7.x | @pixi/spine v4.x |
 
 For spine < 3.7 support is limited, but accepting PR's for `runtime-3.7` package.
 
-For previous versions of pixi refer to
+For previous versions of PixiJS refer to
 - [README in pixi6](https://github.com/pixijs/pixi-spine/tree/pixi6/#readme)
 - [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
 
@@ -27,19 +27,19 @@ https://sbfkcel.github.io/pixi-spine-debug/
 
 Please read this carefully: there are many ways to add this lib to your app.
 
-1. npm, Webpack, Rollup, Vite - if you know those words, use `npm i pixi-spine`
+1. npm, Webpack, Rollup, Vite - if you know those words, use `npm i @pixi/spine`
 2. Good old `<script src="pixi-spine.js">`, also named vanilla JS
 3. The modern `<script type="module" src="pixi-spine.mjs">`, for ES modules
-4. Single version, check the `all-X.Y` bundles
+4. Single version, check the `@pixi/spine-all-X.Y` bundles
 5. Custom bundle, for specific combinations of versions.
 
 ### Bundles example
 
 ```js
-import 'pixi-spine' // Do this once at the very start of your code. This registers the loader!
+import '@pixi/spine' // Do this once at the very start of your code. This registers the loader!
 
 import * as PIXI from 'pixi.js';
-import {Spine} from 'pixi-spine';
+import {Spine} from '@pixi/spine';
 
 const app = new PIXI.Application();
 document.body.appendChild(app.view);
@@ -65,11 +65,11 @@ PIXI.Assets.load("spine-data-1/HERO.json").then((resource) => {
 
 ### Where are spine core classes?
 
-Classes like `AttachmentType`, `TextureAtlas`, `TextureRegion` and `Utils` are shared across all spine versions, and re-exported by all bundles. But if you want to see them directly, they are in `@pixi-spine/base`.
+Classes like `AttachmentType`, `TextureAtlas`, `TextureRegion` and `Utils` are shared across all spine versions, and re-exported by all bundles. But if you want to see them directly, they are in `@pixi/spine-base`.
 
 Base also contains unified interfaces, `ISkeleton`, `ISkeletonData`, `IAnimationData` and so on, see `ISkeleton.ts` file. 
 
-Most of classes are spine-version-dependant, including `Skeleton`, `SkeletonData`, they are stored in corresponding packages `@pixi-spine/runtime-3.8` and so on.
+Most of classes are spine-version-dependant, including `Skeleton`, `SkeletonData`, they are stored in corresponding packages `@pixi/spine-runtime-3.8` and so on.
 
 ### Browser builds
 
@@ -77,24 +77,22 @@ For browser builds, you will need to grab either the `.js` (for CJS) file or the
 
 ### Custom bundle
 
-Main bundle `pixi-spine` weights 374 KB (unzipped).
+Main bundle `@pixi/spine` weights 374 KB (unzipped).
 
-Bundle `@pixi-spine/all-3.8` weights about 165 KB (unzipped).
+Bundle `@pixi/spine-all-3.8` weights about 165 KB (unzipped).
 
-If you want to use different version (3.7) please look how modules `loader-3.8` and `pixi-spine-3.8` are made.
+If you want to use different version (3.7) please look how modules `@pixi/spine-loader-3.8` and `@pixi/spine-runtime-3.8` are made and how they are bundled on `@pixi/spine-all-3.8`
 
 Basically, you have to copy its code in a separate file in your project, and alter imports to corresponding version. 
 
-For example, here's bundle for 3.8:
+For example, here's all the code for `@pixi/spine-all-3.8`:
 
 ```js
-import '@pixi-spine/loader-3.8'; // Side effect install the loader
+import '@pixi/spine-loader-3.8'; // Side effect install the loader
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
-export * from '@pixi-spine/runtime-3.8';
-export * from '@pixi-spine/base';
+export * from '@pixi/spine-runtime-3.8';
+export * from '@pixi/spine-base';
 ```
-
-In case author was too lazy to publish`loader-3.7`, you can do the same trick with them, just look in sources of `loader-3.8`.
 
 ## Want to go advanced?
 

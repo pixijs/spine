@@ -7,7 +7,7 @@ import { IkConstraint } from './IkConstraint';
 import { TransformConstraint } from './TransformConstraint';
 import { PathConstraint } from './PathConstraint';
 import type { Skin } from './Skin';
-import { Color, Utils, Vector2, ISkeleton } from '@pixi-spine/base';
+import { Color, Utils, Vector2, ISkeleton } from '@pixi/spine-base';
 
 /**
  * @public

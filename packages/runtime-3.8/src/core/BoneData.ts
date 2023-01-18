@@ -1,4 +1,4 @@
-import { Color, TransformMode } from '@pixi-spine/base';
+import { Color, TransformMode } from '@pixi/spine-base';
 
 /**
  * @public

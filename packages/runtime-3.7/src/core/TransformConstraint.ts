@@ -1,7 +1,7 @@
 import type { Constraint } from './Constraint';
 import type { TransformConstraintData } from './TransformConstraintData';
 import type { Bone } from './Bone';
-import { MathUtils, Vector2 } from '@pixi-spine/base';
+import { MathUtils, Vector2 } from '@pixi/spine-base';
 import type { Skeleton } from './Skeleton';
 
 /**

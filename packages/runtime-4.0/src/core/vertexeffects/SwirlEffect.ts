@@ -1,6 +1,6 @@
 import type { VertexEffect } from '../VertexEffect';
 import type { Skeleton } from '../Skeleton';
-import { Color, MathUtils, PowOut, Vector2 } from '@pixi-spine/base';
+import { Color, MathUtils, PowOut, Vector2 } from '@pixi/spine-base';
 
 /**
  * @public

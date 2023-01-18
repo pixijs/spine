@@ -1,6 +1,6 @@
 import type { SlotData } from './SlotData';
 import type { BoneData } from './BoneData';
-import type { RotateMode, PositionMode, IPathConstraintData } from '@pixi-spine/base';
+import type { RotateMode, PositionMode, IPathConstraintData } from '@pixi/spine-base';
 
 /**
  * @public

@@ -1,5 +1,5 @@
 import type { SkeletonData } from './SkeletonData';
-import type { IAnimationStateData, Map } from '@pixi-spine/base';
+import type { IAnimationStateData, Map } from '@pixi/spine-base';
 import type { Animation } from './Animation';
 
 /** Stores mix (crossfade) durations to be applied when {@link AnimationState} animations are changed.

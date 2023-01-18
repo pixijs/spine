@@ -1,4 +1,4 @@
-import { Color, ISlot } from '@pixi-spine/base';
+import { Color, ISlot } from '@pixi/spine-base';
 
 import { Attachment, VertexAttachment } from './attachments/Attachment';
 import type { Bone } from './Bone';

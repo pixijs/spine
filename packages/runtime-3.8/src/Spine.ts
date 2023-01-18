@@ -1,4 +1,4 @@
-import { SpineBase } from '@pixi-spine/base';
+import { SpineBase } from '@pixi/spine-base';
 import { Skeleton } from './core/Skeleton';
 import type { SkeletonData } from './core/SkeletonData';
 import { AnimationState } from './core/AnimationState';

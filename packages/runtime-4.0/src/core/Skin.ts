@@ -3,7 +3,7 @@ import type { BoneData } from './BoneData';
 import type { ConstraintData } from './ConstraintData';
 import type { Skeleton } from './Skeleton';
 
-import type { Map, ISkin } from '@pixi-spine/base';
+import type { Map, ISkin } from '@pixi/spine-base';
 
 /** Stores an entry in the skin consisting of the slot index, name, and attachment
  * @public

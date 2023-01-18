@@ -1,5 +1,5 @@
 import { Attachment, VertexAttachment } from './Attachment';
-import { AttachmentType, Color, IMeshAttachment, IHasTextureRegion, NumberArrayLike, TextureRegion, Utils } from '@pixi-spine/base';
+import { AttachmentType, Color, IMeshAttachment, IHasTextureRegion, NumberArrayLike, TextureRegion, Utils } from '@pixi/spine-base';
 import type { Sequence } from './Sequence';
 import type { Slot } from '../Slot';
 

@@ -1,5 +1,5 @@
 import { VertexAttachment } from './Attachment';
-import { AttachmentType, Color, MathUtils, Vector2 } from '@pixi-spine/base';
+import { AttachmentType, Color, MathUtils, Vector2 } from '@pixi/spine-base';
 import type { Bone } from '../Bone';
 
 /**
