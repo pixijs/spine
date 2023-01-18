@@ -293,7 +293,7 @@ export class SpineDebugRenderer implements ISpineDebugRenderer {
 
             const vertices = new Float32Array(8);
 
-            regionAttachment?.updateOffset(); // We don't need this on all versions
+            if (regionAttachment.updateOffset) regionAttachment.updateOffset(); // We don't need this on all versions
 
             regionAttachment.computeWorldVertices(slot, vertices, 0, 2);
             debugDisplayObjects.regionAttachmentsShape.drawPolygon(Array.from(vertices.slice(0, 8)));
