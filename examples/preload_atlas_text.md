@@ -1,4 +1,7 @@
 ### How to use preload atlas text file from spine2D.
+
+#### This example is for PixiJS version < 7.x
+
 * Step 1:
 ```js
 var atlasLoaderOption = { xhrType: "text"};

@@ -1,13 +1,17 @@
+/* eslint-disable spaced-comment */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../global.d.ts" />
-import {AbstractSpineParser} from '@pixi-spine/loader-base';
-import {ISkeletonParser, TextureAtlas} from '@pixi-spine/base';
-import {LoaderResource, Loader} from "@pixi/loaders";
-import {AtlasAttachmentLoader, SkeletonBinary, SkeletonJson} from "@pixi-spine/runtime-3.8";
+
+import '@pixi-spine/loader-base'; // Side effect install atlas loader
+// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
+import { ISpineResource, SpineLoaderAbstract } from '@pixi-spine/loader-base';
+import type { ISkeletonParser, TextureAtlas } from '@pixi-spine/base';
+import { AtlasAttachmentLoader, SkeletonBinary, SkeletonData, SkeletonJson } from '@pixi-spine/runtime-3.8';
 
 /**
- * @public
+ * @internal
  */
-export class SpineParser extends AbstractSpineParser {
+class SpineParser extends SpineLoaderAbstract<SkeletonData> {
     createBinaryParser(): ISkeletonParser {
         return new SkeletonBinary(null);
     }
@@ -16,17 +20,16 @@ export class SpineParser extends AbstractSpineParser {
         return new SkeletonJson(null);
     }
 
-    parseData(resource: LoaderResource, parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): void {
+    parseData(parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): ISpineResource<SkeletonData> {
         const parserCast = parser as SkeletonBinary | SkeletonJson;
 
         parserCast.attachmentLoader = new AtlasAttachmentLoader(atlas);
-        resource.spineData = parserCast.readSkeletonData(dataToParse);
-        resource.spineAtlas = atlas;
-    }
 
-    static use = new SpineParser().genMiddleware().use;
-
-    static registerLoaderPlugin() {
-        Loader.registerPlugin(SpineParser);
+        return {
+            spineData: parserCast.readSkeletonData(dataToParse),
+            spineAtlas: atlas,
+        };
     }
 }
+
+new SpineParser().installLoader();

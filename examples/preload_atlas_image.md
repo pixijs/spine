@@ -1,5 +1,7 @@
 ### How to use generated or preloaded base textures 
 
+#### This example is for PixiJS version < 7.x
+
 ```js
 var spineLoaderOptions = { metadata: { 
     image: PIXI.BaseTexture.fromImage("something.jpg") 

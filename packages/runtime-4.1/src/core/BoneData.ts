@@ -1,11 +1,11 @@
-import {Color, TransformMode} from '@pixi-spine/base';
+import { Color, TransformMode } from '@pixi-spine/base';
 
 /** Stores the setup pose for a {@link Bone}.
  * @public
  * */
 export class BoneData {
     /** The index of the bone in {@link Skeleton#getBones()}. */
-    index: number = 0;
+    index = 0;
 
     /** The name of the bone, which is unique across all bones in the skeleton. */
     name: string;
@@ -14,7 +14,7 @@ export class BoneData {
     parent: BoneData | null = null;
 
     /** The bone's length. */
-    length: number = 0;
+    length = 0;
 
     /** The local x translation. */
     x = 0;
@@ -49,9 +49,9 @@ export class BoneData {
      * rendered at runtime. */
     color = new Color();
 
-    constructor (index: number, name: string, parent: BoneData | null) {
-        if (index < 0) throw new Error("index must be >= 0.");
-        if (!name) throw new Error("name cannot be null.");
+    constructor(index: number, name: string, parent: BoneData | null) {
+        if (index < 0) throw new Error('index must be >= 0.');
+        if (!name) throw new Error('name cannot be null.');
         this.index = index;
         this.name = name;
         this.parent = parent;

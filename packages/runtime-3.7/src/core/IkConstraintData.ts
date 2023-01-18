@@ -1,4 +1,4 @@
-import {BoneData} from "./BoneData";
+import type { BoneData } from './BoneData';
 
 /**
  * @public
@@ -14,7 +14,7 @@ export class IkConstraintData {
     uniform = false;
     mix = 1;
 
-    constructor (name: string) {
+    constructor(name: string) {
         this.name = name;
     }
 }

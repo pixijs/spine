@@ -1,5 +1,5 @@
-import {EventData} from "./EventData";
-import {IEvent} from "@pixi-spine/base";
+import type { EventData } from './EventData';
+import type { IEvent } from '@pixi-spine/base';
 
 /** Stores the current pose values for an {@link Event}.
  *
@@ -17,8 +17,8 @@ export class Event implements IEvent {
     volume: number;
     balance: number;
 
-    constructor (time: number, data: EventData) {
-        if (data == null) throw new Error("data cannot be null.");
+    constructor(time: number, data: EventData) {
+        if (data == null) throw new Error('data cannot be null.');
         this.time = time;
         this.data = data;
     }

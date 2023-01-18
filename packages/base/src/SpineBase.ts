@@ -1,31 +1,21 @@
-import {AttachmentType} from './core/AttachmentType';
-import {TextureRegion} from './core/TextureRegion';
-import {MathUtils} from './core/Utils';
-import type {
-    IAnimationState,
-    IAnimationStateData
-} from './core/IAnimation';
-import type {
-    IAttachment, IClippingAttachment, IMeshAttachment,
-    IRegionAttachment,
-    ISkeleton,
-    ISkeletonData,
-    ISlot,
-    IVertexAttachment
-} from './core/ISkeleton';
+import { AttachmentType } from './core/AttachmentType';
+import { TextureRegion } from './core/TextureRegion';
+import { MathUtils } from './core/Utils';
+import type { IAnimationState, IAnimationStateData } from './core/IAnimation';
+import type { IAttachment, IClippingAttachment, IMeshAttachment, IRegionAttachment, ISkeleton, ISkeletonData, ISlot, IVertexAttachment } from './core/ISkeleton';
 
-import {DRAW_MODES} from '@pixi/constants';
-import {Container, DisplayObject} from '@pixi/display';
-import {Sprite} from '@pixi/sprite';
-import {SimpleMesh} from '@pixi/mesh-extras';
-import {Graphics} from '@pixi/graphics'
-import {Rectangle, Polygon, Transform} from '@pixi/math';
-import {hex2rgb, rgb2hex} from '@pixi/utils';
-import type {Texture} from '@pixi/core';
-import {settings} from "./settings";
-import { ISpineDebugRenderer } from './SpineDebugRenderer';
+import { DRAW_MODES } from '@pixi/constants';
+import { Container, DisplayObject } from '@pixi/display';
+import { Sprite } from '@pixi/sprite';
+import { SimpleMesh } from '@pixi/mesh-extras';
+import { Graphics } from '@pixi/graphics';
+import { Rectangle, Polygon, Transform } from '@pixi/math';
+import { hex2rgb, rgb2hex } from '@pixi/utils';
+import type { Texture } from '@pixi/core';
+import { settings } from './settings';
+import type { ISpineDebugRenderer } from './SpineDebugRenderer';
 
-let tempRgb = [0, 0, 0];
+const tempRgb = [0, 0, 0];
 
 /**
  * @public
@@ -70,11 +60,15 @@ export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
  * @memberof spine
  * @param spineData {object} The spine data loaded from a spine atlas.
  */
-export abstract class SpineBase<Skeleton extends ISkeleton,
-    SkeletonData extends ISkeletonData,
-    AnimationState extends IAnimationState,
-    AnimationStateData extends IAnimationStateData>
-    extends Container implements GlobalMixins.Spine {
+export abstract class SpineBase<
+        Skeleton extends ISkeleton,
+        SkeletonData extends ISkeletonData,
+        AnimationState extends IAnimationState,
+        AnimationStateData extends IAnimationStateData
+    >
+    extends Container
+    implements GlobalMixins.Spine
+{
     tintRgb: ArrayLike<number>;
     spineData: SkeletonData;
     skeleton: Skeleton;
@@ -90,14 +84,14 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         return this._debug;
     }
     public set debug(value: ISpineDebugRenderer) {
-        if (value == this._debug) { // soft equality allows null == undefined
+        if (value == this._debug) {
+            // soft equality allows null == undefined
             return;
         }
         this._debug?.unregisterSpine(this);
         value?.registerSpine(this);
         this._debug = value;
     }
-
 
     abstract createSkeleton(spineData: ISkeletonData);
 
@@ -108,7 +102,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             throw new Error('The spineData param is required.');
         }
 
-        if ((typeof spineData) === "string") {
+        if (typeof spineData === 'string') {
             throw new Error('spineData param cant be string. Please use spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
         }
 
@@ -136,9 +130,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         this.tempClipContainers = [];
 
         for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
-            let slot = this.skeleton.slots[i];
-            let attachment: any = slot.getAttachment();
-            let slotContainer = this.newContainer();
+            const slot = this.skeleton.slots[i];
+            const attachment: any = slot.getAttachment();
+            const slotContainer = this.newContainer();
+
             this.slotContainers.push(slotContainer);
             this.addChild(slotContainer);
             this.tempClipContainers.push(null);
@@ -147,13 +142,15 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 continue;
             }
             if (attachment.type === AttachmentType.Region) {
-                let spriteName = attachment.name;
-                let sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
+                const spriteName = attachment.name;
+                const sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
+
                 slot.currentSprite = sprite;
                 slot.currentSpriteName = spriteName;
                 slotContainer.addChild(sprite);
             } else if (attachment.type === AttachmentType.Mesh) {
-                let mesh = this.createMesh(slot, attachment);
+                const mesh = this.createMesh(slot, attachment);
+
                 slot.currentMesh = mesh;
                 slot.currentMeshId = attachment.id;
                 slot.currentMeshName = attachment.name;
@@ -220,11 +217,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      * @return {number} - Maximum processed dt value for the update
      */
     get delayLimit(): number {
-        let limit = typeof this.localDelayLimit !== "undefined" ?
-            this.localDelayLimit : settings.GLOBAL_DELAY_LIMIT;
+        const limit = typeof this.localDelayLimit !== 'undefined' ? this.localDelayLimit : settings.GLOBAL_DELAY_LIMIT;
 
         // If limit is 0, this means there is no limit for the delay
-        return limit || Number.MAX_VALUE
+        return limit || Number.MAX_VALUE;
     }
 
     /**
@@ -234,23 +230,26 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      */
     update(dt: number) {
         // Limit delta value to avoid animation jumps
-        let delayLimit = this.delayLimit;
+        const delayLimit = this.delayLimit;
+
         if (dt > delayLimit) dt = delayLimit;
 
         this.state.update(dt);
         this.state.apply(this.skeleton);
 
-        //check we haven't been destroyed via a spine event callback in state update
-        if (!this.skeleton)
+        // check we haven't been destroyed via a spine event callback in state update
+        if (!this.skeleton) {
             return;
+        }
 
         this.skeleton.updateWorldTransform();
 
-        let slots = this.skeleton.slots;
+        const slots = this.skeleton.slots;
 
         // in case pixi has double tint
-        let globalClr = (this as any).color;
-        let light: ArrayLike<number> = null, dark: ArrayLike<number> = null;
+        const globalClr = (this as any).color;
+        let light: ArrayLike<number> = null;
+        let dark: ArrayLike<number> = null;
 
         if (globalClr) {
             light = globalClr.light;
@@ -262,9 +261,9 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         // let thack = false;
 
         for (let i = 0, n = slots.length; i < n; i++) {
-            let slot = slots[i];
-            let attachment = slot.getAttachment();
-            let slotContainer = this.slotContainers[i];
+            const slot = slots[i];
+            const attachment = slot.getAttachment();
+            const slotContainer = this.slotContainers[i];
 
             if (!attachment) {
                 slotContainer.visible = false;
@@ -278,10 +277,12 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             }
             let region = (attachment as IRegionAttachment).region;
 
-            let attColor = (attachment as any).color;
+            const attColor = (attachment as any).color;
+
             switch (attachment != null && attachment.type) {
                 case AttachmentType.Region:
-                    let transform = slotContainer.transform;
+                    const transform = slotContainer.transform;
+
                     transform.setFromMatrix(slot.bone.matrix);
 
                     region = (attachment as IRegionAttachment).region;
@@ -298,7 +299,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                         break;
                     }
                     if (!slot.currentSpriteName || slot.currentSpriteName !== attachment.name) {
-                        let spriteName = attachment.name;
+                        const spriteName = attachment.name;
+
                         if (slot.currentSprite) {
                             slot.currentSprite.visible = false;
                         }
@@ -306,7 +308,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                         if (slot.sprites[spriteName] !== undefined) {
                             slot.sprites[spriteName].visible = true;
                         } else {
-                            let sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
+                            const sprite = this.createSprite(slot, attachment as IRegionAttachment, spriteName);
+
                             slotContainer.addChild(sprite);
                         }
                         slot.currentSprite = slot.sprites[spriteName];
@@ -320,7 +323,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                         this.setSpriteRegion(attachment as IRegionAttachment, slot.currentSprite, region);
                     }
                     if (slot.currentSprite.color) {
-                        //YAY! double - tint!
+                        // YAY! double - tint!
                         spriteColor = slot.currentSprite.color;
                     } else {
                         tempRgb[0] = light[0] * slot.color.r * attColor.r;
@@ -333,13 +336,14 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
                 case AttachmentType.Mesh:
                     if (slot.currentSprite) {
-                        //TODO: refactor this thing, switch it on and off for container
+                        // TODO: refactor this thing, switch it on and off for container
                         slot.currentSprite.visible = false;
                         slot.currentSprite = null;
                         slot.currentSpriteName = undefined;
 
-                        //TODO: refactor this shit
+                        // TODO: refactor this shit
                         const transform = new Transform();
+
                         (transform as any)._parentID = -1;
                         (transform as any)._worldID = (slotContainer.transform as any)._worldID;
                         slotContainer.transform = transform;
@@ -352,8 +356,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                     }
 
                     const id = (attachment as IVertexAttachment).id;
+
                     if (slot.currentMeshId === undefined || slot.currentMeshId !== id) {
-                        let meshId = id;
+                        const meshId = id;
+
                         if (slot.currentMesh) {
                             slot.currentMesh.visible = false;
                         }
@@ -363,7 +369,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                         if (slot.meshes[meshId] !== undefined) {
                             slot.meshes[meshId].visible = true;
                         } else {
-                            let mesh = this.createMesh(slot, attachment as IMeshAttachment);
+                            const mesh = this.createMesh(slot, attachment as IMeshAttachment);
+
                             slotContainer.addChild(mesh);
                         }
 
@@ -409,12 +416,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 let g0 = slot.color.g * attColor.g;
                 let b0 = slot.color.b * attColor.b;
 
-                //YAY! double-tint!
-                spriteColor.setLight(
-                    light[0] * r0 + dark[0] * (1.0 - r0),
-                    light[1] * g0 + dark[1] * (1.0 - g0),
-                    light[2] * b0 + dark[2] * (1.0 - b0),
-                );
+                // YAY! double-tint!
+                spriteColor.setLight(light[0] * r0 + dark[0] * (1.0 - r0), light[1] * g0 + dark[1] * (1.0 - g0), light[2] * b0 + dark[2] * (1.0 - b0));
                 if (slot.darkColor) {
                     r0 = slot.darkColor.r;
                     g0 = slot.darkColor.g;
@@ -424,31 +427,27 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                     g0 = 0.0;
                     b0 = 0.0;
                 }
-                spriteColor.setDark(
-                    light[0] * r0 + dark[0] * (1 - r0),
-                    light[1] * g0 + dark[1] * (1 - g0),
-                    light[2] * b0 + dark[2] * (1 - b0),
-                );
+                spriteColor.setDark(light[0] * r0 + dark[0] * (1 - r0), light[1] * g0 + dark[1] * (1 - g0), light[2] * b0 + dark[2] * (1 - b0));
             }
 
             slotContainer.alpha = slot.color.a;
         }
 
-        //== this is clipping implementation ===
-        //TODO: remove parent hacks when pixi masks allow it
-        let drawOrder = this.skeleton.drawOrder;
+        // == this is clipping implementation ===
+        // TODO: remove parent hacks when pixi masks allow it
+        const drawOrder = this.skeleton.drawOrder;
         let clippingAttachment: IClippingAttachment = null;
         let clippingContainer: Container = null;
 
         for (let i = 0, n = drawOrder.length; i < n; i++) {
-            let slot = slots[drawOrder[i].data.index];
-            let slotContainer = this.slotContainers[drawOrder[i].data.index];
+            const slot = slots[drawOrder[i].data.index];
+            const slotContainer = this.slotContainers[drawOrder[i].data.index];
 
             if (!clippingContainer) {
-                //Adding null check as it is possible for slotContainer.parent to be null in the event of a spine being disposed off in its loop callback
+                // Adding null check as it is possible for slotContainer.parent to be null in the event of a spine being disposed off in its loop callback
                 if (slotContainer.parent !== null && slotContainer.parent !== this) {
                     slotContainer.parent.removeChild(slotContainer);
-                    //silend add hack
+                    // silend add hack
                     (slotContainer as any).parent = this;
                 }
             }
@@ -461,33 +460,31 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 if (clippingAttachment.endSlot === slot.data) {
                     clippingAttachment.endSlot = null;
                 }
+            } else if (clippingContainer) {
+                let c = this.tempClipContainers[i];
 
-            } else {
-                if (clippingContainer) {
-                    let c = this.tempClipContainers[i];
-                    if (!c) {
-                        c = this.tempClipContainers[i] = this.newContainer();
-                        c.visible = false;
-                    }
-                    this.children[i] = c;
-
-                    //silent remove hack
-                    (slotContainer as any).parent = null;
-                    clippingContainer.addChild(slotContainer);
-                    if (clippingAttachment.endSlot == slot.data) {
-                        clippingContainer.renderable = true;
-                        clippingContainer = null;
-                        clippingAttachment = null;
-                    }
-                } else {
-                    this.children[i] = slotContainer;
+                if (!c) {
+                    c = this.tempClipContainers[i] = this.newContainer();
+                    c.visible = false;
                 }
+                this.children[i] = c;
+
+                // silent remove hack
+                (slotContainer as any).parent = null;
+                clippingContainer.addChild(slotContainer);
+                if (clippingAttachment.endSlot == slot.data) {
+                    clippingContainer.renderable = true;
+                    clippingContainer = null;
+                    clippingAttachment = null;
+                }
+            } else {
+                this.children[i] = slotContainer;
             }
         }
 
         // if you can debug, then debug!
         this._debug?.renderDebug(this);
-    };
+    }
 
     private setSpriteRegion(attachment: IRegionAttachment, sprite: SpineSprite, region: TextureRegion) {
         // prevent setters calling when attachment and region is same
@@ -505,17 +502,16 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         sprite.alpha = attachment.color.a;
 
         if (!region.size) {
-            sprite.scale.x = attachment.scaleX * attachment.width / region.originalWidth;
-            sprite.scale.y = -attachment.scaleY * attachment.height / region.originalHeight;
+            sprite.scale.x = (attachment.scaleX * attachment.width) / region.originalWidth;
+            sprite.scale.y = (-attachment.scaleY * attachment.height) / region.originalHeight;
         } else {
-            //hacked!
+            // hacked!
             sprite.scale.x = region.size.width / region.originalWidth;
             sprite.scale.y = -region.size.height / region.originalHeight;
         }
     }
 
     private setMeshRegion(attachment: IMeshAttachment, mesh: SpineMesh, region: TextureRegion) {
-
         if (mesh.attachment === attachment && mesh.region === region) {
             return;
         }
@@ -537,7 +533,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     autoUpdateTransform() {
         if (settings.GLOBAL_AUTO_UPDATE) {
             this.lastTime = this.lastTime || Date.now();
-            let timeDelta = (Date.now() - this.lastTime) * 0.001;
+            const timeDelta = (Date.now() - this.lastTime) * 0.001;
+
             this.lastTime = Date.now();
             this.update(timeDelta);
         } else {
@@ -545,7 +542,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         }
 
         Container.prototype.updateTransform.call(this);
-    };
+    }
 
     /**
      * Create a new sprite to be used with core.RegionAttachment
@@ -556,11 +553,12 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      */
     createSprite(slot: ISlot, attachment: IRegionAttachment, defName: string) {
         let region = attachment.region;
+
         if (slot.hackAttachment === attachment) {
             region = slot.hackRegion;
         }
-        let texture = region ? region.texture : null;
-        let sprite = this.newSprite(texture);
+        const texture = region ? region.texture : null;
+        const sprite = this.newSprite(texture);
 
         sprite.anchor.set(0.5);
         if (region) {
@@ -569,8 +567,9 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
         slot.sprites = slot.sprites || {};
         slot.sprites[defName] = sprite;
+
         return sprite;
-    };
+    }
 
     /**
      * Creates a Strip from the spine data
@@ -580,19 +579,21 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      */
     createMesh(slot: ISlot, attachment: IMeshAttachment) {
         let region = attachment.region;
+
         if (slot.hackAttachment === attachment) {
             region = slot.hackRegion;
             slot.hackAttachment = null;
             slot.hackRegion = null;
         }
-        let strip = this.newMesh(
+        const strip = this.newMesh(
             region ? region.texture : null,
             new Float32Array(attachment.regionUVs.length),
             attachment.regionUVs,
             new Uint16Array(attachment.triangles),
-            DRAW_MODES.TRIANGLES);
+            DRAW_MODES.TRIANGLES
+        );
 
-        if (typeof (strip as any)._canvasPadding !== "undefined") {
+        if (typeof (strip as any)._canvasPadding !== 'undefined') {
             (strip as any)._canvasPadding = 1.5;
         }
 
@@ -605,15 +606,17 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
         slot.meshes = slot.meshes || {};
         slot.meshes[attachment.id] = strip;
+
         return strip;
-    };
+    }
 
     static clippingPolygon: Array<number> = [];
 
-    //@ts-ignore
+    // @ts-ignore
     createGraphics(slot: ISlot, clip: IClippingAttachment) {
-        let graphics = this.newGraphics();
-        let poly = new Polygon([]);
+        const graphics = this.newGraphics();
+        const poly = new Polygon([]);
+
         graphics.clear();
         graphics.beginFill(0xffffff, 1);
         graphics.drawPolygon(poly as any);
@@ -626,9 +629,10 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     }
 
     updateGraphics(slot: ISlot, clip: IClippingAttachment) {
-        let geom = slot.currentGraphics.geometry;
-        let vertices = (geom.graphicsData[0].shape as Polygon).points;
-        let n = clip.worldVerticesLength;
+        const geom = slot.currentGraphics.geometry;
+        const vertices = (geom.graphicsData[0].shape as Polygon).points;
+        const n = clip.worldVerticesLength;
+
         vertices.length = n;
         clip.computeWorldVertices(slot, 0, n, vertices, 0, 2);
         geom.invalidate();
@@ -645,12 +649,14 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      * @returns {boolean} Success flag
      */
     hackTextureBySlotIndex(slotIndex: number, texture: Texture = null, size: Rectangle = null) {
-        let slot = this.skeleton.slots[slotIndex];
+        const slot = this.skeleton.slots[slotIndex];
+
         if (!slot) {
             return false;
         }
-        let attachment: any = slot.getAttachment();
+        const attachment: any = slot.getAttachment();
         let region: TextureRegion = attachment.region;
+
         if (texture) {
             region = new TextureRegion();
             region.texture = texture;
@@ -666,6 +672,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         } else if (slot.currentMesh) {
             this.setMeshRegion(attachment, slot.currentMesh, region);
         }
+
         return true;
     }
 
@@ -680,10 +687,12 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      * @returns {boolean} Success flag
      */
     hackTextureBySlotName(slotName: string, texture: Texture = null, size: Rectangle = null) {
-        let index = this.skeleton.findSlotIndex(slotName);
+        const index = this.skeleton.findSlotIndex(slotName);
+
         if (index == -1) {
             return false;
         }
+
         return this.hackTextureBySlotIndex(index, texture, size);
     }
 
@@ -700,42 +709,48 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
      */
     hackTextureAttachment(slotName: string, attachmentName: string, texture, size: Rectangle = null) {
         // changes the texture of an attachment at the skeleton level
-        const slotIndex = this.skeleton.findSlotIndex(slotName)
-        const attachment: any = this.skeleton.getAttachmentByName(slotName, attachmentName)
-        attachment.region.texture = texture
+        const slotIndex = this.skeleton.findSlotIndex(slotName);
+        const attachment: any = this.skeleton.getAttachmentByName(slotName, attachmentName);
 
-        const slot = this.skeleton.slots[slotIndex]
+        attachment.region.texture = texture;
+
+        const slot = this.skeleton.slots[slotIndex];
+
         if (!slot) {
-            return false
+            return false;
         }
 
         // gets the currently active attachment in this slot
-        const currentAttachment: any = slot.getAttachment()
+        const currentAttachment: any = slot.getAttachment();
+
         if (attachmentName === currentAttachment.name) {
             // if the attachment we are changing is currently active, change the the live texture
-            let region: TextureRegion = attachment.region
+            let region: TextureRegion = attachment.region;
+
             if (texture) {
-                region = new TextureRegion()
-                region.texture = texture
-                region.size = size
-                slot.hackRegion = region
-                slot.hackAttachment = currentAttachment
+                region = new TextureRegion();
+                region.texture = texture;
+                region.size = size;
+                slot.hackRegion = region;
+                slot.hackAttachment = currentAttachment;
             } else {
-                slot.hackRegion = null
-                slot.hackAttachment = null
+                slot.hackRegion = null;
+                slot.hackAttachment = null;
             }
             if (slot.currentSprite && slot.currentSprite.region != region) {
-                this.setSpriteRegion(currentAttachment, slot.currentSprite, region)
-                slot.currentSprite.region = region
+                this.setSpriteRegion(currentAttachment, slot.currentSprite, region);
+                slot.currentSprite.region = region;
             } else if (slot.currentMesh && slot.currentMesh.region != region) {
-                this.setMeshRegion(currentAttachment, slot.currentMesh, region)
+                this.setMeshRegion(currentAttachment, slot.currentMesh, region);
             }
-            return true
+
+            return true;
         }
-        return false
+
+        return false;
     }
 
-    //those methods can be overriden to spawn different classes
+    // those methods can be overriden to spawn different classes
     newContainer() {
         return new Container();
     }
@@ -766,11 +781,14 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         if (!nameSuffix) {
             return undefined;
         }
-        const list_d = [], list_n = [];
+        const list_d = [];
+        const list_n = [];
+
         for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
             const slot = this.skeleton.slots[i];
-            const name = slot.currentSpriteName || slot.currentMeshName || "";
+            const name = slot.currentSpriteName || slot.currentMeshName || '';
             const target = slot.currentSprite || slot.currentMesh;
+
             if (name.endsWith(nameSuffix)) {
                 target.parentGroup = group;
                 list_n.push(target);
@@ -779,21 +797,22 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
                 list_d.push(target);
             }
         }
-        return [list_d, list_n];
-    };
 
+        return [list_d, list_n];
+    }
 
     destroy(options?: any): void {
         this.debug = null; // setter will do the cleanup
 
         for (let i = 0, n = this.skeleton.slots.length; i < n; i++) {
-            let slot = this.skeleton.slots[i];
-            for (let name in slot.meshes) {
+            const slot = this.skeleton.slots[i];
+
+            for (const name in slot.meshes) {
                 slot.meshes[name].destroy(options);
             }
             slot.meshes = null;
 
-            for (let name in slot.sprites) {
+            for (const name in slot.sprites) {
                 slot.sprites[name].destroy(options);
             }
             slot.sprites = null;
@@ -813,7 +832,6 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     }
 }
 
-
 /**
  * The visibility of the spine object. If false the object will not be drawn,
  * the updateTransform function will not be called, and the spine will not be automatically updated.
@@ -823,15 +841,15 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
  * @default true
  */
 Object.defineProperty(SpineBase.prototype, 'visible', {
-    get: function () {
+    get() {
         return this._visible;
     },
-    set: function (value: boolean) {
+    set(value: boolean) {
         if (value !== this._visible) {
             this._visible = value;
             if (value) {
                 this.lastTime = 0;
             }
         }
-    }
-})
+    },
+});

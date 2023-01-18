@@ -2,76 +2,85 @@
  * @public
  */
 export class BinaryInput {
-    constructor (data: Uint8Array, public strings = new Array<string>(), private index: number = 0, private buffer = new DataView(data.buffer)) {
-    }
+    constructor(data: Uint8Array, public strings = new Array<string>(), private index: number = 0, private buffer = new DataView(data.buffer)) {}
 
-    readByte (): number {
+    readByte(): number {
         return this.buffer.getInt8(this.index++);
     }
 
-    readUnsignedByte (): number {
+    readUnsignedByte(): number {
         return this.buffer.getUint8(this.index++);
     }
 
-    readShort (): number {
-        let value = this.buffer.getInt16(this.index);
+    readShort(): number {
+        const value = this.buffer.getInt16(this.index);
+
         this.index += 2;
+
         return value;
     }
 
-    readInt32 (): number {
-        let value = this.buffer.getInt32(this.index)
+    readInt32(): number {
+        const value = this.buffer.getInt32(this.index);
+
         this.index += 4;
+
         return value;
     }
 
-    readInt (optimizePositive: boolean) {
+    readInt(optimizePositive: boolean) {
         let b = this.readByte();
-        let result = b & 0x7F;
+        let result = b & 0x7f;
+
         if ((b & 0x80) != 0) {
             b = this.readByte();
-            result |= (b & 0x7F) << 7;
+            result |= (b & 0x7f) << 7;
             if ((b & 0x80) != 0) {
                 b = this.readByte();
-                result |= (b & 0x7F) << 14;
+                result |= (b & 0x7f) << 14;
                 if ((b & 0x80) != 0) {
                     b = this.readByte();
-                    result |= (b & 0x7F) << 21;
+                    result |= (b & 0x7f) << 21;
                     if ((b & 0x80) != 0) {
                         b = this.readByte();
-                        result |= (b & 0x7F) << 28;
+                        result |= (b & 0x7f) << 28;
                     }
                 }
             }
         }
-        return optimizePositive ? result : ((result >>> 1) ^ -(result & 1));
+
+        return optimizePositive ? result : (result >>> 1) ^ -(result & 1);
     }
 
-    readStringRef (): string | null {
-        let index = this.readInt(true);
+    readStringRef(): string | null {
+        const index = this.readInt(true);
+
         return index == 0 ? null : this.strings[index - 1];
     }
 
-    readString (): string | null {
+    readString(): string | null {
         let byteCount = this.readInt(true);
+
         switch (byteCount) {
             case 0:
                 return null;
             case 1:
-                return "";
+                return '';
         }
         byteCount--;
-        let chars = "";
-        for (let i = 0; i < byteCount;) {
-            let b = this.readUnsignedByte();
+        let chars = '';
+
+        for (let i = 0; i < byteCount; ) {
+            const b = this.readUnsignedByte();
+
             switch (b >> 4) {
                 case 12:
                 case 13:
-                    chars += String.fromCharCode(((b & 0x1F) << 6 | this.readByte() & 0x3F));
+                    chars += String.fromCharCode(((b & 0x1f) << 6) | (this.readByte() & 0x3f));
                     i += 2;
                     break;
                 case 14:
-                    chars += String.fromCharCode(((b & 0x0F) << 12 | (this.readByte() & 0x3F) << 6 | this.readByte() & 0x3F));
+                    chars += String.fromCharCode(((b & 0x0f) << 12) | ((this.readByte() & 0x3f) << 6) | (this.readByte() & 0x3f));
                     i += 3;
                     break;
                 default:
@@ -79,16 +88,19 @@ export class BinaryInput {
                     i++;
             }
         }
+
         return chars;
     }
 
-    readFloat (): number {
-        let value = this.buffer.getFloat32(this.index);
+    readFloat(): number {
+        const value = this.buffer.getFloat32(this.index);
+
         this.index += 4;
+
         return value;
     }
 
-    readBoolean (): boolean {
+    readBoolean(): boolean {
         return this.readByte() != 0;
     }
 }

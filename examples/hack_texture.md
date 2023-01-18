@@ -1,5 +1,7 @@
 ### Changing the texture the direct way (hacks)
 
+#### This example is for PixiJS version < 7.x
+
 ```js
 //let 'spine' be Spine object
 var spine = new PIXI.spine.Spine(loader.resources['spineBoy'].data);

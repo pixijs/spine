@@ -1,9 +1,9 @@
-import {Color, ISlot} from '@pixi-spine/base';
+import { Color, ISlot } from '@pixi-spine/base';
 
-import type {Attachment} from './attachments/Attachment';
-import type {Bone} from './Bone';
-import type {SlotData} from './SlotData';
-import type {Skeleton} from './Skeleton';
+import type { Attachment } from './attachments/Attachment';
+import type { Bone } from './Bone';
+import type { SlotData } from './SlotData';
+import type { Skeleton } from './Skeleton';
 
 /** Stores a slot's current pose. Slots organize attachments for {@link Skeleton#drawOrder} purposes and provide a place to store
  * state for an attachment. State cannot be stored in an attachment itself because attachments are stateless and may be shared
@@ -11,7 +11,7 @@ import type {Skeleton} from './Skeleton';
  * @public
  * */
 export class Slot implements ISlot {
-    //this is canon
+    // this is canon
     blendMode: number;
     /** The slot's setup pose data. */
     data: SlotData;
@@ -39,9 +39,9 @@ export class Slot implements ISlot {
      * See {@link VertexAttachment#computeWorldVertices()} and {@link DeformTimeline}. */
     deform = new Array<number>();
 
-    constructor (data: SlotData, bone: Bone) {
-        if (data == null) throw new Error("data cannot be null.");
-        if (bone == null) throw new Error("bone cannot be null.");
+    constructor(data: SlotData, bone: Bone) {
+        if (data == null) throw new Error('data cannot be null.');
+        if (bone == null) throw new Error('bone cannot be null.');
         this.data = data;
         this.bone = bone;
         this.color = new Color();
@@ -52,40 +52,39 @@ export class Slot implements ISlot {
     }
 
     /** The skeleton this slot belongs to. */
-    getSkeleton (): Skeleton {
+    getSkeleton(): Skeleton {
         return this.bone.skeleton;
     }
 
     /** The current attachment for the slot, or null if the slot has no attachment. */
-    getAttachment (): Attachment {
+    getAttachment(): Attachment {
         return this.attachment;
     }
 
     /** Sets the slot's attachment and, if the attachment changed, resets {@link #attachmentTime} and clears {@link #deform}.
      * @param attachment May be null. */
-    setAttachment (attachment: Attachment) {
+    setAttachment(attachment: Attachment) {
         if (this.attachment == attachment) return;
         this.attachment = attachment;
         this.attachmentTime = this.bone.skeleton.time;
         this.deform.length = 0;
     }
 
-    setAttachmentTime (time: number) {
+    setAttachmentTime(time: number) {
         this.attachmentTime = this.bone.skeleton.time - time;
     }
 
     /** The time that has elapsed since the last time the attachment was set or cleared. Relies on Skeleton
      * {@link Skeleton#time}. */
-    getAttachmentTime (): number {
+    getAttachmentTime(): number {
         return this.bone.skeleton.time - this.attachmentTime;
     }
 
     /** Sets this slot to the setup pose. */
-    setToSetupPose () {
+    setToSetupPose() {
         this.color.setFromColor(this.data.color);
         if (this.darkColor != null) this.darkColor.setFromColor(this.data.darkColor);
-        if (this.data.attachmentName == null)
-            this.attachment = null;
+        if (this.data.attachmentName == null) this.attachment = null;
         else {
             this.attachment = null;
             this.setAttachment(this.bone.skeleton.getAttachment(this.data.index, this.data.attachmentName));

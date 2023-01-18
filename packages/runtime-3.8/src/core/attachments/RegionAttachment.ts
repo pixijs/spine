@@ -1,7 +1,7 @@
-import {Attachment} from './Attachment';
-import {AttachmentType, ArrayLike, Color, TextureRegion, Utils, IRegionAttachment} from "@pixi-spine/base";
+import { Attachment } from './Attachment';
+import { AttachmentType, ArrayLike, Color, TextureRegion, Utils, IRegionAttachment } from '@pixi-spine/base';
 
-import type {Bone} from '../Bone';
+import type { Bone } from '../Bone';
 import { Slot } from '../Slot';
 
 /**
@@ -78,24 +78,25 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
     }
 
     updateOffset(): void {
-        let regionScaleX = this.width / this.region.originalWidth * this.scaleX;
-        let regionScaleY = this.height / this.region.originalHeight * this.scaleY;
-        let localX = -this.width / 2 * this.scaleX + this.region.offsetX * regionScaleX;
-        let localY = -this.height / 2 * this.scaleY + this.region.offsetY * regionScaleY;
-        let localX2 = localX + this.region.width * regionScaleX;
-        let localY2 = localY + this.region.height * regionScaleY;
-        let radians = this.rotation * Math.PI / 180;
-        let cos = Math.cos(radians);
-        let sin = Math.sin(radians);
-        let localXCos = localX * cos + this.x;
-        let localXSin = localX * sin;
-        let localYCos = localY * cos + this.y;
-        let localYSin = localY * sin;
-        let localX2Cos = localX2 * cos + this.x;
-        let localX2Sin = localX2 * sin;
-        let localY2Cos = localY2 * cos + this.y;
-        let localY2Sin = localY2 * sin;
-        let offset = this.offset;
+        const regionScaleX = (this.width / this.region.originalWidth) * this.scaleX;
+        const regionScaleY = (this.height / this.region.originalHeight) * this.scaleY;
+        const localX = (-this.width / 2) * this.scaleX + this.region.offsetX * regionScaleX;
+        const localY = (-this.height / 2) * this.scaleY + this.region.offsetY * regionScaleY;
+        const localX2 = localX + this.region.width * regionScaleX;
+        const localY2 = localY + this.region.height * regionScaleY;
+        const radians = (this.rotation * Math.PI) / 180;
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+        const localXCos = localX * cos + this.x;
+        const localXSin = localX * sin;
+        const localYCos = localY * cos + this.y;
+        const localYSin = localY * sin;
+        const localX2Cos = localX2 * cos + this.x;
+        const localX2Sin = localX2 * sin;
+        const localY2Cos = localY2 * cos + this.y;
+        const localY2Sin = localY2 * sin;
+        const offset = this.offset;
+
         offset[RegionAttachment.OX1] = localXCos - localYSin;
         offset[RegionAttachment.OY1] = localYCos + localXSin;
         offset[RegionAttachment.OX2] = localXCos - localY2Sin;
@@ -108,7 +109,8 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
 
     setRegion(region: TextureRegion): void {
         this.region = region;
-        let uvs = this.uvs;
+        const uvs = this.uvs;
+
         if (region.rotate) {
             uvs[2] = region.u;
             uvs[3] = region.v2;
@@ -131,11 +133,16 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
     }
 
     computeWorldVertices(bone: Bone | Slot, worldVertices: ArrayLike<number>, offset: number, stride: number) {
-        let vertexOffset = this.offset;
-        let mat = bone instanceof Slot? bone.bone.matrix : bone.matrix;
-        let x = mat.tx, y = mat.ty;
-        let a = mat.a, b = mat.c, c = mat.b, d = mat.d;
-        let offsetX = 0, offsetY = 0;
+        const vertexOffset = this.offset;
+        const mat = bone instanceof Slot ? bone.bone.matrix : bone.matrix;
+        const x = mat.tx;
+        const y = mat.ty;
+        const a = mat.a;
+        const b = mat.c;
+        const c = mat.b;
+        const d = mat.d;
+        let offsetX = 0;
+        let offsetY = 0;
 
         offsetX = vertexOffset[RegionAttachment.OX1];
         offsetY = vertexOffset[RegionAttachment.OY1];
@@ -161,8 +168,9 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
         worldVertices[offset + 1] = offsetX * c + offsetY * d + y;
     }
 
-    copy (): Attachment {
-        let copy = new RegionAttachment(this.name);
+    copy(): Attachment {
+        const copy = new RegionAttachment(this.name);
+
         copy.region = this.region;
         copy.rendererObject = this.rendererObject;
         copy.path = this.path;
@@ -176,6 +184,7 @@ export class RegionAttachment extends Attachment implements IRegionAttachment {
         Utils.arrayCopy(this.uvs, 0, copy.uvs, 0, 8);
         Utils.arrayCopy(this.offset, 0, copy.offset, 0, 8);
         copy.color.setFromColor(this.color);
+
         return copy;
     }
 }

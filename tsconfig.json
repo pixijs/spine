@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "allowJs": true,
         "removeComments": false,
         "strict": true,
@@ -16,7 +16,11 @@
         "declaration": false,
         "declarationMap": false,
         "allowSyntheticDefaultImports": true,
-        "lib": ["es6", "dom"],
+        "importsNotUsedAsValues": "error",
+        "lib": [
+            "es6",
+            "dom"
+        ],
     },
     "exclude": [
         "node_modules",

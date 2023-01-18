@@ -2,22 +2,56 @@
   "name": "pixi-spine",
   "version": "3.1.2",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
-  "main": "lib/all.js",
-  "module": "lib/all.es.js",
-  "bundle": "dist/pixi-spine.umd.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/pixi-spine.js",
+    "bundleModule": "dist/pixi-spine.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine",
+      "@pixi-spine/runtime-3.7": "PIXI.spine37",
+      "@pixi-spine/runtime-3.8": "PIXI.spine38",
+      "@pixi-spine/runtime-4.0": "PIXI.spine40",
+      "@pixi-spine/runtime-4.1": "PIXI.spine41",
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/loader-uni": "PIXI.spine"
+    }
+  },
   "dependencies": {
-    "@pixi-spine/base": "~3.1.2",
-    "@pixi-spine/loader-base": "~3.1.2",
-    "@pixi-spine/loader-uni": "~3.1.2",
-    "@pixi-spine/runtime-3.7": "~3.1.2",
-    "@pixi-spine/runtime-3.8": "~3.1.2",
-    "@pixi-spine/runtime-4.1": "~3.1.2"
+    "@pixi-spine/base": "*",
+    "@pixi-spine/loader-base": "*",
+    "@pixi-spine/loader-uni": "*",
+    "@pixi-spine/runtime-3.7": "*",
+    "@pixi-spine/runtime-3.8": "*",
+    "@pixi-spine/runtime-4.0": "*",
+    "@pixi-spine/runtime-4.1": "*"
+  },
+  "peerDependencies": {
+    "@pixi/constants": "^7.0.0",
+    "@pixi/core": "^7.0.0",
+    "@pixi/display": "^7.0.0",
+    "@pixi/graphics": "^7.0.0",
+    "@pixi/math": "^7.0.0",
+    "@pixi/mesh": "^7.0.0",
+    "@pixi/mesh-extras": "^7.0.0",
+    "@pixi/sprite": "^7.0.0",
+    "@pixi/utils": "^7.0.0"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -40,7 +74,8 @@
     "Chad Engler <chad@pantherdev.com>",
     "Richard Davey <rdavey@gmail.com>",
     "Shukant K. Pal <shukantpal@outlook.com>",
-    "Yevhenii Huselietov <d46k16@gmail.com>"
+    "Yevhenii Huselietov <d46k16@gmail.com>",
+    "Milton Candelero <miltoncandelero@gmail.com>"
   ],
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
@@ -48,14 +83,6 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "@pixi-spine/rollup-config": "~1.0.0",
-    "chai": "~4.2.0",
-    "eslint": "~7.13.0",
-    "prepend": "=1.0.2",
-    "rimraf": "3.0.2",
-    "rollup": "^2.53.3",
-    "tslib": "~2.2.0",
-    "typescript": "~4.3.0"
+    "@pixi-spine/rollup-config": "*"
   }
 }

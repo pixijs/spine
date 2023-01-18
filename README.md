@@ -1,12 +1,19 @@
 # pixi-spine
 
-Spine 3.7, 3.8, 4.0, 4.1 implementation for PixiJS v5 & v6. 
+Spine 3.7, 3.8, 4.0, 4.1 implementation for PixiJS. 
 
-Typescript definitions are up-to-date with PixiJS v6.
+### Versions Compatibility
+
+| PixiJS | pixi-spine |
+|---|---|
+| v5.x - v6.x | v3.x |
+| v7.x | v4.x |
 
 For spine < 3.7 support is limited, but accepting PR's for `runtime-3.7` package.
 
-For previous versions of pixi & typescript definitions - please refer to [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
+For previous versions of pixi refer to
+- [README in pixi6](https://github.com/pixijs/pixi-spine/tree/pixi6/#readme)
+- [README in pixi5](https://github.com/pixijs/pixi-spine/tree/pixi5/#readme)
 
 Demos:
 
@@ -18,86 +25,73 @@ https://sbfkcel.github.io/pixi-spine-debug/
 
 ## Basic Usage
 
-Please read this carefully: there are three ways to add this lib to your app.
+Please read this carefully: there are many ways to add this lib to your app.
 
-1. Angular, React, Webpack, Rollup - if you know those words, use ES6 bundles 
-2. Good old `<script src="pixi-spine.umd.js">` , also named vanilla JS
-3. Custom bundle, for guys who really want to shake da tree
+1. npm, Webpack, Rollup, Vite - if you know those words, use `npm i pixi-spine`
+2. Good old `<script src="pixi-spine.js">`, also named vanilla JS
+3. The modern `<script type="module" src="pixi-spine.mjs">`, for ES modules
+4. Single version, check the `all-X.Y` bundles
+5. Custom bundle, for specific combinations of versions.
 
-### ES6 bundles
+### Bundles example
 
 ```js
+import 'pixi-spine' // Do this once at the very start of your code. This registers the loader!
+
 import * as PIXI from 'pixi.js';
 import {Spine} from 'pixi-spine';
 
 const app = new PIXI.Application();
 document.body.appendChild(app.view);
 
-app.loader
-    .add('spineCharacter', 'spine-data-1/HERO.json')
-    .load(function (loader, resources) {
-        const animation = new Spine(resources.spineCharacter.spineData);
+PIXI.Assets.load("spine-data-1/HERO.json").then((resource) => {
+	const animation = new Spine(resource.spineData);
+    app.stage.addChild(animation);
 
-        // add the animation to the scene and render...
-        app.stage.addChild(animation);
-        
-        if (animation.state.hasAnimation('run')) {
-            // run forever, little boy!
-            animation.state.setAnimation(0, 'run', true);
-            // dont run too fast
-            animation.state.timeScale = 0.1;
-        }
-        
-        app.start();
-    });
+    // add the animation to the scene and render...
+    app.stage.addChild(animation);
+    
+    if (animation.state.hasAnimation('run')) {
+        // run forever, little boy!
+        animation.state.setAnimation(0, 'run', true);
+        // dont run too fast
+        animation.state.timeScale = 0.1;
+        // update yourself
+        animation.autoUpdate = true;
+    }
+});
 ```
 
-Alternatively, you may use `@pixi-spine/all-3.8` package.
 
 ### Where are spine core classes?
 
-Classes like `AttachmentType`, `TextureAtlas`, `TextureRegion` and `Utils` are shared across all spine versions, and re-exported by all bundles. But if you want to see them directly, they are in `@pixi-spine-base`.
+Classes like `AttachmentType`, `TextureAtlas`, `TextureRegion` and `Utils` are shared across all spine versions, and re-exported by all bundles. But if you want to see them directly, they are in `@pixi-spine/base`.
 
 Base also contains unified interfaces, `ISkeleton`, `ISkeletonData`, `IAnimationData` and so on, see `ISkeleton.ts` file. 
 
 Most of classes are spine-version-dependant, including `Skeleton`, `SkeletonData`, they are stored in corresponding packages `@pixi-spine/runtime-3.8` and so on.
 
-### Vanilla JS, UMD build
+### Browser builds
 
-All pixiJS v6 plugins has special `umd` build suited for vanilla.   
-Navigate `pixi-spine` npm package, take `dist/pixi-spine.umd.js` file.
-Alternatively, you can look in `@pixi-spine/all-3.8` npm package.
-
-```html
-<script src='lib/pixi.js'></script>
-<script src='lib/pixi-spine.umd.js'></script>
-```
-
-```js
-const animation = new PIXI.spine.Spine(resources.spineCharacter.spineData);
-```
-
-Unfortunately, there are no typescript definitions for vanilla build on both `pixi` v6 and `pixi-spine`
+For browser builds, you will need to grab either the `.js` (for CJS) file or the `.mjs` (for ESM) from the `dist` folder or from your CDN of choice.
 
 ### Custom bundle
 
-Main bundle `pixi-spine` weights more than 1 MB.
+Main bundle `pixi-spine` weights 374 KB (unzipped).
 
-Bundle `@pixi-spine/all-3.8` weights about 400 KB.
+Bundle `@pixi-spine/all-3.8` weights about 165 KB (unzipped).
 
 If you want to use different version (3.7) please look how modules `loader-3.8` and `pixi-spine-3.8` are made.
 
-Basically, you have to copy its code in a separate file in your project, and alter imports to corresonding version. 
+Basically, you have to copy its code in a separate file in your project, and alter imports to corresponding version. 
 
 For example, here's bundle for 3.8:
 
 ```js
-import {SpineParser} from '@pixi-spine/loader-3.8';
-export {SpineParser};
+import '@pixi-spine/loader-3.8'; // Side effect install the loader
+// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 export * from '@pixi-spine/runtime-3.8';
 export * from '@pixi-spine/base';
-
-SpineParser.registerLoaderPlugin();
 ```
 
 In case author was too lazy to publish`loader-3.7`, you can do the same trick with them, just look in sources of `loader-3.8`.
@@ -109,7 +103,7 @@ Read our [docs](examples/index.md).
 ### Two-color tint
 
 Light-dark tint is supported with help of [pixi-heaven](https://github.com/gameofbombs/pixi-heaven)
-Currently supported only by UMD build.
+Currently supported only by UMD build. (and most likely on PixiJS < 7.x)
 
 ```js
 let spine = new PIXI.heaven.Spine(spineData);
@@ -165,27 +159,23 @@ If you want to create your own debugger you can extend `SpineDebugRenderer` or c
 
 You will need to have [node][node] setup on your machine.
 
-Make sure you have [rush][rush] installed:
-
-```bash
-npm install -g @microsoft/rush
-```
-
 Then you can install dependencies and build:
 
 ```bash
-npm run prepare
+npm install
 npm run build
 ```
 
-That will output the built all modules. UMD can be found in `./bundles/pixi-spine/dist`.
+That will build all packages and bundles. Browser packages are inside `dist` and npm packages are inside `lib`
 
-If you use IntellIJ Idea / Webstorm to navigate the project, take this line and set it in **project settings** / **exclude files**  
-
-```
-packages/*/node_modules;packages/*/compile;bundles/*/node_modules;bundles/*/compile;lib;dist
-```
+`npm link` will misbehave because of the monorepo setup.
 
 [node]:             https://nodejs.org/
 [typescript]:       https://www.typescriptlang.org/
-[rush]:             https://rushjs.io/
+
+## Deploying
+
+If you have enough rights to publish this monorepo, you can publish by running `npm run lernaPublish`
+This is so that it runs with the internal npm v8 since npm v9 doesn't play nice with Lerna.
+
+If for some reason your publish failed, use `npm run lernaPublish:fromPackage` to try to force a publish without creating a new version

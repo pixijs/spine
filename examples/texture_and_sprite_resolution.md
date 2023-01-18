@@ -1,5 +1,7 @@
 ### How to choose resolution
 
+#### This example is for PixiJS version < 7.x
+
 Use with [pixi-compressed-textures.js](https://github.com/pixijs/pixi-compressed-textures)
 
 ```js

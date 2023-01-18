@@ -1,6 +1,8 @@
 How to make dynamic texture atlas
 =================================
 
+#### This example is for PixiJS version < 7.x
+
 If for some reason you don't want to use Spine's `*.atlas` here's how you might customize atlas loading.
 
 ```js

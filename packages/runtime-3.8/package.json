@@ -2,21 +2,35 @@
 	"name": "@pixi-spine/runtime-3.8",
 	"version": "3.1.2",
 	"description": "Pixi runtime for spine 3.8 models",
-	"main": "lib/runtime-3.8.js",
-	"module": "lib/runtime-3.8.es.js",
-	"bundle": "dist/runtime-3.8.js",
-	"namespace": "PIXI.spine38",
+	"main": "lib/index.js",
+	"module": "lib/index.mjs",
 	"types": "./index.d.ts",
-	"peerDependencies": {
-		"@pixi/constants": "^6.1.0",
-		"@pixi/math": "^6.1.0"
+	"exports": {
+		".": {
+			"import": "./lib/index.mjs",
+			"require": "./lib/index.js",
+			"types": "./index.d.ts"
+		}
 	},
-	"dependencies": {
-		"@pixi-spine/base": "~3.1.2"
+	"extensionConfig": {
+		"namespace": "PIXI.spine38",
+		"bundle": "dist/runtime-3.8.js",
+		"bundleModule": "dist/runtime-3.8.mjs",
+		"globals": {
+			"@pixi-spine/base": "PIXI.spine"
+		}
+	},
+	"peerDependencies": {
+		"@pixi-spine/base": "*",
+		"@pixi/constants": "^7.0.0",
+		"@pixi/math": "^7.0.0"
 	},
 	"scripts": {
-		"build": "rollup -c rollup.config.js --silent",
-		"build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+		"build": "run-p build:*",
+		"build:rollup": "rollup -c rollup.config.mjs --silent",
+		"build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+		"lint": "eslint src/**/*.ts",
+		"lint:fix": "eslint src/**/*.ts --fix"
 	},
 	"repository": {
 		"type": "git",
@@ -39,13 +53,6 @@
 	"license": "SEE SPINE-LICENSE",
 	"homepage": "https://github.com/pixijs/pixi-spine/#readme",
 	"devDependencies": {
-		"@pixi-spine/eslint-config": "~1.0.0",
-		"@pixi-spine/rollup-config": "~1.0.0",
-		"chai": "~4.2.0",
-		"eslint": "~7.13.0",
-		"rimraf": "3.0.2",
-		"rollup": "^2.53.3",
-		"tslib": "~2.2.0",
-		"typescript": "~4.3.0"
+		"@pixi-spine/rollup-config": "*"
 	}
 }

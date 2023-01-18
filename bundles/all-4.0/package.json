@@ -2,20 +2,50 @@
   "name": "@pixi-spine/all-4.0",
   "version": "3.1.2",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains runtime for 4.0",
-  "main": "lib/all-4.0.js",
-  "module": "lib/all-4.0.es.js",
-  "bundle": "dist/pixi-spine-4.0.umd.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/pixi-spine-4.0.js",
+    "bundleModule": "dist/pixi-spine-4.0.mjs",
+    "globals": {
+      "@pixi-spine/base": "PIXI.spine",
+      "@pixi-spine/loader-4.0": "PIXI.spine",
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/runtime-4.0": "PIXI.spine40"
+    }
+  },
   "dependencies": {
-    "@pixi-spine/base": "~3.1.2",
-    "@pixi-spine/loader-4.0": "~3.1.2",
-    "@pixi-spine/loader-base": "~3.1.2",
-    "@pixi-spine/runtime-4.0": "~3.1.2"
+    "@pixi-spine/base": "*",
+    "@pixi-spine/loader-4.0": "*",
+    "@pixi-spine/loader-base": "*",
+    "@pixi-spine/runtime-4.0": "*"
+  },
+  "peerDependencies": {
+    "@pixi/constants": "^7.0.0",
+    "@pixi/core": "^7.0.0",
+    "@pixi/display": "^7.0.0",
+    "@pixi/graphics": "^7.0.0",
+    "@pixi/math": "^7.0.0",
+    "@pixi/mesh": "^7.0.0",
+    "@pixi/mesh-extras": "^7.0.0",
+    "@pixi/sprite": "^7.0.0",
+    "@pixi/utils": "^7.0.0"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -39,7 +69,8 @@
     "Chad Engler <chad@pantherdev.com>",
     "Richard Davey <rdavey@gmail.com>",
     "Shukant K. Pal <shukantpal@outlook.com>",
-    "Yevhenii Huselietov <d46k16@gmail.com>"
+    "Yevhenii Huselietov <d46k16@gmail.com>",
+    "Milton Candelero <miltoncandelero@gmail.com>"
   ],
   "bugs": {
     "url": "https://github.com/pixijs/pixi-spine/issues"
@@ -47,14 +78,6 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "@pixi-spine/rollup-config": "~1.0.0",
-    "chai": "~4.2.0",
-    "eslint": "~7.13.0",
-    "prepend": "=1.0.2",
-    "rimraf": "3.0.2",
-    "rollup": "^2.53.3",
-    "tslib": "~2.2.0",
-    "typescript": "~4.3.0"
+    "@pixi-spine/rollup-config": "*"
   }
 }

@@ -1,5 +1,5 @@
-import {Attachment, VertexAttachment} from './Attachment';
-import {AttachmentType, Color, IMeshAttachment, TextureRegion, Utils} from '@pixi-spine/base';
+import { Attachment, VertexAttachment } from './Attachment';
+import { AttachmentType, Color, IMeshAttachment, TextureRegion, Utils } from '@pixi-spine/base';
 
 /**
  * @public
@@ -37,19 +37,19 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     private parentMesh: MeshAttachment;
     tempColor = new Color(0, 0, 0, 0);
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name);
     }
 
     /** The parent mesh if this is a linked mesh, else null. A linked mesh shares the {@link #bones}, {@link #vertices},
      * {@link #regionUVs}, {@link #triangles}, {@link #hullLength}, {@link #edges}, {@link #width}, and {@link #height} with the
      * parent mesh, but may have a different {@link #name} or {@link #path} (and therefore a different texture). */
-    getParentMesh () {
+    getParentMesh() {
         return this.parentMesh;
     }
 
     /** @param parentMesh May be null. */
-    setParentMesh (parentMesh: MeshAttachment) {
+    setParentMesh(parentMesh: MeshAttachment) {
         this.parentMesh = parentMesh;
         if (parentMesh) {
             this.bones = parentMesh.bones;
@@ -58,14 +58,15 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
             this.regionUVs = parentMesh.regionUVs;
             this.triangles = parentMesh.triangles;
             this.hullLength = parentMesh.hullLength;
-            this.worldVerticesLength = parentMesh.worldVerticesLength
+            this.worldVerticesLength = parentMesh.worldVerticesLength;
         }
     }
 
-    copy (): Attachment {
+    copy(): Attachment {
         if (this.parentMesh) return this.newLinkedMesh();
 
-        let copy = new MeshAttachment(this.name);
+        const copy = new MeshAttachment(this.name);
+
         copy.region = this.region;
         copy.path = this.path;
         copy.color.setFromColor(this.color);
@@ -89,14 +90,16 @@ export class MeshAttachment extends VertexAttachment implements IMeshAttachment 
     }
 
     /** Returns a new mesh with the {@link #parentMesh} set to this mesh's parent mesh, if any, else to this mesh. **/
-    newLinkedMesh (): MeshAttachment {
-        let copy = new MeshAttachment(this.name);
+    newLinkedMesh(): MeshAttachment {
+        const copy = new MeshAttachment(this.name);
+
         copy.region = this.region;
         copy.path = this.path;
         copy.color.setFromColor(this.color);
         copy.deformAttachment = this.deformAttachment;
         copy.setParentMesh(this.parentMesh ? this.parentMesh : this);
         // copy.updateUVs();
+
         return copy;
     }
 }

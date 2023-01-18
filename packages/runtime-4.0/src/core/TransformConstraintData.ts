@@ -1,5 +1,5 @@
-import {BoneData} from './BoneData';
-import {ConstraintData} from './ConstraintData';
+import type { BoneData } from './BoneData';
+import { ConstraintData } from './ConstraintData';
 
 /** Stores the setup pose for a {@link TransformConstraint}.
  *
@@ -7,7 +7,6 @@ import {ConstraintData} from './ConstraintData';
  * @public
  * */
 export class TransformConstraintData extends ConstraintData {
-
     /** The bones that will be modified by this transform constraint. */
     bones = new Array<BoneData>();
 
@@ -42,7 +41,7 @@ export class TransformConstraintData extends ConstraintData {
     relative = false;
     local = false;
 
-    constructor (name: string) {
+    constructor(name: string) {
         super(name, 0, false);
     }
 }

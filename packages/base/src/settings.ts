@@ -1,7 +1,7 @@
 /**
  * @public
  */
-export let settings = {
+export const settings = {
     yDown: true,
     /**
      * pixi-spine gives option to not fail at certain parsing errors
@@ -18,4 +18,4 @@ export let settings = {
      * past Spine.globalDelayLimit
      */
     GLOBAL_DELAY_LIMIT: 0,
-}
+};

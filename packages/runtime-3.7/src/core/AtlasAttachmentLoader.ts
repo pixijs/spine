@@ -1,8 +1,6 @@
-
-import {AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment,
-    PathAttachment, PointAttachment, ClippingAttachment} from './attachments';
-import type {TextureAtlas} from "@pixi-spine/base";
-import type {Skin} from "./Skin";
+import { AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment, PathAttachment, PointAttachment, ClippingAttachment } from './attachments';
+import type { TextureAtlas } from '@pixi-spine/base';
+import type { Skin } from './Skin';
 
 /**
  * @public
@@ -16,19 +14,25 @@ export class AtlasAttachmentLoader implements AttachmentLoader {
 
     /** @return May be null to not load an attachment. */
     newRegionAttachment(skin: Skin, name: string, path: string): RegionAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (region attachment: " + name + ")");
-        let attachment = new RegionAttachment(name);
+        const region = this.atlas.findRegion(path);
+
+        if (region == null) throw new Error(`Region not found in atlas: ${path} (region attachment: ${name})`);
+        const attachment = new RegionAttachment(name);
+
         attachment.region = region;
+
         return attachment;
     }
 
     /** @return May be null to not load an attachment. */
     newMeshAttachment(skin: Skin, name: string, path: string): MeshAttachment {
-        let region = this.atlas.findRegion(path);
-        if (region == null) throw new Error("Region not found in atlas: " + path + " (mesh attachment: " + name + ")");
-        let attachment = new MeshAttachment(name);
+        const region = this.atlas.findRegion(path);
+
+        if (region == null) throw new Error(`Region not found in atlas: ${path} (mesh attachment: ${name})`);
+        const attachment = new MeshAttachment(name);
+
         attachment.region = region;
+
         return attachment;
     }
 

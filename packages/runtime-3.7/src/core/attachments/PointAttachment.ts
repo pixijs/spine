@@ -1,6 +1,6 @@
-import {VertexAttachment} from './Attachment';
-import {AttachmentType, Color, MathUtils, Vector2} from "@pixi-spine/base";
-import type {Bone} from '../Bone';
+import { VertexAttachment } from './Attachment';
+import { AttachmentType, Color, MathUtils, Vector2 } from '@pixi-spine/base';
+import type { Bone } from '../Bone';
 
 /**
  * @public
@@ -18,16 +18,20 @@ export class PointAttachment extends VertexAttachment {
 
     computeWorldPosition(bone: Bone, point: Vector2) {
         const mat = bone.matrix;
+
         point.x = this.x * mat.a + this.y * mat.c + bone.worldX;
         point.y = this.x * mat.b + this.y * mat.d + bone.worldY;
+
         return point;
     }
 
     computeWorldRotation(bone: Bone) {
         const mat = bone.matrix;
-        let cos = MathUtils.cosDeg(this.rotation), sin = MathUtils.sinDeg(this.rotation);
-        let x = cos * mat.a + sin * mat.c;
-        let y = cos * mat.b + sin * mat.d;
+        const cos = MathUtils.cosDeg(this.rotation);
+        const sin = MathUtils.sinDeg(this.rotation);
+        const x = cos * mat.a + sin * mat.c;
+        const y = cos * mat.b + sin * mat.d;
+
         return Math.atan2(y, x) * MathUtils.radDeg;
     }
 }

@@ -1,32 +1,43 @@
-
-import { Texture } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
+import type { Texture } from '@pixi/core';
+import type { Rectangle } from '@pixi/math';
 
 /**
  * @public
  */
-export function filterFromString (text: string): TextureFilter {
+export function filterFromString(text: string): TextureFilter {
     switch (text.toLowerCase()) {
-        case "nearest": return TextureFilter.Nearest;
-        case "linear": return TextureFilter.Linear;
-        case "mipmap": return TextureFilter.MipMap;
-        case "mipmapnearestnearest": return TextureFilter.MipMapNearestNearest;
-        case "mipmaplinearnearest": return TextureFilter.MipMapLinearNearest;
-        case "mipmapnearestlinear": return TextureFilter.MipMapNearestLinear;
-        case "mipmaplinearlinear": return TextureFilter.MipMapLinearLinear;
-        default: throw new Error(`Unknown texture filter ${text}`);
+        case 'nearest':
+            return TextureFilter.Nearest;
+        case 'linear':
+            return TextureFilter.Linear;
+        case 'mipmap':
+            return TextureFilter.MipMap;
+        case 'mipmapnearestnearest':
+            return TextureFilter.MipMapNearestNearest;
+        case 'mipmaplinearnearest':
+            return TextureFilter.MipMapLinearNearest;
+        case 'mipmapnearestlinear':
+            return TextureFilter.MipMapNearestLinear;
+        case 'mipmaplinearlinear':
+            return TextureFilter.MipMapLinearLinear;
+        default:
+            throw new Error(`Unknown texture filter ${text}`);
     }
 }
 
 /**
  * @public
  */
-export function wrapFromString (text: string): TextureWrap {
+export function wrapFromString(text: string): TextureWrap {
     switch (text.toLowerCase()) {
-        case "mirroredtepeat": return TextureWrap.MirroredRepeat;
-        case "clamptoedge": return TextureWrap.ClampToEdge;
-        case "repeat": return TextureWrap.Repeat;
-        default: throw new Error(`Unknown texture wrap ${text}`);
+        case 'mirroredtepeat':
+            return TextureWrap.MirroredRepeat;
+        case 'clamptoedge':
+            return TextureWrap.ClampToEdge;
+        case 'repeat':
+            return TextureWrap.Repeat;
+        default:
+            throw new Error(`Unknown texture wrap ${text}`);
     }
 }
 
@@ -40,7 +51,7 @@ export enum TextureFilter {
     MipMapNearestNearest = 9984, // WebGLRenderingContext.NEAREST_MIPMAP_NEAREST
     MipMapLinearNearest = 9985, // WebGLRenderingContext.LINEAR_MIPMAP_NEAREST
     MipMapNearestLinear = 9986, // WebGLRenderingContext.NEAREST_MIPMAP_LINEAR
-    MipMapLinearLinear = 9987 // WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
+    MipMapLinearLinear = 9987, // WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
 }
 
 /**
@@ -49,7 +60,7 @@ export enum TextureFilter {
 export enum TextureWrap {
     MirroredRepeat = 33648, // WebGLRenderingContext.MIRRORED_REPEAT
     ClampToEdge = 33071, // WebGLRenderingContext.CLAMP_TO_EDGE
-    Repeat = 10497 // WebGLRenderingContext.REPEAT
+    Repeat = 10497, // WebGLRenderingContext.REPEAT
 }
 
 /**
@@ -58,7 +69,7 @@ export enum TextureWrap {
 export class TextureRegion {
     texture: Texture;
 
-    //thats for overrides
+    // thats for overrides
     size: Rectangle = null;
 
     names: string[] = null;
@@ -68,17 +79,21 @@ export class TextureRegion {
 
     get width(): number {
         const tex = this.texture;
+
         if (tex.trim) {
             return tex.trim.width;
         }
+
         return tex.orig.width;
     }
 
     get height(): number {
         const tex = this.texture;
+
         if (tex.trim) {
             return tex.trim.height;
         }
+
         return tex.orig.height;
     }
 
@@ -100,6 +115,7 @@ export class TextureRegion {
 
     get offsetX(): number {
         const tex = this.texture;
+
         return tex.trim ? tex.trim.x : 0;
     }
 
@@ -110,11 +126,13 @@ export class TextureRegion {
 
     get pixiOffsetY(): number {
         const tex = this.texture;
+
         return tex.trim ? tex.trim.y : 0;
     }
 
     get spineOffsetY(): number {
-        let tex = this.texture;
+        const tex = this.texture;
+
         return this.originalHeight - this.height - (tex.trim ? tex.trim.y : 0);
     }
 

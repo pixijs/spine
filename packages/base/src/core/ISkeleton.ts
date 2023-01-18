@@ -1,23 +1,23 @@
-import {AttachmentType} from './AttachmentType';
-import {IAnimation, IEventData} from "./IAnimation";
-import {IIkConstraintData, IPathConstraintData, ITransformConstraintData} from './IConstraint';
-import type {Color, Vector2, Map} from './Utils';
-import type {TextureRegion} from './TextureRegion';
+import type { AttachmentType } from './AttachmentType';
+import type { IAnimation, IEventData } from './IAnimation';
+import type { IIkConstraintData, IPathConstraintData, ITransformConstraintData } from './IConstraint';
+import type { Color, Vector2, Map } from './Utils';
+import type { TextureRegion } from './TextureRegion';
 
-import type {Matrix} from '@pixi/math';
-import {BLEND_MODES} from '@pixi/constants';
+import type { Matrix } from '@pixi/math';
+import type { BLEND_MODES } from '@pixi/constants';
 
 // This enum was moved from BoneData.ts of spine 3.7, 3.8 and 4.0
 
 /** Determines how a bone inherits world transforms from parent bones.
  * @public
  * */
- export enum TransformMode {
+export enum TransformMode {
     Normal,
     OnlyTranslation,
     NoRotationOrReflection,
     NoScale,
-    NoScaleOrReflection
+    NoScaleOrReflection,
 }
 
 /**
@@ -26,7 +26,7 @@ import {BLEND_MODES} from '@pixi/constants';
 export interface IBone {
     data: IBoneData;
     matrix: Matrix;
-    active:boolean;
+    active: boolean;
 }
 
 /**
@@ -36,7 +36,7 @@ export interface ISkin {
     name: string;
     attachments: Array<Map<IAttachment>>;
 
-    getAttachment (slotIndex: number, name: string): IAttachment | null;
+    getAttachment(slotIndex: number, name: string): IAttachment | null;
 }
 
 /**
@@ -75,7 +75,7 @@ export interface IHasTextureRegion {
 export interface ISequence {
     id: number;
     regions: TextureRegion[];
-    apply (slot: ISlot, attachment: IHasTextureRegion): void;
+    apply(slot: ISlot, attachment: IHasTextureRegion): void;
 }
 
 /**
@@ -101,7 +101,13 @@ export interface IClippingAttachment extends IVertexAttachment {
 export interface IRegionAttachment extends IAttachment {
     region: TextureRegion;
     color: Color;
-    x, y, scaleX, scaleY, rotation, width, height: number;
+    x;
+    y;
+    scaleX;
+    scaleY;
+    rotation;
+    width;
+    height: number;
 }
 
 /**
@@ -110,9 +116,9 @@ export interface IRegionAttachment extends IAttachment {
 export interface IMeshAttachment extends IVertexAttachment {
     region: TextureRegion;
     color: Color;
-    regionUVs: Float32Array,
-    triangles: number[],
-    hullLength:number,
+    regionUVs: Float32Array;
+    triangles: number[];
+    hullLength: number;
 }
 
 /**
@@ -176,31 +182,28 @@ export interface ISlot {
 /**
  * @public
  */
-export interface ISkeleton<SkeletonData extends ISkeletonData = ISkeletonData,
-                           Bone extends IBone = IBone,
-                           Slot extends ISlot = ISlot,
-                           Skin extends ISkin = ISkin> {
-    bones: Bone[]
-    slots: Slot[]
-    drawOrder: Slot[]
+export interface ISkeleton<SkeletonData extends ISkeletonData = ISkeletonData, Bone extends IBone = IBone, Slot extends ISlot = ISlot, Skin extends ISkin = ISkin> {
+    bones: Bone[];
+    slots: Slot[];
+    drawOrder: Slot[];
     skin: Skin;
     data: SkeletonData;
     x: number; // added for debug purposes
     y: number; // added for debug purposes
-    updateWorldTransform (): void;
-    setToSetupPose (): void;
-    findSlotIndex (slotName: string): number;
-    getAttachmentByName (slotName: string, attachmentName: string): IAttachment;
+    updateWorldTransform(): void;
+    setToSetupPose(): void;
+    findSlotIndex(slotName: string): number;
+    getAttachmentByName(slotName: string, attachmentName: string): IAttachment;
 
-    setBonesToSetupPose (): void;
-    setSlotsToSetupPose (): void;
-    findBone (boneName: string): Bone;
-    findSlot (slotName: string): Slot;
-    findBoneIndex (boneName: string): number;
-    findSlotIndex (slotName: string): number;
-    setSkinByName (skinName: string): void;
-    setAttachment (slotName: string, attachmentName: string): void;
-    getBounds (offset: Vector2, size: Vector2, temp: Array<number>): void;
+    setBonesToSetupPose(): void;
+    setSlotsToSetupPose(): void;
+    findBone(boneName: string): Bone;
+    findSlot(slotName: string): Slot;
+    findBoneIndex(boneName: string): number;
+    findSlotIndex(slotName: string): number;
+    setSkinByName(skinName: string): void;
+    setAttachment(slotName: string, attachmentName: string): void;
+    getBounds(offset: Vector2, size: Vector2, temp: Array<number>): void;
 }
 
 /**
@@ -213,14 +216,16 @@ export interface ISkeletonParser {
 /**
  * @public
  */
-export interface ISkeletonData<BoneData extends IBoneData = IBoneData,
-                               SlotData extends ISlotData = ISlotData,
-                               Skin extends ISkin = ISkin,
-                               Animation extends IAnimation = IAnimation,
-                               EventData extends IEventData = IEventData,
-                               IkConstraintData extends IIkConstraintData = IIkConstraintData,
-                               TransformConstraintData extends ITransformConstraintData = ITransformConstraintData,
-                               PathConstraintData extends IPathConstraintData = IPathConstraintData> {
+export interface ISkeletonData<
+    BoneData extends IBoneData = IBoneData,
+    SlotData extends ISlotData = ISlotData,
+    Skin extends ISkin = ISkin,
+    Animation extends IAnimation = IAnimation,
+    EventData extends IEventData = IEventData,
+    IkConstraintData extends IIkConstraintData = IIkConstraintData,
+    TransformConstraintData extends ITransformConstraintData = ITransformConstraintData,
+    PathConstraintData extends IPathConstraintData = IPathConstraintData
+> {
     name: string;
     bones: BoneData[];
     slots: SlotData[];
@@ -239,12 +244,12 @@ export interface ISkeletonData<BoneData extends IBoneData = IBoneData,
     findBone(boneName: string): BoneData | null;
     findBoneIndex(boneName: string): number;
     findSlot(slotName: string): SlotData | null;
-    findSlotIndex (slotName: string): number;
-    findSkin (skinName: string): Skin | null;
+    findSlotIndex(slotName: string): number;
+    findSkin(skinName: string): Skin | null;
 
-    findEvent (eventDataName: string): EventData | null;
-    findAnimation (animationName: string): Animation | null;
-    findIkConstraint (constraintName: string): IkConstraintData | null;
-    findTransformConstraint (constraintName: string): TransformConstraintData | null;
-    findPathConstraint (constraintName: string): PathConstraintData | null;
+    findEvent(eventDataName: string): EventData | null;
+    findAnimation(animationName: string): Animation | null;
+    findIkConstraint(constraintName: string): IkConstraintData | null;
+    findTransformConstraint(constraintName: string): TransformConstraintData | null;
+    findPathConstraint(constraintName: string): PathConstraintData | null;
 }

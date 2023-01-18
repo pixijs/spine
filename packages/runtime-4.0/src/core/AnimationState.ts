@@ -1,25 +1,9 @@
-import {
-    IAnimationState,
-    IAnimationStateListener,
-    ITrackEntry,
-    MathUtils,
-    MixBlend,
-    MixDirection,
-    Pool,
-    StringSet,
-    Utils
-} from "@pixi-spine/base";
-import {
-    Animation,
-    AttachmentTimeline,
-    DrawOrderTimeline,
-    EventTimeline,
-    RotateTimeline, Timeline
-} from './Animation';
-import {AnimationStateData} from "./AnimationStateData";
-import {Event} from './Event';
-import type {Skeleton} from "./Skeleton";
-import type {Slot} from "./Slot";
+import { IAnimationState, IAnimationStateListener, ITrackEntry, MathUtils, MixBlend, MixDirection, Pool, StringSet, Utils } from '@pixi-spine/base';
+import { Animation, AttachmentTimeline, DrawOrderTimeline, EventTimeline, RotateTimeline, Timeline } from './Animation';
+import type { AnimationStateData } from './AnimationStateData';
+import type { Event } from './Event';
+import type { Skeleton } from './Skeleton';
+import type { Slot } from './Slot';
 
 /** Applies animations over time, queues animations for later playback, mixes (crossfading) between animations, and applies
  * multiple animations on top of each other (layering).
@@ -28,8 +12,9 @@ import type {Slot} from "./Slot";
  * @public
  * */
 export class AnimationState implements IAnimationState<AnimationStateData> {
-    private static emptyAnimation (): Animation {
-        if (!_emptyAnimation) _emptyAnimation = new Animation("<empty>", [], 0);
+    private static emptyAnimation(): Animation {
+        if (!_emptyAnimation) _emptyAnimation = new Animation('<empty>', [], 0);
+
         return _emptyAnimation;
     }
 
@@ -54,16 +39,18 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
 
     trackEntryPool = new Pool<TrackEntry>(() => new TrackEntry());
 
-    constructor (data: AnimationStateData) {
+    constructor(data: AnimationStateData) {
         this.data = data;
     }
 
     /** Increments each track entry {@link TrackEntry#trackTime()}, setting queued animations as current if needed. */
-    update (delta: number) {
+    update(delta: number) {
         delta *= this.timeScale;
-        let tracks = this.tracks;
+        const tracks = this.tracks;
+
         for (let i = 0, n = tracks.length; i < n; i++) {
-            let current = tracks[i];
+            const current = tracks[i];
+
             if (!current) continue;
 
             current.animationLast = current.nextAnimationLast;
@@ -79,9 +66,11 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             }
 
             let next = current.next;
+
             if (next) {
                 // When the next entry's delay is passed, change to the next entry, preserving leftover time.
-                let nextTime = current.trackLast - next.delay;
+                const nextTime = current.trackLast - next.delay;
+
                 if (nextTime >= 0) {
                     next.delay = 0;
                     next.trackTime += current.timeScale == 0 ? 0 : (nextTime / current.timeScale + delta) * next.timeScale;
@@ -102,6 +91,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             if (current.mixingFrom && this.updateMixingFrom(current, delta)) {
                 // End mixing from entries once all have completed.
                 let from = current.mixingFrom;
+
                 current.mixingFrom = null;
                 if (from) from.mixingTo = null;
                 while (from) {
@@ -117,11 +107,12 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
     }
 
     /** Returns true when all mixing from entries are complete. */
-    updateMixingFrom (to: TrackEntry, delta: number): boolean {
-        let from = to.mixingFrom;
+    updateMixingFrom(to: TrackEntry, delta: number): boolean {
+        const from = to.mixingFrom;
+
         if (!from) return true;
 
-        let finished = this.updateMixingFrom(from, delta);
+        const finished = this.updateMixingFrom(from, delta);
 
         from.animationLast = from.nextAnimationLast;
         from.trackLast = from.nextTrackLast;
@@ -135,68 +126,75 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                 to.interruptAlpha = from.interruptAlpha;
                 this.queue.end(from);
             }
+
             return finished;
         }
 
         from.trackTime += delta * from.timeScale;
         to.mixTime += delta;
+
         return false;
     }
 
     /** Poses the skeleton using the track entry animations. There are no side effects other than invoking listeners, so the
      * animation state can be applied to multiple skeletons to pose them identically.
      * @returns True if any animations were applied. */
-    apply (skeleton: Skeleton): boolean {
-        if (!skeleton) throw new Error("skeleton cannot be null.");
+    apply(skeleton: Skeleton): boolean {
+        if (!skeleton) throw new Error('skeleton cannot be null.');
         if (this.animationsChanged) this._animationsChanged();
 
-        let events = this.events;
-        let tracks = this.tracks;
+        const events = this.events;
+        const tracks = this.tracks;
         let applied = false;
 
         for (let i = 0, n = tracks.length; i < n; i++) {
-            let current = tracks[i];
+            const current = tracks[i];
+
             if (!current || current.delay > 0) continue;
             applied = true;
-            let blend: MixBlend = i == 0 ? MixBlend.first : current.mixBlend;
+            const blend: MixBlend = i == 0 ? MixBlend.first : current.mixBlend;
 
             // Apply mixing from entries first.
             let mix = current.alpha;
-            if (current.mixingFrom)
-                mix *= this.applyMixingFrom(current, skeleton, blend);
-            else if (current.trackTime >= current.trackEnd && !current.next)
-                mix = 0;
+
+            if (current.mixingFrom) mix *= this.applyMixingFrom(current, skeleton, blend);
+            else if (current.trackTime >= current.trackEnd && !current.next) mix = 0;
 
             // Apply current entry.
-            let animationLast = current.animationLast, animationTime = current.getAnimationTime(), applyTime = animationTime;
+            const animationLast = current.animationLast;
+            const animationTime = current.getAnimationTime();
+            let applyTime = animationTime;
             let applyEvents = events;
+
             if (current.reverse) {
                 applyTime = current.animation.duration - applyTime;
                 applyEvents = null;
             }
-            let timelines = current.animation.timelines;
-            let timelineCount = timelines.length;
+            const timelines = current.animation.timelines;
+            const timelineCount = timelines.length;
+
             if ((i == 0 && mix == 1) || blend == MixBlend.add) {
                 for (let ii = 0; ii < timelineCount; ii++) {
                     // Fixes issue #302 on IOS9 where mix, blend sometimes became undefined and caused assets
                     // to sometimes stop rendering when using color correction, as their RGBA values become NaN.
                     // (https://github.com/pixijs/pixi-spine/issues/302)
                     Utils.webkit602BugfixHelper(mix, blend);
-                    var timeline = timelines[ii];
-                    if (timeline instanceof AttachmentTimeline)
-                        this.applyAttachmentTimeline(timeline, skeleton, applyTime, blend, true);
-                    else
-                        timeline.apply(skeleton, animationLast, applyTime, applyEvents, mix, blend, MixDirection.mixIn);
+                    const timeline = timelines[ii];
+
+                    if (timeline instanceof AttachmentTimeline) this.applyAttachmentTimeline(timeline, skeleton, applyTime, blend, true);
+                    else timeline.apply(skeleton, animationLast, applyTime, applyEvents, mix, blend, MixDirection.mixIn);
                 }
             } else {
-                let timelineMode = current.timelineMode;
+                const timelineMode = current.timelineMode;
 
-                let firstFrame = current.timelinesRotation.length != timelineCount << 1;
+                const firstFrame = current.timelinesRotation.length != timelineCount << 1;
+
                 if (firstFrame) current.timelinesRotation.length = timelineCount << 1;
 
                 for (let ii = 0; ii < timelineCount; ii++) {
-                    let timeline = timelines[ii];
-                    let timelineBlend = timelineMode[ii] == SUBSEQUENT ? blend : MixBlend.setup;
+                    const timeline = timelines[ii];
+                    const timelineBlend = timelineMode[ii] == SUBSEQUENT ? blend : MixBlend.setup;
+
                     if (timeline instanceof RotateTimeline) {
                         this.applyRotateTimeline(timeline, skeleton, applyTime, mix, timelineBlend, current.timelinesRotation, ii << 1, firstFrame);
                     } else if (timeline instanceof AttachmentTimeline) {
@@ -217,27 +215,34 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         // Set slots attachments to the setup pose, if needed. This occurs if an animation that is mixing out sets attachments so
         // subsequent timelines see any deform, but the subsequent timelines don't set an attachment (eg they are also mixing out or
         // the time is before the first key).
-        var setupState = this.unkeyedState + SETUP;
-        var slots = skeleton.slots;
-        for (var i = 0, n = skeleton.slots.length; i < n; i++) {
-            var slot = slots[i];
+        const setupState = this.unkeyedState + SETUP;
+        const slots = skeleton.slots;
+
+        for (let i = 0, n = skeleton.slots.length; i < n; i++) {
+            const slot = slots[i];
+
             if (slot.attachmentState == setupState) {
-                var attachmentName = slot.data.attachmentName;
+                const attachmentName = slot.data.attachmentName;
+
                 slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(slot.data.index, attachmentName));
             }
         }
         this.unkeyedState += 2; // Increasing after each use avoids the need to reset attachmentState for every slot.
 
         this.queue.drain();
+
         return applied;
     }
 
-    applyMixingFrom (to: TrackEntry, skeleton: Skeleton, blend: MixBlend) {
-        let from = to.mixingFrom;
+    applyMixingFrom(to: TrackEntry, skeleton: Skeleton, blend: MixBlend) {
+        const from = to.mixingFrom;
+
         if (from.mixingFrom) this.applyMixingFrom(from, skeleton, blend);
 
         let mix = 0;
-        if (to.mixDuration == 0) { // Single frame mix to undo mixingFrom changes.
+
+        if (to.mixDuration == 0) {
+            // Single frame mix to undo mixingFrom changes.
             mix = 1;
             if (blend == MixBlend.first) blend = MixBlend.setup;
         } else {
@@ -246,33 +251,37 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             if (blend != MixBlend.first) blend = from.mixBlend;
         }
 
-        let attachments = mix < from.attachmentThreshold, drawOrder = mix < from.drawOrderThreshold;
-        let timelines = from.animation.timelines;
-        let timelineCount = timelines.length;
-        let alphaHold = from.alpha * to.interruptAlpha, alphaMix = alphaHold * (1 - mix);
-        let animationLast = from.animationLast, animationTime = from.getAnimationTime(), applyTime = animationTime;
+        const attachments = mix < from.attachmentThreshold;
+        const drawOrder = mix < from.drawOrderThreshold;
+        const timelines = from.animation.timelines;
+        const timelineCount = timelines.length;
+        const alphaHold = from.alpha * to.interruptAlpha;
+        const alphaMix = alphaHold * (1 - mix);
+        const animationLast = from.animationLast;
+        const animationTime = from.getAnimationTime();
+        let applyTime = animationTime;
         let events = null;
-        if (from.reverse)
-            applyTime = from.animation.duration - applyTime;
-        else if (mix < from.eventThreshold)
-            events = this.events;
+
+        if (from.reverse) applyTime = from.animation.duration - applyTime;
+        else if (mix < from.eventThreshold) events = this.events;
 
         if (blend == MixBlend.add) {
-            for (let i = 0; i < timelineCount; i++)
-                timelines[i].apply(skeleton, animationLast, applyTime, events, alphaMix, blend, MixDirection.mixOut);
+            for (let i = 0; i < timelineCount; i++) timelines[i].apply(skeleton, animationLast, applyTime, events, alphaMix, blend, MixDirection.mixOut);
         } else {
-            let timelineMode = from.timelineMode;
-            let timelineHoldMix = from.timelineHoldMix;
+            const timelineMode = from.timelineMode;
+            const timelineHoldMix = from.timelineHoldMix;
 
-            let firstFrame = from.timelinesRotation.length != timelineCount << 1;
+            const firstFrame = from.timelinesRotation.length != timelineCount << 1;
+
             if (firstFrame) from.timelinesRotation.length = timelineCount << 1;
 
             from.totalAlpha = 0;
             for (let i = 0; i < timelineCount; i++) {
-                let timeline = timelines[i];
+                const timeline = timelines[i];
                 let direction = MixDirection.mixOut;
                 let timelineBlend: MixBlend;
                 let alpha = 0;
+
                 switch (timelineMode[i]) {
                     case SUBSEQUENT:
                         if (!drawOrder && timeline instanceof DrawOrderTimeline) continue;
@@ -293,21 +302,19 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                         break;
                     default:
                         timelineBlend = MixBlend.setup;
-                        let holdMix = timelineHoldMix[i];
+                        const holdMix = timelineHoldMix[i];
+
                         alpha = alphaHold * Math.max(0, 1 - holdMix.mixTime / holdMix.mixDuration);
                         break;
                 }
                 from.totalAlpha += alpha;
 
-                if (timeline instanceof RotateTimeline)
-                    this.applyRotateTimeline(timeline, skeleton, applyTime, alpha, timelineBlend, from.timelinesRotation, i << 1, firstFrame);
-                else if (timeline instanceof AttachmentTimeline)
-                    this.applyAttachmentTimeline(timeline, skeleton, applyTime, timelineBlend, attachments);
+                if (timeline instanceof RotateTimeline) this.applyRotateTimeline(timeline, skeleton, applyTime, alpha, timelineBlend, from.timelinesRotation, i << 1, firstFrame);
+                else if (timeline instanceof AttachmentTimeline) this.applyAttachmentTimeline(timeline, skeleton, applyTime, timelineBlend, attachments);
                 else {
                     // This fixes the WebKit 602 specific issue described at http://esotericsoftware.com/forum/iOS-10-disappearing-graphics-10109
                     Utils.webkit602BugfixHelper(alpha, blend);
-                    if (drawOrder && timeline instanceof DrawOrderTimeline && timelineBlend == MixBlend.setup)
-                        direction = MixDirection.mixIn;
+                    if (drawOrder && timeline instanceof DrawOrderTimeline && timelineBlend == MixBlend.setup) direction = MixDirection.mixIn;
                     timeline.apply(skeleton, animationLast, applyTime, events, alpha, timelineBlend, direction);
                 }
             }
@@ -321,39 +328,50 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         return mix;
     }
 
-    applyAttachmentTimeline (timeline: AttachmentTimeline, skeleton: Skeleton, time: number, blend: MixBlend, attachments: boolean) {
-        var slot = skeleton.slots[timeline.slotIndex];
+    applyAttachmentTimeline(timeline: AttachmentTimeline, skeleton: Skeleton, time: number, blend: MixBlend, attachments: boolean) {
+        const slot = skeleton.slots[timeline.slotIndex];
+
         if (!slot.bone.active) return;
 
-        if (time < timeline.frames[0]) { // Time is before first frame.
-            if (blend == MixBlend.setup || blend == MixBlend.first)
-                this.setAttachment(skeleton, slot, slot.data.attachmentName, attachments);
-        } else
-            this.setAttachment(skeleton, slot, timeline.attachmentNames[Timeline.search1(timeline.frames, time)], attachments);
+        if (time < timeline.frames[0]) {
+            // Time is before first frame.
+            if (blend == MixBlend.setup || blend == MixBlend.first) this.setAttachment(skeleton, slot, slot.data.attachmentName, attachments);
+        } else this.setAttachment(skeleton, slot, timeline.attachmentNames[Timeline.search1(timeline.frames, time)], attachments);
 
         // If an attachment wasn't set (ie before the first frame or attachments is false), set the setup attachment later.
         if (slot.attachmentState <= this.unkeyedState) slot.attachmentState = this.unkeyedState + SETUP;
     }
 
-    setAttachment (skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean) {
+    setAttachment(skeleton: Skeleton, slot: Slot, attachmentName: string, attachments: boolean) {
         slot.setAttachment(!attachmentName ? null : skeleton.getAttachment(slot.data.index, attachmentName));
         if (attachments) slot.attachmentState = this.unkeyedState + CURRENT;
     }
 
-    applyRotateTimeline (timeline: RotateTimeline, skeleton: Skeleton, time: number, alpha: number, blend: MixBlend,
-                         timelinesRotation: Array<number>, i: number, firstFrame: boolean) {
-
+    applyRotateTimeline(
+        timeline: RotateTimeline,
+        skeleton: Skeleton,
+        time: number,
+        alpha: number,
+        blend: MixBlend,
+        timelinesRotation: Array<number>,
+        i: number,
+        firstFrame: boolean
+    ) {
         if (firstFrame) timelinesRotation[i] = 0;
 
         if (alpha == 1) {
             timeline.apply(skeleton, 0, time, null, 1, blend, MixDirection.mixIn);
+
             return;
         }
 
-        let bone = skeleton.bones[timeline.boneIndex];
+        const bone = skeleton.bones[timeline.boneIndex];
+
         if (!bone.active) return;
-        let frames = timeline.frames;
-        let r1 = 0, r2 = 0;
+        const frames = timeline.frames;
+        let r1 = 0;
+        let r2 = 0;
+
         if (time < frames[0]) {
             switch (blend) {
                 case MixBlend.setup:
@@ -370,12 +388,16 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         }
 
         // Mix between rotations using the direction of the shortest route on the first frame while detecting crosses.
-        let total = 0, diff = r2 - r1;
+        let total = 0;
+        let diff = r2 - r1;
+
         diff -= (16384 - ((16384.499999999996 - diff / 360) | 0)) * 360;
         if (diff == 0) {
             total = timelinesRotation[i];
         } else {
-            let lastTotal = 0, lastDiff = 0;
+            let lastTotal = 0;
+            let lastDiff = 0;
+
             if (firstFrame) {
                 lastTotal = 0;
                 lastDiff = diff;
@@ -383,14 +405,16 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                 lastTotal = timelinesRotation[i]; // Angle and direction of mix, including loops.
                 lastDiff = timelinesRotation[i + 1]; // Difference between bones.
             }
-            let current = diff > 0, dir = lastTotal >= 0;
+            const current = diff > 0;
+            let dir = lastTotal >= 0;
             // Detect cross at 0 (not 180).
+
             if (MathUtils.signum(lastDiff) != MathUtils.signum(diff) && Math.abs(lastDiff) <= 90) {
                 // A cross after a 360 rotation is a loop.
                 if (Math.abs(lastTotal) > 180) lastTotal += 360 * MathUtils.signum(lastTotal);
                 dir = current;
             }
-            total = diff + lastTotal - lastTotal % 360; // Store loops as part of lastTotal.
+            total = diff + lastTotal - (lastTotal % 360); // Store loops as part of lastTotal.
             if (dir != current) total += 360 * MathUtils.signum(lastTotal);
             timelinesRotation[i] = total;
         }
@@ -398,16 +422,20 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         bone.rotation = r1 + total * alpha;
     }
 
-    queueEvents (entry: TrackEntry, animationTime: number) {
-        let animationStart = entry.animationStart, animationEnd = entry.animationEnd;
-        let duration = animationEnd - animationStart;
-        let trackLastWrapped = entry.trackLast % duration;
+    queueEvents(entry: TrackEntry, animationTime: number) {
+        const animationStart = entry.animationStart;
+        const animationEnd = entry.animationEnd;
+        const duration = animationEnd - animationStart;
+        const trackLastWrapped = entry.trackLast % duration;
 
         // Queue events before complete.
-        let events = this.events;
-        let i = 0, n = events.length;
+        const events = this.events;
+        let i = 0;
+        const n = events.length;
+
         for (; i < n; i++) {
-            let event = events[i];
+            const event = events[i];
+
             if (event.time < trackLastWrapped) break;
             if (event.time > animationEnd) continue; // Discard events outside animation start/end.
             this.queue.event(entry, event);
@@ -415,15 +443,15 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
 
         // Queue complete if completed a loop iteration or the animation.
         let complete = false;
-        if (entry.loop)
-            complete = duration == 0 || trackLastWrapped > entry.trackTime % duration;
-        else
-            complete = animationTime >= animationEnd && entry.animationLast < animationEnd;
+
+        if (entry.loop) complete = duration == 0 || trackLastWrapped > entry.trackTime % duration;
+        else complete = animationTime >= animationEnd && entry.animationLast < animationEnd;
         if (complete) this.queue.complete(entry);
 
         // Queue events after complete.
         for (; i < n; i++) {
-            let event = events[i];
+            const event = events[i];
+
             if (event.time < animationStart) continue; // Discard events outside animation start/end.
             this.queue.event(entry, event);
         }
@@ -433,11 +461,11 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      *
      * It may be desired to use {@link AnimationState#setEmptyAnimation()} to mix the skeletons back to the setup pose,
      * rather than leaving them in their current pose. */
-    clearTracks () {
-        let oldDrainDisabled = this.queue.drainDisabled;
+    clearTracks() {
+        const oldDrainDisabled = this.queue.drainDisabled;
+
         this.queue.drainDisabled = true;
-        for (let i = 0, n = this.tracks.length; i < n; i++)
-            this.clearTrack(i);
+        for (let i = 0, n = this.tracks.length; i < n; i++) this.clearTrack(i);
         this.tracks.length = 0;
         this.queue.drainDisabled = oldDrainDisabled;
         this.queue.drain();
@@ -447,9 +475,10 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      *
      * It may be desired to use {@link AnimationState#setEmptyAnimation()} to mix the skeletons back to the setup pose,
      * rather than leaving them in their current pose. */
-    clearTrack (trackIndex: number) {
+    clearTrack(trackIndex: number) {
         if (trackIndex >= this.tracks.length) return;
-        let current = this.tracks[trackIndex];
+        const current = this.tracks[trackIndex];
+
         if (!current) return;
 
         this.queue.end(current);
@@ -457,8 +486,10 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         this.clearNext(current);
 
         let entry = current;
+
         while (true) {
-            let from = entry.mixingFrom;
+            const from = entry.mixingFrom;
+
             if (!from) break;
             this.queue.end(from);
             entry.mixingFrom = null;
@@ -471,8 +502,9 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         this.queue.drain();
     }
 
-    setCurrent (index: number, current: TrackEntry, interrupt: boolean) {
-        let from = this.expandToIndex(index);
+    setCurrent(index: number, current: TrackEntry, interrupt: boolean) {
+        const from = this.expandToIndex(index);
+
         this.tracks[index] = current;
         current.previous = null;
 
@@ -483,8 +515,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
             current.mixTime = 0;
 
             // Store the interrupted mix percentage.
-            if (from.mixingFrom && from.mixDuration > 0)
-                current.interruptAlpha *= Math.min(1, from.mixTime / from.mixDuration);
+            if (from.mixingFrom && from.mixDuration > 0) current.interruptAlpha *= Math.min(1, from.mixTime / from.mixDuration);
 
             from.timelinesRotation.length = 0; // Reset rotation for mixing out, in case entry was mixed in.
         }
@@ -495,9 +526,11 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
     /** Sets an animation by name.
      *
      * See {@link #setAnimationWith()}. */
-    setAnimation (trackIndex: number, animationName: string, loop: boolean = false) {
-        let animation = this.data.skeletonData.findAnimation(animationName);
-        if (!animation) throw new Error("Animation not found: " + animationName);
+    setAnimation(trackIndex: number, animationName: string, loop = false) {
+        const animation = this.data.skeletonData.findAnimation(animationName);
+
+        if (!animation) throw new Error(`Animation not found: ${animationName}`);
+
         return this.setAnimationWith(trackIndex, animation, loop);
     }
 
@@ -507,10 +540,11 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      *           duration. In either case {@link TrackEntry#trackEnd} determines when the track is cleared.
      * @returns A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    setAnimationWith (trackIndex: number, animation: Animation, loop: boolean = false) {
-        if (!animation) throw new Error("animation cannot be null.");
+    setAnimationWith(trackIndex: number, animation: Animation, loop = false) {
+        if (!animation) throw new Error('animation cannot be null.');
         let interrupt = true;
         let current = this.expandToIndex(trackIndex);
+
         if (current) {
             if (current.nextTrackLast == -1) {
                 // Don't mix from an entry that was never applied.
@@ -520,21 +554,24 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
                 this.clearNext(current);
                 current = current.mixingFrom;
                 interrupt = false;
-            } else
-                this.clearNext(current);
+            } else this.clearNext(current);
         }
-        let entry = this.trackEntry(trackIndex, animation, loop, current);
+        const entry = this.trackEntry(trackIndex, animation, loop, current);
+
         this.setCurrent(trackIndex, entry, interrupt);
         this.queue.drain();
+
         return entry;
     }
 
     /** Queues an animation by name.
      *
      * See {@link #addAnimationWith()}. */
-    addAnimation (trackIndex: number, animationName: string, loop: boolean = false, delay: number = 0) {
-        let animation = this.data.skeletonData.findAnimation(animationName);
-        if (!animation) throw new Error("Animation not found: " + animationName);
+    addAnimation(trackIndex: number, animationName: string, loop = false, delay = 0) {
+        const animation = this.data.skeletonData.findAnimation(animationName);
+
+        if (!animation) throw new Error(`Animation not found: ${animationName}`);
+
         return this.addAnimationWith(trackIndex, animation, loop, delay);
     }
 
@@ -546,16 +583,16 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      *           previous entry is looping, its next loop completion is used instead of its duration.
      * @returns A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    addAnimationWith (trackIndex: number, animation: Animation, loop: boolean = false, delay: number = 0) {
-        if (!animation) throw new Error("animation cannot be null.");
+    addAnimationWith(trackIndex: number, animation: Animation, loop = false, delay = 0) {
+        if (!animation) throw new Error('animation cannot be null.');
 
         let last = this.expandToIndex(trackIndex);
+
         if (last) {
-            while (last.next)
-                last = last.next;
+            while (last.next) last = last.next;
         }
 
-        let entry = this.trackEntry(trackIndex, animation, loop, last);
+        const entry = this.trackEntry(trackIndex, animation, loop, last);
 
         if (!last) {
             this.setCurrent(trackIndex, entry, true);
@@ -567,6 +604,7 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         }
 
         entry.delay = delay;
+
         return entry;
     }
 
@@ -584,10 +622,12 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      * {@link TrackEntry#setMixDuration()}. Mixing from an empty animation causes the new animation to be applied more and
      * more over the mix duration. Properties keyed in the new animation transition from the value from lower tracks or from the
      * setup pose value if no lower tracks key the property to the value keyed in the new animation. */
-    setEmptyAnimation (trackIndex: number, mixDuration: number = 0) {
-        let entry = this.setAnimationWith(trackIndex, AnimationState.emptyAnimation(), false);
+    setEmptyAnimation(trackIndex: number, mixDuration = 0) {
+        const entry = this.setAnimationWith(trackIndex, AnimationState.emptyAnimation(), false);
+
         entry.mixDuration = mixDuration;
         entry.trackEnd = mixDuration;
+
         return entry;
     }
 
@@ -602,37 +642,43 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
      *           loop completion is used instead of its duration.
      * @return A track entry to allow further customization of animation playback. References to the track entry must not be kept
      *         after the {@link AnimationStateListener#dispose()} event occurs. */
-    addEmptyAnimation (trackIndex: number, mixDuration: number = 0, delay: number = 0) {
-        let entry = this.addAnimationWith(trackIndex, AnimationState.emptyAnimation(), false, delay);
+    addEmptyAnimation(trackIndex: number, mixDuration = 0, delay = 0) {
+        const entry = this.addAnimationWith(trackIndex, AnimationState.emptyAnimation(), false, delay);
+
         if (delay <= 0) entry.delay += entry.mixDuration - mixDuration;
         entry.mixDuration = mixDuration;
         entry.trackEnd = mixDuration;
+
         return entry;
     }
 
     /** Sets an empty animation for every track, discarding any queued animations, and mixes to it over the specified mix
      * duration. */
-    setEmptyAnimations (mixDuration: number = 0) {
-        let oldDrainDisabled = this.queue.drainDisabled;
+    setEmptyAnimations(mixDuration = 0) {
+        const oldDrainDisabled = this.queue.drainDisabled;
+
         this.queue.drainDisabled = true;
         for (let i = 0, n = this.tracks.length; i < n; i++) {
-            let current = this.tracks[i];
+            const current = this.tracks[i];
+
             if (current) this.setEmptyAnimation(current.trackIndex, mixDuration);
         }
         this.queue.drainDisabled = oldDrainDisabled;
         this.queue.drain();
     }
 
-    expandToIndex (index: number) {
+    expandToIndex(index: number) {
         if (index < this.tracks.length) return this.tracks[index];
         Utils.ensureArrayCapacity(this.tracks, index + 1, null);
         this.tracks.length = index + 1;
+
         return null;
     }
 
     /** @param last May be null. */
-    trackEntry (trackIndex: number, animation: Animation, loop: boolean, last: TrackEntry) {
-        let entry = this.trackEntryPool.obtain();
+    trackEntry(trackIndex: number, animation: Animation, loop: boolean, last: TrackEntry) {
+        const entry = this.trackEntryPool.obtain();
+
         entry.reset();
         entry.trackIndex = trackIndex;
         entry.animation = animation;
@@ -660,12 +706,14 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         entry.mixTime = 0;
         entry.mixDuration = !last ? 0 : this.data.getMix(last.animation, animation);
         entry.mixBlend = MixBlend.replace;
+
         return entry;
     }
 
     /** Removes the {@link TrackEntry#getNext() next entry} and all entries after it for the specified entry. */
-    clearNext (entry: TrackEntry) {
+    clearNext(entry: TrackEntry) {
         let next = entry.next;
+
         while (next) {
             this.queue.dispose(next);
             next = next.next;
@@ -673,16 +721,17 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         entry.next = null;
     }
 
-    _animationsChanged () {
+    _animationsChanged() {
         this.animationsChanged = false;
 
         this.propertyIDs.clear();
-        let tracks = this.tracks;
+        const tracks = this.tracks;
+
         for (let i = 0, n = tracks.length; i < n; i++) {
             let entry = tracks[i];
+
             if (!entry) continue;
-            while (entry.mixingFrom)
-                entry = entry.mixingFrom;
+            while (entry.mixingFrom) entry = entry.mixingFrom;
             do {
                 if (!entry.mixingTo || entry.mixBlend != MixBlend.add) this.computeHold(entry);
                 entry = entry.mixingTo;
@@ -690,114 +739,126 @@ export class AnimationState implements IAnimationState<AnimationStateData> {
         }
     }
 
-    computeHold (entry: TrackEntry) {
-        let to = entry.mixingTo;
-        let timelines = entry.animation.timelines;
-        let timelinesCount = entry.animation.timelines.length;
-        let timelineMode = entry.timelineMode;
+    computeHold(entry: TrackEntry) {
+        const to = entry.mixingTo;
+        const timelines = entry.animation.timelines;
+        const timelinesCount = entry.animation.timelines.length;
+        const timelineMode = entry.timelineMode;
+
         timelineMode.length = timelinesCount;
-        let timelineHoldMix = entry.timelineHoldMix;
+        const timelineHoldMix = entry.timelineHoldMix;
+
         timelineHoldMix.length = 0;
-        let propertyIDs = this.propertyIDs;
+        const propertyIDs = this.propertyIDs;
 
         if (to && to.holdPrevious) {
-            for (let i = 0; i < timelinesCount; i++)
-                timelineMode[i] = propertyIDs.addAll(timelines[i].getPropertyIds()) ? HOLD_FIRST : HOLD_SUBSEQUENT;
+            for (let i = 0; i < timelinesCount; i++) timelineMode[i] = propertyIDs.addAll(timelines[i].getPropertyIds()) ? HOLD_FIRST : HOLD_SUBSEQUENT;
+
             return;
         }
 
-        outer:
-            for (let i = 0; i < timelinesCount; i++) {
-                let timeline = timelines[i];
-                let ids = timeline.getPropertyIds();
-                if (!propertyIDs.addAll(ids))
-                    timelineMode[i] = SUBSEQUENT;
-                else if (!to || timeline instanceof AttachmentTimeline || timeline instanceof DrawOrderTimeline
-                    || timeline instanceof EventTimeline || !to.animation.hasTimeline(ids)) {
-                    timelineMode[i] = FIRST;
-                } else {
-                    for (let next = to.mixingTo; next; next = next.mixingTo) {
-                        if (next.animation.hasTimeline(ids)) continue;
-                        if (entry.mixDuration > 0) {
-                            timelineMode[i] = HOLD_MIX;
-                            timelineHoldMix[i] = next;
-                            continue outer;
-                        }
-                        break;
+        // eslint-disable-next-line no-restricted-syntax, no-labels
+        outer: for (let i = 0; i < timelinesCount; i++) {
+            const timeline = timelines[i];
+            const ids = timeline.getPropertyIds();
+
+            if (!propertyIDs.addAll(ids)) timelineMode[i] = SUBSEQUENT;
+            else if (
+                !to ||
+                timeline instanceof AttachmentTimeline ||
+                timeline instanceof DrawOrderTimeline ||
+                timeline instanceof EventTimeline ||
+                !to.animation.hasTimeline(ids)
+            ) {
+                timelineMode[i] = FIRST;
+            } else {
+                for (let next = to.mixingTo; next; next = next.mixingTo) {
+                    if (next.animation.hasTimeline(ids)) continue;
+                    if (entry.mixDuration > 0) {
+                        timelineMode[i] = HOLD_MIX;
+                        timelineHoldMix[i] = next;
+                        // eslint-disable-next-line no-labels
+                        continue outer;
                     }
-                    timelineMode[i] = HOLD_FIRST;
+                    break;
                 }
+                timelineMode[i] = HOLD_FIRST;
             }
+        }
     }
 
     /** Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing. */
-    getCurrent (trackIndex: number) {
+    getCurrent(trackIndex: number) {
         if (trackIndex >= this.tracks.length) return null;
+
         return this.tracks[trackIndex];
     }
 
     /** Adds a listener to receive events for all track entries. */
-    addListener (listener: AnimationStateListener) {
-        if (!listener) throw new Error("listener cannot be null.");
+    addListener(listener: AnimationStateListener) {
+        if (!listener) throw new Error('listener cannot be null.');
         this.listeners.push(listener);
     }
 
     /** Removes the listener added with {@link #addListener()}. */
-    removeListener (listener: AnimationStateListener) {
-        let index = this.listeners.indexOf(listener);
+    removeListener(listener: AnimationStateListener) {
+        const index = this.listeners.indexOf(listener);
+
         if (index >= 0) this.listeners.splice(index, 1);
     }
 
     /** Removes all listeners added with {@link #addListener()}. */
-    clearListeners () {
+    clearListeners() {
         this.listeners.length = 0;
     }
 
     /** Discards all listener notifications that have not yet been delivered. This can be useful to call from an
      * {@link AnimationStateListener} when it is known that further notifications that may have been already queued for delivery
      * are not wanted because new animations are being set. */
-    clearListenerNotifications () {
+    clearListenerNotifications() {
         this.queue.clear();
     }
 
-    //deprecated stuff
+    // deprecated stuff
     onComplete: (trackIndex: number, loopCount: number) => any;
     onEvent: (trackIndex: number, event: Event) => any;
     onStart: (trackIndex: number) => any;
     onEnd: (trackIndex: number) => any;
 
-    private static deprecatedWarning1: boolean = false;
+    private static deprecatedWarning1 = false;
 
     setAnimationByName(trackIndex: number, animationName: string, loop: boolean) {
         if (!AnimationState.deprecatedWarning1) {
             AnimationState.deprecatedWarning1 = true;
-            console.warn("Spine Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.");
+            console.warn('Spine Deprecation Warning: AnimationState.setAnimationByName is deprecated, please use setAnimation from now on.');
         }
         this.setAnimation(trackIndex, animationName, loop);
     }
 
-    private static deprecatedWarning2: boolean = false;
+    private static deprecatedWarning2 = false;
 
     addAnimationByName(trackIndex: number, animationName: string, loop: boolean, delay: number) {
         if (!AnimationState.deprecatedWarning2) {
             AnimationState.deprecatedWarning2 = true;
-            console.warn("Spine Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.");
+            console.warn('Spine Deprecation Warning: AnimationState.addAnimationByName is deprecated, please use addAnimation from now on.');
         }
         this.addAnimation(trackIndex, animationName, loop, delay);
     }
 
-    private static deprecatedWarning3: boolean = false;
+    private static deprecatedWarning3 = false;
 
     hasAnimation(animationName: string): boolean {
-        let animation = this.data.skeletonData.findAnimation(animationName);
+        const animation = this.data.skeletonData.findAnimation(animationName);
+
         return animation !== null;
     }
 
     hasAnimationByName(animationName: string): boolean {
         if (!AnimationState.deprecatedWarning3) {
             AnimationState.deprecatedWarning3 = true;
-            console.warn("Spine Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.");
+            console.warn('Spine Deprecation Warning: AnimationState.hasAnimationByName is deprecated, please use hasAnimation from now on.');
         }
+
         return this.hasAnimation(animationName);
     }
 }
@@ -833,11 +894,11 @@ export class TrackEntry implements ITrackEntry {
     /** The index of the track where this track entry is either current or queued.
      *
      * See {@link AnimationState#getCurrent()}. */
-    trackIndex: number = 0;
+    trackIndex = 0;
 
     /** If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its
      * duration. */
-    loop: boolean = false;
+    loop = false;
 
     /** If true, when mixing from the previous animation to this animation, the previous animation is applied as normal instead
      * of being mixed out.
@@ -850,43 +911,42 @@ export class TrackEntry implements ITrackEntry {
      *
      * Snapping will occur if `holdPrevious` is true and this animation does not key all the same properties as the
      * previous animation. */
-    holdPrevious: boolean = false;
+    holdPrevious = false;
 
-    reverse: boolean = false;
+    reverse = false;
 
     /** When the mix percentage ({@link #mixTime} / {@link #mixDuration}) is less than the
      * `eventThreshold`, event timelines are applied while this animation is being mixed out. Defaults to 0, so event
      * timelines are not applied while this animation is being mixed out. */
-    eventThreshold: number = 0;
+    eventThreshold = 0;
 
     /** When the mix percentage ({@link #mixtime} / {@link #mixDuration}) is less than the
      * `attachmentThreshold`, attachment timelines are applied while this animation is being mixed out. Defaults to
      * 0, so attachment timelines are not applied while this animation is being mixed out. */
-    attachmentThreshold: number = 0;
+    attachmentThreshold = 0;
 
     /** When the mix percentage ({@link #mixTime} / {@link #mixDuration}) is less than the
      * `drawOrderThreshold`, draw order timelines are applied while this animation is being mixed out. Defaults to 0,
      * so draw order timelines are not applied while this animation is being mixed out. */
-    drawOrderThreshold: number = 0;
+    drawOrderThreshold = 0;
 
     /** Seconds when this animation starts, both initially and after looping. Defaults to 0.
      *
      * When changing the `animationStart` time, it often makes sense to set {@link #animationLast} to the same
      * value to prevent timeline keys before the start time from triggering. */
-    animationStart: number = 0;
+    animationStart = 0;
 
     /** Seconds for the last frame of this animation. Non-looping animations won't play past this time. Looping animations will
      * loop back to {@link #animationStart} at this time. Defaults to the animation {@link Animation#duration}. */
-    animationEnd: number = 0;
-
+    animationEnd = 0;
 
     /** The time in seconds this animation was last applied. Some timelines use this for one-time triggers. Eg, when this
      * animation is applied, event timelines will fire all events between the `animationLast` time (exclusive) and
      * `animationTime` (inclusive). Defaults to -1 to ensure triggers on frame 0 happen the first time this animation
      * is applied. */
-    animationLast: number = 0;
+    animationLast = 0;
 
-    nextAnimationLast: number = 0;
+    nextAnimationLast = 0;
 
     /** Seconds to postpone playing the animation. When this track entry is the current track entry, `delay`
      * postpones incrementing the {@link #trackTime}. When this track entry is queued, `delay` is the time from
@@ -894,14 +954,15 @@ export class TrackEntry implements ITrackEntry {
      * track entry {@link TrackEntry#trackTime} >= this track entry's `delay`).
      *
      * {@link #timeScale} affects the delay. */
-    delay: number = 0;
+    delay = 0;
 
     /** Current time in seconds this track entry has been the current track entry. The track time determines
      * {@link #animationTime}. The track time can be set to start the animation at a time other than 0, without affecting
      * looping. */
-    trackTime: number = 0;
+    trackTime = 0;
 
-    trackLast: number = 0; nextTrackLast: number = 0;
+    trackLast = 0;
+    nextTrackLast = 0;
 
     /** The track time in seconds when this animation will be removed from the track. Defaults to the highest possible float
      * value, meaning the animation will be applied until a new animation is set or the track is cleared. If the track end time
@@ -910,7 +971,7 @@ export class TrackEntry implements ITrackEntry {
      *
      * It may be desired to use {@link AnimationState#addEmptyAnimation()} rather than have the animation
      * abruptly cease being applied. */
-    trackEnd: number = 0;
+    trackEnd = 0;
 
     /** Multiplier for the delta time when this track entry is updated, causing time for this animation to pass slower or
      * faster. Defaults to 1.
@@ -923,18 +984,18 @@ export class TrackEntry implements ITrackEntry {
      * the time scale is not 1, the delay may need to be adjusted.
      *
      * See AnimationState {@link AnimationState#timeScale} for affecting all animations. */
-    timeScale: number = 0;
+    timeScale = 0;
 
     /** Values < 1 mix this animation with the skeleton's current pose (usually the pose resulting from lower tracks). Defaults
      * to 1, which overwrites the skeleton's current pose with this animation.
      *
      * Typically track 0 is used to completely pose the skeleton, then alpha is used on higher tracks. It doesn't make sense to
      * use alpha on track 0 if the skeleton pose is from the last frame render. */
-    alpha: number = 0;
+    alpha = 0;
 
     /** Seconds from 0 to the {@link #getMixDuration()} when mixing from the previous animation to this animation. May be
      * slightly more than `mixDuration` when the mix is complete. */
-    mixTime: number = 0;
+    mixTime = 0;
 
     /** Seconds for mixing from the previous animation to this animation. Defaults to the value provided by AnimationStateData
      * {@link AnimationStateData#getMix()} based on the animation before this animation (if any).
@@ -949,7 +1010,9 @@ export class TrackEntry implements ITrackEntry {
      * When using {@link AnimationState#addAnimation()} with a `delay` <= 0, note the
      * {@link #delay} is set using the mix duration from the {@link AnimationStateData}, not a mix duration set
      * afterward. */
-    mixDuration: number = 0; interruptAlpha: number = 0; totalAlpha: number = 0;
+    mixDuration = 0;
+    interruptAlpha = 0;
+    totalAlpha = 0;
 
     /** Controls how properties keyed in the animation are mixed with lower tracks. Defaults to {@link MixBlend#replace}, which
      * replaces the values from the lower tracks with the animation values. {@link MixBlend#add} adds the animation values to
@@ -962,7 +1025,7 @@ export class TrackEntry implements ITrackEntry {
     timelineHoldMix = new Array<TrackEntry>();
     timelinesRotation = new Array<number>();
 
-    reset () {
+    reset() {
         this.next = null;
         this.previous = null;
         this.mixingFrom = null;
@@ -977,16 +1040,19 @@ export class TrackEntry implements ITrackEntry {
     /** Uses {@link #trackTime} to compute the `animationTime`, which is between {@link #animationStart}
      * and {@link #animationEnd}. When the `trackTime` is 0, the `animationTime` is equal to the
      * `animationStart` time. */
-    getAnimationTime () {
+    getAnimationTime() {
         if (this.loop) {
-            let duration = this.animationEnd - this.animationStart;
+            const duration = this.animationEnd - this.animationStart;
+
             if (duration == 0) return this.animationStart;
+
             return (this.trackTime % duration) + this.animationStart;
         }
+
         return Math.min(this.trackTime + this.animationStart, this.animationEnd);
     }
 
-    setAnimationLast (animationLast: number) {
+    setAnimationLast(animationLast: number) {
         this.animationLast = animationLast;
         this.nextAnimationLast = animationLast;
     }
@@ -994,7 +1060,7 @@ export class TrackEntry implements ITrackEntry {
     /** Returns true if at least one loop has been completed.
      *
      * See {@link AnimationStateListener#complete()}. */
-    isComplete () {
+    isComplete() {
         return this.trackTime >= this.animationEnd - this.animationStart;
     }
 
@@ -1005,20 +1071,22 @@ export class TrackEntry implements ITrackEntry {
      * the short way or the long way around. The two rotations likely change over time, so which direction is the short or long
      * way also changes. If the short way was always chosen, bones would flip to the other side when that direction became the
      * long way. TrackEntry chooses the short way the first time it is applied and remembers that direction. */
-    resetRotationDirections () {
+    resetRotationDirections() {
         this.timelinesRotation.length = 0;
     }
 
-    getTrackComplete () {
-        let duration = this.animationEnd - this.animationStart;
+    getTrackComplete() {
+        const duration = this.animationEnd - this.animationStart;
+
         if (duration != 0) {
             if (this.loop) return duration * (1 + ((this.trackTime / duration) | 0)); // Completion of next loop.
             if (this.trackTime < duration) return duration; // Before duration.
         }
+
         return this.trackTime; // Next update.
     }
 
-    //deprecated stuff
+    // deprecated stuff
     onComplete: (trackIndex: number, loopCount: number) => any;
     onEvent: (trackIndex: number, event: Event) => any;
     onStart: (trackIndex: number) => any;
@@ -1030,15 +1098,16 @@ export class TrackEntry implements ITrackEntry {
     get time() {
         if (!TrackEntry.deprecatedWarning1) {
             TrackEntry.deprecatedWarning1 = true;
-            console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+            console.warn('Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.');
         }
+
         return this.trackTime;
     }
 
     set time(value: number) {
         if (!TrackEntry.deprecatedWarning1) {
             TrackEntry.deprecatedWarning1 = true;
-            console.warn("Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.");
+            console.warn('Spine Deprecation Warning: TrackEntry.time is deprecated, please use trackTime from now on.');
         }
         this.trackTime = value;
     }
@@ -1046,15 +1115,16 @@ export class TrackEntry implements ITrackEntry {
     get endTime() {
         if (!TrackEntry.deprecatedWarning2) {
             TrackEntry.deprecatedWarning2 = true;
-            console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+            console.warn('Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.');
         }
+
         return this.trackTime;
     }
 
     set endTime(value: number) {
         if (!TrackEntry.deprecatedWarning2) {
             TrackEntry.deprecatedWarning2 = true;
-            console.warn("Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.");
+            console.warn('Spine Deprecation Warning: TrackEntry.endTime is deprecated, please use trackEnd from now on.');
         }
         this.trackTime = value;
     }
@@ -1072,85 +1142,81 @@ export class EventQueue {
     drainDisabled = false;
     animState: AnimationState = null;
 
-    constructor (animState: AnimationState) {
+    constructor(animState: AnimationState) {
         this.animState = animState;
     }
 
-    start (entry: TrackEntry) {
+    start(entry: TrackEntry) {
         this.objects.push(EventType.start);
         this.objects.push(entry);
         this.animState.animationsChanged = true;
     }
 
-    interrupt (entry: TrackEntry) {
+    interrupt(entry: TrackEntry) {
         this.objects.push(EventType.interrupt);
         this.objects.push(entry);
     }
 
-    end (entry: TrackEntry) {
+    end(entry: TrackEntry) {
         this.objects.push(EventType.end);
         this.objects.push(entry);
         this.animState.animationsChanged = true;
     }
 
-    dispose (entry: TrackEntry) {
+    dispose(entry: TrackEntry) {
         this.objects.push(EventType.dispose);
         this.objects.push(entry);
     }
 
-    complete (entry: TrackEntry) {
+    complete(entry: TrackEntry) {
         this.objects.push(EventType.complete);
         this.objects.push(entry);
     }
 
-    event (entry: TrackEntry, event: Event) {
+    event(entry: TrackEntry, event: Event) {
         this.objects.push(EventType.event);
         this.objects.push(entry);
         this.objects.push(event);
     }
 
-    drain () {
+    drain() {
         if (this.drainDisabled) return;
         this.drainDisabled = true;
 
-        let objects = this.objects;
-        let listeners = this.animState.listeners;
+        const objects = this.objects;
+        const listeners = this.animState.listeners;
 
         for (let i = 0; i < objects.length; i += 2) {
-            let type = objects[i] as EventType;
-            let entry = objects[i + 1] as TrackEntry;
+            const type = objects[i] as EventType;
+            const entry = objects[i + 1] as TrackEntry;
+
             switch (type) {
                 case EventType.start:
                     if (entry.listener && entry.listener.start) entry.listener.start(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].start) listeners[ii].start(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].start) listeners[ii].start(entry);
                     break;
                 case EventType.interrupt:
                     if (entry.listener && entry.listener.interrupt) entry.listener.interrupt(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].interrupt) listeners[ii].interrupt(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].interrupt) listeners[ii].interrupt(entry);
                     break;
                 case EventType.end:
                     if (entry.listener && entry.listener.end) entry.listener.end(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].end) listeners[ii].end(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].end) listeners[ii].end(entry);
                 // Fall through.
                 case EventType.dispose:
                     if (entry.listener && entry.listener.dispose) entry.listener.dispose(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].dispose) listeners[ii].dispose(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].dispose) listeners[ii].dispose(entry);
                     this.animState.trackEntryPool.free(entry);
                     break;
                 case EventType.complete:
                     if (entry.listener && entry.listener.complete) entry.listener.complete(entry);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].complete) listeners[ii].complete(entry);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].complete) listeners[ii].complete(entry);
                     break;
                 case EventType.event:
-                    let event = objects[i++ + 2] as Event;
+                    const event = objects[i++ + 2] as Event;
+
                     if (entry.listener && entry.listener.event) entry.listener.event(entry, event);
-                    for (let ii = 0; ii < listeners.length; ii++)
-                        if (listeners[ii].event) listeners[ii].event(entry, event);
+                    for (let ii = 0; ii < listeners.length; ii++) if (listeners[ii].event) listeners[ii].event(entry, event);
                     break;
             }
         }
@@ -1159,7 +1225,7 @@ export class EventQueue {
         this.drainDisabled = false;
     }
 
-    clear () {
+    clear() {
         this.objects.length = 0;
     }
 }
@@ -1168,7 +1234,12 @@ export class EventQueue {
  * @public
  */
 export enum EventType {
-    start, interrupt, end, dispose, complete, event
+    start,
+    interrupt,
+    end,
+    dispose,
+    complete,
+    event,
 }
 
 /** The interface to implement for receiving TrackEntry events. It is always safe to call AnimationState methods when receiving
@@ -1204,23 +1275,17 @@ export interface AnimationStateListener extends IAnimationStateListener {
  * @public
  */
 export abstract class AnimationStateAdapter implements AnimationStateListener {
-    start (entry: TrackEntry) {
-    }
+    start(entry: TrackEntry) {}
 
-    interrupt (entry: TrackEntry) {
-    }
+    interrupt(entry: TrackEntry) {}
 
-    end (entry: TrackEntry) {
-    }
+    end(entry: TrackEntry) {}
 
-    dispose (entry: TrackEntry) {
-    }
+    dispose(entry: TrackEntry) {}
 
-    complete (entry: TrackEntry) {
-    }
+    complete(entry: TrackEntry) {}
 
-    event (entry: TrackEntry, event: Event) {
-    }
+    event(entry: TrackEntry, event: Event) {}
 }
 
 /** 1. A previously applied timeline has set this property.

@@ -28,21 +28,20 @@ steps to reproduce, etc. "X isn't working!!!1!" will probably just be closed.
 
 ## Making Changes
 
-To build the library you will need to download node.js from [nodejs.org][20]. After it has been installed open a
-console and run `npm install -g yarn` to install the global `yarn` executable.
+To build the library you will need to download node.js from [nodejs.org][20].
+
+This monorepo uses Lerna and NX in the background.
 
 After that you can clone the repository and run `npm install` inside the cloned folder. This will install
-dependencies necessary for building the project. You can rebuild the project by running `yarn build` in the cloned
+dependencies necessary for building the project. You can rebuild the project by running `npm build` in the cloned
 folder.
+
+Please, before sending your commit make sure that `npm run lint` returns no errors nor warnings. You can use `npm run lint:fix` to automagically fix most issues but you still might need to fix them manually.
 
 Once that is ready, you can make your changes and submit a Pull Request:
 
 - **Send Pull Requests to the `master` branch.** All Pull Requests must be sent to the `master` branch, which is where
 all "bleeding-edge" development takes place.
-
-- **Never commit new builds.** When making a code change you should always run `yarn build` which will rebuild the project
-so you can test, *however* please do not commit the new builds placed in `dist/` or your PR will be closed. By default
-the build process will output to an ignored folder (`build/`) you should be fine.
 
 - **Only commit relevant changes.** Don't include changes that are not directly relevant to the fix you are making.
 The more focused a PR is, the faster it will get attention and be merged. Extra files changing only whitespace or

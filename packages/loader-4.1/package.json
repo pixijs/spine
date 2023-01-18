@@ -2,24 +2,35 @@
   "name": "@pixi-spine/loader-4.1",
   "version": "3.1.2",
   "description": "Pixi loader middleware for spine 4.1 models",
-  "main": "lib/loader-4.1.js",
-  "module": "lib/loader-4.1.es.js",
-  "bundle": "dist/loader-4.1.js",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "./index.d.ts",
-  "namespace": "PIXI.spine",
-  "peerDependencies": {
-    "@pixi/core": "^6.1.0",
-    "@pixi/display": "^6.1.0",
-    "@pixi/loaders": "^6.1.0"
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./index.d.ts"
+    }
   },
-  "dependencies": {
-    "@pixi-spine/base": "~3.1.2",
-    "@pixi-spine/loader-base": "~3.1.2",
-    "@pixi-spine/runtime-4.1": "~3.1.2"
+  "extensionConfig": {
+    "namespace": "PIXI.spine",
+    "bundle": "dist/loader-4.1.js",
+    "bundleModule": "dist/loader-4.1.mjs",
+    "globals": {
+      "@pixi-spine/runtime-4.1": "PIXI.spine41",
+      "@pixi-spine/loader-base": "PIXI.spine"
+    }
+  },
+  "peerDependencies": {
+    "@pixi-spine/loader-base": "*",
+    "@pixi-spine/runtime-4.1": "*"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.js --silent",
-    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node scripts/injectGlobalMixins"
+    "build": "run-p build:*",
+    "build:rollup": "rollup -c rollup.config.mjs --silent",
+    "build:types": "rimraf compile && tsc -p tsconfig-api.json && api-extractor run && node ../../scripts/injectGlobalMixins",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -41,14 +52,6 @@
   },
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/eslint-config": "~1.0.0",
-    "@pixi-spine/rollup-config": "~1.0.0",
-    "chai": "~4.2.0",
-    "eslint": "~7.13.0",
-    "prepend": "=1.0.2",
-    "rimraf": "3.0.2",
-    "rollup": "^2.53.3",
-    "tslib": "~2.2.0",
-    "typescript": "~4.3.0"
+    "@pixi-spine/rollup-config": "*"
   }
 }
