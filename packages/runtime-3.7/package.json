@@ -21,7 +21,7 @@
     }
   },
   "peerDependencies": {
-    "@pixi-spine/base": "*",
+    "@pixi-spine/base": "^4.0.0",
     "@pixi/constants": "^7.0.0",
     "@pixi/math": "^7.0.0"
   },

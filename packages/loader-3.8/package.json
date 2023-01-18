@@ -22,8 +22,8 @@
     }
   },
   "peerDependencies": {
-    "@pixi-spine/loader-base": "*",
-    "@pixi-spine/runtime-3.8": "*"
+    "@pixi-spine/loader-base": "^4.0.0",
+    "@pixi-spine/runtime-3.8": "^4.0.0"
   },
   "scripts": {
     "build": "run-p build:*",

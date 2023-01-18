@@ -24,11 +24,11 @@
     }
   },
   "peerDependencies": {
-    "@pixi-spine/base": "*",
-    "@pixi-spine/loader-base": "*",
-    "@pixi-spine/runtime-3.7": "*",
-    "@pixi-spine/runtime-3.8": "*",
-    "@pixi-spine/runtime-4.1": "*",
+    "@pixi-spine/base": "^4.0.0",
+    "@pixi-spine/loader-base": "^4.0.0",
+    "@pixi-spine/runtime-3.7": "^4.0.0",
+    "@pixi-spine/runtime-3.8": "^4.0.0",
+    "@pixi-spine/runtime-4.1": "^4.0.0",
     "@pixi/assets": " ^7.0.0",
     "@pixi/constants": "^7.0.0",
     "@pixi/core": "^7.0.0",
