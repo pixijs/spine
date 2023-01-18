@@ -1,7 +1,7 @@
 import { ConstraintData } from './Constraint';
 import type { SlotData } from './SlotData';
 import type { BoneData } from './BoneData';
-import type { RotateMode, PositionMode } from '@pixi/spine-base';
+import type { RotateMode, PositionMode } from '@pixi-spine/base';
 
 /**
  * @public

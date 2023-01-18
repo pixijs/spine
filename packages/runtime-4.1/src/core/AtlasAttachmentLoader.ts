@@ -1,5 +1,5 @@
 import { AttachmentLoader, RegionAttachment, MeshAttachment, BoundingBoxAttachment, PathAttachment, PointAttachment, ClippingAttachment, Sequence } from './attachments';
-import type { TextureAtlas } from '@pixi/spine-base';
+import type { TextureAtlas } from '@pixi-spine/base';
 import type { Skin } from './Skin';
 
 /**

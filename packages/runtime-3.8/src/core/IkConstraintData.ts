@@ -1,6 +1,6 @@
 import { ConstraintData } from './Constraint';
 import type { BoneData } from './BoneData';
-import type { IIkConstraintData } from '@pixi/spine-base';
+import type { IIkConstraintData } from '@pixi-spine/base';
 
 /**
  * @public

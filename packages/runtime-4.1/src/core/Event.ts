@@ -1,5 +1,5 @@
 import type { EventData } from './EventData';
-import type { IEvent } from '@pixi/spine-base';
+import type { IEvent } from '@pixi-spine/base';
 
 /** Stores the current pose values for an {@link Event}.
  *

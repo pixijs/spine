@@ -1,7 +1,7 @@
 import type { Event } from './Event';
 import type { Skeleton } from './Skeleton';
 import { Attachment, VertexAttachment } from './attachments';
-import { NumberArrayLike, IAnimation, ITimeline, MathUtils, MixBlend, StringSet, Utils, MixDirection } from '@pixi/spine-base';
+import { NumberArrayLike, IAnimation, ITimeline, MathUtils, MixBlend, StringSet, Utils, MixDirection } from '@pixi-spine/base';
 import type { Slot } from './Slot';
 import type { IkConstraint } from './IkConstraint';
 import type { TransformConstraint } from './TransformConstraint';

@@ -2,7 +2,7 @@ import type { Updatable } from './Updatable';
 import type { IkConstraintData } from './IkConstraintData';
 import type { Bone } from './Bone';
 import type { Skeleton } from './Skeleton';
-import { IIkConstraint, MathUtils, TransformMode } from '@pixi/spine-base';
+import { IIkConstraint, MathUtils, TransformMode } from '@pixi-spine/base';
 
 /**
  * @public

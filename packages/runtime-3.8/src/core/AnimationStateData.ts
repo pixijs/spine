@@ -1,5 +1,5 @@
 import type { SkeletonData } from './SkeletonData';
-import type { IAnimation, IAnimationStateData, Map } from '@pixi/spine-base';
+import type { IAnimation, IAnimationStateData, Map } from '@pixi-spine/base';
 import type { Animation } from './Animation';
 
 /**

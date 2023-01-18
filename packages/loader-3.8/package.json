@@ -1,6 +1,6 @@
 {
-  "name": "@pixi/spine-loader-3.8",
-  "version": "3.1.2",
+  "name": "@pixi-spine/loader-3.8",
+  "version": "4.0.0",
   "description": "Pixi loader middleware for spine 3.8 models",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -17,13 +17,13 @@
     "bundle": "dist/loader-3.8.js",
     "bundleModule": "dist/loader-3.8.mjs",
     "globals": {
-      "@pixi/spine-runtime-3.8": "PIXI.spine38",
-      "@pixi/spine-loader-base": "PIXI.spine"
+      "@pixi-spine/runtime-3.8": "PIXI.spine38",
+      "@pixi-spine/loader-base": "PIXI.spine"
     }
   },
   "peerDependencies": {
-    "@pixi/spine-loader-base": "*",
-    "@pixi/spine-runtime-3.8": "*"
+    "@pixi-spine/loader-base": "*",
+    "@pixi-spine/runtime-3.8": "*"
   },
   "scripts": {
     "build": "run-p build:*",

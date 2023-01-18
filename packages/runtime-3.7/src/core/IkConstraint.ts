@@ -2,7 +2,7 @@ import type { Constraint } from './Constraint';
 import type { IkConstraintData } from './IkConstraintData';
 import type { Bone } from './Bone';
 import type { Skeleton } from './Skeleton';
-import { MathUtils } from '@pixi/spine-base';
+import { MathUtils } from '@pixi-spine/base';
 
 /**
  * @public

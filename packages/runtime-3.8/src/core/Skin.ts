@@ -3,7 +3,7 @@ import type { BoneData } from './BoneData';
 import type { ConstraintData } from './Constraint';
 import type { Skeleton } from './Skeleton';
 
-import type { Map, ISkin } from '@pixi/spine-base';
+import type { Map, ISkin } from '@pixi-spine/base';
 
 /**
  * @public

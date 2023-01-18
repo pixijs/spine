@@ -4,7 +4,7 @@ import { PathConstraintData, SpacingMode } from './PathConstraintData';
 import type { Bone } from './Bone';
 import type { Slot } from './Slot';
 import type { Skeleton } from './Skeleton';
-import { MathUtils, PositionMode, RotateMode, Utils } from '@pixi/spine-base';
+import { MathUtils, PositionMode, RotateMode, Utils } from '@pixi-spine/base';
 
 /**
  * @public

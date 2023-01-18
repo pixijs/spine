@@ -1,4 +1,4 @@
-import type { IAttachment, ArrayLike, AttachmentType } from '@pixi/spine-base';
+import type { IAttachment, ArrayLike, AttachmentType } from '@pixi-spine/base';
 
 import type { Slot } from '../Slot';
 

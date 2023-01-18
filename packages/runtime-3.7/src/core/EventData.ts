@@ -1,4 +1,4 @@
-import type { IEventData } from '@pixi/spine-base';
+import type { IEventData } from '@pixi-spine/base';
 
 /**
  * @public

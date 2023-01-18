@@ -110,7 +110,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Fix \"Cannot redefine property: Spine\" error by removing re-export from main pixi-spine bundle. Improved interfaces should work for people who use it a bit, everyone else should either import `@pixi/spine-runtime-3.8`, OR swap `pixi-spine` to `@pixi/spine-all-3.8` bundle (that's easier)."
+            "comment": "Fix \"Cannot redefine property: Spine\" error by removing re-export from main pixi-spine bundle. Improved interfaces should work for people who use it a bit, everyone else should either import `@pixi-spine/runtime-3.8`, OR swap `pixi-spine` to `@pixi-spine/all-3.8` bundle (that's easier)."
           }
         ]
       }

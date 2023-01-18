@@ -2,7 +2,7 @@ import { Matrix } from '@pixi/math';
 import type { Updatable } from './Updatable';
 import type { BoneData } from './BoneData';
 import type { Skeleton } from './Skeleton';
-import { IBone, MathUtils, settings, TransformMode, Vector2 } from '@pixi/spine-base';
+import { IBone, MathUtils, settings, TransformMode, Vector2 } from '@pixi-spine/base';
 
 /**
  * @public

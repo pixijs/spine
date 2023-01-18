@@ -1,6 +1,6 @@
 {
-  "name": "@pixi/spine",
-  "version": "3.1.2",
+  "name": "pixi-spine",
+  "version": "4.0.0",
   "description": "Pixi integration with EsotericSoftware Spine, big, contains all runtimes",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
@@ -17,23 +17,23 @@
     "bundle": "dist/pixi-spine.js",
     "bundleModule": "dist/pixi-spine.mjs",
     "globals": {
-      "@pixi/spine-base": "PIXI.spine",
-      "@pixi/spine-runtime-3.7": "PIXI.spine37",
-      "@pixi/spine-runtime-3.8": "PIXI.spine38",
-      "@pixi/spine-runtime-4.0": "PIXI.spine40",
-      "@pixi/spine-runtime-4.1": "PIXI.spine41",
-      "@pixi/spine-loader-base": "PIXI.spine",
-      "@pixi/spine-loader-uni": "PIXI.spine"
+      "@pixi-spine/base": "PIXI.spine",
+      "@pixi-spine/runtime-3.7": "PIXI.spine37",
+      "@pixi-spine/runtime-3.8": "PIXI.spine38",
+      "@pixi-spine/runtime-4.0": "PIXI.spine40",
+      "@pixi-spine/runtime-4.1": "PIXI.spine41",
+      "@pixi-spine/loader-base": "PIXI.spine",
+      "@pixi-spine/loader-uni": "PIXI.spine"
     }
   },
   "dependencies": {
-    "@pixi/spine-base": "*",
-    "@pixi/spine-loader-base": "*",
-    "@pixi/spine-loader-uni": "*",
-    "@pixi/spine-runtime-3.7": "*",
-    "@pixi/spine-runtime-3.8": "*",
-    "@pixi/spine-runtime-4.0": "*",
-    "@pixi/spine-runtime-4.1": "*"
+    "@pixi-spine/base": "^4.0.0",
+    "@pixi-spine/loader-base": "^4.0.0",
+    "@pixi-spine/loader-uni": "^4.0.0",
+    "@pixi-spine/runtime-3.7": "^4.0.0",
+    "@pixi-spine/runtime-3.8": "^4.0.0",
+    "@pixi-spine/runtime-4.0": "^4.0.0",
+    "@pixi-spine/runtime-4.1": "^4.0.0"
   },
   "peerDependencies": {
     "@pixi/constants": "^7.0.0",

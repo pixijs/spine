@@ -1,7 +1,7 @@
-import { IAnimationState, IAnimationStateData, ISkeleton, ISkeletonData, SpineBase } from '@pixi/spine-base';
-import * as spine38 from '@pixi/spine-runtime-3.8';
-import * as spine37 from '@pixi/spine-runtime-3.7';
-import * as spine41 from '@pixi/spine-runtime-4.1';
+import { IAnimationState, IAnimationStateData, ISkeleton, ISkeletonData, SpineBase } from '@pixi-spine/base';
+import * as spine38 from '@pixi-spine/runtime-3.8';
+import * as spine37 from '@pixi-spine/runtime-3.7';
+import * as spine41 from '@pixi-spine/runtime-4.1';
 import { detectSpineVersion, SPINE_VERSION } from './versions';
 
 /**

@@ -1,5 +1,5 @@
 import type { Skeleton } from './Skeleton';
-import type { Color, Vector2 } from '@pixi/spine-base';
+import type { Color, Vector2 } from '@pixi-spine/base';
 
 /**
  * @public

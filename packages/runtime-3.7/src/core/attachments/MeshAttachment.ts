@@ -1,5 +1,5 @@
 import { VertexAttachment } from './Attachment';
-import { AttachmentType, Color, IMeshAttachment, TextureRegion } from '@pixi/spine-base';
+import { AttachmentType, Color, IMeshAttachment, TextureRegion } from '@pixi-spine/base';
 
 /**
  * @public
