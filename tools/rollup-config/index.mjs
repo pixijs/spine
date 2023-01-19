@@ -23,12 +23,7 @@ export default (extensionConfig, pkg) => {
         ` */`,
     ].join('\n');
 
-    // External dependencies, not bundled
-    const externalBrowser = [].concat(Object.keys(pkg.peerDependencies || {}));
-
-    const externalNpm = [].concat(Object.keys(pkg.peerDependencies || {})).concat(Object.keys(pkg.dependencies || {}));
-
-    const builtInPackages = [
+    const pixiPackages = [
         'accessibility',
         'app',
         'assets',
@@ -70,7 +65,18 @@ export default (extensionConfig, pkg) => {
         'text',
         'ticker',
         'unsafe-eval',
-    ].reduce((acc, name) => ({ ...acc, [`@pixi/${name}`]: 'PIXI' }), {});
+    ];
+    // Create the PIXI.* namespace for the browser bundle
+    const builtInPackages = pixiPackages.reduce((acc, name) => ({ ...acc, [`@pixi/${name}`]: 'PIXI' }), {});
+
+    // Create the @pixi/* array so we NEVER EVER bundle anything that belongs to pixi
+    const externalPixi = pixiPackages.map((name) => `@pixi/${name}`);
+
+    // External dependencies, not bundled
+    const externalBrowser = externalPixi.concat(Object.keys(pkg.peerDependencies || {}));
+
+    const externalNpm = externalPixi.concat(Object.keys(pkg.peerDependencies || {})).concat(Object.keys(pkg.dependencies || {}));
+
 
     // Plugins for module and browser output
     const plugins = [
