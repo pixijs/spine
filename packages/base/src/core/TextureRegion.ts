@@ -1,5 +1,4 @@
-import type { Texture } from '@pixi/core';
-import type { Rectangle } from '@pixi/math';
+import type { Texture, Rectangle } from '@pixi/core';
 
 /**
  * @public

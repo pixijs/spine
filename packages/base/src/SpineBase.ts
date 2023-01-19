@@ -3,15 +3,11 @@ import { TextureRegion } from './core/TextureRegion';
 import { MathUtils } from './core/Utils';
 import type { IAnimationState, IAnimationStateData } from './core/IAnimation';
 import type { IAttachment, IClippingAttachment, IMeshAttachment, IRegionAttachment, ISkeleton, ISkeletonData, ISlot, IVertexAttachment } from './core/ISkeleton';
-
-import { DRAW_MODES } from '@pixi/constants';
+import { DRAW_MODES, Rectangle, Polygon, Transform, Texture, utils } from '@pixi/core';
 import { Container, DisplayObject } from '@pixi/display';
 import { Sprite } from '@pixi/sprite';
 import { SimpleMesh } from '@pixi/mesh-extras';
 import { Graphics } from '@pixi/graphics';
-import { Rectangle, Polygon, Transform } from '@pixi/math';
-import { hex2rgb, rgb2hex } from '@pixi/utils';
-import type { Texture } from '@pixi/core';
 import { settings } from './settings';
 import type { ISpineDebugRenderer } from './SpineDebugRenderer';
 
@@ -204,11 +200,11 @@ export abstract class SpineBase<
      * @default 0xFFFFFF
      */
     get tint(): number {
-        return rgb2hex(this.tintRgb as any);
+        return utils.rgb2hex(this.tintRgb as any);
     }
 
     set tint(value: number) {
-        this.tintRgb = hex2rgb(value, this.tintRgb as any);
+        this.tintRgb = utils.hex2rgb(value, this.tintRgb as any);
     }
 
     /**
@@ -329,7 +325,7 @@ export abstract class SpineBase<
                         tempRgb[0] = light[0] * slot.color.r * attColor.r;
                         tempRgb[1] = light[1] * slot.color.g * attColor.g;
                         tempRgb[2] = light[2] * slot.color.b * attColor.b;
-                        slot.currentSprite.tint = rgb2hex(tempRgb);
+                        slot.currentSprite.tint = utils.rgb2hex(tempRgb);
                     }
                     slot.currentSprite.blendMode = slot.blendMode;
                     break;
@@ -387,7 +383,7 @@ export abstract class SpineBase<
                         tempRgb[0] = light[0] * slot.color.r * attColor.r;
                         tempRgb[1] = light[1] * slot.color.g * attColor.g;
                         tempRgb[2] = light[2] * slot.color.b * attColor.b;
-                        slot.currentMesh.tint = rgb2hex(tempRgb);
+                        slot.currentMesh.tint = utils.rgb2hex(tempRgb);
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                     if (!slot.hackRegion) {

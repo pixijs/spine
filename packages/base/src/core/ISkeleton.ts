@@ -3,9 +3,7 @@ import type { IAnimation, IEventData } from './IAnimation';
 import type { IIkConstraintData, IPathConstraintData, ITransformConstraintData } from './IConstraint';
 import type { Color, Vector2, Map } from './Utils';
 import type { TextureRegion } from './TextureRegion';
-
-import type { Matrix } from '@pixi/math';
-import type { BLEND_MODES } from '@pixi/constants';
+import type { BLEND_MODES, Matrix } from '@pixi/core';
 
 // This enum was moved from BoneData.ts of spine 3.7, 3.8 and 4.0
 

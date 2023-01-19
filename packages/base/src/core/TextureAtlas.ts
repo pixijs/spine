@@ -1,9 +1,6 @@
-import { SCALE_MODES, MIPMAP_MODES, ALPHA_MODES } from '@pixi/constants';
-import { Texture } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
+import { Texture, SCALE_MODES, MIPMAP_MODES, ALPHA_MODES, Rectangle } from '@pixi/core';
 import { TextureRegion, TextureWrap, TextureFilter, filterFromString } from './TextureRegion';
 import type { Map, Disposable } from './Utils';
-
 import type { BaseTexture } from '@pixi/core';
 
 class RegionFields {

@@ -1,4 +1,4 @@
-import { Matrix } from '@pixi/math';
+import { Matrix } from '@pixi/core';
 import type { Updatable } from './Updatable';
 import type { BoneData } from './BoneData';
 import type { Skeleton } from './Skeleton';

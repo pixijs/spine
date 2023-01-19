@@ -29,7 +29,7 @@ import {
     TwoColorTimeline,
 } from './Animation';
 import { AttachmentType, BinaryInput, Color, PositionMode, RotateMode, TransformMode, Utils } from '@pixi-spine/base';
-import { BLEND_MODES } from '@pixi/constants';
+import { BLEND_MODES } from '@pixi/core';
 
 /**
  * @public

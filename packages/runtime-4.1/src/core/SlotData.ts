@@ -1,7 +1,7 @@
 import { Color } from '@pixi-spine/base';
 
 import type { ISlotData } from '@pixi-spine/base';
-import { BLEND_MODES } from '@pixi/constants';
+import { BLEND_MODES } from '@pixi/core';
 import type { BoneData } from './BoneData';
 
 /** Stores the setup pose for a {@link Slot}.

@@ -40,7 +40,7 @@ import { PathConstraintData, SpacingMode } from './PathConstraintData';
 import { Skin } from './Skin';
 import { EventData } from './EventData';
 import { NumberArrayLike, Color, PositionMode, RotateMode, TransformMode, Utils, settings } from '@pixi-spine/base';
-import { BLEND_MODES } from '@pixi/constants';
+import { BLEND_MODES } from '@pixi/core';
 
 /** Loads skeleton data in the Spine JSON format.
  *
