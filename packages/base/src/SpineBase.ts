@@ -18,7 +18,7 @@ import {DRAW_MODES} from '@pixi/constants';
 import {Container, DisplayObject} from '@pixi/display';
 import {Sprite} from '@pixi/sprite';
 import {SimpleMesh} from '@pixi/mesh-extras';
-import {Graphics} from '@pixi/graphics'
+import {Graphics} from '@pixi/graphics';
 import {Rectangle, Polygon, Transform} from '@pixi/math';
 import {hex2rgb, rgb2hex} from '@pixi/utils';
 import type {Texture} from '@pixi/core';
@@ -33,15 +33,16 @@ let tempRgb = [0, 0, 0];
 export interface ISpineDisplayObject extends DisplayObject {
     region?: TextureRegion;
     attachment?: IAttachment;
+    spineAnimation?: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData>;
 }
 
-/**
- * @public
- */
-export class SpineSprite extends Sprite implements ISpineDisplayObject {
+
+export class SpineSprite extends Sprite {
     region?: TextureRegion = null;
     attachment?: IAttachment = null;
+    spineAnimation?: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData> = null;
 }
+
 
 /**
  * @public
@@ -49,10 +50,15 @@ export class SpineSprite extends Sprite implements ISpineDisplayObject {
 export class SpineMesh extends SimpleMesh implements ISpineDisplayObject {
     region?: TextureRegion = null;
     attachment?: IAttachment = null;
+    spineAnimation?: SpineBase<ISkeleton, ISkeletonData, IAnimationState, IAnimationStateData> = null;
+}
 
-    constructor(texture: Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
-        super(texture, vertices, uvs, indices, drawMode);
-    }
+export interface SpineSpriteConstructor {
+    new (texture?: Texture): SpineSprite;
+}
+
+export interface SpineMeshConstructor {
+    new (texture: Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number): SpineMesh;
 }
 
 /**
@@ -98,10 +104,12 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         this._debug = value;
     }
 
+    private SpriteCtor: SpineSpriteConstructor;
+    private MeshCtor: SpineMeshConstructor;
 
     abstract createSkeleton(spineData: ISkeletonData);
 
-    constructor(spineData: SkeletonData) {
+    constructor(spineData: SkeletonData, SpriteCtor?: SpineSpriteConstructor, MeshCtor?: SpineMeshConstructor) {
         super();
 
         if (!spineData) {
@@ -111,6 +119,9 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         if ((typeof spineData) === "string") {
             throw new Error('spineData param cant be string. Please use spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
         }
+
+        this.SpriteCtor = SpriteCtor || SpineSprite;
+        this.MeshCtor = MeshCtor || SpineMesh;
 
         /**
          * The spineData object
@@ -562,6 +573,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
         let texture = region ? region.texture : null;
         let sprite = this.newSprite(texture);
 
+        sprite.spineAnimation = this;
+
         sprite.anchor.set(0.5);
         if (region) {
             this.setSpriteRegion(attachment, sprite, attachment.region);
@@ -591,6 +604,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             attachment.regionUVs,
             new Uint16Array(attachment.triangles),
             DRAW_MODES.TRIANGLES);
+
+        strip.spineAnimation = this;
 
         if (typeof (strip as any)._canvasPadding !== "undefined") {
             (strip as any)._canvasPadding = 1.5;
@@ -741,7 +756,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     }
 
     newSprite(tex: Texture) {
-        return new SpineSprite(tex);
+        return new this.SpriteCtor(tex);
     }
 
     newGraphics() {
@@ -749,7 +764,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
     }
 
     newMesh(texture: Texture, vertices?: Float32Array, uvs?: Float32Array, indices?: Uint16Array, drawMode?: number) {
-        return new SpineMesh(texture, vertices, uvs, indices, drawMode);
+        return new this.MeshCtor(texture, vertices, uvs, indices, drawMode);
     }
 
     transformHack() {
