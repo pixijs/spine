@@ -109,7 +109,7 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
 
     abstract createSkeleton(spineData: ISkeletonData);
 
-    constructor(spineData: SkeletonData, SpriteCtor?: SpineSpriteConstructor, MeshCtor?: SpineMeshConstructor) {
+    constructor(spineData: SkeletonData, ctors?: { SpriteCtor?: SpineSpriteConstructor, MeshCtor?: SpineMeshConstructor }) {
         super();
 
         if (!spineData) {
@@ -120,8 +120,8 @@ export abstract class SpineBase<Skeleton extends ISkeleton,
             throw new Error('spineData param cant be string. Please use spine.Spine.fromAtlas("YOUR_RESOURCE_NAME") from now on.');
         }
 
-        this.SpriteCtor = SpriteCtor || SpineSprite;
-        this.MeshCtor = MeshCtor || SpineMesh;
+        this.SpriteCtor = ctors?.SpriteCtor || SpineSprite;
+        this.MeshCtor = ctors?.MeshCtor || SpineMesh;
 
         /**
          * The spineData object
