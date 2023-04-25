@@ -96,9 +96,10 @@ const spineTextureAtlasLoader: AssetExtension<RawAtlas | TextureAtlas, ISpineMet
  * @public
  */
 export const makeSpineTextureAtlasLoaderFunctionFromPixiLoaderObject = (loader: Loader, atlasBasePath: string, imageMetadata: any) => {
+    const isAbsolute = atlasBasePath.startsWith("/");
     return async (pageName: string, textureLoadedCallback: (tex: BaseTexture) => any): Promise<void> => {
-        const url = utils.path.join(...atlasBasePath.split(utils.path.sep), pageName);
-
+        let url = utils.path.join(...atlasBasePath.split(utils.path.sep), pageName);
+        if (isAbsolute) url = `/${url}`;
         const texture = await loader.load<Texture>({ src: url, data: imageMetadata });
 
         textureLoadedCallback(texture.baseTexture);
