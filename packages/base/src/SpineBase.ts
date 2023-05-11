@@ -11,6 +11,8 @@ import { Graphics } from '@pixi/graphics';
 import { settings } from './settings';
 import type { ISpineDebugRenderer } from './SpineDebugRenderer';
 
+const tempRgb = [0, 0, 0];
+
 /**
  * @public
  */
@@ -320,11 +322,10 @@ export abstract class SpineBase<
                         // YAY! double - tint!
                         spriteColor = slot.currentSprite.color;
                     } else {
-                        slot.currentSprite.tint = utils.rgb2hex([
-                            light[0] * slot.color.r * attColor.r,
-                            light[1] * slot.color.g * attColor.g,
-                            light[2] * slot.color.b * attColor.b
-                        ]);
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentSprite.tint = utils.rgb2hex(tempRgb);
                     }
                     slot.currentSprite.blendMode = slot.blendMode;
                     break;
@@ -379,11 +380,10 @@ export abstract class SpineBase<
                         // pixi-heaven
                         spriteColor = slot.currentMesh.color;
                     } else {
-                        slot.currentMesh.tint = utils.rgb2hex([
-                            light[0] * slot.color.r * attColor.r,
-                            light[1] * slot.color.g * attColor.g,
-                            light[2] * slot.color.b * attColor.b
-                        ]);
+                        tempRgb[0] = light[0] * slot.color.r * attColor.r;
+                        tempRgb[1] = light[1] * slot.color.g * attColor.g;
+                        tempRgb[2] = light[2] * slot.color.b * attColor.b;
+                        slot.currentMesh.tint = utils.rgb2hex(tempRgb);
                     }
                     slot.currentMesh.blendMode = slot.blendMode;
                     if (!slot.hackRegion) {
