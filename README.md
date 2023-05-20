@@ -44,7 +44,7 @@ import {Spine} from 'pixi-spine';
 const app = new Application();
 document.body.appendChild(app.view);
 
-assets.load("spine-data-1/HERO.json").then((resource) => {
+Assets.load("spine-data-1/HERO.json").then((resource) => {
 	const animation = new Spine(resource.spineData);
     app.stage.addChild(animation);
 
