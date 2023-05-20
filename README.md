@@ -38,13 +38,13 @@ Please read this carefully: there are many ways to add this lib to your app.
 ```js
 import 'pixi-spine' // Do this once at the very start of your code. This registers the loader!
 
-import * as PIXI from 'pixi.js';
+import {Assets, Application} from 'pixi.js';
 import {Spine} from 'pixi-spine';
 
-const app = new PIXI.Application();
+const app = new Application();
 document.body.appendChild(app.view);
 
-PIXI.Assets.load("spine-data-1/HERO.json").then((resource) => {
+assets.load("spine-data-1/HERO.json").then((resource) => {
 	const animation = new Spine(resource.spineData);
     app.stage.addChild(animation);
 
