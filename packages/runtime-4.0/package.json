@@ -21,7 +21,7 @@
     }
   },
   "peerDependencies": {
-    "@pixi-spine/base": "^4.0.0",
+    "@pixi-spine/base": "^4.0.3",
     "@pixi/core": "^7.0.0"
   },
   "scripts": {
@@ -52,6 +52,6 @@
   "license": "SEE SPINE-LICENSE",
   "homepage": "https://github.com/pixijs/pixi-spine/#readme",
   "devDependencies": {
-    "@pixi-spine/rollup-config": "*"
+    "@pixi-spine/rollup-config": "^1.0.0"
   }
 }
