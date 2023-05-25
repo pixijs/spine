@@ -30,6 +30,7 @@
     "@pixi-spine/runtime-4.1": "^4.0.3"
   },
   "peerDependencies": {
+    "@pixi/assets": "^7.0.0",
     "@pixi/core": "^7.0.0",
     "@pixi/display": "^7.0.0",
     "@pixi/graphics": "^7.0.0",
