@@ -10,7 +10,7 @@ const validJSONExtension = '.json';
 
 const validJSONMIME = 'application/json';
 
-const validAtlasMIME = 'application/octet-stream';
+const validAtlasMIMEs = ['application/octet-stream', 'text/plain'];
 
 const validImageMIMEs = ['image/jpeg', 'image/png'];
 
@@ -112,7 +112,7 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
                     let textAtlas = metadata.atlasRawData;
 
                     // Maybe you passed a data URL to instead of a path
-                    const isSpineAtlasFileURL = checkDataUrl(metadata.spineAtlasFile, validAtlasMIME);
+                    const isSpineAtlasFileURL = checkDataUrl(metadata.spineAtlasFile, validAtlasMIMEs);
 
                     // If it's an URL then decode it and assign it to textAtlas
                     if (isSpineAtlasFileURL) {
