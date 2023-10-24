@@ -3,8 +3,15 @@ import { AssetExtension, checkExtension, LoadAsset, Loader, LoaderParserPriority
 import { BaseTexture, extensions, ExtensionType, settings, Texture, utils } from '@pixi/core';
 import { makeSpineTextureAtlasLoaderFunctionFromPixiLoaderObject } from './atlasLoader';
 
-type SPINEJSON = any;
-type SPINEBINARY = ArrayBuffer;
+/**
+ * @public
+ */
+export type SPINEJSON = any;
+
+/**
+ * @public
+ */
+export type SPINEBINARY = ArrayBuffer;
 
 function isJson(resource: unknown): resource is SPINEJSON {
     return resource.hasOwnProperty('bones');
@@ -27,10 +34,11 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
 
     abstract parseData(parser: ISkeletonParser, atlas: TextureAtlas, dataToParse: any): ISpineResource<SKD>;
 
-    public installLoader(): any {
+    public getLoader(): AssetExtension<SPINEJSON | SPINEBINARY | ISpineResource<SKD>, ISpineMetadata> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const spineAdapter = this;
-        const spineLoaderExtension: AssetExtension<SPINEJSON | SPINEBINARY | ISpineResource<SKD>, ISpineMetadata> = {
+        
+        return {
             extension: ExtensionType.Asset,
 
             loader: {
@@ -141,6 +149,10 @@ export abstract class SpineLoaderAbstract<SKD extends ISkeletonData> {
                 // },
             },
         } as AssetExtension<SPINEJSON | SPINEBINARY | ISpineResource<SKD>, ISpineMetadata>;
+    }
+
+    public installLoader(): any {
+        const spineLoaderExtension = this.getLoader();
 
         extensions.add(spineLoaderExtension);
 

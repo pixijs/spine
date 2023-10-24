@@ -3,9 +3,17 @@ import { type AssetExtension, LoaderParserPriority, LoadAsset, Loader, checkExte
 import { BaseTexture, extensions, ExtensionType, settings, Texture, utils } from '@pixi/core';
 import type { ISpineMetadata } from './SpineLoaderAbstract';
 
-type RawAtlas = string;
+/**
+ * Type of atlas file content.
+ * @public
+ */
+export type RawAtlas = string;
 
-const spineTextureAtlasLoader: AssetExtension<RawAtlas | TextureAtlas, ISpineMetadata> = {
+/**
+ * This variable is used loader extension for atlas files loading.
+ * @public 
+ */
+export const spineTextureAtlasLoader: AssetExtension<RawAtlas | TextureAtlas, ISpineMetadata> = {
     extension: ExtensionType.Asset,
 
     // cache: {
