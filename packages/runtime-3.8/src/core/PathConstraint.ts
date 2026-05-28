@@ -150,10 +150,9 @@ export class PathConstraint implements Updatable {
                 let cos = 0;
                 let sin = 0;
 
-                if (tangents)
-                    if (tangents) r = positions[p - 1];
-                    else if (spaces[i + 1] == 0) r = positions[p + 2];
-                    else r = Math.atan2(dy, dx);
+                if (tangents) r = positions[p - 1];
+                else if (spaces[i + 1] == 0) r = positions[p + 2];
+                else r = Math.atan2(dy, dx);
                 r -= Math.atan2(c, a);
                 if (tip) {
                     cos = Math.cos(r);
